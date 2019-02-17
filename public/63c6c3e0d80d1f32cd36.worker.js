@@ -46,7 +46,7 @@
 /******/ 		return new Promise(function(resolve) {
 /******/ 			// "1" is the signal for "already loaded"
 /******/ 			if(!installedChunks[chunkId]) {
-/******/ 				importScripts("" + chunkId + "." + "5e49f04c1338e43be715" + ".worker.js");
+/******/ 				importScripts("" + chunkId + "." + "63c6c3e0d80d1f32cd36" + ".worker.js");
 /******/ 			}
 /******/ 			resolve();
 /******/ 		});
@@ -2408,17 +2408,68 @@ var DbFileSystem = function () {
 
       return close;
     }()
-  }], [{
-    key: 'create',
+  }, {
+    key: 'destroy',
     value: function () {
-      var _ref16 = (0, _asyncToGenerator3.default)( /*#__PURE__*/_regenerator2.default.mark(function _callee16(root, FS) {
-        var readOnly = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : false;
-        var dbfs;
+      var _ref16 = (0, _asyncToGenerator3.default)( /*#__PURE__*/_regenerator2.default.mark(function _callee16() {
+        var req;
         return _regenerator2.default.wrap(function _callee16$(_context16) {
           while (1) {
             switch (_context16.prev = _context16.next) {
               case 0:
-                _context16.prev = 0;
+                clearInterval(this.syncfsInterval);
+
+                if (!this.readOnly) {
+                  _context16.next = 3;
+                  break;
+                }
+
+                return _context16.abrupt('return');
+
+              case 3:
+                this.FS.unmount(this.root);
+                req = indexedDB.deleteDatabase(this.root);
+                _context16.next = 7;
+                return new _promise2.default(function (resolve, reject) {
+                  req.onsuccess = function (e) {
+                    _logger2.default.info('SUCCESS');
+                    resolve(e.result);
+                  };
+                  req.onerror = function (e) {
+                    _logger2.default.info('ONERROR');
+                    reject(e.error);
+                  };
+                  req.onblocked = function (e) {
+                    _logger2.default.info('ONBLOCKED');
+                    reject('blocked');
+                  };
+                });
+
+              case 7:
+              case 'end':
+                return _context16.stop();
+            }
+          }
+        }, _callee16, this);
+      }));
+
+      function destroy() {
+        return _ref16.apply(this, arguments);
+      }
+
+      return destroy;
+    }()
+  }], [{
+    key: 'create',
+    value: function () {
+      var _ref17 = (0, _asyncToGenerator3.default)( /*#__PURE__*/_regenerator2.default.mark(function _callee17(root, FS) {
+        var readOnly = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : false;
+        var dbfs;
+        return _regenerator2.default.wrap(function _callee17$(_context17) {
+          while (1) {
+            switch (_context17.prev = _context17.next) {
+              case 0:
+                _context17.prev = 0;
                 dbfs = new DbFileSystem();
 
                 dbfs.root = root;
@@ -2428,7 +2479,7 @@ var DbFileSystem = function () {
                 FS.mkdir(root);
                 FS.mount(FS.filesystems.IDBFS, {}, root);
 
-                _context16.next = 10;
+                _context17.next = 10;
                 return new _promise2.default(function (resolve, reject) {
                   FS.syncfs(true, function (err) {
                     resolve();
@@ -2440,24 +2491,24 @@ var DbFileSystem = function () {
                 dbfs.syncfsInterval = setInterval(function () {
                   dbfs.sync();
                 }, 5000);
-                return _context16.abrupt('return', dbfs);
+                return _context17.abrupt('return', dbfs);
 
               case 14:
-                _context16.prev = 14;
-                _context16.t0 = _context16['catch'](0);
+                _context17.prev = 14;
+                _context17.t0 = _context17['catch'](0);
 
-                _logger2.default.error('Failed to init DbFileSystem: ', _context16.t0);
+                _logger2.default.error('Failed to init DbFileSystem: ', _context17.t0);
 
               case 17:
               case 'end':
-                return _context16.stop();
+                return _context17.stop();
             }
           }
-        }, _callee16, this, [[0, 14]]);
+        }, _callee17, this, [[0, 14]]);
       }));
 
       function create(_x14, _x15) {
-        return _ref16.apply(this, arguments);
+        return _ref17.apply(this, arguments);
       }
 
       return create;
@@ -2471,17 +2522,42 @@ var TdFileSystem = function () {
     (0, _classCallCheck3.default)(this, TdFileSystem);
   }
 
-  (0, _createClass3.default)(TdFileSystem, null, [{
+  (0, _createClass3.default)(TdFileSystem, [{
+    key: 'destroy',
+    value: function () {
+      var _ref18 = (0, _asyncToGenerator3.default)( /*#__PURE__*/_regenerator2.default.mark(function _callee18() {
+        return _regenerator2.default.wrap(function _callee18$(_context18) {
+          while (1) {
+            switch (_context18.prev = _context18.next) {
+              case 0:
+                _context18.next = 2;
+                return this.dbFileSystem.destroy();
+
+              case 2:
+              case 'end':
+                return _context18.stop();
+            }
+          }
+        }, _callee18, this);
+      }));
+
+      function destroy() {
+        return _ref18.apply(this, arguments);
+      }
+
+      return destroy;
+    }()
+  }], [{
     key: 'create',
     value: function () {
-      var _ref17 = (0, _asyncToGenerator3.default)( /*#__PURE__*/_regenerator2.default.mark(function _callee17(prefix, FS) {
+      var _ref19 = (0, _asyncToGenerator3.default)( /*#__PURE__*/_regenerator2.default.mark(function _callee19(prefix, FS) {
         var readOnly = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : false;
         var tdfs, inboundFileSystem, dbFileSystem;
-        return _regenerator2.default.wrap(function _callee17$(_context17) {
+        return _regenerator2.default.wrap(function _callee19$(_context19) {
           while (1) {
-            switch (_context17.prev = _context17.next) {
+            switch (_context19.prev = _context19.next) {
               case 0:
-                _context17.prev = 0;
+                _context19.prev = 0;
                 tdfs = new TdFileSystem();
 
                 tdfs.prefix = prefix;
@@ -2497,34 +2573,34 @@ var TdFileSystem = function () {
                 //IDBFS. MEMFS which is flushed to IDB from time to time
 
                 dbFileSystem = DbFileSystem.create(prefix + '/dbfs', FS, readOnly);
-                _context17.next = 10;
+                _context19.next = 10;
                 return inboundFileSystem;
 
               case 10:
-                tdfs.inboundFileSystem = _context17.sent;
-                _context17.next = 13;
+                tdfs.inboundFileSystem = _context19.sent;
+                _context19.next = 13;
                 return dbFileSystem;
 
               case 13:
-                tdfs.dbFileSystem = _context17.sent;
-                return _context17.abrupt('return', tdfs);
+                tdfs.dbFileSystem = _context19.sent;
+                return _context19.abrupt('return', tdfs);
 
               case 17:
-                _context17.prev = 17;
-                _context17.t0 = _context17['catch'](0);
+                _context19.prev = 17;
+                _context19.t0 = _context19['catch'](0);
 
-                _logger2.default.error('Failed to init TdFileSystem: ', _context17.t0);
+                _logger2.default.error('Failed to init TdFileSystem: ', _context19.t0);
 
               case 20:
               case 'end':
-                return _context17.stop();
+                return _context19.stop();
             }
           }
-        }, _callee17, this, [[0, 17]]);
+        }, _callee19, this, [[0, 17]]);
       }));
 
       function create(_x17, _x18) {
-        return _ref17.apply(this, arguments);
+        return _ref19.apply(this, arguments);
       }
 
       return create;
@@ -2547,14 +2623,14 @@ var TdClient = function () {
   (0, _createClass3.default)(TdClient, [{
     key: 'testLocalForage',
     value: function () {
-      var _ref18 = (0, _asyncToGenerator3.default)( /*#__PURE__*/_regenerator2.default.mark(function _callee18() {
+      var _ref20 = (0, _asyncToGenerator3.default)( /*#__PURE__*/_regenerator2.default.mark(function _callee20() {
         var DRIVERS, _iteratorNormalCompletion, _didIteratorError, _iteratorError, _iterator, _step, driverName, x;
 
-        return _regenerator2.default.wrap(function _callee18$(_context18) {
+        return _regenerator2.default.wrap(function _callee20$(_context20) {
           while (1) {
-            switch (_context18.prev = _context18.next) {
+            switch (_context20.prev = _context20.next) {
               case 0:
-                _context18.next = 2;
+                _context20.next = 2;
                 return initLocalForage();
 
               case 2:
@@ -2562,102 +2638,102 @@ var TdClient = function () {
                 _iteratorNormalCompletion = true;
                 _didIteratorError = false;
                 _iteratorError = undefined;
-                _context18.prev = 6;
+                _context20.prev = 6;
                 _iterator = (0, _getIterator3.default)(DRIVERS);
 
               case 8:
                 if (_iteratorNormalCompletion = (_step = _iterator.next()).done) {
-                  _context18.next = 33;
+                  _context20.next = 33;
                   break;
                 }
 
                 driverName = _step.value;
 
                 console.log("Test ", driverName);
-                _context18.prev = 11;
-                _context18.next = 14;
+                _context20.prev = 11;
+                _context20.next = 14;
                 return _localforage2.default.setDriver(driverName);
 
               case 14:
                 console.log("A");
-                _context18.next = 17;
+                _context20.next = 17;
                 return _localforage2.default.setItem('hello', 'world');
 
               case 17:
                 console.log("B");
-                _context18.next = 20;
+                _context20.next = 20;
                 return _localforage2.default.getItem('hello');
 
               case 20:
-                x = _context18.sent;
+                x = _context20.sent;
 
                 console.log("got ", x);
-                _context18.next = 24;
+                _context20.next = 24;
                 return _localforage2.default.clear();
 
               case 24:
                 console.log("C");
-                _context18.next = 30;
+                _context20.next = 30;
                 break;
 
               case 27:
-                _context18.prev = 27;
-                _context18.t0 = _context18['catch'](11);
+                _context20.prev = 27;
+                _context20.t0 = _context20['catch'](11);
 
-                console.log("Error", _context18.t0);
+                console.log("Error", _context20.t0);
 
               case 30:
                 _iteratorNormalCompletion = true;
-                _context18.next = 8;
+                _context20.next = 8;
                 break;
 
               case 33:
-                _context18.next = 39;
+                _context20.next = 39;
                 break;
 
               case 35:
-                _context18.prev = 35;
-                _context18.t1 = _context18['catch'](6);
+                _context20.prev = 35;
+                _context20.t1 = _context20['catch'](6);
                 _didIteratorError = true;
-                _iteratorError = _context18.t1;
+                _iteratorError = _context20.t1;
 
               case 39:
-                _context18.prev = 39;
-                _context18.prev = 40;
+                _context20.prev = 39;
+                _context20.prev = 40;
 
                 if (!_iteratorNormalCompletion && _iterator.return) {
                   _iterator.return();
                 }
 
               case 42:
-                _context18.prev = 42;
+                _context20.prev = 42;
 
                 if (!_didIteratorError) {
-                  _context18.next = 45;
+                  _context20.next = 45;
                   break;
                 }
 
                 throw _iteratorError;
 
               case 45:
-                return _context18.finish(42);
+                return _context20.finish(42);
 
               case 46:
-                return _context18.finish(39);
+                return _context20.finish(39);
 
               case 47:
                 ;
 
               case 48:
               case 'end':
-                return _context18.stop();
+                return _context20.stop();
             }
           }
-        }, _callee18, this, [[6, 35, 39, 47], [11, 27], [40,, 42, 46]]);
+        }, _callee20, this, [[6, 35, 39, 47], [11, 27], [40,, 42, 46]]);
       }));
 
       function testLocalForage() {
-        return _ref18.apply(this, arguments);
+        return _ref20.apply(this, arguments);
       }
 
       return testLocalForage;
@@ -2665,27 +2741,27 @@ var TdClient = function () {
   }, {
     key: 'init',
     value: function () {
-      var _ref19 = (0, _asyncToGenerator3.default)( /*#__PURE__*/_regenerator2.default.mark(function _callee19(options) {
+      var _ref21 = (0, _asyncToGenerator3.default)( /*#__PURE__*/_regenerator2.default.mark(function _callee21(options) {
         var _this2 = this;
 
         var mode, self, prefix;
-        return _regenerator2.default.wrap(function _callee19$(_context19) {
+        return _regenerator2.default.wrap(function _callee21$(_context21) {
           while (1) {
-            switch (_context19.prev = _context19.next) {
+            switch (_context21.prev = _context21.next) {
               case 0:
                 if (!this.wasInit) {
-                  _context19.next = 2;
+                  _context21.next = 2;
                   break;
                 }
 
-                return _context19.abrupt('return');
+                return _context21.abrupt('return');
 
               case 2:
-                _context19.next = 4;
+                _context21.next = 4;
                 return this.testLocalForage();
 
               case 4:
-                _logger2.default.setVerbosity(options.jsVerbosity);
+                _logger2.default.setVerbosity(options.jsLogVerbosityLevel);
                 this.wasInit = true;
 
                 options = options || {};
@@ -2696,11 +2772,11 @@ var TdClient = function () {
                 }
                 mode = options.mode || mode;
 
-                _context19.next = 12;
+                _context21.next = 12;
                 return loadTdLib(mode);
 
               case 12:
-                this.TdModule = _context19.sent;
+                this.TdModule = _context21.sent;
 
                 _logger2.default.info('got TdModule');
                 this.td_functions = {
@@ -2740,7 +2816,7 @@ var TdClient = function () {
                 // wait till it is allowed to start
                 this.callback({ '@type': 'inited' });
                 self = this;
-                _context19.next = 26;
+                _context21.next = 26;
                 return new _promise2.default(function (resolve) {
                   self.onStart = resolve;
                 });
@@ -2751,47 +2827,55 @@ var TdClient = function () {
                 _logger2.default.info('may start now');
 
                 if (!this.isClosing) {
-                  _context19.next = 30;
+                  _context21.next = 30;
                   break;
                 }
 
-                return _context19.abrupt('return');
+                return _context21.abrupt('return');
 
               case 30:
                 prefix = options.prefix || 'tdlib';
 
                 _logger2.default.info('FS start init');
-                _context19.next = 34;
+                _context21.next = 34;
                 return TdFileSystem.create('/' + prefix, this.FS, options.readOnly);
 
               case 34:
-                this.tdfs = _context19.sent;
+                this.tdfs = _context21.sent;
 
                 _logger2.default.info('FS inited');
 
                 // no async initialization after this point
-                if (options.verbosity === undefined) {
-                  options.verbosity = 5;
+                if (options.logVerbosityLevel === undefined) {
+                  options.logVerbosityLevel = 2;
                 }
-                this.td_functions.td_set_verbosity(options.verbosity);
+                this.td_functions.td_set_verbosity(options.logVerbosityLevel);
                 this.client = this.td_functions.td_create();
 
                 this.savingFiles = new _map2.default();
+                this.send({
+                  '@type': 'setOption',
+                  name: 'language_pack_database_path',
+                  value: {
+                    '@type': 'optionValueString',
+                    value: this.tdfs.dbFileSystem.root + '/language'
+                  }
+                });
+
                 this.flushPendingQueries();
 
                 this.receive();
-                //setInterval(()=>this.receive(), 100);
 
-              case 42:
+              case 43:
               case 'end':
-                return _context19.stop();
+                return _context21.stop();
             }
           }
-        }, _callee19, this);
+        }, _callee21, this);
       }));
 
       function init(_x19) {
-        return _ref19.apply(this, arguments);
+        return _ref21.apply(this, arguments);
       }
 
       return init;
@@ -2820,6 +2904,9 @@ var TdClient = function () {
         query.parameters.database_directory = this.tdfs.dbFileSystem.root;
         query.parameters.files_directory = this.tdfs.inboundFileSystem.root;
       }
+      if (query['@type'] === 'getLanguagePackString') {
+        query.language_pack_database_path = this.tdfs.dbFileSystem.root + '/language';
+      }
       return this.prepareQueryRecursive(query);
     }
   }, {
@@ -2829,9 +2916,36 @@ var TdClient = function () {
       _logger2.default.info('ignore on_start');
     }
   }, {
+    key: 'readFilePart',
+    value: function readFilePart(query) {
+      var res;
+      try {
+        //let file_size = this.FS.stat(query.path).size;
+        var stream = this.FS.open(query.path, 'r');
+        var buf = new Uint8Array(query.size);
+        this.FS.read(stream, buf, 0, query.size, query.offset);
+        this.FS.close(stream);
+        res = buf;
+      } catch (e) {
+        this.callback({ '@type': 'error', '@extra': query['@extra'], code: 400, message: e });
+        return;
+      }
+      this.callback({
+        '@type': 'FilePart',
+        '@extra': query['@extra'],
+        'data': res
+      }, [res.buffer]);
+    }
+  }, {
     key: 'send',
     value: function send(query) {
-      if (this.wasFatalError || this.isClosing) {
+      if (this.isClosing) {
+        return;
+      }
+      if (this.wasFatalError) {
+        if (query['@type'] === 'destroy') {
+          this.destroy({ '@type': 'Ok', '@extra': query['@extra'] });
+        }
         return;
       }
       if (query['@type'] === 'init') {
@@ -2843,21 +2957,36 @@ var TdClient = function () {
         this.onStart();
         return;
       }
-      if (query['@type'] === 'setJsVerbosity') {
-        _logger2.default.setVerbosity(query.verbosity);
-        return;
-      }
-      if (query['@type'] === 'setVerbosity') {
-        this.td_functions.td_set_verbosity(query.verbosity);
+      if (query['@type'] === 'setJsLogVerbosityLevel') {
+        _logger2.default.setVerbosity(query.new_verbosity_level);
         return;
       }
       if (this.isPending) {
         this.pendingQueries.push(query);
         return;
       }
+      if (query['@type'] === 'setLogVerbosityLevel' || query['@type'] === 'getLogVerbosityLevel' || query['@type'] === 'setLogTagVerbosityLevel' || query['@type'] === 'getLogTagVerbosityLevel' || query['@type'] === 'getLogTags') {
+        this.execute(query);
+        return;
+      }
+      if (query['@type'] === 'readFilePart') {
+        this.readFilePart(query);
+        return;
+      }
       query = this.prepareQuery(query);
       this.td_functions.td_send(this.client, (0, _stringify2.default)(query));
       this.scheduleReceiveSoon();
+    }
+  }, {
+    key: 'execute',
+    value: function execute(query) {
+      try {
+        var res = this.td_functions.td_execute(0, (0, _stringify2.default)(query));
+        var response = JSON.parse(res);
+        this.callback(response);
+      } catch (error) {
+        this.onFatalError(error);
+      }
     }
   }, {
     key: 'receive',
@@ -2934,21 +3063,21 @@ var TdClient = function () {
   }, {
     key: 'close',
     value: function () {
-      var _ref20 = (0, _asyncToGenerator3.default)( /*#__PURE__*/_regenerator2.default.mark(function _callee20(last_update) {
-        return _regenerator2.default.wrap(function _callee20$(_context20) {
+      var _ref22 = (0, _asyncToGenerator3.default)( /*#__PURE__*/_regenerator2.default.mark(function _callee22(last_update) {
+        return _regenerator2.default.wrap(function _callee22$(_context22) {
           while (1) {
-            switch (_context20.prev = _context20.next) {
+            switch (_context22.prev = _context22.next) {
               case 0:
                 // close db and cancell all timers
                 this.isClosing = true;
 
                 if (!this.isStarted) {
-                  _context20.next = 7;
+                  _context22.next = 7;
                   break;
                 }
 
                 _logger2.default.debug('close worker: start');
-                _context20.next = 5;
+                _context22.next = 5;
                 return this.tdfs.dbFileSystem.close();
 
               case 5:
@@ -2960,27 +3089,75 @@ var TdClient = function () {
 
               case 8:
               case 'end':
-                return _context20.stop();
+                return _context22.stop();
             }
           }
-        }, _callee20, this);
+        }, _callee22, this);
       }));
 
       function close(_x20) {
-        return _ref20.apply(this, arguments);
+        return _ref22.apply(this, arguments);
       }
 
       return close;
     }()
   }, {
+    key: 'destroy',
+    value: function () {
+      var _ref23 = (0, _asyncToGenerator3.default)( /*#__PURE__*/_regenerator2.default.mark(function _callee23(result) {
+        return _regenerator2.default.wrap(function _callee23$(_context23) {
+          while (1) {
+            switch (_context23.prev = _context23.next) {
+              case 0:
+                _context23.prev = 0;
+
+                _logger2.default.info('destroy tdfs ...');
+                _context23.next = 4;
+                return this.tdfs.destroy();
+
+              case 4:
+                _logger2.default.info('destroy tdfs ok');
+                _context23.next = 10;
+                break;
+
+              case 7:
+                _context23.prev = 7;
+                _context23.t0 = _context23['catch'](0);
+
+                _logger2.default.error('Failed destroy', _context23.t0);
+
+              case 10:
+                this.callback(result);
+                this.callback({
+                  '@type': 'updateAuthorizationState',
+                  authorization_state: {
+                    '@type': 'authorizationStateClosed'
+                  }
+                });
+
+              case 12:
+              case 'end':
+                return _context23.stop();
+            }
+          }
+        }, _callee23, this, [[0, 7]]);
+      }));
+
+      function destroy(_x21) {
+        return _ref23.apply(this, arguments);
+      }
+
+      return destroy;
+    }()
+  }, {
     key: 'asyncOnFatalError',
     value: function () {
-      var _ref21 = (0, _asyncToGenerator3.default)( /*#__PURE__*/_regenerator2.default.mark(function _callee21(error) {
-        return _regenerator2.default.wrap(function _callee21$(_context21) {
+      var _ref24 = (0, _asyncToGenerator3.default)( /*#__PURE__*/_regenerator2.default.mark(function _callee24(error) {
+        return _regenerator2.default.wrap(function _callee24$(_context24) {
           while (1) {
-            switch (_context21.prev = _context21.next) {
+            switch (_context24.prev = _context24.next) {
               case 0:
-                _context21.next = 2;
+                _context24.next = 2;
                 return this.tdfs.dbFileSystem.sync();
 
               case 2:
@@ -2988,14 +3165,14 @@ var TdClient = function () {
 
               case 3:
               case 'end':
-                return _context21.stop();
+                return _context24.stop();
             }
           }
-        }, _callee21, this);
+        }, _callee24, this);
       }));
 
-      function asyncOnFatalError(_x21) {
-        return _ref21.apply(this, arguments);
+      function asyncOnFatalError(_x22) {
+        return _ref24.apply(this, arguments);
       }
 
       return asyncOnFatalError;
@@ -3003,29 +3180,29 @@ var TdClient = function () {
   }, {
     key: 'saveFile',
     value: function () {
-      var _ref22 = (0, _asyncToGenerator3.default)( /*#__PURE__*/_regenerator2.default.mark(function _callee22(pid, file) {
+      var _ref25 = (0, _asyncToGenerator3.default)( /*#__PURE__*/_regenerator2.default.mark(function _callee25(pid, file) {
         var isSaving, arr;
-        return _regenerator2.default.wrap(function _callee22$(_context22) {
+        return _regenerator2.default.wrap(function _callee25$(_context25) {
           while (1) {
-            switch (_context22.prev = _context22.next) {
+            switch (_context25.prev = _context25.next) {
               case 0:
                 isSaving = this.savingFiles.has(pid);
 
                 this.savingFiles.set(pid, file);
 
                 if (!isSaving) {
-                  _context22.next = 4;
+                  _context25.next = 4;
                   break;
                 }
 
-                return _context22.abrupt('return');
+                return _context25.abrupt('return');
 
               case 4:
-                _context22.next = 6;
+                _context25.next = 6;
                 return this.tdfs.inboundFileSystem.persist(pid, file.local.path);
 
               case 6:
-                arr = _context22.sent;
+                arr = _context25.sent;
 
                 file = this.savingFiles.get(pid);
                 file.idb_key = pid;
@@ -3038,14 +3215,14 @@ var TdClient = function () {
 
               case 13:
               case 'end':
-                return _context22.stop();
+                return _context25.stop();
             }
           }
-        }, _callee22, this);
+        }, _callee25, this);
       }));
 
-      function saveFile(_x22, _x23) {
-        return _ref22.apply(this, arguments);
+      function saveFile(_x23, _x24) {
+        return _ref25.apply(this, arguments);
       }
 
       return saveFile;
@@ -8412,7 +8589,7 @@ function instantiateCachedURL(dbVersion, url, importObject) {
 /* 131 */
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = __webpack_require__.p + "d1e9ae2b869057bf3c342940961f781b.wasm";
+module.exports = __webpack_require__.p + "955f3a061726ea69cf380a7b961e1c59.wasm";
 
 /***/ }),
 /* 132 */
