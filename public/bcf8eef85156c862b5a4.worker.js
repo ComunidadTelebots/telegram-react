@@ -46,7 +46,7 @@
 /******/ 		return new Promise(function(resolve) {
 /******/ 			// "1" is the signal for "already loaded"
 /******/ 			if(!installedChunks[chunkId]) {
-/******/ 				importScripts("" + chunkId + "." + "616e900efd4a0c8f6d08" + ".worker.js");
+/******/ 				importScripts("" + chunkId + "." + "bcf8eef85156c862b5a4" + ".worker.js");
 /******/ 			}
 /******/ 			resolve();
 /******/ 		});
@@ -2934,11 +2934,13 @@ var TdClient = function () {
                 tdfs_promise = TdFileSystem.create('/' + prefix, FS_promise, options.readOnly);
 
 
+                this.noDb = options.noDb || false;
+
                 _logger2.default.info('load TdModule');
-                _context23.next = 15;
+                _context23.next = 16;
                 return loadTdLib(mode, self.onFS);
 
-              case 15:
+              case 16:
                 this.TdModule = _context23.sent;
 
                 _logger2.default.info('got TdModule');
@@ -2979,29 +2981,29 @@ var TdClient = function () {
 
                 // wait till it is allowed to start
                 this.callback({ '@type': 'inited' });
-                _context23.next = 28;
+                _context23.next = 29;
                 return new _promise2.default(function (resolve) {
                   self.onStart = resolve;
                 });
 
-              case 28:
+              case 29:
                 this.isStarted = true;
 
                 _logger2.default.info('may start now');
 
                 if (!this.isClosing) {
-                  _context23.next = 32;
+                  _context23.next = 33;
                   break;
                 }
 
                 return _context23.abrupt('return');
 
-              case 32:
+              case 33:
                 _logger2.default.info('FS start init');
-                _context23.next = 35;
+                _context23.next = 36;
                 return tdfs_promise;
 
-              case 35:
+              case 36:
                 this.tdfs = _context23.sent;
 
                 _logger2.default.info('FS inited');
@@ -3022,12 +3024,20 @@ var TdClient = function () {
                     value: this.tdfs.dbFileSystem.root + '/language'
                   }
                 });
+                this.send({
+                  '@type': 'setOption',
+                  name: 'ignore_background_updates',
+                  value: {
+                    '@type': 'optionValueBoolean',
+                    value: !this.noDb
+                  }
+                });
 
                 this.flushPendingQueries();
 
                 this.receive();
 
-              case 44:
+              case 46:
               case 'end':
                 return _context23.stop();
             }
@@ -3064,6 +3074,12 @@ var TdClient = function () {
       if (query['@type'] === 'setTdlibParameters') {
         query.parameters.database_directory = this.tdfs.dbFileSystem.root;
         query.parameters.files_directory = this.tdfs.inboundFileSystem.root;
+
+        var useDb = !this.noDb;
+        query.parameters.use_file_database = useDb;
+        query.parameters.use_chat_info_database = useDb;
+        query.parameters.use_message_database = useDb;
+        query.parameters.use_secret_chats = useDb;
       }
       if (query['@type'] === 'getLanguagePackString') {
         query.language_pack_database_path = this.tdfs.dbFileSystem.root + '/language';
@@ -8817,7 +8833,7 @@ function instantiateCachedURL(dbVersion, url, importObject) {
 /* 135 */
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = __webpack_require__.p + "da292be2cb037dea864cde0d50b39aff.wasm";
+module.exports = __webpack_require__.p + "4c6f8e47dba23ba22ee63262824929cd.wasm";
 
 /***/ }),
 /* 136 */
