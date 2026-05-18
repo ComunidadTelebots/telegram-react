@@ -60,9 +60,10 @@ class LanguagePicker extends React.Component {
     render() {
         const { classes, t } = this.props;
         const { open, language } = this.state;
-        const info = LocalizationStore.info || { language_packs: [] };
+        const info = LocalizationStore.info || {};
+        const language_packs = info.language_packs || [];
 
-        const languages = info.language_packs.map(x => (
+        const languages = language_packs.map(x => (
             <FormControlLabel
                 key={x.id}
                 value={x.id}
@@ -97,11 +98,6 @@ class LanguagePicker extends React.Component {
 
 LanguagePicker.propTypes = {};
 
-const enhance = compose(
-    withSaveRef(),
-    withTranslation(),
-    withStyles(styles, { withTheme: true }),
-    withRestoreRef()
-);
+const enhance = compose(withSaveRef(), withTranslation(), withStyles(styles, { withTheme: true }), withRestoreRef());
 
 export default enhance(LanguagePicker);

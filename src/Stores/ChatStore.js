@@ -428,8 +428,7 @@ class ChatStore extends EventEmitter {
     };
 
     assign(source1, source2) {
-        //Object.assign(source1, source2);
-        this.set(Object.assign({}, source1, source2));
+        Object.assign(source1, source2);
     }
 
     get(chatId) {

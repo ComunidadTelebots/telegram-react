@@ -28,19 +28,7 @@ const styles = theme => ({
 
 class DialogContent extends React.Component {
     shouldComponentUpdate(nextProps, nextState) {
-        if (nextProps.chatId !== this.props.chatId) {
-            return true;
-        }
-
-        if (nextProps.t !== this.props.t) {
-            return true;
-        }
-
-        if (nextProps.theme !== this.props.theme) {
-            return true;
-        }
-
-        return false;
+        return true;
     }
 
     componentDidMount() {
@@ -126,9 +114,6 @@ class DialogContent extends React.Component {
     }
 }
 
-const enhance = compose(
-    withTranslation(),
-    withStyles(styles, { withTheme: true })
-);
+const enhance = compose(withTranslation(), withStyles(styles, { withTheme: true }));
 
 export default enhance(DialogContent);

@@ -38,6 +38,183 @@ export function tdlibChatIdToInputPeer(chatId, entityCache) {
     return new Api.InputPeerChannel({ channelId, accessHash: ch?.accessHash || BigInt(0) });
 }
 
+// ─── Media helpers ───────────────────────────────────────────────────────────
+
+function translateFile(id, size = 0, remoteId = '') {
+    const fileId = typeof id === 'bigint' ? Number(id) : Number(id || 0);
+    return {
+        '@type': 'file',
+        id: fileId,
+        size: size || 0,
+        expected_size: size || 0,
+        local: {
+            '@type': 'localFile',
+            path: '',
+            can_be_downloaded: true,
+            can_be_deleted: false,
+            is_downloading_active: false,
+            is_downloading_completed: false,
+            downloaded_prefix_size: 0,
+            downloaded_size: 0
+        },
+        remote: {
+            '@type': 'remoteFile',
+            id: remoteId || String(fileId),
+            unique_id: remoteId || String(fileId),
+            is_uploading_active: false,
+            is_uploading_completed: true,
+            uploaded_size: size || 0
+        }
+    };
+}
+
+export function translatePhoto(gPhoto) {
+    if (!gPhoto) return null;
+    const sizes = (gPhoto.sizes || [])
+        .map(sz => {
+            const type = sz.type || 'x';
+            const w = sz.w || sz.width || 320;
+            const h = sz.h || sz.height || 240;
+            const szBytes = sz.size || (sz.bytes ? sz.bytes.length : 0) || 10000;
+            return {
+                '@type': 'photoSize',
+                type,
+                width: Number(w),
+                height: Number(h),
+                photo: translateFile(gPhoto.id, szBytes, gPhoto.id ? String(gPhoto.id) : '')
+            };
+        })
+        .filter(Boolean);
+
+    if (sizes.length === 0) {
+        sizes.push({
+            '@type': 'photoSize',
+            type: 'x',
+            width: 320,
+            height: 240,
+            photo: translateFile(gPhoto.id || 0, 10000, '')
+        });
+    }
+
+    return {
+        '@type': 'photo',
+        has_stickers: false,
+        minithumbnail: null,
+        sizes
+    };
+}
+
+export function translateDocument(gDoc) {
+    if (!gDoc) return null;
+    const size = gDoc.size ? Number(gDoc.size) : 0;
+    const mimeType = gDoc.mimeType || 'application/octet-stream';
+    const fileNameAttr = (gDoc.attributes || []).find(a => (a.className || a._) === 'DocumentAttributeFilename');
+    const fileName = fileNameAttr?.fileName || 'document';
+
+    return {
+        '@type': 'document',
+        file_name: fileName,
+        mime_type: mimeType,
+        minithumbnail: null,
+        thumbnail: null,
+        document: translateFile(gDoc.id, size, gDoc.id ? String(gDoc.id) : '')
+    };
+}
+
+export function translateAnimation(gDoc) {
+    if (!gDoc) return null;
+    const size = gDoc.size ? Number(gDoc.size) : 0;
+    const mimeType = gDoc.mimeType || 'video/mp4';
+
+    const videoAttr = (gDoc.attributes || []).find(a => (a.className || a._) === 'DocumentAttributeVideo');
+    const width = videoAttr?.w || 320;
+    const height = videoAttr?.h || 240;
+    const duration = videoAttr?.duration || 0;
+
+    return {
+        '@type': 'animation',
+        duration: Number(duration),
+        width: Number(width),
+        height: Number(height),
+        file_name: 'animation.mp4',
+        mime_type: mimeType,
+        has_stickers: false,
+        minithumbnail: null,
+        thumbnail: null,
+        animation: translateFile(gDoc.id, size, gDoc.id ? String(gDoc.id) : '')
+    };
+}
+
+export function translateVideo(gDoc) {
+    if (!gDoc) return null;
+    const size = gDoc.size ? Number(gDoc.size) : 0;
+    const mimeType = gDoc.mimeType || 'video/mp4';
+
+    const videoAttr = (gDoc.attributes || []).find(a => (a.className || a._) === 'DocumentAttributeVideo');
+    const width = videoAttr?.w || 320;
+    const height = videoAttr?.h || 240;
+    const duration = videoAttr?.duration || 0;
+
+    return {
+        '@type': 'video',
+        duration: Number(duration),
+        width: Number(width),
+        height: Number(height),
+        file_name: 'video.mp4',
+        mime_type: mimeType,
+        has_stickers: false,
+        minithumbnail: null,
+        thumbnail: null,
+        video: translateFile(gDoc.id, size, gDoc.id ? String(gDoc.id) : '')
+    };
+}
+
+export function translateAudio(gDoc) {
+    if (!gDoc) return null;
+    const size = gDoc.size ? Number(gDoc.size) : 0;
+    const mimeType = gDoc.mimeType || 'audio/mpeg';
+
+    const audioAttr = (gDoc.attributes || []).find(a => (a.className || a._) === 'DocumentAttributeAudio');
+    const duration = audioAttr?.duration || 0;
+    const title = audioAttr?.title || '';
+    const performer = audioAttr?.performer || '';
+
+    return {
+        '@type': 'audio',
+        duration: Number(duration),
+        title,
+        performer,
+        mime_type: mimeType,
+        album_cover_minithumbnail: null,
+        album_cover_thumbnail: null,
+        audio: translateFile(gDoc.id, size, gDoc.id ? String(gDoc.id) : '')
+    };
+}
+
+export function translateSticker(gDoc) {
+    if (!gDoc) return null;
+    const size = gDoc.size ? Number(gDoc.size) : 0;
+
+    const stickerAttr = (gDoc.attributes || []).find(a => (a.className || a._) === 'DocumentAttributeSticker');
+    const alt = stickerAttr?.alt || '';
+
+    const imgAttr = (gDoc.attributes || []).find(a => (a.className || a._) === 'DocumentAttributeImageSize');
+    const width = imgAttr?.w || 512;
+    const height = imgAttr?.h || 512;
+
+    return {
+        '@type': 'sticker',
+        set_id: '0',
+        width: Number(width),
+        height: Number(height),
+        emoji: alt,
+        is_lottie: false,
+        is_video: false,
+        thumbnail: null,
+        sticker: translateFile(gDoc.id, size, gDoc.id ? String(gDoc.id) : '')
+    };
+}
+
 // ─── User ────────────────────────────────────────────────────────────────────
 
 export function translateUser(user) {
@@ -238,7 +415,7 @@ function translateMessageContent(msg) {
     if (mediaClass === 'MessageMediaPhoto' || mediaClass === 'messageMediaPhoto') {
         return {
             '@type': 'messagePhoto',
-            photo: null,
+            photo: translatePhoto(media.photo),
             caption: {
                 '@type': 'formattedText',
                 text: msg.message || '',
@@ -257,31 +434,31 @@ function translateMessageContent(msg) {
         const isVideo = attrs.some(a => (a.className || a._) === 'DocumentAttributeVideo');
         const isAnim = attrs.some(a => (a.className || a._) === 'DocumentAttributeAnimated');
 
-        if (isSticker) return { '@type': 'messageSticker', sticker: null };
+        if (isSticker) return { '@type': 'messageSticker', sticker: translateSticker(doc) };
         if (isAnim)
             return {
                 '@type': 'messageAnimation',
-                animation: null,
+                animation: translateAnimation(doc),
                 caption: { '@type': 'formattedText', text: msg.message || '', entities: [] },
                 is_secret: false
             };
         if (isVideo)
             return {
                 '@type': 'messageVideo',
-                video: null,
+                video: translateVideo(doc),
                 caption: { '@type': 'formattedText', text: msg.message || '', entities: [] },
                 is_secret: false
             };
         if (isAudio)
             return {
                 '@type': 'messageAudio',
-                audio: null,
+                audio: translateAudio(doc),
                 caption: { '@type': 'formattedText', text: msg.message || '', entities: [] }
             };
 
         return {
             '@type': 'messageDocument',
-            document: null,
+            document: translateDocument(doc),
             caption: {
                 '@type': 'formattedText',
                 text: msg.message || '',

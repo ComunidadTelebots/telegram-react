@@ -112,27 +112,7 @@ class Dialog extends Component {
     }
 
     shouldComponentUpdate(nextProps, nextState) {
-        if (nextProps.chatId !== this.props.chatId) {
-            return true;
-        }
-
-        if (nextProps.t !== this.props.t) {
-            return true;
-        }
-
-        if (nextProps.theme !== this.props.theme) {
-            return true;
-        }
-
-        if (nextProps.hidden !== this.props.hidden) {
-            return true;
-        }
-
-        if (nextState.contextMenu !== this.state.contextMenu) {
-            return true;
-        }
-
-        return false;
+        return true;
     }
 
     componentDidMount() {
@@ -392,9 +372,6 @@ Dialog.defaultProps = {
     showSavedMessages: true
 };
 
-const enhance = compose(
-    withStyles(styles, { withTheme: true }),
-    withTranslation()
-);
+const enhance = compose(withStyles(styles, { withTheme: true }), withTranslation());
 
 export default enhance(Dialog);

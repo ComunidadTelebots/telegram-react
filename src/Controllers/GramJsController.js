@@ -27,12 +27,18 @@ class GramJsController extends EventEmitter {
         super();
         this.client = null;
         this.parameters = { useTestDC: false };
-        this.disableLog = true;
+        this.disableLog = false;
 
         // Cachés locales para reverse-lookup
         this._entityCache = new Map(); // chatId → entity raw (para access hash)
         this._chatCache = new Map(); // chatId → TDLib chat object
         this._userCache = new Map(); // userId → TDLib user object
+
+        this._initialDialogsLoaded = false;
+        this._initialDialogsResolver = null;
+        this._initialDialogsPromise = new Promise(resolve => {
+            this._initialDialogsResolver = resolve;
+        });
 
         // Auth state internos
         this._phone = null;
@@ -153,9 +159,13 @@ class GramJsController extends EventEmitter {
         await this._loadDialogs();
     };
 
-    _loadDialogs = async (offsetDate = 0, offsetId = 0, limit = 100) => {
+    _loadDialogs = async (offsetDate = undefined, offsetId = undefined, limit = 100) => {
         try {
-            const dialogs = await this.client.getDialogs({ limit, offsetDate, offsetId });
+            const dialogs = await this.client.getDialogs({
+                limit,
+                offsetDate: offsetDate || undefined,
+                offsetId: offsetId || undefined
+            });
 
             for (const dialog of dialogs) {
                 const entity = dialog.entity;
@@ -191,6 +201,11 @@ class GramJsController extends EventEmitter {
             this.clientUpdate({ '@type': 'clientUpdateDialogsReady' });
         } catch (err) {
             console.error('[GramJs] Error cargando diálogos:', err);
+        } finally {
+            this._initialDialogsLoaded = true;
+            if (this._initialDialogsResolver) {
+                this._initialDialogsResolver();
+            }
         }
     };
 
@@ -303,6 +318,42 @@ class GramJsController extends EventEmitter {
                 return this._searchChatMessages(req);
 
             // ── Opciones de idioma ────────────────────────────────────────────
+            case 'getLocalizationTargetInfo':
+                return {
+                    '@type': 'localizationTargetInfo',
+                    language_packs: [
+                        {
+                            '@type': 'languagePackInfo',
+                            id: 'en',
+                            base_language_pack_id: '',
+                            name: 'English',
+                            native_name: 'English',
+                            plural_code: 'en',
+                            is_official: true,
+                            is_rtl: false,
+                            is_beta: false,
+                            is_installed: true,
+                            total_string_count: 0,
+                            translated_string_count: 0,
+                            translation_url: ''
+                        },
+                        {
+                            '@type': 'languagePackInfo',
+                            id: 'es',
+                            base_language_pack_id: '',
+                            name: 'Spanish',
+                            native_name: 'Español',
+                            plural_code: 'es',
+                            is_official: true,
+                            is_rtl: false,
+                            is_beta: false,
+                            is_installed: true,
+                            total_string_count: 0,
+                            translated_string_count: 0,
+                            translation_url: ''
+                        }
+                    ]
+                };
             case 'getLanguagePackInfo':
                 return {
                     '@type': 'languagePackInfo',
@@ -355,6 +406,8 @@ class GramJsController extends EventEmitter {
         connectionRetries: 10,
         retryDelay: 1000,
         useWSS: true,
+        useIPV6: false,
+        testMode: false,
         appVersion: packageJson.version,
         deviceModel: getBrowser(),
         systemVersion: getOSName(),
@@ -394,8 +447,53 @@ class GramJsController extends EventEmitter {
                 } catch (_) {}
 
                 this.client = new TelegramClient(new StringSession(''), apiId, apiHash, this._buildClientOptions(dcId));
-                await this.client.connect();
-                result = await doSend();
+                this._setupUpdateHandler();
+
+                let connected = false;
+                for (let attempt = 1; attempt <= 5; attempt++) {
+                    try {
+                        console.log(`[GramJs] Intentando conectar a DC${dcId} (intento ${attempt})...`);
+                        await this.client.connect();
+                        await new Promise(resolve => setTimeout(resolve, 1000));
+                        if (this.client.connected) {
+                            connected = true;
+                            break;
+                        }
+                    } catch (connErr) {
+                        console.error(`[GramJs] Error al conectar a DC${dcId} en intento ${attempt}:`, connErr);
+                        await new Promise(resolve => setTimeout(resolve, 2000 * attempt));
+                    }
+                }
+
+                if (!connected) {
+                    throw new Error(`No se pudo conectar al DC${dcId} de destino.`);
+                }
+
+                let lastErr;
+                for (let sendAttempt = 1; sendAttempt <= 5; sendAttempt++) {
+                    try {
+                        console.log(`[GramJs] Enviando código en DC${dcId} (intento ${sendAttempt})...`);
+                        result = await doSend();
+                        break;
+                    } catch (sendErr) {
+                        lastErr = sendErr;
+                        console.warn(`[GramJs] Error al enviar código en DC${dcId} (intento ${sendAttempt}):`, sendErr);
+                        if (sendErr.message?.includes('Not connected') || sendErr.message?.includes('network')) {
+                            try {
+                                await this.client.disconnect();
+                            } catch (_) {}
+                            await new Promise(resolve => setTimeout(resolve, 1500 * sendAttempt));
+                            try {
+                                await this.client.connect();
+                            } catch (_) {}
+                        } else {
+                            throw sendErr;
+                        }
+                    }
+                }
+                if (!result) {
+                    throw lastErr;
+                }
             } else {
                 throw err;
             }
@@ -465,9 +563,17 @@ class GramJsController extends EventEmitter {
         return {};
     };
 
+    _resetInitialDialogsPromise = () => {
+        this._initialDialogsLoaded = false;
+        this._initialDialogsPromise = new Promise(resolve => {
+            this._initialDialogsResolver = resolve;
+        });
+    };
+
     _logOut = async () => {
         await this.client.invoke(new Api.auth.LogOut()).catch(() => {});
         localStorage.removeItem(SESSION_KEY);
+        this._resetInitialDialogsPromise();
         this._emitUpdate({
             '@type': 'updateAuthorizationState',
             authorization_state: { '@type': 'authorizationStateLoggingOut' }
@@ -486,6 +592,9 @@ class GramJsController extends EventEmitter {
     // ─── Chat handlers ───────────────────────────────────────────────────────
 
     _getChats = async req => {
+        if (!this._initialDialogsLoaded && this._initialDialogsPromise) {
+            await this._initialDialogsPromise;
+        }
         const chatIds = Array.from(this._chatCache.keys());
         return { '@type': 'chats', total_count: chatIds.length, chat_ids: chatIds };
     };
@@ -813,4 +922,5 @@ class GramJsController extends EventEmitter {
 }
 
 const controller = new GramJsController();
+window.controller = controller;
 export default controller;

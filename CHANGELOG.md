@@ -17,12 +17,36 @@
 ### Migración tdweb → GramJS (layer actual)
 - Instalado `telegram@2.26.21` (GramJS) — MTProto puro en JS con layer 158+
 - Creado `src/Controllers/GramJsController.js` — reemplaza la lógica de TDLib/WASM manteniendo la misma interfaz de eventos (`send`, `clientUpdate`, `emit('update')`, `emit('clientUpdate')`)
+- Robustecido el flujo de migración de DC en `GramJsController` para números de teléfono de regiones no locales (por ejemplo, DC1 de EE. UU. `PHONE_MIGRATE_1`):
+  - Añadido bucle de 5 intentos de conexión WSS con retardo de estabilización y backoff exponencial para evitar caídas de WebSocket instantáneas en el navegador.
+  - Asegurada la reinstanciación y reconexión de manejadores de eventos raw (`_setupUpdateHandler`) tras recrear el cliente en el nuevo DC de destino.
+  - Desactivado IPv6 (`useIPV6: false`) y forzado modo producción (`testMode: false`) en opciones del cliente para máxima estabilidad en navegadores.
+- Corregida pantalla en blanco (TypeError en `LanguagePicker.js`) tras iniciar sesión con éxito:
+  - Implementado el método `getLocalizationTargetInfo` en `GramJsController.js` para que retorne los paquetes de idiomas inglés y español conformes al esquema de TDLib.
+  - Securizado el método de renderizado en `LanguagePicker.js` agregando fallbacks seguros en caso de que las propiedades del store de localización no estén inicializadas.
+- Solucionado el problema de la lista de chats y mensajes vacía en el panel izquierdo al iniciar la app:
+  - Creado un mecanismo de sincronización asíncrona mediante `_initialDialogsPromise` en el constructor de `GramJsController.js`.
+  - Modificado el método `_getChats` para suspender la respuesta de forma segura hasta que la primera tanda de diálogos de GramJS se haya descargado y cacheado por completo, garantizando que el listado nunca retorne vacío por retraso de red.
+  - Corregido el bug de offsets de GramJS: Cambiado el comportamiento por defecto de `offsetDate` y `offsetId` en `_loadDialogs()` a `undefined` para evitar que el entero `0` filtrara de manera estricta y restrictiva todos los diálogos activos en el servidor de Telegram.
+- Implementación de Traductores Multimedia en `EntityTranslator.js` (Multimedia Gap):
+  - Añadidos traductores robustos (`translatePhoto`, `translateVideo`, `translateAnimation`, `translateAudio`, `translateDocument`, `translateSticker`) para mapear los objetos multimedia de GramJS a esquemas compatibles de TDLib.
+  - Solucionados crashes fatales en la interfaz de React (`TypeError: Cannot read properties of null (reading 'sizes' / 'minithumbnail')` en `Photo.js` y `Animation.js`) causados por los anteriores placeholders `null`.
+- Corrección del fallo de sincronización y reconciliación de React (`removeChild` Crash):
+  - Restaurada la mutación en sitio mediante `Object.assign(source1, source2)` en `ChatStore.assign` dentro de `ChatStore.js` para mantener en perfecta sincronía todas las referencias a los objetos `chat` en los componentes.
+  - Actualizado `shouldComponentUpdate()` en `Dialog.js` y `DialogContent.js` para retornar `true`, asegurando que las actualizaciones de mensajes y acciones en tiempo real (`updateChatLastMessage`, `updateUserChatAction`) no causen discrepancias en el Virtual DOM de React.
 - Creado `src/Utils/GramJs/EntityTranslator.js` — traduce entidades GramJS (User, Chat, Channel, Message) al formato TDLib que esperan los stores
 - Creado `src/Utils/GramJs/UpdateTranslator.js` — traduce raw MTProto updates al formato `updateXxx` de TDLib
 - `src/Controllers/TdLibController.js` ahora re-exporta `GramJsController` — todos los imports existentes siguen funcionando
 - `ApplicationStore`: eliminados `sendTdParameters` y `checkDatabaseEncryptionKey` (GramJsController gestiona el flujo de auth internamente)
 - Eliminada la dependencia de `tdweb` en el flujo principal (sigue en `package.json` hasta confirmar migración completa)
 - Suprimido aviso "app desactualizada" de `updateServiceNotification` (sustituido por `console.warn`)
+
+### Roadmap de Brechas con Telegram Android (Planificado)
+- **Persistencia de Base de Datos Offline (IndexedDB):** Implementación de una capa de base de datos persistente en el navegador utilizando `localForage` / `IndexedDB` para evitar descargas completas del servidor tras cada refresco de la página.
+- **Gestión Completa de Descargas / Subidas de Archivos:** Integrar `client.downloadMedia()` de GramJS para procesar descargas progresivas y de gran tamaño con barra de progreso interactiva en lugar de no-ops.
+- **Stickers Animados (TGS) y Reacciones Dinámicas:** Integración de un reproductor vectorial en WebAssembly (Lottie/TGS) para soportar stickers en movimiento y animaciones enriquecidas de reacciones a mensajes.
+- **Soporte Multicuenta:** Arquitectura para alternar y controlar múltiples sesiones activas asociadas a diferentes números telefónicos en caliente.
+- **Llamadas y Videollamadas WebRTC:** Mapear flujos de VoIP y audio/video en tiempo real para emular llamadas de grupo.
 
 ---
 
