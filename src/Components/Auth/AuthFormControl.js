@@ -28,7 +28,7 @@ class AuthFormControl extends React.Component {
         const { data } = this.state;
         if (data) return;
 
-        const input2 = 'data/countries.dat';
+        const input2 = `${process.env.PUBLIC_URL}/data/countries.dat`;
         try {
             const response = await fetch(input2);
             const text = await response.text();

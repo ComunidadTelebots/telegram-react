@@ -31,7 +31,7 @@ class ApplicationStore extends EventEmitter {
         this.messageId = null;
         this.statistics = new Map();
         this.authorizationState = null;
-        this.defaultPhone = null;
+        this.defaultPhone = process.env.REACT_APP_DEFAULT_PHONE || null;
         this.connectionState = null;
         this.isChatDetailsVisible = false;
         this.mediaViewerContent = null;
@@ -64,16 +64,17 @@ class ApplicationStore extends EventEmitter {
         switch (update['@type']) {
             case 'updateAuthorizationState': {
                 this.authorizationState = update.authorization_state;
+                console.log('[Auth] state:', update.authorization_state['@type']);
 
                 switch (update.authorization_state['@type']) {
                     case 'authorizationStateLoggingOut':
                         this.loggingOut = true;
                         break;
                     case 'authorizationStateWaitTdlibParameters':
-                        TdLibController.sendTdParameters();
+                        // GramJsController gestiona esto internamente
                         break;
                     case 'authorizationStateWaitEncryptionKey':
-                        TdLibController.send({ '@type': 'checkDatabaseEncryptionKey' });
+                        // GramJsController gestiona esto internamente
                         break;
                     case 'authorizationStateWaitPhoneNumber': {
                         if (this.setPhoneNumberRequest) {
@@ -151,7 +152,7 @@ class ApplicationStore extends EventEmitter {
                                 }
                                 break;
                             default:
-                                alert(text.text);
+                                console.warn('[ServiceNotification]', type, text.text);
                                 break;
                         }
                     }
