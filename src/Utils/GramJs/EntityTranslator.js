@@ -40,6 +40,8 @@ export function tdlibChatIdToInputPeer(chatId, entityCache) {
 
 // ─── Media helpers ───────────────────────────────────────────────────────────
 
+export const mediaCache = new Map();
+
 function translateFile(id, size = 0, remoteId = '') {
     const fileId = typeof id === 'bigint' ? Number(id) : Number(id || 0);
     return {
@@ -70,6 +72,9 @@ function translateFile(id, size = 0, remoteId = '') {
 
 export function translatePhoto(gPhoto) {
     if (!gPhoto) return null;
+    if (gPhoto.id) {
+        mediaCache.set(Number(gPhoto.id), gPhoto);
+    }
     const sizes = (gPhoto.sizes || [])
         .map(sz => {
             const type = sz.type || 'x';
@@ -106,6 +111,9 @@ export function translatePhoto(gPhoto) {
 
 export function translateDocument(gDoc) {
     if (!gDoc) return null;
+    if (gDoc.id) {
+        mediaCache.set(Number(gDoc.id), gDoc);
+    }
     const size = gDoc.size ? Number(gDoc.size) : 0;
     const mimeType = gDoc.mimeType || 'application/octet-stream';
     const fileNameAttr = (gDoc.attributes || []).find(a => (a.className || a._) === 'DocumentAttributeFilename');
@@ -123,6 +131,9 @@ export function translateDocument(gDoc) {
 
 export function translateAnimation(gDoc) {
     if (!gDoc) return null;
+    if (gDoc.id) {
+        mediaCache.set(Number(gDoc.id), gDoc);
+    }
     const size = gDoc.size ? Number(gDoc.size) : 0;
     const mimeType = gDoc.mimeType || 'video/mp4';
 
@@ -147,6 +158,9 @@ export function translateAnimation(gDoc) {
 
 export function translateVideo(gDoc) {
     if (!gDoc) return null;
+    if (gDoc.id) {
+        mediaCache.set(Number(gDoc.id), gDoc);
+    }
     const size = gDoc.size ? Number(gDoc.size) : 0;
     const mimeType = gDoc.mimeType || 'video/mp4';
 
@@ -171,6 +185,9 @@ export function translateVideo(gDoc) {
 
 export function translateAudio(gDoc) {
     if (!gDoc) return null;
+    if (gDoc.id) {
+        mediaCache.set(Number(gDoc.id), gDoc);
+    }
     const size = gDoc.size ? Number(gDoc.size) : 0;
     const mimeType = gDoc.mimeType || 'audio/mpeg';
 
@@ -193,6 +210,9 @@ export function translateAudio(gDoc) {
 
 export function translateSticker(gDoc) {
     if (!gDoc) return null;
+    if (gDoc.id) {
+        mediaCache.set(Number(gDoc.id), gDoc);
+    }
     const size = gDoc.size ? Number(gDoc.size) : 0;
 
     const stickerAttr = (gDoc.attributes || []).find(a => (a.className || a._) === 'DocumentAttributeSticker');
@@ -390,7 +410,23 @@ export function translateMessage(msg, chatId) {
         restriction_reason: '',
         ttl: 0,
         ttl_expires_in: 0,
-        via_bot_user_id: msg.viaBotId ? Number(msg.viaBotId) : 0
+        via_bot_user_id: msg.viaBotId ? Number(msg.viaBotId) : 0,
+        reactions: translateReactions(msg.reactions)
+    };
+}
+
+export function translateReactions(raw) {
+    if (!raw || !raw.results || raw.results.length === 0) return null;
+    return {
+        '@type': 'messageReactions',
+        reactions: raw.results
+            .filter(r => r.reaction && (r.reaction.emoticon || r.reaction._ === 'reactionEmoji'))
+            .map(r => ({
+                '@type': 'messageReaction',
+                reaction: r.reaction.emoticon || '',
+                total_count: r.count || 0,
+                is_chosen: r.chosenOrder != null
+            }))
     };
 }
 

@@ -16,6 +16,8 @@ import IconButton from '@material-ui/core/IconButton';
 import Button from '@material-ui/core/Button';
 import InsertEmoticonIcon from '../../Assets/Icons/Smile';
 import SendIcon from '../../Assets/Icons/Send';
+import MicIcon from '@material-ui/icons/Mic';
+import StopIcon from '@material-ui/icons/Stop';
 import AttachButton from './../ColumnMiddle/AttachButton';
 import CreatePollDialog from '../Popup/CreatePollDialog';
 import EditUrlDialog from '../Popup/EditUrlDialog';
@@ -66,7 +68,8 @@ class InputBoxControl extends Component {
         this.state = {
             chatId,
             replyToMessageId: getChatDraftReplyToMessageId(chatId),
-            editMessageId: 0
+            editMessageId: 0,
+            recording: false
         };
 
         document.addEventListener(
@@ -83,7 +86,16 @@ class InputBoxControl extends Component {
 
     shouldComponentUpdate(nextProps, nextState) {
         const { theme, t } = this.props;
-        const { chatId, newDraft, files, replyToMessageId, editMessageId, openEditMedia, openEditUrl } = this.state;
+        const {
+            chatId,
+            newDraft,
+            files,
+            replyToMessageId,
+            editMessageId,
+            openEditMedia,
+            openEditUrl,
+            recording
+        } = this.state;
 
         if (nextProps.theme !== theme) {
             return true;
@@ -118,6 +130,10 @@ class InputBoxControl extends Component {
         }
 
         if (nextState.openEditMedia !== openEditMedia) {
+            return true;
+        }
+
+        if (nextState.recording !== recording) {
             return true;
         }
 
@@ -823,6 +839,58 @@ class InputBoxControl extends Component {
         this.sendMessage(content, true, result => FileStore.uploadFile(result.content.document.document.id, result));
     };
 
+    handleVoiceStart = async () => {
+        if (this.state.recording) {
+            this.handleVoiceStop();
+            return;
+        }
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            this.audioChunks = [];
+            const mimeType = MediaRecorder.isTypeSupported('audio/webm;codecs=opus')
+                ? 'audio/webm;codecs=opus'
+                : 'audio/webm';
+            this.mediaRecorder = new MediaRecorder(stream, { mimeType });
+            this.mediaRecorder.ondataavailable = e => {
+                if (e.data.size > 0) this.audioChunks.push(e.data);
+            };
+            this.mediaRecorder.onstop = this._sendVoiceNote;
+            this._voiceStartTime = Date.now();
+            this.mediaRecorder.start();
+            this.setState({ recording: true });
+        } catch (err) {
+            console.error('[Voice] microphone error', err);
+        }
+    };
+
+    handleVoiceStop = () => {
+        if (this.mediaRecorder && this.mediaRecorder.state !== 'inactive') {
+            this.mediaRecorder.stop();
+            this.mediaRecorder.stream.getTracks().forEach(t => t.stop());
+        }
+        this.setState({ recording: false });
+    };
+
+    _sendVoiceNote = () => {
+        const { chatId, replyToMessageId } = this.state;
+        if (!this.audioChunks || this.audioChunks.length === 0) return;
+
+        const duration = Math.max(1, Math.round((Date.now() - this._voiceStartTime) / 1000));
+        const mimeType = this.mediaRecorder?.mimeType || 'audio/webm';
+        const blob = new Blob(this.audioChunks, { type: mimeType });
+        const file = new File([blob], 'voice.webm', { type: mimeType });
+
+        const content = {
+            '@type': 'inputMessageVoiceNote',
+            voice_note: { '@type': 'inputFileBlob', name: file.name, data: file },
+            duration,
+            waveform: ''
+        };
+
+        this.sendMessage(content, true, () => {});
+        this.audioChunks = [];
+    };
+
     handlePaste = event => {
         const items = (event.clipboardData || event.originalEvent.clipboardData).items;
 
@@ -1157,7 +1225,8 @@ class InputBoxControl extends Component {
             defaultText,
             defaultUrl,
             openEditUrl,
-            openEditMedia
+            openEditMedia,
+            recording
         } = this.state;
 
         const isMediaEditing = editMessageId > 0 && !isTextMessage(chatId, editMessageId);
@@ -1220,9 +1289,15 @@ class InputBoxControl extends Component {
                                     />
                                 )}
 
-                                {/*<IconButton>*/}
-                                {/*<KeyboardVoiceIcon />*/}
-                                {/*</IconButton>*/}
+                                {!Boolean(editMessageId) && (
+                                    <IconButton
+                                        size='small'
+                                        aria-label={recording ? 'Stop recording' : 'Record voice'}
+                                        onClick={this.handleVoiceStart}
+                                        style={recording ? { color: '#e53935' } : {}}>
+                                        {recording ? <StopIcon /> : <MicIcon />}
+                                    </IconButton>
+                                )}
                             </div>
                         </div>
                     </div>
@@ -1259,9 +1334,6 @@ class InputBoxControl extends Component {
     }
 }
 
-const enhance = compose(
-    withStyles(styles, { withTheme: true }),
-    withTranslation()
-);
+const enhance = compose(withStyles(styles, { withTheme: true }), withTranslation());
 
 export default enhance(InputBoxControl);

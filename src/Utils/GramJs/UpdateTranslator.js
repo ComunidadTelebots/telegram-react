@@ -2,7 +2,13 @@
  * Traduce los raw updates de GramJS/MTProto al formato updateXxx que esperan los stores.
  */
 
-import { peerToTdlibChatId, translateMessage, translateUser, translateUserStatus } from './EntityTranslator';
+import {
+    peerToTdlibChatId,
+    translateMessage,
+    translateUser,
+    translateUserStatus,
+    translateReactions
+} from './EntityTranslator';
 
 export function translateUpdate(update) {
     if (!update) return null;
@@ -51,6 +57,10 @@ export function translateUpdate(update) {
         // ── Draft ────────────────────────────────────────────────────────────
         case 'UpdateDraftMessage':
             return draftMessage(update);
+
+        // ── Reacciones ───────────────────────────────────────────────────────
+        case 'UpdateMessageReactions':
+            return messageReactions(update);
 
         default:
             return null;
@@ -136,6 +146,7 @@ function typing(update) {
         '@type': 'updateUserChatAction',
         chat_id: chatId,
         message_thread_id: 0,
+        user_id: userId,
         sender_id: { '@type': 'messageSenderUser', user_id: userId },
         action: { '@type': 'chatActionTyping' }
     };
@@ -206,5 +217,16 @@ function draftMessage(update) {
                   }
                 : null,
         order: '0'
+    };
+}
+
+function messageReactions(update) {
+    const chatId = peerToTdlibChatId(update.peer);
+    if (!chatId) return null;
+    return {
+        '@type': 'updateMessageReactions',
+        chat_id: chatId,
+        message_id: update.msgId || 0,
+        reactions: translateReactions(update.reactions)
     };
 }

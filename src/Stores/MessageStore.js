@@ -68,6 +68,17 @@ class MessageStore extends EventEmitter {
                 this.emit('updateMessageViews', update);
                 break;
             }
+            case 'updateMessageReactions': {
+                const chat = this.items.get(update.chat_id);
+                if (chat) {
+                    const message = chat.get(update.message_id);
+                    if (message) {
+                        message.reactions = update.reactions;
+                    }
+                }
+                this.emit('updateMessageReactions', update);
+                break;
+            }
             case 'updateMessageContent': {
                 const chat = this.items.get(update.chat_id);
                 if (chat) {

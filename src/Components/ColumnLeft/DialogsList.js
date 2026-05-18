@@ -98,6 +98,7 @@ class DialogsList extends React.Component {
     }
 
     componentDidMount() {
+        this._isMounted = true;
         this.loadFirstSlice();
 
         AppStore.on('updateAuthorizationState', this.onUpdateAuthorizationState);
@@ -113,6 +114,8 @@ class DialogsList extends React.Component {
     }
 
     componentWillUnmount() {
+        this._isMounted = false;
+
         AppStore.off('updateAuthorizationState', this.onUpdateAuthorizationState);
 
         ChatStore.off('updateChatDraftMessage', this.onUpdateChatOrder);
@@ -134,13 +137,13 @@ class DialogsList extends React.Component {
             this.hiddenChats.delete(chatId);
         }
 
-        this.forceUpdate();
+        if (this._isMounted) this.forceUpdate();
     };
 
     onUpdateAuthorizationState = update => {
         const { authorization_state: authorizationState } = update;
 
-        this.setState({ authorizationState }, () => this.loadFirstSlice());
+        if (this._isMounted) this.setState({ authorizationState }, () => this.loadFirstSlice());
     };
 
     onFastUpdatingComplete = update => {
@@ -246,7 +249,7 @@ class DialogsList extends React.Component {
             return;
         }
 
-        this.setState({ chats: orderedChatIds }, callback);
+        if (this._isMounted) this.setState({ chats: orderedChatIds }, callback);
     }
 
     static isDifferentOrder(oldChatIds, newChatIds) {
@@ -340,11 +343,11 @@ class DialogsList extends React.Component {
 
         const { chats } = this.state;
 
-        this.setState({ chats: (chats || []).concat(chatIds) }, callback);
+        if (this._isMounted) this.setState({ chats: (chats || []).concat(chatIds) }, callback);
     }
 
     replaceChats(chats, callback) {
-        this.setState({ chats }, callback);
+        if (this._isMounted) this.setState({ chats }, callback);
     }
 
     scrollToTop() {

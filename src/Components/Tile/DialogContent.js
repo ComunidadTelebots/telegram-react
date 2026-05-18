@@ -32,6 +32,7 @@ class DialogContent extends React.Component {
     }
 
     componentDidMount() {
+        this._isMounted = true;
         ChatStore.on('clientUpdateFastUpdatingComplete', this.onFastUpdatingComplete);
         ChatStore.on('clientUpdateClearHistory', this.onClientUpdateClearHistory);
         ChatStore.on('updateChatDraftMessage', this.onUpdate);
@@ -41,6 +42,7 @@ class DialogContent extends React.Component {
     }
 
     componentWillUnmount() {
+        this._isMounted = false;
         ChatStore.off('clientUpdateFastUpdatingComplete', this.onFastUpdatingComplete);
         ChatStore.off('clientUpdateClearHistory', this.onClientUpdateClearHistory);
         ChatStore.off('updateChatDraftMessage', this.onUpdate);
@@ -54,12 +56,12 @@ class DialogContent extends React.Component {
 
         if (chatId === update.chatId) {
             this.clearHistory = update.inProgress;
-            this.forceUpdate();
+            if (this._isMounted) this.forceUpdate();
         }
     };
 
-    onFastUpdatingComplete = update => {
-        this.forceUpdate();
+    onFastUpdatingComplete = () => {
+        if (this._isMounted) this.forceUpdate();
     };
 
     onUpdate = update => {
@@ -67,7 +69,7 @@ class DialogContent extends React.Component {
 
         if (chatId !== update.chat_id) return;
 
-        this.forceUpdate();
+        if (this._isMounted) this.forceUpdate();
     };
 
     render() {

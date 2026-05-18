@@ -20,6 +20,7 @@ import UserTile from '../Tile/UserTile';
 import ChatTile from '../Tile/ChatTile';
 import UnreadSeparator from './UnreadSeparator';
 import WebPage from './Media/WebPage';
+import Reactions from './Reactions';
 import {
     getEmojiMatches,
     getText,
@@ -422,6 +423,26 @@ class Message extends Component {
         deleteMessages(chatId, [messageId]);
     };
 
+    handleCopy = event => {
+        const { chatId, messageId } = this.props;
+        this.handleCloseContextMenu(event);
+
+        const message = MessageStore.get(chatId, messageId);
+        if (!message) return;
+
+        const { content } = message;
+        let text = '';
+        if (content['@type'] === 'messageText') {
+            text = content.text?.text || '';
+        } else if (content.caption) {
+            text = content.caption.text || '';
+        }
+
+        if (text && navigator.clipboard) {
+            navigator.clipboard.writeText(text).catch(() => {});
+        }
+    };
+
     render() {
         // console.log('[m] render', this.props.messageId);
         const { t, classes, chatId, messageId, showUnreadSeparator, showTail, showTitle } = this.props;
@@ -474,6 +495,10 @@ class Message extends Component {
         const canBeDeleted = message.can_be_deleted_only_for_self || message.can_be_deleted_for_all_users;
         const canBeSelected = !MessageStore.hasSelectedMessage(chatId, messageId);
         const canBeEdited = canMessageBeEdited(chatId, messageId);
+        const canBeCopied =
+            message.content['@type'] === 'messageText'
+                ? !!(message.content.text && message.content.text.text)
+                : !!(message.content.caption && message.content.caption.text);
         const withBubble =
             message.content['@type'] !== 'messageSticker' && message.content['@type'] !== 'messageVideoNote';
 
@@ -520,6 +545,7 @@ class Message extends Component {
                             {text}
                         </div>
                         {webPage && <WebPage chatId={chatId} messageId={messageId} openMedia={this.openMedia} />}
+                        <Reactions chatId={chatId} messageId={messageId} />
                         {/*{!showTitle && meta}*/}
                     </div>
                     {/*{!showTitle && meta}*/}
@@ -541,6 +567,7 @@ class Message extends Component {
                     onMouseDown={e => e.stopPropagation()}>
                     <MenuList classes={{ root: classes.menuListRoot }} onClick={e => e.stopPropagation()}>
                         {canBeReplied && <MenuItem onClick={this.handleReply}>{t('Reply')}</MenuItem>}
+                        {canBeCopied && <MenuItem onClick={this.handleCopy}>{t('Copy')}</MenuItem>}
                         {canBePinned && (
                             <MenuItem onClick={this.handlePin}>{isPinned ? t('Unpin') : t('Pin')}</MenuItem>
                         )}
@@ -555,11 +582,6 @@ class Message extends Component {
     }
 }
 
-const enhance = compose(
-    withSaveRef(),
-    withStyles(styles, { withTheme: true }),
-    withTranslation(),
-    withRestoreRef()
-);
+const enhance = compose(withSaveRef(), withStyles(styles, { withTheme: true }), withTranslation(), withRestoreRef());
 
 export default enhance(Message);

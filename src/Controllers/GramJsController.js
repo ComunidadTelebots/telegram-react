@@ -5,6 +5,7 @@
  */
 
 import { EventEmitter } from 'events';
+import { unstable_batchedUpdates } from 'react-dom';
 import { TelegramClient } from 'telegram';
 import { StringSession } from 'telegram/sessions';
 import { Api } from 'telegram';
@@ -17,7 +18,8 @@ import {
     translateChat,
     translateMessage,
     entityToTdlibChatId,
-    tdlibChatIdToInputPeer
+    tdlibChatIdToInputPeer,
+    mediaCache
 } from '../Utils/GramJs/EntityTranslator';
 
 const SESSION_KEY = 'tg_gramjs_session';
@@ -33,6 +35,9 @@ class GramJsController extends EventEmitter {
         this._entityCache = new Map(); // chatId → entity raw (para access hash)
         this._chatCache = new Map(); // chatId → TDLib chat object
         this._userCache = new Map(); // userId → TDLib user object
+
+        this._downloadedFiles = new Map();
+        this._downloadingFiles = new Set();
 
         this._initialDialogsLoaded = false;
         this._initialDialogsResolver = null;
@@ -226,12 +231,12 @@ class GramJsController extends EventEmitter {
 
     clientUpdate = update => {
         if (!this.disableLog) console.log('[GramJs] clientUpdate', update);
-        this.emit('clientUpdate', update);
+        unstable_batchedUpdates(() => this.emit('clientUpdate', update));
     };
 
     _emitUpdate = update => {
         if (!this.disableLog) console.log('[GramJs] update', update);
-        this.emit('update', update);
+        unstable_batchedUpdates(() => this.emit('update', update));
     };
 
     send = async request => {
@@ -387,8 +392,15 @@ class GramJsController extends EventEmitter {
             case 'removeNotification':
                 return {};
 
+            // ── Reacciones ────────────────────────────────────────────────────
+            case 'sendMessageReaction':
+                return this._sendReaction(req);
+
             // ── Archivos ──────────────────────────────────────────────────────
             case 'downloadFile':
+                return this._downloadFile(req);
+            case 'readFile':
+                return this._readFile(req);
             case 'cancelDownloadFile':
             case 'uploadFile':
                 return {};
@@ -693,10 +705,21 @@ class GramJsController extends EventEmitter {
 
     _sendMessage = async req => {
         const { chat_id, input_message_content, reply_to_message_id = 0 } = req;
+        const contentType = input_message_content?.['@type'];
+
         try {
             const inputPeer = tdlibChatIdToInputPeer(chat_id, this._entityCache);
-            const text = input_message_content?.text?.text || '';
 
+            if (
+                contentType === 'inputMessageDocument' ||
+                contentType === 'inputMessageVoiceNote' ||
+                contentType === 'inputMessageAudio' ||
+                contentType === 'inputMessagePhoto'
+            ) {
+                return this._sendFile(chat_id, inputPeer, input_message_content, reply_to_message_id);
+            }
+
+            const text = input_message_content?.text?.text || '';
             const result = await this.client.sendMessage(inputPeer, {
                 message: text,
                 replyTo: reply_to_message_id || undefined,
@@ -710,6 +733,58 @@ class GramJsController extends EventEmitter {
             }
         } catch (err) {
             console.error('[GramJs] sendMessage error', err);
+            throw err;
+        }
+        return {};
+    };
+
+    _sendFile = async (chatId, inputPeer, content, replyToMessageId) => {
+        const contentType = content['@type'];
+        try {
+            let file, caption, voiceNote, attributes;
+
+            if (contentType === 'inputMessageDocument') {
+                file = content.document?.data;
+                caption = content.caption?.text || '';
+            } else if (contentType === 'inputMessageVoiceNote') {
+                const raw = content.voice_note?.data;
+                file = raw instanceof File ? raw : new File([raw], 'voice.webm', { type: 'audio/webm' });
+                voiceNote = true;
+                caption = '';
+                attributes = [new Api.DocumentAttributeAudio({ voice: true, duration: content.duration || 0 })];
+            } else if (contentType === 'inputMessageAudio') {
+                file = content.audio?.data;
+                caption = content.caption?.text || '';
+                attributes = [
+                    new Api.DocumentAttributeAudio({
+                        duration: content.duration || 0,
+                        title: content.title || '',
+                        performer: content.performer || ''
+                    })
+                ];
+            } else if (contentType === 'inputMessagePhoto') {
+                file = content.photo?.data;
+                caption = content.caption?.text || '';
+            }
+
+            if (!file) return {};
+
+            const result = await this.client.sendFile(inputPeer, {
+                file,
+                caption: caption || '',
+                replyTo: replyToMessageId || undefined,
+                voiceNote: voiceNote || false,
+                attributes: attributes && attributes.length ? attributes : undefined,
+                workers: 1
+            });
+
+            const tdMessage = translateMessage(result, chatId);
+            if (tdMessage) {
+                this._emitUpdate({ '@type': 'updateNewMessage', message: tdMessage });
+                return tdMessage;
+            }
+        } catch (err) {
+            console.error('[GramJs] sendFile error', contentType, err);
             throw err;
         }
         return {};
@@ -904,6 +979,138 @@ class GramJsController extends EventEmitter {
             /* no-op */
         }
         return { '@type': 'messages', messages: [], total_count: 0 };
+    };
+
+    // ─── Reaction handlers ───────────────────────────────────────────────────
+
+    _sendReaction = async req => {
+        const { chat_id, message_id, reaction } = req;
+        try {
+            const inputPeer = tdlibChatIdToInputPeer(chat_id, this._entityCache);
+            await this.client.invoke(
+                new Api.messages.SendReaction({
+                    peer: inputPeer,
+                    msgId: message_id,
+                    reaction: reaction ? [new Api.ReactionEmoji({ emoticon: reaction })] : []
+                })
+            );
+        } catch (err) {
+            console.error('[GramJs] sendReaction error', err);
+        }
+        return {};
+    };
+
+    // ─── File handlers ───────────────────────────────────────────────────────
+
+    _emitUpdateFile = (fileId, blob, isComplete = false, isActive = false) => {
+        const size = blob ? blob.size : 0;
+        this._emitUpdate({
+            '@type': 'updateFile',
+            file: {
+                '@type': 'file',
+                id: fileId,
+                size,
+                expected_size: size,
+                local: {
+                    '@type': 'localFile',
+                    path: '',
+                    can_be_downloaded: !isComplete,
+                    can_be_deleted: false,
+                    is_downloading_active: isActive,
+                    is_downloading_completed: isComplete,
+                    downloaded_prefix_size: isComplete ? size : 0,
+                    downloaded_size: isComplete ? size : 0
+                },
+                remote: {
+                    '@type': 'remoteFile',
+                    id: String(fileId),
+                    unique_id: String(fileId),
+                    is_uploading_active: false,
+                    is_uploading_completed: true,
+                    uploaded_size: size
+                }
+            }
+        });
+    };
+
+    _downloadFile = async req => {
+        const { file_id } = req;
+        const fileId = typeof file_id === 'number' ? file_id : Number(file_id);
+
+        if (this._downloadedFiles.has(fileId)) {
+            this._emitUpdateFile(fileId, this._downloadedFiles.get(fileId), true);
+            return { '@type': 'file', id: fileId };
+        }
+        if (this._downloadingFiles.has(fileId)) {
+            return { '@type': 'file', id: fileId };
+        }
+
+        const gMedia = mediaCache.get(fileId);
+        if (!gMedia) {
+            console.warn('[GramJs] downloadFile: sin entrada en mediaCache para', fileId);
+            return { '@type': 'file', id: fileId };
+        }
+
+        this._downloadingFiles.add(fileId);
+        this._emitUpdateFile(fileId, null, false, true);
+
+        try {
+            const cls = gMedia.className || gMedia._;
+            let inputLocation;
+            const dcId = gMedia.dcId;
+
+            if (cls === 'Photo') {
+                const biggestSize = (gMedia.sizes || []).slice(-1)[0];
+                inputLocation = new Api.InputPhotoFileLocation({
+                    id: gMedia.id,
+                    accessHash: gMedia.accessHash,
+                    fileReference: gMedia.fileReference,
+                    thumbSize: biggestSize ? biggestSize.type : 'x'
+                });
+            } else {
+                inputLocation = new Api.InputDocumentFileLocation({
+                    id: gMedia.id,
+                    accessHash: gMedia.accessHash,
+                    fileReference: gMedia.fileReference,
+                    thumbSize: ''
+                });
+            }
+
+            const fileSize = gMedia.size ? Number(gMedia.size) : 0;
+            const buffer = await this.client.downloadFile(inputLocation, { dcId, fileSize, workers: 1 });
+            const blob = new Blob([buffer]);
+            this._downloadedFiles.set(fileId, blob);
+            this._downloadingFiles.delete(fileId);
+            this._emitUpdateFile(fileId, blob, true);
+        } catch (err) {
+            console.error('[GramJs] downloadFile error', fileId, err);
+            this._downloadingFiles.delete(fileId);
+            this._emitUpdateFile(fileId, null, false);
+        }
+
+        return { '@type': 'file', id: fileId };
+    };
+
+    _readFile = async req => {
+        const { file_id } = req;
+        const fileId = typeof file_id === 'number' ? file_id : Number(file_id);
+        const blob = this._downloadedFiles.get(fileId);
+        if (!blob) {
+            return { '@type': 'filePart', data: '' };
+        }
+        try {
+            const arrayBuffer = await blob.arrayBuffer();
+            const uint8 = new Uint8Array(arrayBuffer);
+            let binary = '';
+            const chunkSize = 8192;
+            for (let i = 0; i < uint8.length; i += chunkSize) {
+                binary += String.fromCharCode(...uint8.subarray(i, i + chunkSize));
+            }
+            return { '@type': 'filePart', data: binary };
+        } catch (err) {
+            console.error('[GramJs] readFile error', fileId, err);
+            return { '@type': 'filePart', data: '' };
+        }
     };
 
     // ─── Compatibilidad con TdLibController ─────────────────────────────────

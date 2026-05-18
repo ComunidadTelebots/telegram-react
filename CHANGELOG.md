@@ -41,7 +41,39 @@
 - Eliminada la dependencia de `tdweb` en el flujo principal (sigue en `package.json` hasta confirmar migración completa)
 - Suprimido aviso "app desactualizada" de `updateServiceNotification` (sustituido por `console.warn`)
 
+### Novedades (sesión 2025-05-18)
+- **Copiar texto del mensaje** — nuevo ítem "Copy" en el menú contextual de mensajes; copia el texto o caption al portapapeles con `navigator.clipboard.writeText` (`Message.js`)
+- **Nota de voz** — botón de micrófono en la barra de entrada (rojo cuando graba); usa `MediaRecorder` con `audio/webm;codecs=opus`; al detener envía automáticamente como `inputMessageVoiceNote` (`InputBoxControl.js`)
+- **Envío de archivos y fotos vía GramJS** — `_sendMessage` en `GramJsController` ahora detecta `inputMessageDocument`, `inputMessageVoiceNote`, `inputMessageAudio` e `inputMessagePhoto` y los enruta a `_sendFile` que usa `client.sendFile()` con los atributos MTProto correctos
+
+### Correcciones recientes (sesión 2025-05-18)
+- `DialogsList`: guard `_isMounted` en todos los `setState` y `forceUpdate` para evitar actualizaciones en componentes desmontados
+- `DialogContent`: guard `_isMounted` en todos los `forceUpdate`
+- `GramJsController`: `_emitUpdate` y `clientUpdate` envueltos en `unstable_batchedUpdates` — corrige el crash `removeChild` causado por múltiples `forceUpdate` síncronos disparados desde el EventEmitter fuera del contexto de React
+- `UpdateTranslator`: `updateUserChatAction` ahora incluye `user_id` a nivel raíz para compatibilidad con `ChatStore` (que lee el formato TDLib v3/v4)
+- `GramJsController`: implementados `_downloadFile`, `_emitUpdateFile` y `_readFile` para descarga y lectura de archivos multimedia vía GramJS (`InputPhotoFileLocation` / `InputDocumentFileLocation`)
+- `public/index.html`: polyfill `window.process` para contextos eval/worker de GramJS (`path-browserify`)
+
 ### Roadmap de Brechas con Telegram Android (Planificado)
+
+#### Alta prioridad
+- ~~**Nota de voz**~~ ✅ implementado — grabación con `MediaRecorder` (webm/opus), botón en InputBoxControl, envío vía `GramJS sendFile`
+- ~~**Reacciones a mensajes**~~ ✅ implementado — `Reactions.js` renderiza burbujas de emoji con contador; picker rápido (6 emojis) al pulsar "+"; toggle para añadir/quitar; `messages.SendReaction` vía GramJS; `updateMessageReactions` en UpdateTranslator, MessageStore y EntityTranslator
+
+#### Prioridad media
+- ~~**Copiar texto del mensaje**~~ ✅ implementado — ítem "Copy" en menú contextual con `navigator.clipboard.writeText`
+- **Mensajes programados** — UI de selector de fecha/hora y envío con `schedule_date` en GramJS
+- **Crear grupos y canales desde la UI** — diálogo de creación conectado a `channels.CreateChannel` / `messages.CreateChat`
+- **Persistencia offline (IndexedDB)** — capa de caché con `localForage` para evitar descargas completas del servidor tras cada refresco
+
+#### Prioridad baja
+- **Topics en supergrupos** — soporte de `message_thread_id` en historial y envío
+- **Carpetas de chats** (chat filters) — `DialogFilter` de MTProto, panel de gestión en el sidebar
+- **Stickers animados (TGS)** — reproductor Lottie/WASM para stickers y reacciones animadas
+- **Soporte multicuenta** — arquitectura para alternar sesiones activas de distintos números
+- **Llamadas y videollamadas WebRTC** — flujos VoIP/audio/video para llamadas de grupo
+
+#### Planificado anteriormente
 - **Persistencia de Base de Datos Offline (IndexedDB):** Implementación de una capa de base de datos persistente en el navegador utilizando `localForage` / `IndexedDB` para evitar descargas completas del servidor tras cada refresco de la página.
 - **Gestión Completa de Descargas / Subidas de Archivos:** Integrar `client.downloadMedia()` de GramJS para procesar descargas progresivas y de gran tamaño con barra de progreso interactiva en lugar de no-ops.
 - **Stickers Animados (TGS) y Reacciones Dinámicas:** Integración de un reproductor vectorial en WebAssembly (Lottie/TGS) para soportar stickers en movimiento y animaciones enriquecidas de reacciones a mensajes.
