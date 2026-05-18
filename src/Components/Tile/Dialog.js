@@ -112,22 +112,23 @@ class Dialog extends Component {
     }
 
     shouldComponentUpdate(nextProps, nextState) {
-        return true;
+        return nextState !== this.state || nextProps !== this.props;
     }
 
     componentDidMount() {
+        this._isMounted = true;
         ApplicationStore.on('clientUpdateChatId', this.onClientUpdateChatId);
     }
 
     componentWillUnmount() {
+        this._isMounted = false;
         ApplicationStore.off('clientUpdateChatId', this.onClientUpdateChatId);
     }
 
     onClientUpdateChatId = update => {
         const { chatId } = this.props;
-
         if (chatId === update.previousChatId || chatId === update.nextChatId) {
-            this.forceUpdate();
+            if (this._isMounted) this.setState(s => ({ ...s }));
         }
     };
 
@@ -289,6 +290,7 @@ class Dialog extends Component {
         if (hidden) return null;
 
         const chat = ChatStore.get(chatId);
+        if (!chat) return null;
         const { is_pinned } = chat;
         const currentChatId = ApplicationStore.getChatId();
         const isSelected = currentChatId === chatId;

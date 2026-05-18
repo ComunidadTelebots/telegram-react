@@ -32,11 +32,7 @@ module.exports = override(
         },
         plugins: [
             ...config.plugins,
-            // GramJS usa process.env internamente — lo proveemos en todos los contextos
             new webpack.ProvidePlugin({ process: 'process/browser' }),
-            new webpack.DefinePlugin({
-                'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV || 'development'),
-            }),
         ],
     }),
     config => addWebpackBundleAnalyzer(config,{

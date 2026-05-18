@@ -18,6 +18,12 @@ import InsertEmoticonIcon from '../../Assets/Icons/Smile';
 import SendIcon from '../../Assets/Icons/Send';
 import MicIcon from '@material-ui/icons/Mic';
 import StopIcon from '@material-ui/icons/Stop';
+import ScheduleIcon from '@material-ui/icons/Schedule';
+import Dialog from '@material-ui/core/Dialog';
+import DialogTitle from '@material-ui/core/DialogTitle';
+import DialogContent from '@material-ui/core/DialogContent';
+import DialogActions from '@material-ui/core/DialogActions';
+import TextField from '@material-ui/core/TextField';
 import AttachButton from './../ColumnMiddle/AttachButton';
 import CreatePollDialog from '../Popup/CreatePollDialog';
 import EditUrlDialog from '../Popup/EditUrlDialog';
@@ -69,7 +75,10 @@ class InputBoxControl extends Component {
             chatId,
             replyToMessageId: getChatDraftReplyToMessageId(chatId),
             editMessageId: 0,
-            recording: false
+            recording: false,
+            scheduleDialogOpen: false,
+            scheduleDateValue: '',
+            pendingScheduleContent: null
         };
 
         document.addEventListener(
@@ -134,6 +143,10 @@ class InputBoxControl extends Component {
         }
 
         if (nextState.recording !== recording) {
+            return true;
+        }
+
+        if (nextState.scheduleDialogOpen !== this.state.scheduleDialogOpen) {
             return true;
         }
 
@@ -1015,7 +1028,52 @@ class InputBoxControl extends Component {
         }
     }
 
-    sendMessage = async (content, clearDraft, callback) => {
+    _scheduleIsoDefault = () => {
+        const d = new Date(Date.now() + 3600000);
+        const pad = n => String(n).padStart(2, '0');
+        return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(
+            d.getMinutes()
+        )}`;
+    };
+
+    handleSubmitScheduled = () => {
+        const { editMessageId } = this.state;
+        if (editMessageId) {
+            this.handleSubmit();
+            return;
+        }
+        const element = this.newMessageRef.current;
+        if (!element) return;
+        const innerHTML = element.innerHTML;
+        if (!innerHTML || innerHTML === '<br>') return;
+        const { text, entities } = getEntities(element);
+        if (!text) return;
+        const content = {
+            '@type': 'inputMessageText',
+            text: { '@type': 'formattedText', text, entities },
+            clear_draft: true
+        };
+        this.setState({
+            pendingScheduleContent: { content, clearDraft: true, callback: () => {} },
+            scheduleDateValue: this._scheduleIsoDefault(),
+            scheduleDialogOpen: true
+        });
+    };
+
+    handleScheduleConfirm = () => {
+        const { scheduleDateValue, pendingScheduleContent } = this.state;
+        if (!scheduleDateValue || !pendingScheduleContent) return;
+        const scheduleDate = Math.floor(new Date(scheduleDateValue).getTime() / 1000);
+        this.setState({ scheduleDialogOpen: false, pendingScheduleContent: null });
+        const { content, clearDraft, callback } = pendingScheduleContent;
+        this.sendMessage(content, clearDraft, callback, scheduleDate);
+    };
+
+    handleScheduleCancel = () => {
+        this.setState({ scheduleDialogOpen: false, pendingScheduleContent: null });
+    };
+
+    sendMessage = async (content, clearDraft, callback, scheduleDate = 0) => {
         const { chatId, replyToMessageId } = this.state;
 
         if (!chatId) return;
@@ -1028,7 +1086,8 @@ class InputBoxControl extends Component {
                 '@type': 'sendMessage',
                 chat_id: chatId,
                 reply_to_message_id: replyToMessageId,
-                input_message_content: content
+                input_message_content: content,
+                schedule_date: scheduleDate || undefined
             });
 
             this.setState({ replyToMessageId: 0 }, () => {
@@ -1226,7 +1285,9 @@ class InputBoxControl extends Component {
             defaultUrl,
             openEditUrl,
             openEditMedia,
-            recording
+            recording,
+            scheduleDialogOpen,
+            scheduleDateValue
         } = this.state;
 
         const isMediaEditing = editMessageId > 0 && !isTextMessage(chatId, editMessageId);
@@ -1301,6 +1362,16 @@ class InputBoxControl extends Component {
                             </div>
                         </div>
                     </div>
+                    {!Boolean(editMessageId) && (
+                        <IconButton
+                            size='small'
+                            aria-label='Programar mensaje'
+                            title='Enviar programado'
+                            onClick={this.handleSubmitScheduled}
+                            style={{ marginRight: 2 }}>
+                            <ScheduleIcon fontSize='small' />
+                        </IconButton>
+                    )}
                     <Button
                         variant='contained'
                         disableElevation
@@ -1329,6 +1400,33 @@ class InputBoxControl extends Component {
                     onDone={this.handleDoneEditMedia}
                     onCancel={this.handleCancelEditMedia}
                 />
+                <Dialog open={scheduleDialogOpen} onClose={this.handleScheduleCancel} maxWidth='xs' fullWidth>
+                    <DialogTitle>Programar mensaje</DialogTitle>
+                    <DialogContent>
+                        <TextField
+                            label='Fecha y hora'
+                            type='datetime-local'
+                            fullWidth
+                            value={scheduleDateValue}
+                            onChange={e => this.setState({ scheduleDateValue: e.target.value })}
+                            InputLabelProps={{ shrink: true }}
+                            inputProps={{ min: new Date().toISOString().slice(0, 16) }}
+                            style={{ marginTop: 8 }}
+                        />
+                    </DialogContent>
+                    <DialogActions>
+                        <Button onClick={this.handleScheduleCancel} color='default'>
+                            Cancelar
+                        </Button>
+                        <Button
+                            onClick={this.handleScheduleConfirm}
+                            color='primary'
+                            variant='contained'
+                            disabled={!scheduleDateValue}>
+                            Enviar programado
+                        </Button>
+                    </DialogActions>
+                </Dialog>
             </div>
         );
     }

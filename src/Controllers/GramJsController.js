@@ -234,9 +234,28 @@ class GramJsController extends EventEmitter {
         unstable_batchedUpdates(() => this.emit('clientUpdate', update));
     };
 
+    // Queue-based deferred batching: accumulates all synchronous _emitUpdate calls
+    // from a single GramJS event and flushes them in ONE React render cycle via
+    // a microtask. Prevents removeChild crashes caused by interleaved parent
+    // (DialogsList reorder) and child (DialogContent forceUpdate) updates.
+    _pendingUpdates = [];
+    _flushScheduled = false;
+
     _emitUpdate = update => {
         if (!this.disableLog) console.log('[GramJs] update', update);
-        unstable_batchedUpdates(() => this.emit('update', update));
+        this._pendingUpdates.push(update);
+        if (!this._flushScheduled) {
+            this._flushScheduled = true;
+            Promise.resolve().then(this._flushPendingUpdates);
+        }
+    };
+
+    _flushPendingUpdates = () => {
+        this._flushScheduled = false;
+        const updates = this._pendingUpdates.splice(0);
+        unstable_batchedUpdates(() => {
+            updates.forEach(u => this.emit('update', u));
+        });
     };
 
     send = async request => {
@@ -704,7 +723,7 @@ class GramJsController extends EventEmitter {
     };
 
     _sendMessage = async req => {
-        const { chat_id, input_message_content, reply_to_message_id = 0 } = req;
+        const { chat_id, input_message_content, reply_to_message_id = 0, schedule_date } = req;
         const contentType = input_message_content?.['@type'];
 
         try {
@@ -716,14 +735,15 @@ class GramJsController extends EventEmitter {
                 contentType === 'inputMessageAudio' ||
                 contentType === 'inputMessagePhoto'
             ) {
-                return this._sendFile(chat_id, inputPeer, input_message_content, reply_to_message_id);
+                return this._sendFile(chat_id, inputPeer, input_message_content, reply_to_message_id, schedule_date);
             }
 
             const text = input_message_content?.text?.text || '';
             const result = await this.client.sendMessage(inputPeer, {
                 message: text,
                 replyTo: reply_to_message_id || undefined,
-                parseMode: undefined
+                parseMode: undefined,
+                scheduleDate: schedule_date || undefined
             });
 
             const tdMessage = translateMessage(result, chat_id);
@@ -738,7 +758,7 @@ class GramJsController extends EventEmitter {
         return {};
     };
 
-    _sendFile = async (chatId, inputPeer, content, replyToMessageId) => {
+    _sendFile = async (chatId, inputPeer, content, replyToMessageId, scheduleDate) => {
         const contentType = content['@type'];
         try {
             let file, caption, voiceNote, attributes;
@@ -775,6 +795,7 @@ class GramJsController extends EventEmitter {
                 replyTo: replyToMessageId || undefined,
                 voiceNote: voiceNote || false,
                 attributes: attributes && attributes.length ? attributes : undefined,
+                scheduleDate: scheduleDate || undefined,
                 workers: 1
             });
 
@@ -1094,23 +1115,10 @@ class GramJsController extends EventEmitter {
     _readFile = async req => {
         const { file_id } = req;
         const fileId = typeof file_id === 'number' ? file_id : Number(file_id);
-        const blob = this._downloadedFiles.get(fileId);
-        if (!blob) {
-            return { '@type': 'filePart', data: '' };
-        }
-        try {
-            const arrayBuffer = await blob.arrayBuffer();
-            const uint8 = new Uint8Array(arrayBuffer);
-            let binary = '';
-            const chunkSize = 8192;
-            for (let i = 0; i < uint8.length; i += chunkSize) {
-                binary += String.fromCharCode(...uint8.subarray(i, i + chunkSize));
-            }
-            return { '@type': 'filePart', data: binary };
-        } catch (err) {
-            console.error('[GramJs] readFile error', fileId, err);
-            return { '@type': 'filePart', data: '' };
-        }
+        // Return the Blob directly so FileStore.setBlob stores a real Blob.
+        // The old binary-string path caused URL.createObjectURL to fail.
+        const blob = this._downloadedFiles.get(fileId) || null;
+        return { '@type': 'filePart', data: blob };
     };
 
     // ─── Compatibilidad con TdLibController ─────────────────────────────────

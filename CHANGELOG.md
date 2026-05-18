@@ -62,7 +62,7 @@
 
 #### Prioridad media
 - ~~**Copiar texto del mensaje**~~ ✅ implementado — ítem "Copy" en menú contextual con `navigator.clipboard.writeText`
-- **Mensajes programados** — UI de selector de fecha/hora y envío con `schedule_date` en GramJS
+- ~~**Mensajes programados**~~ ✅ implementado — botón de reloj (⏰) en InputBoxControl abre un dialog con `datetime-local`; `schedule_date` (Unix timestamp) se pasa a `_sendMessage` y `_sendFile` en GramJsController vía `scheduleDate` de GramJS
 - **Crear grupos y canales desde la UI** — diálogo de creación conectado a `channels.CreateChannel` / `messages.CreateChat`
 - **Persistencia offline (IndexedDB)** — capa de caché con `localForage` para evitar descargas completas del servidor tras cada refresco
 

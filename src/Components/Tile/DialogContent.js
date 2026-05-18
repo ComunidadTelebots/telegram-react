@@ -27,8 +27,13 @@ const styles = theme => ({
 });
 
 class DialogContent extends React.Component {
+    constructor(props) {
+        super(props);
+        this.state = { tick: 0 };
+    }
+
     shouldComponentUpdate(nextProps, nextState) {
-        return true;
+        return nextState.tick !== this.state.tick || nextProps.chatId !== this.props.chatId;
     }
 
     componentDidMount() {
@@ -53,23 +58,20 @@ class DialogContent extends React.Component {
 
     onClientUpdateClearHistory = update => {
         const { chatId } = this.props;
-
         if (chatId === update.chatId) {
             this.clearHistory = update.inProgress;
-            if (this._isMounted) this.forceUpdate();
+            if (this._isMounted) this.setState(s => ({ tick: s.tick + 1 }));
         }
     };
 
     onFastUpdatingComplete = () => {
-        if (this._isMounted) this.forceUpdate();
+        if (this._isMounted) this.setState(s => ({ tick: s.tick + 1 }));
     };
 
     onUpdate = update => {
         const { chatId } = this.props;
-
         if (chatId !== update.chat_id) return;
-
-        if (this._isMounted) this.forceUpdate();
+        if (this._isMounted) this.setState(s => ({ tick: s.tick + 1 }));
     };
 
     render() {
