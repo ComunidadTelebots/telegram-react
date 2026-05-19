@@ -43,7 +43,25 @@ class NewGroupDialog extends React.Component {
     }
 
     componentDidMount() {
-        this.loadContacts();
+        if (this.props.open) {
+            this.loadContacts();
+        }
+    }
+
+    componentDidUpdate(prevProps) {
+        if (this.props.open && !prevProps.open) {
+            this.setState({
+                step: 'select',
+                contacts: [],
+                loading: true,
+                selected: new Set(),
+                search: '',
+                groupName: '',
+                creating: false,
+                error: null
+            });
+            this.loadContacts();
+        }
     }
 
     loadContacts = async () => {
