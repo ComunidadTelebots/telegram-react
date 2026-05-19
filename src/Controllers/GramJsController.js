@@ -81,6 +81,7 @@ class GramJsController extends EventEmitter {
         // Auth state internos
         this._phone = null;
         this._phoneHash = null;
+        this._addAccountPreviousIndex = null; // set while adding a new account
 
         this.setMaxListeners(Infinity);
     }
@@ -150,7 +151,10 @@ class GramJsController extends EventEmitter {
 
     getAccounts = () => this._accounts.map(a => ({ ...a }));
 
+    isAddingAccount = () => this._addAccountPreviousIndex !== null;
+
     addAccount = async () => {
+        this._addAccountPreviousIndex = this._activeAccountIndex;
         const nextIndex = this._getNextAccountIndex();
         this._accounts.push({
             index: nextIndex,
@@ -161,6 +165,29 @@ class GramJsController extends EventEmitter {
         });
         this._saveAccounts();
         await this._switchToAccount(nextIndex);
+    };
+
+    cancelAddAccount = async () => {
+        const prevIndex = this._addAccountPreviousIndex;
+        this._addAccountPreviousIndex = null;
+        const currentIndex = this._activeAccountIndex;
+        // Remove the empty new account
+        const account = this._accounts.find(a => a.index === currentIndex);
+        if (account) localStorage.removeItem(account.sessionKey);
+        this._accounts = this._accounts.filter(a => a.index !== currentIndex);
+        this._saveAccounts();
+        // Switch back to previous account
+        const target =
+            prevIndex !== null && this._accounts.find(a => a.index === prevIndex)
+                ? prevIndex
+                : this._accounts.length > 0
+                ? this._accounts[0].index
+                : null;
+        if (target !== null) {
+            await this._switchToAccount(target);
+        } else {
+            await this._logOut();
+        }
     };
 
     switchAccount = async index => {
@@ -239,6 +266,7 @@ class GramJsController extends EventEmitter {
     };
 
     _onAuthorized = async () => {
+        this._addAccountPreviousIndex = null; // clear add-account mode on successful login
         this._saveSession();
         this._setupUpdateHandler();
 

@@ -11,9 +11,11 @@ import { withTranslation } from 'react-i18next';
 import Autocomplete from '@material-ui/lab/Autocomplete';
 import Button from '@material-ui/core/Button';
 import Checkbox from '@material-ui/core/Checkbox';
+import IconButton from '@material-ui/core/IconButton';
 import TextField from '@material-ui/core/TextField';
 import Link from '@material-ui/core/Link';
 import Typography from '@material-ui/core/Typography';
+import ArrowBackIcon from '@material-ui/icons/ArrowBack';
 import Country from './Country';
 import HeaderProgress from '../ColumnMiddle/HeaderProgress';
 import { KEY_SUGGESTED_LANGUAGE_PACK_ID } from '../../Constants';
@@ -187,6 +189,7 @@ class Phone extends React.Component {
             loading: false,
             suggestedLanguage: localStorage.getItem(KEY_SUGGESTED_LANGUAGE_PACK_ID),
             keep: true,
+            isAddingAccount: TdLibController.isAddingAccount ? TdLibController.isAddingAccount() : false,
 
             phone,
             country,
@@ -305,6 +308,10 @@ class Phone extends React.Component {
         }
     };
 
+    handleBack = () => {
+        if (TdLibController.cancelAddAccount) TdLibController.cancelAddAccount();
+    };
+
     handleDone = () => {
         const { phone } = this.state;
         if (!isValidPhoneNumber(phone)) {
@@ -398,7 +405,7 @@ class Phone extends React.Component {
 
     render() {
         const { data, i18n, t } = this.props;
-        const { connecting, loading, error, suggestedLanguage, keep, phone, country } = this.state;
+        const { connecting, loading, error, suggestedLanguage, keep, phone, country, isAddingAccount } = this.state;
 
         let errorString = '';
         if (error) {
@@ -416,6 +423,16 @@ class Phone extends React.Component {
 
         return (
             <form className='auth-root' autoComplete='off'>
+                {isAddingAccount && (
+                    <div style={{ display: 'flex', alignItems: 'center', marginBottom: 8 }}>
+                        <IconButton size='small' onClick={this.handleBack} disabled={loading}>
+                            <ArrowBackIcon />
+                        </IconButton>
+                        <Typography variant='body2' style={{ marginLeft: 4 }}>
+                            Back to previous account
+                        </Typography>
+                    </div>
+                )}
                 <Typography variant='body1' className='auth-title'>
                     <span>{title}</span>
                     {connecting && <HeaderProgress />}
