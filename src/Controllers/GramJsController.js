@@ -353,13 +353,69 @@ class GramJsController extends EventEmitter {
 
                 this._cacheEntity(entity);
 
-                // Emitir usuario/grupo si es privado
-                if ((entity.className || entity._) === 'User') {
+                const cls = entity.className || entity._;
+
+                if (cls === 'User') {
                     const tdUser = translateUser(entity);
                     if (tdUser) {
                         this._userCache.set(tdUser.id, tdUser);
                         this._emitUpdate({ '@type': 'updateUser', user: tdUser });
                     }
+                } else if (cls === 'Chat' || cls === 'ChatForbidden') {
+                    const status = entity.creator
+                        ? { '@type': 'chatMemberStatusCreator', is_member: true }
+                        : entity.left
+                        ? { '@type': 'chatMemberStatusLeft' }
+                        : { '@type': 'chatMemberStatusMember' };
+                    this._emitUpdate({
+                        '@type': 'updateBasicGroup',
+                        basic_group: {
+                            '@type': 'basicGroup',
+                            id: Number(entity.id),
+                            member_count: entity.participantsCount || 0,
+                            status,
+                            is_active: !entity.deactivated,
+                            upgraded_to_supergroup_id: 0
+                        }
+                    });
+                } else if (cls === 'Channel' || cls === 'ChannelForbidden') {
+                    const status = entity.creator
+                        ? { '@type': 'chatMemberStatusCreator', is_member: true }
+                        : entity.left
+                        ? { '@type': 'chatMemberStatusLeft' }
+                        : entity.adminRights
+                        ? {
+                              '@type': 'chatMemberStatusAdministrator',
+                              can_be_edited: false,
+                              can_change_info: true,
+                              can_post_messages: true,
+                              can_edit_messages: true,
+                              can_delete_messages: true,
+                              can_invite_users: true,
+                              can_restrict_members: true,
+                              can_pin_messages: true,
+                              can_promote_members: false
+                          }
+                        : { '@type': 'chatMemberStatusMember' };
+                    this._emitUpdate({
+                        '@type': 'updateSupergroup',
+                        supergroup: {
+                            '@type': 'supergroup',
+                            id: Number(entity.id),
+                            username: entity.username || '',
+                            date: entity.date || 0,
+                            status,
+                            member_count: entity.participantsCount || 0,
+                            has_linked_chat: false,
+                            has_location: false,
+                            sign_messages: !!entity.signatures,
+                            is_slow_mode_enabled: false,
+                            is_channel: !entity.megagroup,
+                            is_verified: !!entity.verified,
+                            restriction_reason: '',
+                            is_scam: !!entity.scam
+                        }
+                    });
                 }
 
                 const tdChat = translateChat(entity, dialog);
