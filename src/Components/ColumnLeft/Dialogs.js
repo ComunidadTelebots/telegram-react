@@ -12,6 +12,7 @@ import withStyles from '@material-ui/core/styles/withStyles';
 import Search from './Search/Search';
 import DialogsHeader from './DialogsHeader';
 import DialogsList from './DialogsList';
+import FolderDialogsList from './FolderDialogsList';
 import UpdatePanel from './UpdatePanel';
 import { borderStyle } from '../Theme';
 import { openChat } from '../../Actions/Client';
@@ -53,7 +54,10 @@ class Dialogs extends Component {
 
             searchChatId: 0,
             searchText: null,
-            query: null
+            query: null,
+
+            chatFilters: [],
+            activeFilter: null
         };
     }
 
@@ -68,54 +72,31 @@ class Dialogs extends Component {
             openSearch,
             openArchive,
             searchChatId,
-            searchText
+            searchText,
+            chatFilters,
+            activeFilter
         } = this.state;
 
-        if (nextState.cache !== cache) {
-            return true;
-        }
-
-        if (nextState.showArchive !== showArchive) {
-            return true;
-        }
-
-        if (nextState.archiveTitle !== archiveTitle) {
-            return true;
-        }
-
-        if (nextState.archiveItems !== archiveItems) {
-            return true;
-        }
-
-        if (nextState.mainItems !== mainItems) {
-            return true;
-        }
-
-        if (nextState.isChatDetailsVisible !== isChatDetailsVisible) {
-            return true;
-        }
-
-        if (nextState.openSearch !== openSearch) {
-            return true;
-        }
-
-        if (nextState.openArchive !== openArchive) {
-            return true;
-        }
-
-        if (nextState.searchChatId !== searchChatId) {
-            return true;
-        }
-
-        if (nextState.searchText !== searchText) {
-            return true;
-        }
+        if (nextState.cache !== cache) return true;
+        if (nextState.showArchive !== showArchive) return true;
+        if (nextState.archiveTitle !== archiveTitle) return true;
+        if (nextState.archiveItems !== archiveItems) return true;
+        if (nextState.mainItems !== mainItems) return true;
+        if (nextState.isChatDetailsVisible !== isChatDetailsVisible) return true;
+        if (nextState.openSearch !== openSearch) return true;
+        if (nextState.openArchive !== openArchive) return true;
+        if (nextState.searchChatId !== searchChatId) return true;
+        if (nextState.searchText !== searchText) return true;
+        if (nextState.chatFilters !== chatFilters) return true;
+        if (nextState.activeFilter !== activeFilter) return true;
 
         return false;
     }
 
     componentDidMount() {
         this.loadCache();
+
+        TdLibController.on('clientUpdate', this.onTdlibClientUpdate);
 
         AppStore.on('clientUpdateChatDetailsVisibility', this.onClientUpdateChatDetailsVisibility);
         AppStore.on('clientUpdateSearchChat', this.onClientUpdateSearchChat);
@@ -134,6 +115,8 @@ class Dialogs extends Component {
     }
 
     componentWillUnmount() {
+        TdLibController.off('clientUpdate', this.onTdlibClientUpdate);
+
         AppStore.off('clientUpdateChatDetailsVisibility', this.onClientUpdateChatDetailsVisibility);
         AppStore.off('clientUpdateSearchChat', this.onClientUpdateSearchChat);
         AppStore.off('clientUpdateThemeChange', this.onClientUpdateThemeChange);
@@ -149,6 +132,16 @@ class Dialogs extends Component {
         ChatStore.off('clientUpdateOpenArchive', this.onClientUpdateOpenArchive);
         ChatStore.off('clientUpdateCloseArchive', this.onClientUpdateCloseArchive);
     }
+
+    onTdlibClientUpdate = update => {
+        if (update['@type'] === 'clientUpdateChatFilters') {
+            this.setState({ chatFilters: update.filters });
+        }
+    };
+
+    handleFolderSelect = filterId => {
+        this.setState({ activeFilter: filterId });
+    };
 
     async loadCache() {
         const cache = (await CacheStore.loadCache()) || {};
@@ -343,7 +336,9 @@ class Dialogs extends Component {
             openArchive,
             openSearch,
             searchChatId,
-            searchText
+            searchText,
+            chatFilters,
+            activeFilter
         } = this.state;
 
         const mainCacheItems = cache ? cache.chats || [] : null;
@@ -362,25 +357,48 @@ class Dialogs extends Component {
                     onSearch={this.handleSearch}
                     onSearchTextChange={this.handleSearchTextChange}
                 />
+                {chatFilters.length > 0 && !openSearch && !openArchive && (
+                    <div className='folder-tabs'>
+                        <button
+                            className={classNames('folder-tab', { 'folder-tab-active': activeFilter === null })}
+                            onClick={() => this.handleFolderSelect(null)}>
+                            All
+                        </button>
+                        {chatFilters.map(f => (
+                            <button
+                                key={f.id}
+                                className={classNames('folder-tab', { 'folder-tab-active': activeFilter === f.id })}
+                                onClick={() => this.handleFolderSelect(f.id)}>
+                                {f.title}
+                            </button>
+                        ))}
+                    </div>
+                )}
                 <div className='dialogs-content'>
-                    <DialogsList
-                        type='chatListMain'
-                        ref={this.dialogListRef}
-                        cacheItems={mainCacheItems}
-                        items={mainItems}
-                        showArchive={showArchive}
-                        archiveTitle={archiveTitle}
-                        open={true}
-                        onSaveCache={this.handleSaveCache}
-                    />
-                    <DialogsList
-                        type='chatListArchive'
-                        ref={this.archiveListRef}
-                        cacheItems={archiveCacheItems}
-                        items={archiveItems}
-                        open={openArchive}
-                        onSaveCache={this.handleSaveCache}
-                    />
+                    {activeFilter !== null ? (
+                        <FolderDialogsList filterId={activeFilter} />
+                    ) : (
+                        <>
+                            <DialogsList
+                                type='chatListMain'
+                                ref={this.dialogListRef}
+                                cacheItems={mainCacheItems}
+                                items={mainItems}
+                                showArchive={showArchive}
+                                archiveTitle={archiveTitle}
+                                open={true}
+                                onSaveCache={this.handleSaveCache}
+                            />
+                            <DialogsList
+                                type='chatListArchive'
+                                ref={this.archiveListRef}
+                                cacheItems={archiveCacheItems}
+                                items={archiveItems}
+                                open={openArchive}
+                                onSaveCache={this.handleSaveCache}
+                            />
+                        </>
+                    )}
                     {openSearch && (
                         <Search
                             chatId={searchChatId}

@@ -41,6 +41,17 @@
 - Eliminada la dependencia de `tdweb` en el flujo principal (sigue en `package.json` hasta confirmar migración completa)
 - Suprimido aviso "app desactualizada" de `updateServiceNotification` (sustituido por `console.warn`)
 
+### Novedades (sesión 2026-05-19)
+- **Carpetas de chats (Chat Folders)** — el sidebar muestra una barra de tabs horizontal con todas las carpetas definidas en Telegram (obtenidas via `messages.GetDialogFilters`). Al pulsar una carpeta, la lista de chats filtra solo los chats incluidos en ella (`include_peers` + `pinned_peers`). La vista "All" restaura el comportamiento normal. Los tabs solo se muestran si el usuario tiene al menos una carpeta configurada.
+  - `GramJsController`: nuevo `_loadDialogFilters()`, `_inputPeerToTdlibChatId()`, `_folderChats` (Map folderId→Set\<chatId\>). `_getChats` extendido para `chatListFilter`.
+  - Nuevo componente `src/Components/ColumnLeft/FolderDialogsList.js`: carga y renderiza los chats de una carpeta.
+  - `Dialogs.js`: barra de tabs, estado `chatFilters`/`activeFilter`, suscripción a `clientUpdateChatFilters`.
+  - `Dialogs.css`: estilos de tabs y lista de carpeta.
+  - **Fix:** `filter.title` en GramJS v2 es un objeto `TextWithEntities`, no un string plano — ahora se extrae `.text` antes de pasarlo a React.
+- **Persistencia de mensajes offline (cache-first)** — nuevo `src/Utils/MessageCache.js` que guarda los últimos 50 mensajes por chat en IndexedDB (`idb-keyval`). Al abrir un chat, los mensajes aparecen instantáneamente desde el caché y se actualiza en segundo plano (`_refreshMessagesInBackground`): los mensajes nuevos llegan vía `updateNewMessage` sin recargar todo el historial.
+- Los mensajes en caché se borran automáticamente al cerrar sesión (manejado en `CacheStore.onUpdate` → `authorizationStateLoggingOut`).
+- `CacheStore` expone `loadMessages`, `saveMessages`, `clearAllMessageCaches` delegando a `MessageCache.js` para evitar dependencias circulares con `GramJsController`.
+
 ### Novedades (sesión 2025-05-18)
 - **Copiar texto del mensaje** — nuevo ítem "Copy" en el menú contextual de mensajes; copia el texto o caption al portapapeles con `navigator.clipboard.writeText` (`Message.js`)
 - **Nota de voz** — botón de micrófono en la barra de entrada (rojo cuando graba); usa `MediaRecorder` con `audio/webm;codecs=opus`; al detener envía automáticamente como `inputMessageVoiceNote` (`InputBoxControl.js`)

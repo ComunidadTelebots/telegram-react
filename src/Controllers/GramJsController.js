@@ -21,6 +21,7 @@ import {
     tdlibChatIdToInputPeer,
     mediaCache
 } from '../Utils/GramJs/EntityTranslator';
+import { loadMessages, saveMessages } from '../Utils/MessageCache';
 
 const SESSION_KEY = 'tg_gramjs_session';
 
@@ -44,6 +45,10 @@ class GramJsController extends EventEmitter {
         this._initialDialogsPromise = new Promise(resolve => {
             this._initialDialogsResolver = resolve;
         });
+
+        // Chat folders (dialog filters)
+        this._folderChats = new Map(); // folderId → Set<chatId>
+        this._chatFilters = [];
 
         // Auth state internos
         this._phone = null;
@@ -162,6 +167,9 @@ class GramJsController extends EventEmitter {
 
         // Cargar lista de diálogos inicial
         await this._loadDialogs();
+
+        // Cargar carpetas (no bloquea si falla)
+        this._loadDialogFilters().catch(() => {});
     };
 
     _loadDialogs = async (offsetDate = undefined, offsetId = undefined, limit = 100) => {
@@ -211,6 +219,50 @@ class GramJsController extends EventEmitter {
             if (this._initialDialogsResolver) {
                 this._initialDialogsResolver();
             }
+        }
+    };
+
+    _inputPeerToTdlibChatId = peer => {
+        if (!peer) return null;
+        const cls = peer.className;
+        if (cls === 'InputPeerUser') return Number(peer.userId);
+        if (cls === 'InputPeerChat') return -Number(peer.chatId);
+        if (cls === 'InputPeerChannel') return -1000000000000 - Number(peer.channelId);
+        return null;
+    };
+
+    _loadDialogFilters = async () => {
+        try {
+            const result = await this.client.invoke(new Api.messages.GetDialogFilters());
+            const rawFilters = result.filters || result;
+            const filterArray = Array.isArray(rawFilters) ? rawFilters : [rawFilters];
+
+            const filters = [];
+            for (const filter of filterArray) {
+                const cls = filter.className;
+                if (cls === 'DialogFilterDefault' || cls === 'DialogFilterChatlist') continue;
+                if (!filter.id) continue;
+
+                const chatIds = new Set();
+                const peers = [...(filter.pinnedPeers || []), ...(filter.includePeers || [])];
+                for (const peer of peers) {
+                    const id = this._inputPeerToTdlibChatId(peer);
+                    if (id !== null) chatIds.add(id);
+                }
+
+                const rawTitle = filter.title;
+                const title = typeof rawTitle === 'string' ? rawTitle : rawTitle?.text || 'Folder';
+
+                this._folderChats.set(filter.id, chatIds);
+                filters.push({ id: filter.id, title });
+            }
+
+            this._chatFilters = filters;
+            if (filters.length > 0) {
+                this.clientUpdate({ '@type': 'clientUpdateChatFilters', filters });
+            }
+        } catch (e) {
+            console.warn('[GramJs] getDialogFilters error:', e);
         }
     };
 
@@ -623,6 +675,14 @@ class GramJsController extends EventEmitter {
     // ─── Chat handlers ───────────────────────────────────────────────────────
 
     _getChats = async req => {
+        const { chat_list } = req || {};
+
+        if (chat_list && chat_list['@type'] === 'chatListFilter') {
+            const folderSet = this._folderChats.get(chat_list.filter_id);
+            const chatIds = folderSet ? Array.from(folderSet) : [];
+            return { '@type': 'chats', total_count: chatIds.length, chat_ids: chatIds };
+        }
+
         if (!this._initialDialogsLoaded && this._initialDialogsPromise) {
             await this._initialDialogsPromise;
         }
@@ -691,19 +751,53 @@ class GramJsController extends EventEmitter {
 
     // ─── Message handlers ────────────────────────────────────────────────────
 
+    _doFetchChatHistory = async (chatId, fromMessageId, offset, limit) => {
+        const inputPeer = tdlibChatIdToInputPeer(chatId, this._entityCache);
+        const msgs = await this.client.getMessages(inputPeer, {
+            limit,
+            offsetId: fromMessageId || 0,
+            addOffset: offset
+        });
+        const messages = msgs.map(m => translateMessage(m, chatId)).filter(Boolean);
+        return { '@type': 'messages', messages, total_count: messages.length };
+    };
+
+    _refreshMessagesInBackground = async (chatId, cachedMessages, limit) => {
+        // Small delay so React renders the cached messages and sets completed=true
+        await new Promise(r => setTimeout(r, 250));
+        try {
+            const result = await this._doFetchChatHistory(chatId, 0, 0, limit);
+            if (!result.messages.length) return;
+
+            saveMessages(chatId, result.messages);
+
+            const cachedIds = new Set(cachedMessages.map(m => m.id));
+            result.messages
+                .filter(m => !cachedIds.has(m.id))
+                .forEach(m => this._emitUpdate({ '@type': 'updateNewMessage', message: m }));
+        } catch (e) {
+            // background refresh failed — not critical
+        }
+    };
+
     _getChatHistory = async req => {
         const { chat_id, from_message_id = 0, offset = 0, limit = 30 } = req;
+        const isInitialLoad = from_message_id === 0 && offset === 0;
+
+        if (isInitialLoad) {
+            const cached = await loadMessages(chat_id);
+            if (cached && cached.length > 0) {
+                this._refreshMessagesInBackground(chat_id, cached, limit);
+                return { '@type': 'messages', messages: cached, total_count: cached.length };
+            }
+        }
+
         try {
-            const inputPeer = tdlibChatIdToInputPeer(chat_id, this._entityCache);
-            const msgs = await this.client.getMessages(inputPeer, {
-                limit,
-                offsetId: from_message_id || 0,
-                addOffset: offset
-            });
-
-            const messages = msgs.map(m => translateMessage(m, chat_id)).filter(Boolean);
-
-            return { '@type': 'messages', messages, total_count: messages.length };
+            const result = await this._doFetchChatHistory(chat_id, from_message_id, offset, limit);
+            if (isInitialLoad && result.messages.length > 0) {
+                saveMessages(chat_id, result.messages);
+            }
+            return result;
         } catch (err) {
             console.warn('[GramJs] getChatHistory error', err);
             return { '@type': 'messages', messages: [], total_count: 0 };

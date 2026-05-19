@@ -8,6 +8,7 @@
 import { EventEmitter } from 'events';
 import { debounce } from '../Utils/Common';
 import CacheManager from '../Workers/CacheManager';
+import { loadMessages, saveMessages, clearAllMessages } from '../Utils/MessageCache';
 import BasicGroupStore from './BasicGroupStore';
 import ChatStore from './ChatStore';
 import FileStore from './FileStore';
@@ -51,6 +52,7 @@ class CacheStore extends EventEmitter {
                     case 'authorizationStateWaitRegistration': {
                         CacheManager.remove('cache');
                         CacheManager.remove('files');
+                        this.clearAllMessageCaches();
                         break;
                     }
                 }
@@ -245,6 +247,12 @@ class CacheStore extends EventEmitter {
             FileStore.deleteDataUrl(id);
         });
     }
+
+    // ─── Message persistence (cache-first) ───────────────────────────────────
+
+    loadMessages = chatId => loadMessages(chatId);
+    saveMessages = (chatId, messages) => saveMessages(chatId, messages);
+    clearAllMessageCaches = () => clearAllMessages();
 }
 
 const store = new CacheStore();

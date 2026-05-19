@@ -27,3 +27,50 @@
 .dialogs-third-column {
     width: calc(25% - 0px);
 }
+
+.folder-tabs {
+    display: flex;
+    overflow-x: auto;
+    flex-shrink: 0;
+    padding: 0 8px 4px;
+    gap: 4px;
+    scrollbar-width: none;
+}
+
+.folder-tabs::-webkit-scrollbar {
+    display: none;
+}
+
+.folder-tab {
+    flex-shrink: 0;
+    border: none;
+    background: transparent;
+    padding: 6px 12px;
+    border-radius: 16px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    color: inherit;
+    opacity: 0.6;
+    transition: opacity 0.15s, background 0.15s;
+}
+
+.folder-tab:hover {
+    opacity: 0.85;
+    background: rgba(128, 128, 128, 0.12);
+}
+
+.folder-tab-active {
+    opacity: 1;
+    background: rgba(var(--color-primary-rgb, 33, 150, 243), 0.12);
+    color: #2196f3;
+}
+
+.folder-dialogs-list {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    overflow-y: auto;
+}
