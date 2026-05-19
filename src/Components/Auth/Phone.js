@@ -204,6 +204,7 @@ class Phone extends React.Component {
         if (countryCode) return;
 
         const code = await TdLibController.send({ '@type': 'getCountryCode' });
+        if (!this._isMounted) return;
         if (!code) return;
 
         const { data } = this.props;
@@ -223,6 +224,7 @@ class Phone extends React.Component {
     }
 
     componentDidMount() {
+        this._isMounted = true;
         this.setSuggestedLanguagePackId();
 
         AppStore.on('clientUpdateSetPhoneCanceled', this.onClientUpdateSetPhoneCanceled);
@@ -233,6 +235,7 @@ class Phone extends React.Component {
     }
 
     componentWillUnmount() {
+        this._isMounted = false;
         AppStore.off('clientUpdateSetPhoneCanceled', this.onClientUpdateSetPhoneCanceled);
         AppStore.off('clientUpdateSetPhoneError', this.onClientUpdateSetPhoneError);
         AppStore.off('clientUpdateSetPhoneResult', this.onClientUpdateSetPhoneResult);
@@ -295,6 +298,7 @@ class Phone extends React.Component {
 
         await LocalizationStore.loadLanguage(value);
 
+        if (!this._isMounted) return;
         this.setState({ suggestedLanguage: value });
     }
 
