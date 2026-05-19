@@ -52,16 +52,33 @@ const styles = theme => ({
 });
 
 class Archive extends React.Component {
-    shouldComponentUpdate(nextProps, nextState, nextContext) {
+    constructor(props) {
+        super(props);
+        const counter = ChatStore.counters.get('chatListArchive') || {};
+        this.state = { unreadCount: counter.unread_count || 0 };
+    }
+
+    componentDidMount() {
+        ChatStore.on('updateUnreadChatCount', this.onUpdateUnreadChatCount);
+    }
+
+    componentWillUnmount() {
+        ChatStore.off('updateUnreadChatCount', this.onUpdateUnreadChatCount);
+    }
+
+    onUpdateUnreadChatCount = update => {
+        if (update.chat_list && update.chat_list['@type'] === 'chatListArchive') {
+            this.setState({ unreadCount: update.unread_count || 0 });
+        }
+    };
+
+    shouldComponentUpdate(nextProps, nextState) {
         const { title, theme } = this.props;
+        const { unreadCount } = this.state;
 
-        if (nextProps.theme !== theme) {
-            return true;
-        }
-
-        if (nextProps.title !== title) {
-            return true;
-        }
+        if (nextProps.theme !== theme) return true;
+        if (nextProps.title !== title) return true;
+        if (nextState.unreadCount !== unreadCount) return true;
 
         return false;
     }
@@ -85,6 +102,7 @@ class Archive extends React.Component {
 
     render() {
         const { classes, t, title } = this.props;
+        const { unreadCount } = this.state;
 
         return (
             <div
@@ -108,11 +126,11 @@ class Archive extends React.Component {
                         </div>
                         <div className='tile-second-row'>
                             <div className={classNames('dialog-content', classes.dialogContent)}>{title}</div>
-                            {/*{unread_count > 0 && (*/}
-                            {/*    <div className={classNames('dialog-badge-muted', 'dialog-badge')}>*/}
-                            {/*        <span className='dialog-badge-text'>{unread_count}</span>*/}
-                            {/*    </div>*/}
-                            {/*)}*/}
+                            {unreadCount > 0 && (
+                                <div className={classNames('dialog-badge-muted', 'dialog-badge')}>
+                                    <span className='dialog-badge-text'>{unreadCount}</span>
+                                </div>
+                            )}
                         </div>
                     </div>
                 </div>
@@ -125,9 +143,6 @@ Archive.propTypes = {
     title: PropTypes.string
 };
 
-const enhance = compose(
-    withStyles(styles, { withTheme: true }),
-    withTranslation()
-);
+const enhance = compose(withStyles(styles, { withTheme: true }), withTranslation());
 
 export default enhance(Archive);

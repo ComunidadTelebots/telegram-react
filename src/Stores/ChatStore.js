@@ -126,7 +126,11 @@ class ChatStore extends EventEmitter {
                 break;
             }
             case 'updateChatDefaultDisableNotification': {
-                //TODO: handle updateChatDefaultDisableNotification
+                const { chat_id, default_disable_notification } = update;
+                const chat = this.get(chat_id);
+                if (chat) {
+                    this.assign(chat, { default_disable_notification });
+                }
 
                 this.emitFastUpdate(update);
                 break;
@@ -321,13 +325,16 @@ class ChatStore extends EventEmitter {
                 break;
             }
             case 'updateSecretChat': {
-                //TODO: handle updateSecretChat
+                const { secret_chat } = update;
+                if (!this.secretChats) this.secretChats = new Map();
+                this.secretChats.set(secret_chat.id, secret_chat);
 
                 this.emitFastUpdate(update);
                 break;
             }
             case 'updateUnreadChatCount': {
-                //TODO: handle updateUnreadChatCount
+                const { chat_list, unread_count, unread_unmuted_count } = update;
+                this.counters.set(chat_list['@type'], { unread_count, unread_unmuted_count });
 
                 this.emitFastUpdate(update);
                 break;
