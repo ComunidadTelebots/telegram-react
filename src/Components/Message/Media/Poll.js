@@ -126,21 +126,28 @@ class Poll extends React.Component {
     render() {
         const { chatId, messageId, poll, t } = this.props;
         const { left, top, contextMenu, dialog } = this.state;
-        const { question, options, total_voter_count, is_closed } = poll;
+        const { question, options, total_voter_count, is_closed, type } = poll;
 
         const message = MessageStore.get(chatId, messageId);
         if (!message) return null;
 
-        const canUnvote = !is_closed && options.some(x => x.is_chosen || x.is_being_chosen);
+        const isQuiz = type && type['@type'] === 'pollTypeQuiz';
+        const correctOptionId = isQuiz ? type.correct_option_id : -1;
+        const hasVoted = options.some(x => x.is_chosen || x.is_being_chosen);
+        const showCorrect = isQuiz && (hasVoted || is_closed) && correctOptionId >= 0;
+
+        const canUnvote = !is_closed && !isQuiz && options.some(x => x.is_chosen || x.is_being_chosen);
         const canStopPoll = message && message.can_be_edited;
         const canBeSelected = !is_closed && options.every(x => !x.is_chosen);
         const maxVoterCount = Math.max(...options.map(x => x.voter_count));
+
+        const subtitle = is_closed ? t('FinalResults') : isQuiz ? t('QuizPoll') : t('AnonymousPoll');
 
         return (
             <div className='poll' onContextMenu={this.handleContextMenu}>
                 <div className='poll-question'>
                     <span className='poll-question-title'>{question}</span>
-                    <span className='subtitle'>{is_closed ? t('FinalResults') : t('AnonymousPoll')}</span>
+                    <span className='subtitle'>{subtitle}</span>
                 </div>
                 <div className='poll-options'>
                     {options.map((x, index) => (
@@ -150,11 +157,16 @@ class Poll extends React.Component {
                             canBeSelected={canBeSelected}
                             closed={is_closed}
                             maxVoterCount={maxVoterCount}
+                            isCorrect={showCorrect && index === correctOptionId}
+                            isWrong={showCorrect && x.is_chosen && index !== correctOptionId}
                             onVote={() => this.handleVote(index)}
                             onUnvote={this.handleUnvote}
                         />
                     ))}
                 </div>
+                {isQuiz && showCorrect && type.explanation && type.explanation.text && (
+                    <div className='poll-explanation subtitle'>{type.explanation.text}</div>
+                )}
                 <div className='poll-total-count subtitle'>{this.getTotalVoterCountString(total_voter_count, t)}</div>
                 <Popover
                     open={contextMenu && (canUnvote || canStopPoll)}

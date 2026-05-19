@@ -203,6 +203,32 @@ function getFormattedText(formattedText) {
                 result.push(<em key={entityKey}>{entityText}</em>);
                 break;
             }
+            case 'textEntityTypeUnderline': {
+                result.push(
+                    <span key={entityKey} style={{ textDecoration: 'underline' }}>
+                        {entityText}
+                    </span>
+                );
+                break;
+            }
+            case 'textEntityTypeStrikethrough': {
+                result.push(<s key={entityKey}>{entityText}</s>);
+                break;
+            }
+            case 'textEntityTypeSpoiler': {
+                result.push(
+                    <span
+                        key={entityKey}
+                        className='spoiler-text'
+                        onClick={e => {
+                            e.stopPropagation();
+                            e.currentTarget.classList.add('spoiler-revealed');
+                        }}>
+                        {entityText}
+                    </span>
+                );
+                break;
+            }
             case 'textEntityTypeMentionName': {
                 const user = UserStore.get(type.user_id);
                 result.push(
@@ -383,6 +409,7 @@ function getMedia(message, openMedia, hasTitle = false, hasCaption = false) {
                     chatId={chat_id}
                     messageId={id}
                     photo={content.photo}
+                    hasSpoiler={Boolean(content.has_spoiler)}
                     openMedia={openMedia}
                 />
             );

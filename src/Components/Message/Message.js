@@ -90,13 +90,17 @@ class Message extends Component {
                 message: MessageStore.get(chatId, messageId),
                 emojiMatches: getEmojiMatches(chatId, messageId),
                 selected: false,
-                highlighted: false
+                highlighted: false,
+                translationText: null,
+                translating: false
             };
         } else {
             this.state = {
                 emojiMatches: getEmojiMatches(chatId, messageId),
                 selected: false,
-                highlighted: false
+                highlighted: false,
+                translationText: null,
+                translating: false
             };
         }
     }
@@ -112,7 +116,7 @@ class Message extends Component {
             showTitle,
             showAuthor
         } = this.props;
-        const { contextMenu, selected, highlighted, emojiMatches } = this.state;
+        const { contextMenu, selected, highlighted, emojiMatches, translationText, translating } = this.state;
 
         if (nextProps.theme !== theme) {
             // console.log('Message.shouldComponentUpdate true');
@@ -172,6 +176,9 @@ class Message extends Component {
             // console.log('Message.shouldComponentUpdate true');
             return true;
         }
+
+        if (nextState.translationText !== translationText) return true;
+        if (nextState.translating !== translating) return true;
 
         // console.log('Message.shouldComponentUpdate false');
         return false;
@@ -456,10 +463,52 @@ class Message extends Component {
         }
     };
 
+    handleTranslate = async event => {
+        const { chatId, messageId, t } = this.props;
+        this.handleCloseContextMenu(event);
+
+        const message = MessageStore.get(chatId, messageId);
+        if (!message) return;
+
+        const { content } = message;
+        let text = '';
+        if (content['@type'] === 'messageText') {
+            text = content.text?.text || '';
+        } else if (content.caption) {
+            text = content.caption.text || '';
+        }
+        if (!text) return;
+
+        this.setState({ translating: true, translationText: null });
+        try {
+            const result = await TdLibController.send({
+                '@type': 'translateText',
+                text,
+                to_language_code: 'en'
+            });
+            const translated = result && (result.text || result);
+            this.setState({
+                translating: false,
+                translationText: typeof translated === 'string' ? translated : translated.text || String(translated)
+            });
+        } catch (e) {
+            this.setState({ translating: false, translationText: t('TranslationUnavailable') });
+        }
+    };
+
     render() {
         // console.log('[m] render', this.props.messageId);
         const { t, classes, chatId, messageId, showUnreadSeparator, showTail, showTitle, showAuthor } = this.props;
-        const { emojiMatches, selected, highlighted, contextMenu, left, top } = this.state;
+        const {
+            emojiMatches,
+            selected,
+            highlighted,
+            contextMenu,
+            left,
+            top,
+            translationText,
+            translating
+        } = this.state;
 
         const message = MessageStore.get(chatId, messageId);
         if (!message) return <div>[empty message]</div>;
@@ -512,6 +561,7 @@ class Message extends Component {
             message.content['@type'] === 'messageText'
                 ? !!(message.content.text && message.content.text.text)
                 : !!(message.content.caption && message.content.caption.text);
+        const canBeTranslated = canBeCopied;
         const withBubble =
             message.content['@type'] !== 'messageSticker' && message.content['@type'] !== 'messageVideoNote';
 
@@ -558,6 +608,10 @@ class Message extends Component {
                             {text}
                         </div>
                         {webPage && <WebPage chatId={chatId} messageId={messageId} openMedia={this.openMedia} />}
+                        {translating && (
+                            <div className='message-translation message-translation-loading'>{t('Translate')}…</div>
+                        )}
+                        {translationText && <div className='message-translation'>{translationText}</div>}
                         <Reactions chatId={chatId} messageId={messageId} />
                         {/*{!showTitle && meta}*/}
                     </div>
@@ -588,6 +642,7 @@ class Message extends Component {
                         {canBeForwarded && <MenuItem onClick={this.handleForward}>{t('Forward')}</MenuItem>}
                         {canBeEdited && <MenuItem onClick={this.handleEdit}>{t('Edit')}</MenuItem>}
                         {canBeDeleted && <MenuItem onClick={this.handleDelete}>{t('Delete')}</MenuItem>}
+                        {canBeTranslated && <MenuItem onClick={this.handleTranslate}>{t('TranslateMessage')}</MenuItem>}
                     </MenuList>
                 </Popover>
             </div>

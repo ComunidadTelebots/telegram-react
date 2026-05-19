@@ -58,3 +58,26 @@
     display: flex;
     align-items: center;
 }
+
+.pinned-message-counter {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    margin-right: 8px;
+    flex-shrink: 0;
+    cursor: pointer;
+    padding: 4px 2px;
+}
+
+.pinned-counter-bar {
+    width: 3px;
+    height: 13px;
+    border-radius: 2px;
+    background: var(--message-in-reply-title, #4a9fd5);
+    opacity: 0.3;
+    transition: opacity 0.2s ease;
+}
+
+.pinned-counter-bar-active {
+    opacity: 1;
+}

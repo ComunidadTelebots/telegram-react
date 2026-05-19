@@ -233,3 +233,36 @@ pre code {
 .messages-list-selection-active .message-wrapper {
     pointer-events: none;
 }
+
+/* Spoiler text */
+.spoiler-text {
+    display: inline-block;
+    border-radius: 3px;
+    padding: 0 1px;
+    cursor: pointer;
+    filter: blur(4px);
+    transition: filter 0.25s ease;
+    user-select: none;
+}
+
+.spoiler-text.spoiler-revealed {
+    filter: none;
+    cursor: text;
+    user-select: text;
+}
+
+/* Message translation */
+.message-translation {
+    margin-top: 6px;
+    padding: 6px 8px;
+    border-left: 3px solid var(--message-in-reply-title, #4a9fd5);
+    font-size: 0.9em;
+    opacity: 0.85;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+}
+
+.message-translation-loading {
+    opacity: 0.5;
+    font-style: italic;
+}

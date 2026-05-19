@@ -11,6 +11,8 @@ import classNames from 'classnames';
 import { compose } from 'recompose';
 import withStyles from '@material-ui/core/styles/withStyles';
 import { withTranslation } from 'react-i18next';
+import CheckCircleIcon from '@material-ui/icons/CheckCircle';
+import CancelIcon from '@material-ui/icons/Cancel';
 import LinearProgress from '@material-ui/core/LinearProgress';
 import PollRadio from './PollRadio';
 import PollPercentage from './PollPercentage';
@@ -61,7 +63,7 @@ class PollOption extends React.Component {
     };
 
     render() {
-        const { classes, option, onChange, canBeSelected, closed, maxVoterCount, t } = this.props;
+        const { classes, option, onChange, canBeSelected, closed, maxVoterCount, isCorrect, isWrong, t } = this.props;
         if (!option) return null;
 
         const { text, voter_count, vote_percentage, is_chosen, is_being_chosen } = option;
@@ -92,12 +94,18 @@ class PollOption extends React.Component {
                             onChange={onChange}
                         />
                         <div className='poll-option-text'>{text}</div>
+                        {isCorrect && (
+                            <CheckCircleIcon style={{ color: '#4caf50', fontSize: 18, marginLeft: 4, flexShrink: 0 }} />
+                        )}
+                        {isWrong && (
+                            <CancelIcon style={{ color: '#f44336', fontSize: 18, marginLeft: 4, flexShrink: 0 }} />
+                        )}
                     </div>
                 </div>
                 <div className={classNames('poll-option-bottom-border', { [classes.borderColor]: canBeSelected })} />
                 <LinearProgress
                     classes={{ root: classes.progressRoot, bar: classes.progressBar }}
-                    color='primary'
+                    color={isCorrect ? 'primary' : isWrong ? 'secondary' : 'primary'}
                     variant='determinate'
                     value={canBeSelected ? 0 : Math.max(1.5, value)}
                 />
@@ -115,9 +123,6 @@ PollOption.propTypes = {
     maxVoterCount: PropTypes.number
 };
 
-const enhance = compose(
-    withStyles(styles, { withTheme: true }),
-    withTranslation()
-);
+const enhance = compose(withStyles(styles, { withTheme: true }), withTranslation());
 
 export default enhance(PollOption);

@@ -8,6 +8,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import classNames from 'classnames';
+import VisibilityIcon from '@material-ui/icons/Visibility';
 import FileProgress from '../../Viewer/FileProgress';
 import { getSize, getFitSize } from '../../../Utils/Common';
 import { getSrc } from '../../../Utils/File';
@@ -20,7 +21,7 @@ class Photo extends React.Component {
     constructor(props) {
         super(props);
 
-        this.state = {};
+        this.state = { spoilerRevealed: false };
     }
 
     static getDerivedStateFromProps(props, state) {
@@ -56,9 +57,14 @@ class Photo extends React.Component {
         }
     };
 
+    handleRevealSpoiler = e => {
+        e.stopPropagation();
+        this.setState({ spoilerRevealed: true });
+    };
+
     render() {
-        const { className, displaySize, openMedia, showProgress, title, caption, type, style } = this.props;
-        const { thumbSize, photoSize, minithumbnail } = this.state;
+        const { className, displaySize, openMedia, showProgress, title, caption, type, style, hasSpoiler } = this.props;
+        const { thumbSize, photoSize, minithumbnail, spoilerRevealed } = this.state;
 
         if (!photoSize) return null;
 
@@ -66,6 +72,7 @@ class Photo extends React.Component {
         const thumbSrc = getSrc(thumbSize ? thumbSize.photo : null);
         const src = getSrc(photoSize.photo);
         const isBlurred = (!thumbSrc && miniSrc) || isBlurredThumbnail(thumbSize);
+        const showSpoiler = hasSpoiler && !spoilerRevealed;
 
         const fitPhotoSize = getFitSize(photoSize, displaySize, false);
         if (!fitPhotoSize) return null;
@@ -84,10 +91,11 @@ class Photo extends React.Component {
                     'photo-big': type === 'message',
                     'photo-title': title,
                     'photo-caption': caption,
-                    pointer: openMedia
+                    'photo-spoiler': showSpoiler,
+                    pointer: openMedia && !showSpoiler
                 })}
                 style={photoStyle}
-                onClick={openMedia}>
+                onClick={showSpoiler ? null : openMedia}>
                 {hasSrc && (
                     <img
                         className={classNames('photo-image', {
@@ -98,6 +106,11 @@ class Photo extends React.Component {
                         src={src || thumbSrc || miniSrc}
                         alt=''
                     />
+                )}
+                {showSpoiler && (
+                    <div className='photo-spoiler-overlay' onClick={this.handleRevealSpoiler}>
+                        <VisibilityIcon className='photo-spoiler-icon' />
+                    </div>
                 )}
                 {showProgress && <FileProgress file={photoSize.photo} download upload cancelButton />}
             </div>

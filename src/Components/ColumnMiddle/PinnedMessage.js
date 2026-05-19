@@ -45,7 +45,7 @@ class PinnedMessage extends React.Component {
     constructor(props) {
         super(props);
 
-        this.state = {};
+        this.state = { pinnedIds: [], currentIndex: 0 };
     }
 
     static getDerivedStateFromProps(props, state) {
@@ -54,10 +54,13 @@ class PinnedMessage extends React.Component {
 
         if (prevPropsChatId !== chatId) {
             const chat = ChatStore.get(chatId);
+            const firstId = chat && chat.pinned_message_id ? chat.pinned_message_id : 0;
             return {
                 prevPropsChatId: chatId,
                 clientData: ChatStore.getClientData(chatId),
-                messageId: chat && chat.pinned_message_id ? chat.pinned_message_id : 0,
+                messageId: firstId,
+                pinnedIds: firstId ? [firstId] : [],
+                currentIndex: 0,
                 confirm: false
             };
         }
@@ -65,16 +68,21 @@ class PinnedMessage extends React.Component {
         return null;
     }
 
-    componentDidUpdate(prevProps, prevState, snapshot) {
+    componentDidUpdate(prevProps, prevState) {
         const { messageId } = this.state;
 
         if (messageId && prevState.messageId !== messageId) {
             this.loadContent();
         }
+
+        if (prevProps.chatId !== this.props.chatId) {
+            this.loadAllPinned();
+        }
     }
 
     componentDidMount() {
         this.loadContent();
+        this.loadAllPinned();
 
         AppStore.on('clientUpdateDialogsReady', this.onClientUpdateDialogsReady);
         ChatStore.on('clientUpdateSetChatClientData', this.onClientUpdateSetChatClientData);
@@ -87,97 +95,92 @@ class PinnedMessage extends React.Component {
         ChatStore.off('updateChatPinnedMessage', this.onUpdateChatPinnedMessage);
     }
 
+    loadAllPinned = async () => {
+        const { chatId } = this.props;
+        if (!chatId) return;
+        try {
+            const result = await TdLibController.send({
+                '@type': 'searchChatMessages',
+                chat_id: chatId,
+                query: '',
+                sender_user_id: 0,
+                from_message_id: 0,
+                offset: 0,
+                limit: 50,
+                filter: { '@type': 'searchMessagesFilterPinned' }
+            });
+            if (result && result.messages && result.messages.length > 0) {
+                const pinnedIds = result.messages.map(m => m.id);
+                result.messages.forEach(m => MessageStore.set(m));
+                this.setState({ pinnedIds, messageId: pinnedIds[0], currentIndex: 0 });
+            }
+        } catch (e) {
+            // older TDLib may not support this filter — fall back to single pin
+        }
+    };
+
     onClientUpdateDialogsReady = update => {
         const { messageId } = this.state;
-
-        if (messageId) {
-            this.loadContent();
-        }
+        if (messageId) this.loadContent();
     };
 
     onClientUpdateSetChatClientData = update => {
         const { chatId, clientData } = update;
-
         if (this.props.chatId !== chatId) return;
-
         this.setState({ clientData });
     };
 
     onUpdateChatPinnedMessage = update => {
-        const { chat_id, pinned_message_id: messageId } = update;
+        const { chat_id, pinned_message_id: newId } = update;
         const { chatId } = this.props;
-
         if (chatId !== chat_id) return;
 
-        this.setState({ messageId });
+        this.setState(state => {
+            const ids = state.pinnedIds.includes(newId)
+                ? state.pinnedIds
+                : newId
+                ? [newId, ...state.pinnedIds]
+                : state.pinnedIds;
+            return { pinnedIds: ids, messageId: newId || (ids.length ? ids[0] : 0), currentIndex: 0 };
+        });
     };
 
     loadContent = () => {
         const { chatId } = this.props;
         const { messageId } = this.state;
 
-        if (!chatId) return;
-        if (!messageId) return;
+        if (!chatId || !messageId) return;
 
         const message = MessageStore.get(chatId, messageId);
         if (message) return;
 
-        TdLibController.send({
-            '@type': 'getMessage',
-            chat_id: chatId,
-            message_id: messageId
-        })
+        TdLibController.send({ '@type': 'getMessage', chat_id: chatId, message_id: messageId })
             .then(result => {
                 MessageStore.set(result);
-
                 const store = FileStore.getStore();
                 loadMessageContents(store, [result]);
-
                 this.forceUpdate();
             })
             .catch(error => {
-                const { code, message } = error;
-                if (message !== 'Chat not found') {
-                    const deletedMessage = {
-                        '@type': 'deletedMessage',
-                        chat_id: chatId,
-                        id: messageId,
-                        content: null
-                    };
-
-                    MessageStore.set(deletedMessage);
+                if (error.message !== 'Chat not found') {
+                    MessageStore.set({ '@type': 'deletedMessage', chat_id: chatId, id: messageId, content: null });
                     this.forceUpdate();
                 }
             });
     };
 
-    shouldComponentUpdate(nextProps, nextState, nextContext) {
+    shouldComponentUpdate(nextProps, nextState) {
         const { chatId, t, theme } = this.props;
-        const { clientData, confirm, messageId } = this.state;
+        const { clientData, confirm, messageId, pinnedIds, currentIndex } = this.state;
 
-        if (nextProps.t !== t) {
-            return true;
-        }
-
-        if (nextProps.theme !== theme) {
-            return true;
-        }
-
-        if (nextProps.chatId !== chatId) {
-            return true;
-        }
-
-        if (nextState.clientData !== clientData) {
-            return true;
-        }
-
-        if (nextState.confirm !== confirm) {
-            return true;
-        }
-
-        if (nextState.messageId !== messageId) {
-            return true;
-        }
+        if (nextProps.t !== t) return true;
+        if (nextProps.theme !== theme) return true;
+        if (nextProps.chatId !== chatId) return true;
+        if (nextState.clientData !== clientData) return true;
+        if (nextState.confirm !== confirm) return true;
+        if (nextState.messageId !== messageId) return true;
+        if (nextState.pinnedIds !== pinnedIds) return true;
+        if (nextState.currentIndex !== currentIndex) return true;
 
         return false;
     }
@@ -185,10 +188,17 @@ class PinnedMessage extends React.Component {
     handleClick = event => {
         const { chatId } = this.props;
         const { messageId } = this.state;
-
         if (!messageId) return;
-
         openChat(chatId, messageId);
+    };
+
+    handleNext = event => {
+        event.stopPropagation();
+        const { pinnedIds, currentIndex } = this.state;
+        if (pinnedIds.length <= 1) return;
+        const nextIndex = (currentIndex + 1) % pinnedIds.length;
+        const messageId = pinnedIds[nextIndex];
+        this.setState({ currentIndex: nextIndex, messageId }, this.loadContent);
     };
 
     handleDelete = async event => {
@@ -205,7 +215,7 @@ class PinnedMessage extends React.Component {
             const data = ChatStore.getClientData(chatId);
             await TdLibController.clientUpdate({
                 '@type': 'clientUpdateSetChatClientData',
-                chatId: chatId,
+                chatId,
                 clientData: Object.assign({}, data, { unpinned_message_id: messageId })
             });
         }
@@ -213,13 +223,9 @@ class PinnedMessage extends React.Component {
 
     handleUnpin = async () => {
         const { chatId } = this.props;
-
+        const { messageId } = this.state;
         this.handleClose();
-
-        TdLibController.send({
-            '@type': 'unpinChatMessage',
-            chat_id: chatId
-        });
+        TdLibController.send({ '@type': 'unpinChatMessage', chat_id: chatId, message_id: messageId });
     };
 
     handleClose = () => {
@@ -228,7 +234,7 @@ class PinnedMessage extends React.Component {
 
     render() {
         const { chatId, classes, t } = this.props;
-        const { messageId, confirm } = this.state;
+        const { messageId, confirm, pinnedIds, currentIndex } = this.state;
 
         if (!chatId) return null;
 
@@ -238,13 +244,14 @@ class PinnedMessage extends React.Component {
         const message = MessageStore.get(chatId, messageId);
         if (!message) return null;
 
-        let content = !message ? t('Loading') : getContent(message, t);
+        let content = getContent(message, t);
         const photoSize = getReplyPhotoSize(chatId, messageId);
         const minithumbnail = getReplyMinithumbnail(chatId, messageId);
 
-        if (isDeletedMessage(message)) {
-            content = t('DeletedMessage');
-        }
+        if (isDeletedMessage(message)) content = t('DeletedMessage');
+
+        const total = pinnedIds.length;
+        const label = total > 1 ? `${t('PinnedMessage')} ${total - currentIndex} of ${total}` : t('PinnedMessage');
 
         return (
             <>
@@ -252,6 +259,22 @@ class PinnedMessage extends React.Component {
                     className={classNames('pinned-message', classes.pinnedMessage, classes.borderColor)}
                     onMouseDown={this.handleClick}>
                     <div className='pinned-message-wrapper'>
+                        {total > 1 && (
+                            <div
+                                className='pinned-message-counter'
+                                onMouseDown={this.handleNext}
+                                title='Next pinned message'>
+                                {Array.from({ length: Math.min(total, 4) }).map((_, i) => (
+                                    <div
+                                        key={i}
+                                        className={classNames('pinned-counter-bar', {
+                                            'pinned-counter-bar-active':
+                                                i === (total - 1 - currentIndex) % Math.min(total, 4)
+                                        })}
+                                    />
+                                ))}
+                            </div>
+                        )}
                         <div className='border reply-border' />
                         {photoSize && (
                             <ReplyTile
@@ -262,7 +285,7 @@ class PinnedMessage extends React.Component {
                             />
                         )}
                         <div className='pinned-message-content'>
-                            <div className='pinned-message-content-title'>{t('PinnedMessage')}</div>
+                            <div className='pinned-message-content-title'>{label}</div>
                             <div className='pinned-message-content-subtitle'>{content}</div>
                         </div>
                         <div className='pinned-message-delete-button'>
@@ -301,9 +324,6 @@ PinnedMessage.propTypes = {
     chatId: PropTypes.number.isRequired
 };
 
-const enhance = compose(
-    withStyles(styles, { withTheme: true }),
-    withTranslation()
-);
+const enhance = compose(withStyles(styles, { withTheme: true }), withTranslation());
 
 export default enhance(PinnedMessage);
