@@ -235,7 +235,16 @@ class GramJsController extends EventEmitter {
         });
 
         this._clearCaches();
-        const savedSession = localStorage.getItem(this._getActiveSessionKey()) || '';
+        const sessionKey = this._getActiveSessionKey();
+        let savedSession = localStorage.getItem(sessionKey) || '';
+        // Fallback: si la clave nueva está vacía, intentar con la clave legacy
+        if (!savedSession) {
+            const legacy = localStorage.getItem(SESSION_KEY_LEGACY) || '';
+            if (legacy) {
+                savedSession = legacy;
+                localStorage.setItem(sessionKey, legacy);
+            }
+        }
         const session = new StringSession(savedSession);
 
         this.client = new TelegramClient(session, apiId, apiHash, this._buildClientOptions());
