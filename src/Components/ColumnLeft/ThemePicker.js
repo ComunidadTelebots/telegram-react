@@ -175,7 +175,9 @@ class ThemePicker extends React.Component {
                 label: 'Telegram Web',
                 preview: {
                     sidebar: '#ffffff',
+                    chatBg: '#f0f0f0',
                     bubble: '#eeffde',
+                    bubbleTextOut: '#333',
                     bubbleIn: '#ffffff',
                     radius: '10px 10px 10px 0',
                     radiusOut: '10px 10px 0 10px',
@@ -187,8 +189,10 @@ class ThemePicker extends React.Component {
                 label: 'macOS',
                 preview: {
                     sidebar: '#f2f2f7',
-                    bubble: '#d1f4ff',
-                    bubbleIn: '#f7f7f9',
+                    chatBg: '#ffffff',
+                    bubble: '#007aff',
+                    bubbleTextOut: '#ffffff',
+                    bubbleIn: '#ffffff',
                     radius: '18px 18px 18px 6px',
                     radiusOut: '18px 18px 6px 18px',
                     font: '-apple-system'
@@ -199,7 +203,9 @@ class ThemePicker extends React.Component {
                 label: 'TDesktop',
                 preview: {
                     sidebar: '#ffffff',
-                    bubble: '#edffc3',
+                    chatBg: '#c8d8e8',
+                    bubble: '#effdde',
+                    bubbleTextOut: '#333',
                     bubbleIn: '#ffffff',
                     radius: '6px 6px 6px 0',
                     radiusOut: '6px 6px 0 6px',
@@ -383,7 +389,7 @@ class ThemePicker extends React.Component {
                                             <div
                                                 style={{
                                                     flex: 1,
-                                                    background: opt.value === 'tdesktop' ? '#c3d0d8' : '#f0f0f0',
+                                                    background: opt.preview.chatBg || '#f0f0f0',
                                                     padding: '6px 5px',
                                                     display: 'flex',
                                                     flexDirection: 'column',
@@ -408,7 +414,7 @@ class ThemePicker extends React.Component {
                                                         borderRadius: opt.preview.radiusOut,
                                                         padding: '3px 7px',
                                                         fontSize: 8,
-                                                        color: '#333',
+                                                        color: opt.preview.bubbleTextOut || '#333',
                                                         boxShadow: '0 1px 2px rgba(0,0,0,0.1)'
                                                     }}>
                                                     Hola!

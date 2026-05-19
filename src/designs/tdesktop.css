@@ -1,29 +1,36 @@
-/* ── Diseño TDesktop (Telegram Desktop) ──────────────────────────────────── */
+/* ── Diseño TDesktop (Telegram Desktop oficial) ──────────────────────────── */
 
 body.design-tdesktop {
-    font: 13px/18px 'Segoe UI', system-ui, -apple-system, sans-serif;
+    font: 14px/19px 'Segoe UI', system-ui, -apple-system, sans-serif;
 
-    /* Colores clásicos de TDesktop */
-    --message-out-background: #edffc3;
+    /* Verde clásico de TDesktop saliente */
+    --message-out-background: #effdde;
+    --message-out-color: #000000;
     --message-out-link: #3a9ad0;
     --message-out-author: #3a9ad0;
     --message-out-meta-color: #6cc264;
     --message-out-reply-title: #3a9ad0;
     --message-out-reply-border: #3a9ad0;
 
+    /* Entrantes: blanco puro */
     --message-in-background: #ffffff;
+    --message-in-color: #000000;
     --message-in-link: #40a7e3;
     --message-in-author: #40a7e3;
     --message-in-meta-color: #aaaaaa;
     --message-in-reply-title: #40a7e3;
     --message-in-reply-border: #40a7e3;
 
+    /* Badges */
     --badge-green: #53b440;
     --indicator-green: #53b440;
-    --day-background: rgba(107, 165, 199, 0.6);
+
+    /* Separadores de día — azul clásico de TDesktop */
+    --day-background: rgba(107, 165, 199, 0.75);
+    --day-color: #ffffff;
 }
 
-/* ── Sidebar más estrecha y compacta ────────────────────────────────────── */
+/* ── Sidebar: blanca, 260px, compacta ──────────────────────────────────── */
 body.design-tdesktop .dialogs {
     width: 260px;
     min-width: 260px;
@@ -36,24 +43,37 @@ body.design-tdesktop .dialogs {
 body.design-tdesktop .dialog-details {
     width: calc(100% - 260px);
     flex: 1;
-    background: #c3d0d8; /* fondo clásico de tdesktop */
 }
 
-/* Fondo de conversación (área de mensajes) */
-body.design-tdesktop .messages-list {
-    background: inherit;
+/* ── Fondo del área de chat: azul-gris clásico de TDesktop ─────────────── */
+body.design-tdesktop .messages-list,
+body.design-tdesktop .messages-list-wrapper {
+    background: #c8d8e8;
 }
 
-/* ── Items de diálogo más compactos ─────────────────────────────────────── */
+/* ── Items de la lista: compactos como TDesktop ─────────────────────────── */
+body.design-tdesktop .dialog-wrapper {
+    padding: 7px 10px;
+}
+
+body.design-tdesktop .dialog-active .dialog-wrapper {
+    background: #d4e8f7;
+}
+
+body.design-tdesktop .dialog-title {
+    font-weight: 500;
+    font-size: 14px;
+}
+
 body.design-tdesktop .dialog-content {
-    padding: 6px 10px;
+    font-size: 13px;
 }
 
-/* ── Burbujas ───────────────────────────────────────────────────────────── */
+/* ── Burbujas: angulosas, clásicas de TDesktop ──────────────────────────── */
 body.design-tdesktop .message-bubble {
     border-radius: 6px 6px 6px 0 !important;
-    padding: 5px 8px;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.18) !important;
+    padding: 5px 9px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.15) !important;
     background: var(--message-in-background);
 }
 
@@ -74,9 +94,9 @@ body.design-tdesktop .message-bubble::after {
     bottom: -2px;
 }
 
-/* ── Wrapper de mensajes: más compacto ──────────────────────────────────── */
+/* ── Wrapper de mensajes: compacto ──────────────────────────────────────── */
 body.design-tdesktop .message-wrapper {
-    max-width: 900px;
+    max-width: 860px;
     padding: 3px 36px 3px 6px;
 }
 
@@ -84,7 +104,7 @@ body.design-tdesktop .message-content {
     max-width: 500px;
 }
 
-/* ── Header ─────────────────────────────────────────────────────────────── */
+/* ── Header: blanco, borde fino ─────────────────────────────────────────── */
 body.design-tdesktop .header-details {
     min-height: 54px;
     background: #ffffff;
@@ -92,7 +112,7 @@ body.design-tdesktop .header-details {
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
 }
 
-/* ── Input box ──────────────────────────────────────────────────────────── */
+/* ── Input box: blanco, simple ──────────────────────────────────────────── */
 body.design-tdesktop .inputbox-background {
     background: #ffffff;
     border-top: 1px solid #e7e7e7;
@@ -108,13 +128,18 @@ body.design-tdesktop .inputbox-send-button {
     border-radius: 50% !important;
 }
 
-/* ── Scrollbar ──────────────────────────────────────────────────────────── */
+/* ── Avatares circulares ────────────────────────────────────────────────── */
+body.design-tdesktop .tile {
+    border-radius: 50%;
+}
+
+/* ── Scrollbar: estilo Windows/TDesktop ─────────────────────────────────── */
 body.design-tdesktop ::-webkit-scrollbar {
     width: 8px;
 }
 
 body.design-tdesktop ::-webkit-scrollbar-track {
-    background: rgba(0, 0, 0, 0.05);
+    background: rgba(0, 0, 0, 0.04);
 }
 
 body.design-tdesktop ::-webkit-scrollbar-thumb {
@@ -122,14 +147,13 @@ body.design-tdesktop ::-webkit-scrollbar-thumb {
     border-radius: 4px;
 }
 
-/* ── Day separator ──────────────────────────────────────────────────────── */
-body.design-tdesktop .day-meta-bubble {
-    border-radius: 8px;
-    background: rgba(107, 165, 199, 0.6);
-    font-size: 12px;
+body.design-tdesktop ::-webkit-scrollbar-thumb:hover {
+    background: rgba(0, 0, 0, 0.35);
 }
 
-/* ── Tiles: ligeramente cuadrados (como TDesktop antiguo) ───────────────── */
-body.design-tdesktop .tile {
-    border-radius: 50%;
+/* ── Separador de día: estilo TDesktop ──────────────────────────────────── */
+body.design-tdesktop .day-meta-wrapper {
+    border-radius: 8px;
+    font-size: 12px;
+    background: rgba(107, 165, 199, 0.75);
 }

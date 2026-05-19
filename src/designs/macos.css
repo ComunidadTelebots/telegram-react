@@ -1,86 +1,116 @@
-/* ── Diseño macOS (Telegram para macOS) ───────────────────────────────────── */
+/* ── Diseño macOS (Telegram para macOS oficial) ───────────────────────────── */
 
 body.design-macos {
-    font: 14px/19px -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helvetica Neue', sans-serif;
+    font: 15px/20px -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helvetica Neue', sans-serif;
+    -webkit-font-smoothing: antialiased;
 
-    /* Colores salientes: azul iOS en lugar de verde */
-    --message-out-background: #d1f4ff;
-    --message-out-link: #007aff;
-    --message-out-author: #007aff;
-    --message-out-meta-color: rgba(0, 122, 255, 0.65);
-    --message-out-reply-title: #007aff;
-    --message-out-reply-border: #007aff;
+    /* Salientes: azul iOS sólido (#007aff) con texto blanco */
+    --message-out-background: #007aff;
+    --message-out-color: #ffffff;
+    --message-out-link: rgba(255, 255, 255, 0.9);
+    --message-out-author: rgba(255, 255, 255, 0.85);
+    --message-out-meta-color: rgba(255, 255, 255, 0.6);
+    --message-out-reply-title: rgba(255, 255, 255, 0.9);
+    --message-out-reply-border: rgba(255, 255, 255, 0.5);
 
-    /* Colores entrantes: fondo blanco ligeramente cálido */
-    --message-in-background: #f7f7f9;
+    /* Entrantes: blanco con sombra sutil */
+    --message-in-background: #ffffff;
+    --message-in-color: #000000;
+    --message-in-link: #007aff;
+    --message-in-author: #007aff;
     --message-in-meta-color: #8e8e93;
+    --message-in-reply-title: #007aff;
+    --message-in-reply-border: #007aff;
 
-    /* Badges más sutiles */
+    /* Sistema macOS */
     --badge-green: #34c759;
     --indicator-green: #34c759;
-
-    /* Separadores de día */
-    --day-background: rgba(0, 0, 0, 0.2);
+    --day-background: rgba(0, 0, 0, 0.18);
+    --color-accent-main: #007aff;
 }
 
 /* ── Sidebar ────────────────────────────────────────────────────────────── */
 body.design-macos .dialogs {
-    width: 300px;
-    min-width: 300px;
-    max-width: 300px;
+    width: 320px;
+    min-width: 320px;
+    max-width: 320px;
     flex: none;
     background: #f2f2f7;
-    border-right: 1px solid rgba(0, 0, 0, 0.1);
+    border-right: 1px solid rgba(0, 0, 0, 0.12);
 }
 
 body.design-macos .dialog-details {
-    width: calc(100% - 300px);
+    width: calc(100% - 320px);
     flex: 1;
 }
 
-/* Items de diálogo */
-body.design-macos .dialog-content {
+/* ── Fondo del área de chat: blanco (como en macOS Telegram) ──────────── */
+body.design-macos .messages-list,
+body.design-macos .messages-list-wrapper {
+    background: #ffffff;
+}
+
+/* ── Items de la lista de chats ─────────────────────────────────────────── */
+body.design-macos .dialog-wrapper {
     padding: 8px 12px;
+    margin: 0 8px;
+    border-radius: 10px;
+}
+
+body.design-macos .dialog-active .dialog-wrapper {
+    background: #007aff;
+    border-radius: 10px;
 }
 
 body.design-macos .dialog-title {
     font-weight: 600;
-    letter-spacing: -0.2px;
+    letter-spacing: -0.3px;
 }
 
-/* ── Burbujas ───────────────────────────────────────────────────────────── */
+/* ── Burbujas: muy redondeadas, estilo iMessage ─────────────────────────── */
 body.design-macos .message-bubble {
     border-radius: 18px 18px 18px 6px !important;
-    padding: 7px 12px;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.07) !important;
+    padding: 8px 12px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08) !important;
     background: var(--message-in-background);
 }
 
 body.design-macos .message-bubble-out {
     border-radius: 18px 18px 6px 18px !important;
-    background: var(--message-out-background);
+    background: var(--message-out-background) !important;
+    color: #ffffff;
 }
 
+/* Texto blanco dentro de burbujas salientes */
+body.design-macos .message-bubble-out .message-text,
+body.design-macos .message-bubble-out .message-body,
+body.design-macos .message-bubble-out p,
+body.design-macos .message-bubble-out span {
+    color: #ffffff;
+}
+
+/* Mensajes cortos (sin cola): completamente redondos */
 body.design-macos .message-short .message-bubble {
     border-radius: 18px !important;
 }
 
-/* Cola de burbuja: más pequeña y suave */
+/* Eliminar la cola SVG — macOS Telegram no usa colas en las burbujas */
 body.design-macos .message-bubble::after {
-    width: 9px;
-    height: 16px;
-    left: -8px;
-    bottom: -2px;
-    transform: translate(-1px, -1px);
+    content: none !important;
+}
+
+body.design-macos .message-bubble-out::after {
+    content: none !important;
 }
 
 /* ── Wrapper de mensajes ────────────────────────────────────────────────── */
 body.design-macos .message-wrapper {
-    padding: 3px 36px 3px 6px;
+    max-width: 860px;
+    padding: 2px 16px 2px 16px;
 }
 
 body.design-macos .message-content {
-    max-width: 520px;
+    max-width: 500px;
 }
 
 /* ── Header ─────────────────────────────────────────────────────────────── */
@@ -88,19 +118,38 @@ body.design-macos .header-details {
     min-height: 52px;
     background: #f2f2f7;
     border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    box-shadow: none;
 }
 
 /* ── Input box ──────────────────────────────────────────────────────────── */
-body.design-macos .inputbox-bubble {
-    border-radius: 20px 20px 0 20px;
+body.design-macos .inputbox-background {
+    background: #f2f2f7;
+    border-top: 1px solid rgba(0, 0, 0, 0.1);
 }
 
-/* ── Tiles / Avatares ───────────────────────────────────────────────────── */
+/* Input: pill redondeado, sin cola */
+body.design-macos .inputbox-bubble {
+    border-radius: 20px;
+    margin-right: 8px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+body.design-macos .inputbox-bubble::after {
+    content: none !important;
+}
+
+/* ── Botón de enviar: azul iOS ──────────────────────────────────────────── */
+body.design-macos .inputbox-send-button {
+    border-radius: 50% !important;
+    box-shadow: 0 2px 6px rgba(0, 122, 255, 0.4) !important;
+}
+
+/* ── Avatares circulares ────────────────────────────────────────────────── */
 body.design-macos .tile {
     border-radius: 50%;
 }
 
-/* ── Scrollbar estilo macOS ─────────────────────────────────────────────── */
+/* ── Scrollbar fino estilo macOS ────────────────────────────────────────── */
 body.design-macos ::-webkit-scrollbar {
     width: 6px;
     height: 6px;
@@ -124,15 +173,10 @@ body.design-macos ::selection {
     background: rgba(0, 122, 255, 0.3);
 }
 
-/* ── Day separator ──────────────────────────────────────────────────────── */
-body.design-macos .day-meta-bubble {
+/* ── Separador de día ───────────────────────────────────────────────────── */
+body.design-macos .day-meta-wrapper {
     border-radius: 10px;
     font-size: 12px;
     letter-spacing: 0.2px;
-}
-
-/* Botón de enviar circular */
-body.design-macos .inputbox-send-button {
-    border-radius: 50% !important;
-    box-shadow: 0 1px 4px rgba(0, 122, 255, 0.4) !important;
+    background: rgba(0, 0, 0, 0.18);
 }
