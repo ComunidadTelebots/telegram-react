@@ -10,6 +10,7 @@ import IconButton from '@material-ui/core/IconButton';
 import MenuIcon from '@material-ui/icons/Menu';
 import Menu from '@material-ui/core/Menu';
 import MenuItem from '@material-ui/core/MenuItem';
+import Divider from '@material-ui/core/Divider';
 import withStyles from '@material-ui/core/styles/withStyles';
 import { withTranslation } from 'react-i18next';
 import { compose } from 'recompose';
@@ -18,6 +19,7 @@ import LanguagePicker from './LanguagePicker';
 import { update } from '../../registerServiceWorker';
 import { isAuthorizationReady } from '../../Utils/Common';
 import ApplicationStore from '../../Stores/ApplicationStore';
+import TdLibController from '../../Controllers/TdLibController';
 import { WASM_FILE_HASH, WASM_FILE_NAME } from '../../Constants';
 
 const styles = {
@@ -40,20 +42,30 @@ class MainMenuButton extends React.Component {
 
         this.state = {
             authorizationState: ApplicationStore.getAuthorizationState(),
-            anchorEl: null
+            anchorEl: null,
+            accounts: TdLibController.getAccounts ? TdLibController.getAccounts() : [],
+            activeAccountIndex: parseInt(localStorage.getItem('tg_gramjs_active_account') || '0', 10)
         };
     }
 
     componentDidMount() {
         ApplicationStore.on('updateAuthorizationState', this.onUpdateAuthorizationState);
+        TdLibController.on('clientUpdate', this.onClientUpdate);
     }
 
     componentWillUnmount() {
         ApplicationStore.off('updateAuthorizationState', this.onUpdateAuthorizationState);
+        TdLibController.off('clientUpdate', this.onClientUpdate);
     }
 
     onUpdateAuthorizationState = update => {
         this.setState({ authorizationState: update.authorization_state });
+    };
+
+    onClientUpdate = update => {
+        if (update['@type'] === 'clientUpdateAccounts') {
+            this.setState({ accounts: update.accounts, activeAccountIndex: update.activeIndex });
+        }
     };
 
     handleMenuOpen = event => {
@@ -69,8 +81,17 @@ class MainMenuButton extends React.Component {
 
     handleLogOut = () => {
         this.handleMenuClose();
-
         this.props.onLogOut();
+    };
+
+    handleAddAccount = () => {
+        this.handleMenuClose();
+        if (TdLibController.addAccount) TdLibController.addAccount();
+    };
+
+    handleSwitchAccount = index => {
+        this.handleMenuClose();
+        if (TdLibController.switchAccount) TdLibController.switchAccount(index);
     };
 
     handleCheckUpdates = async () => {
@@ -100,7 +121,9 @@ class MainMenuButton extends React.Component {
 
     render() {
         const { classes, t } = this.props;
-        const { anchorEl, authorizationState } = this.state;
+        const { anchorEl, authorizationState, accounts, activeAccountIndex } = this.state;
+
+        const otherAccounts = accounts.filter(a => a.index !== activeAccountIndex);
 
         const mainMenuControl = isAuthorizationReady(authorizationState) ? (
             <>
@@ -116,6 +139,14 @@ class MainMenuButton extends React.Component {
                     <MenuItem onClick={this.handleCheckUpdates}>{t('UpdateTelegram')}</MenuItem>
                     <MenuItem onClick={this.handleAppearance}>{t('Appearance')}</MenuItem>
                     <MenuItem onClick={this.handleLanguage}>{t('Language')}</MenuItem>
+                    <Divider />
+                    {otherAccounts.map(a => (
+                        <MenuItem key={a.index} onClick={() => this.handleSwitchAccount(a.index)}>
+                            {a.name || a.phone || `Account ${a.index + 1}`}
+                        </MenuItem>
+                    ))}
+                    <MenuItem onClick={this.handleAddAccount}>Add Account</MenuItem>
+                    <Divider />
                     <MenuItem onClick={this.handleLogOut}>{t('LogOut')}</MenuItem>
                 </Menu>
             </>
@@ -139,9 +170,6 @@ class MainMenuButton extends React.Component {
     }
 }
 
-const enhance = compose(
-    withTranslation(),
-    withStyles(styles, { withTheme: true })
-);
+const enhance = compose(withTranslation(), withStyles(styles, { withTheme: true }));
 
 export default enhance(MainMenuButton);

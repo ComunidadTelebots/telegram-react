@@ -26,7 +26,10 @@ import {
 } from '../Utils/GramJs/EntityTranslator';
 import { loadMessages, saveMessages } from '../Utils/MessageCache';
 
-const SESSION_KEY = 'tg_gramjs_session';
+const ACCOUNTS_KEY = 'tg_gramjs_accounts';
+const ACTIVE_ACCOUNT_KEY = 'tg_gramjs_active_account';
+const SESSION_KEY_PREFIX = 'tg_gramjs_session_';
+const SESSION_KEY_LEGACY = 'tg_gramjs_session'; // for migration
 
 class GramJsController extends EventEmitter {
     constructor() {
@@ -34,6 +37,25 @@ class GramJsController extends EventEmitter {
         this.client = null;
         this.parameters = { useTestDC: false };
         this.disableLog = false;
+
+        // Multi-account support — inline to avoid class-field ordering issues
+        {
+            const stored = localStorage.getItem(ACCOUNTS_KEY);
+            let accounts = null;
+            if (stored) {
+                try {
+                    accounts = JSON.parse(stored);
+                } catch {}
+            }
+            if (!accounts) {
+                const legacySession = localStorage.getItem(SESSION_KEY_LEGACY);
+                if (legacySession) localStorage.setItem(`${SESSION_KEY_PREFIX}0`, legacySession);
+                accounts = [{ index: 0, sessionKey: `${SESSION_KEY_PREFIX}0`, userId: null, name: null, phone: null }];
+                localStorage.setItem(ACCOUNTS_KEY, JSON.stringify(accounts));
+            }
+            this._accounts = accounts;
+        }
+        this._activeAccountIndex = parseInt(localStorage.getItem(ACTIVE_ACCOUNT_KEY) || '0', 10);
 
         // Cachés locales para reverse-lookup
         this._entityCache = new Map(); // chatId → entity raw (para access hash)
@@ -63,6 +85,106 @@ class GramJsController extends EventEmitter {
         this.setMaxListeners(Infinity);
     }
 
+    // ─── Multi-account helpers ───────────────────────────────────────────────
+
+    _saveAccounts = () => {
+        localStorage.setItem(ACCOUNTS_KEY, JSON.stringify(this._accounts));
+        this.clientUpdate({
+            '@type': 'clientUpdateAccounts',
+            accounts: [...this._accounts],
+            activeIndex: this._activeAccountIndex
+        });
+    };
+
+    _getActiveSessionKey = () => {
+        const account = this._accounts.find(a => a.index === this._activeAccountIndex);
+        return account ? account.sessionKey : `${SESSION_KEY_PREFIX}0`;
+    };
+
+    _getNextAccountIndex = () => {
+        const used = new Set(this._accounts.map(a => a.index));
+        let i = 0;
+        while (used.has(i)) i++;
+        return i;
+    };
+
+    _saveAccountInfo = me => {
+        const account = this._accounts.find(a => a.index === this._activeAccountIndex);
+        if (account) {
+            account.userId = Number(me.id);
+            account.name = [me.firstName, me.lastName].filter(Boolean).join(' ') || null;
+            account.phone = me.phone ? `+${me.phone}` : null;
+            this._saveAccounts();
+        }
+    };
+
+    _clearCaches = () => {
+        this._entityCache.clear();
+        this._chatCache.clear();
+        this._userCache.clear();
+        this._downloadedFiles.clear();
+        this._downloadingFiles.clear();
+        this._folderChats.clear();
+        this._chatFilters = [];
+        this._stickerSetAccessHashes.clear();
+    };
+
+    _switchToAccount = async index => {
+        this._activeAccountIndex = index;
+        localStorage.setItem(ACTIVE_ACCOUNT_KEY, String(index));
+        try {
+            if (this.client) await this.client.disconnect();
+        } catch {}
+        this._clearCaches();
+        this._resetInitialDialogsPromise();
+        this._emitUpdate({
+            '@type': 'updateAuthorizationState',
+            authorization_state: { '@type': 'authorizationStateLoggingOut' }
+        });
+        this._emitUpdate({
+            '@type': 'updateAuthorizationState',
+            authorization_state: { '@type': 'authorizationStateClosed' }
+        });
+        // ApplicationStore handles authorizationStateClosed → calls init() → _startClient()
+    };
+
+    getAccounts = () => this._accounts.map(a => ({ ...a }));
+
+    addAccount = async () => {
+        const nextIndex = this._getNextAccountIndex();
+        this._accounts.push({
+            index: nextIndex,
+            sessionKey: `${SESSION_KEY_PREFIX}${nextIndex}`,
+            userId: null,
+            name: null,
+            phone: null
+        });
+        this._saveAccounts();
+        await this._switchToAccount(nextIndex);
+    };
+
+    switchAccount = async index => {
+        if (index === this._activeAccountIndex) return;
+        await this._switchToAccount(index);
+    };
+
+    removeAccount = async index => {
+        const account = this._accounts.find(a => a.index === index);
+        if (account) localStorage.removeItem(account.sessionKey);
+        this._accounts = this._accounts.filter(a => a.index !== index);
+        this._saveAccounts();
+
+        if (this._activeAccountIndex === index) {
+            const remaining = this._accounts[0];
+            if (remaining) {
+                await this._switchToAccount(remaining.index);
+            } else {
+                // No accounts left — full server-side logout
+                await this._logOut();
+            }
+        }
+    };
+
     // ─── Ciclo de vida ───────────────────────────────────────────────────────
 
     init = location => {
@@ -85,7 +207,8 @@ class GramJsController extends EventEmitter {
             authorization_state: { '@type': 'authorizationStateWaitTdlibParameters' }
         });
 
-        const savedSession = localStorage.getItem(SESSION_KEY) || '';
+        this._clearCaches();
+        const savedSession = localStorage.getItem(this._getActiveSessionKey()) || '';
         const session = new StringSession(savedSession);
 
         this.client = new TelegramClient(session, apiId, apiHash, this._buildClientOptions());
@@ -132,7 +255,7 @@ class GramJsController extends EventEmitter {
     _saveSession = () => {
         try {
             const str = this.client.session.save();
-            if (str) localStorage.setItem(SESSION_KEY, str);
+            if (str) localStorage.setItem(this._getActiveSessionKey(), str);
         } catch (e) {
             /* no-op */
         }
@@ -161,9 +284,10 @@ class GramJsController extends EventEmitter {
             console.warn('[GramJs] No se pudo obtener usuario propio', e);
         }
 
-        // Emitir updateOption con el user id propio
+        // Emitir updateOption con el user id propio y guardar info de cuenta
         const me = await this.client.getMe().catch(() => null);
         if (me) {
+            this._saveAccountInfo(me);
             this._emitUpdate({
                 '@type': 'updateOption',
                 name: 'my_id',
@@ -350,6 +474,19 @@ class GramJsController extends EventEmitter {
                 return {};
             case 'logOut':
                 return this._logOut();
+
+            // ── Multi-cuenta ──────────────────────────────────────────────────
+            case 'getAccounts':
+                return { '@type': 'accounts', accounts: this.getAccounts(), activeIndex: this._activeAccountIndex };
+            case 'addAccount':
+                await this.addAccount();
+                return {};
+            case 'switchAccount':
+                await this.switchAccount(req.index);
+                return {};
+            case 'removeAccount':
+                await this.removeAccount(req.index);
+                return {};
 
             // ── Chats ─────────────────────────────────────────────────────────
             case 'getChats':
@@ -663,7 +800,19 @@ class GramJsController extends EventEmitter {
 
     _logOut = async () => {
         await this.client.invoke(new Api.auth.LogOut()).catch(() => {});
-        localStorage.removeItem(SESSION_KEY);
+        localStorage.removeItem(this._getActiveSessionKey());
+        // Remove current account from list
+        this._accounts = this._accounts.filter(a => a.index !== this._activeAccountIndex);
+        this._saveAccounts();
+
+        // If another account exists, switch to it; otherwise full logout
+        const remaining = this._accounts[0];
+        if (remaining) {
+            this._activeAccountIndex = remaining.index;
+            localStorage.setItem(ACTIVE_ACCOUNT_KEY, String(remaining.index));
+        }
+
+        this._clearCaches();
         this._resetInitialDialogsPromise();
         this._emitUpdate({
             '@type': 'updateAuthorizationState',

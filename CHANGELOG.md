@@ -41,6 +41,16 @@
 - Eliminada la dependencia de `tdweb` en el flujo principal (sigue en `package.json` hasta confirmar migración completa)
 - Suprimido aviso "app desactualizada" de `updateServiceNotification` (sustituido por `console.warn`)
 
+### Novedades (sesión 2026-05-19 — multicuenta)
+- **Soporte multicuenta** — permite alternar entre varias sesiones de Telegram sin cerrar sesión:
+  - `GramJsController`: cada cuenta tiene su propia clave de sesión (`tg_gramjs_session_0`, `_1`, …); se migra automáticamente la sesión legacy.
+  - `_accounts` (array en localStorage `tg_gramjs_accounts`) guarda `{index, sessionKey, userId, name, phone}` de cada cuenta logueada.
+  - `addAccount()` crea una nueva ranura y lanza el flujo de auth vacío (número de teléfono → código).
+  - `switchAccount(index)` desconecta el cliente actual, limpia caches, y reutiliza el flujo `authorizationStateClosed → init()` para reconectar con la sesión de la cuenta destino.
+  - `removeAccount(index)` borra la sesión de localStorage y cambia a la siguiente cuenta disponible (o hace logout completo si no queda ninguna).
+  - `_saveAccountInfo(me)` actualiza nombre y teléfono en el registro de cuenta tras cada login.
+  - `MainMenuButton`: botón "Add Account" en el menú de hamburguesa; aparece un ítem "Switch to [nombre]" por cada cuenta adicional logueada.
+
 ### Novedades (sesión 2026-05-19 — stickers animados)
 - **Stickers animados TGS** — los stickers Lottie/TGS ahora se reproducen en el chat:
   - `EntityTranslator.translateSticker`: detecta mime `application/x-tgsticker` y asigna `is_animated: true`; propaga `set_id` desde `DocumentAttributeSticker.stickerset.id`.
