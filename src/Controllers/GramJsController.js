@@ -1385,7 +1385,7 @@ class GramJsController extends EventEmitter {
             if (action?.['@type'] === 'chatActionUploadingDocument')
                 mtAction = new Api.SendMessageUploadDocumentAction({ progress: 0 });
             if (action?.['@type'] === 'chatActionRecordingVideo') mtAction = new Api.SendMessageRecordVideoAction();
-            await this.client.invoke(new Api.messages.SetTyping({ peer: mtAction, action: mtAction }));
+            await this.client.invoke(new Api.messages.SetTyping({ peer: inputPeer, action: mtAction }));
         } catch (e) {
             /* no-op */
         }
@@ -1597,8 +1597,21 @@ class GramJsController extends EventEmitter {
 
         try {
             const cls = gMedia.className || gMedia._;
-            let inputLocation;
             const dcId = gMedia.dcId;
+
+            if (gMedia['@type'] === 'profilePhoto') {
+                const buffer = await this.client.downloadProfilePhoto(gMedia.entity, {
+                    isBig: !!gMedia.isBig,
+                    workers: 1
+                });
+                const blob = new Blob([buffer || new Uint8Array()]);
+                this._downloadedFiles.set(fileId, blob);
+                this._downloadingFiles.delete(fileId);
+                this._emitUpdateFile(fileId, blob, true);
+                return { '@type': 'file', id: fileId };
+            }
+
+            let inputLocation;
 
             if (cls === 'Photo') {
                 const biggestSize = (gMedia.sizes || []).slice(-1)[0];

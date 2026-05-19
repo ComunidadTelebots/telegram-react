@@ -1,0 +1,335 @@
+/*
+ * Unigram design.
+ * A Windows/UWP inspired Telegram layout: Fluent blue accent, airy navigation,
+ * soft surfaces, restrained bubbles and light/dark variants.
+ */
+
+body.design-unigram {
+    font: 14px/20px 'Segoe UI', 'Segoe UI Variable Text', system-ui, sans-serif;
+
+    --unigram-accent: #0078d4;
+    --unigram-accent-hover: #106ebe;
+    --unigram-sidebar: #f7f9fb;
+    --unigram-surface: #ffffff;
+    --unigram-chat-background: #eef3f8;
+    --unigram-card-hover: rgba(0, 120, 212, 0.08);
+    --unigram-card-active: rgba(0, 120, 212, 0.16);
+    --unigram-border: rgba(0, 0, 0, 0.08);
+    --unigram-text-secondary: #5f6b76;
+
+    --message-in-background: #ffffff;
+    --message-in-color: #202020;
+    --message-in-link: #0078d4;
+    --message-in-author: #0078d4;
+    --message-in-meta-color: #69737d;
+    --message-in-reply-title: #0078d4;
+    --message-in-reply-border: #0078d4;
+
+    --message-out-background: #d7ecff;
+    --message-out-color: #202020;
+    --message-out-link: #005a9e;
+    --message-out-author: #005a9e;
+    --message-out-meta-color: #4d87b8;
+    --message-out-reply-title: #005a9e;
+    --message-out-reply-border: #0078d4;
+
+    --badge-green: #16c60c;
+    --indicator-green: #16c60c;
+    --day-background: rgba(75, 105, 130, 0.72);
+    --day-color: #ffffff;
+    --color-accent-main: #0078d4;
+
+    --design-page-background: #ffffff;
+    --design-page-color: #202020;
+    --design-sidebar-background: var(--unigram-sidebar);
+    --design-middle-background: var(--unigram-chat-background);
+    --design-panel-background: var(--unigram-surface);
+    --design-header-background: var(--unigram-surface);
+    --design-header-color: #202020;
+    --design-input-background: var(--unigram-surface);
+    --design-input-surface: #ffffff;
+    --design-border-color: var(--unigram-border);
+    --design-muted-color: var(--unigram-text-secondary);
+    --design-hover-background: var(--unigram-card-hover);
+    --design-active-background: var(--unigram-card-active);
+    --design-dialog-radius: 6px;
+    --design-control-radius: 6px;
+    --design-message-wrapper-max-width: 900px;
+    --design-message-wrapper-padding: 4px 22px;
+    --design-message-content-max-width: 540px;
+    --design-message-radius-in: 6px;
+    --design-message-radius-out: 6px;
+    --design-message-radius-short: 6px;
+    --design-message-padding: 7px 10px;
+    --design-message-shadow: 0 1px 2px rgba(0, 0, 0, 0.12);
+    --design-message-tail-display: none;
+}
+
+body.design-unigram .dialogs {
+    width: 336px;
+    min-width: 336px;
+    max-width: 336px;
+    flex: none;
+    background: var(--unigram-sidebar);
+    border-right: 1px solid var(--unigram-border);
+}
+
+body.design-unigram .dialog-details {
+    width: calc(100% - 336px);
+    flex: 1;
+}
+
+body.design-unigram .messages-list,
+body.design-unigram .messages-list-wrapper {
+    background: linear-gradient(180deg, #f4f8fc 0%, var(--unigram-chat-background) 100%);
+}
+
+body.design-unigram .folder-tabs {
+    padding: 10px 12px 8px;
+    gap: 6px;
+}
+
+body.design-unigram .folder-tab {
+    border-radius: 4px;
+    padding: 6px 12px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--unigram-text-secondary);
+}
+
+body.design-unigram .folder-tab-active {
+    background: var(--unigram-card-active);
+    color: var(--unigram-accent);
+}
+
+body.design-unigram .dialog-wrapper {
+    min-height: 62px;
+    margin: 2px 8px;
+    padding: 8px 10px;
+    border-radius: 6px;
+    box-sizing: border-box;
+}
+
+body.design-unigram .dialog-wrapper:hover {
+    background: var(--unigram-card-hover);
+}
+
+body.design-unigram .dialog-active .dialog-wrapper,
+body.design-unigram .dialog-active .dialog-wrapper:hover {
+    background: var(--unigram-card-active);
+}
+
+body.design-unigram .dialog-title {
+    font-size: 14px;
+    font-weight: 600;
+}
+
+body.design-unigram .dialog-content,
+body.design-unigram .dialog-meta {
+    font-size: 13px;
+    color: var(--unigram-text-secondary);
+}
+
+body.design-unigram .tile {
+    border-radius: 50%;
+}
+
+body.design-unigram .header-details {
+    min-height: 56px;
+    background: var(--unigram-surface);
+    border-bottom: 1px solid var(--unigram-border);
+    box-shadow: none;
+}
+
+body.design-unigram .header-status {
+    font: 600 15px/20px 'Segoe UI', 'Segoe UI Variable Text', system-ui, sans-serif;
+    padding: 0 18px;
+}
+
+body.design-unigram .header-status-title {
+    font-size: 13px;
+    color: var(--unigram-text-secondary);
+}
+
+body.design-unigram .message-wrapper {
+    max-width: 900px;
+    padding: 4px 22px;
+}
+
+body.design-unigram .message-content {
+    max-width: 540px;
+    min-height: 32px;
+}
+
+body.design-unigram .message-bubble {
+    border-radius: 6px;
+    padding: 7px 10px;
+    background: var(--message-in-background);
+    color: var(--message-in-color);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12);
+}
+
+body.design-unigram .message-bubble-out {
+    background: var(--message-out-background);
+    color: var(--message-out-color);
+}
+
+body.design-unigram .message-bubble::after,
+body.design-unigram .message-bubble-out::after {
+    content: none;
+}
+
+body.design-unigram .message-short .message-bubble {
+    border-radius: 6px;
+}
+
+body.design-unigram .day-meta-wrapper {
+    border-radius: 4px;
+    padding: 3px 8px;
+    font-size: 12px;
+    font-weight: 600;
+    background: var(--day-background);
+    color: var(--day-color);
+}
+
+body.design-unigram .inputbox-background {
+    background: var(--unigram-surface);
+    border-top: 1px solid var(--unigram-border);
+}
+
+body.design-unigram .inputbox {
+    width: calc(100% - 28px);
+    max-width: 780px;
+    padding: 9px 0 14px;
+    border-top: 0;
+}
+
+body.design-unigram .inputbox-bubble {
+    min-height: 40px;
+    border-radius: 6px;
+    margin-right: 10px;
+    background: #ffffff;
+    border: 1px solid var(--unigram-border);
+    box-shadow: none;
+}
+
+body.design-unigram .inputbox-bubble::after {
+    content: none;
+}
+
+body.design-unigram #inputbox-message {
+    padding: 10px 2px;
+    font-size: 14px;
+    line-height: 20px;
+}
+
+body.design-unigram .inputbox-icon-button {
+    margin: 5px 7px;
+    padding: 6px;
+    color: var(--unigram-accent);
+}
+
+body.design-unigram .inputbox-right-column {
+    margin-left: 8px;
+}
+
+body.design-unigram .inputbox-send-button {
+    min-width: 40px;
+    width: 40px;
+    height: 40px;
+    border-radius: 6px;
+    background: var(--unigram-accent);
+    box-shadow: none;
+    color: #ffffff;
+}
+
+body.design-unigram .inputbox-send-button:hover {
+    background: var(--unigram-accent-hover);
+}
+
+body.design-unigram ::-webkit-scrollbar {
+    width: 10px;
+}
+
+body.design-unigram ::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+body.design-unigram ::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.22);
+    border: 3px solid transparent;
+    border-radius: 10px;
+    background-clip: padding-box;
+}
+
+body.theme-dark.design-unigram {
+    --unigram-accent: #4cc2ff;
+    --unigram-accent-hover: #73d0ff;
+    --unigram-sidebar: #202020;
+    --unigram-surface: #1b1b1b;
+    --unigram-chat-background: #111827;
+    --unigram-card-hover: rgba(255, 255, 255, 0.06);
+    --unigram-card-active: rgba(76, 194, 255, 0.18);
+    --unigram-border: rgba(255, 255, 255, 0.1);
+    --unigram-text-secondary: #a7b0b8;
+
+    --message-in-background: #252525;
+    --message-in-color: #ffffff;
+    --message-in-link: #4cc2ff;
+    --message-in-author: #4cc2ff;
+    --message-in-meta-color: #a7b0b8;
+    --message-in-reply-title: #4cc2ff;
+    --message-in-reply-border: #4cc2ff;
+
+    --message-out-background: #1f4e79;
+    --message-out-color: #ffffff;
+    --message-out-link: #b8e8ff;
+    --message-out-author: #b8e8ff;
+    --message-out-meta-color: #b2c9dc;
+    --message-out-reply-title: #b8e8ff;
+    --message-out-reply-border: #4cc2ff;
+
+    --day-background: rgba(80, 96, 112, 0.78);
+    --day-color: #ffffff;
+    --color-accent-main: #4cc2ff;
+
+    --design-page-background: #1b1b1b;
+    --design-page-color: #ffffff;
+    --design-sidebar-background: var(--unigram-sidebar);
+    --design-middle-background: var(--unigram-chat-background);
+    --design-panel-background: var(--unigram-surface);
+    --design-header-background: var(--unigram-surface);
+    --design-header-color: #ffffff;
+    --design-input-background: var(--unigram-surface);
+    --design-input-surface: #252525;
+    --design-border-color: var(--unigram-border);
+    --design-muted-color: var(--unigram-text-secondary);
+    --design-hover-background: var(--unigram-card-hover);
+    --design-active-background: var(--unigram-card-active);
+}
+
+body.theme-dark.design-unigram .dialogs,
+body.theme-dark.design-unigram .header-details,
+body.theme-dark.design-unigram .inputbox-background {
+    background: var(--unigram-surface);
+}
+
+body.theme-dark.design-unigram .dialogs {
+    background: var(--unigram-sidebar);
+}
+
+body.theme-dark.design-unigram .messages-list,
+body.theme-dark.design-unigram .messages-list-wrapper {
+    background: linear-gradient(180deg, #141c29 0%, var(--unigram-chat-background) 100%);
+}
+
+body.theme-dark.design-unigram .inputbox-bubble {
+    background: #252525;
+    border-color: var(--unigram-border);
+}
+
+body.theme-dark.design-unigram ::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.24);
+    border: 3px solid transparent;
+    background-clip: padding-box;
+}

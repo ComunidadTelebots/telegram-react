@@ -185,16 +185,30 @@ class ThemePicker extends React.Component {
                 }
             },
             {
+                value: 'android',
+                label: 'Android',
+                preview: {
+                    sidebar: '#ffffff',
+                    chatBg: '#dfe8ef',
+                    bubble: '#e1ffc7',
+                    bubbleTextOut: '#202124',
+                    bubbleIn: '#ffffff',
+                    radius: '8px 8px 8px 2px',
+                    radiusOut: '8px 8px 2px 8px',
+                    font: 'Roboto'
+                }
+            },
+            {
                 value: 'macos',
                 label: 'macOS',
                 preview: {
-                    sidebar: '#f2f2f7',
+                    sidebar: '#f5f5f7',
                     chatBg: '#ffffff',
-                    bubble: '#007aff',
+                    bubble: '#248bf2',
                     bubbleTextOut: '#ffffff',
-                    bubbleIn: '#ffffff',
-                    radius: '18px 18px 18px 6px',
-                    radiusOut: '18px 18px 6px 18px',
+                    bubbleIn: '#f1f1f3',
+                    radius: '17px',
+                    radiusOut: '17px',
                     font: '-apple-system'
                 }
             },
@@ -209,6 +223,20 @@ class ThemePicker extends React.Component {
                     bubbleIn: '#ffffff',
                     radius: '6px 6px 6px 0',
                     radiusOut: '6px 6px 0 6px',
+                    font: 'Segoe UI'
+                }
+            },
+            {
+                value: 'unigram',
+                label: 'Unigram',
+                preview: {
+                    sidebar: '#f7f9fb',
+                    chatBg: '#eef3f8',
+                    bubble: '#d7ecff',
+                    bubbleTextOut: '#202020',
+                    bubbleIn: '#ffffff',
+                    radius: '6px',
+                    radiusOut: '6px',
                     font: 'Segoe UI'
                 }
             }

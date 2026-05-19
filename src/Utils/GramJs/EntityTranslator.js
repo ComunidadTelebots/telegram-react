@@ -70,6 +70,29 @@ function translateFile(id, size = 0, remoteId = '') {
     };
 }
 
+function getProfilePhotoFileId(chatId, isBig = false) {
+    const safeId = Math.abs(Number(chatId || 0));
+    return -7000000000000000 + safeId * 2 + (isBig ? 1 : 0);
+}
+
+function translateProfilePhoto(entity, chatId) {
+    const photo = entity?.photo;
+    const cls = photo?.className || photo?._;
+    if (!photo || cls === 'UserProfilePhotoEmpty' || cls === 'ChatPhotoEmpty') return null;
+
+    const smallId = getProfilePhotoFileId(chatId, false);
+    const bigId = getProfilePhotoFileId(chatId, true);
+    mediaCache.set(smallId, { '@type': 'profilePhoto', entity, isBig: false });
+    mediaCache.set(bigId, { '@type': 'profilePhoto', entity, isBig: true });
+
+    return {
+        '@type': 'profilePhoto',
+        id: String(photo.photoId || chatId),
+        small: translateFile(smallId, 0, String(smallId)),
+        big: translateFile(bigId, 0, String(bigId))
+    };
+}
+
 export function translatePhoto(gPhoto) {
     if (!gPhoto) return null;
     if (gPhoto.id) {
@@ -301,9 +324,10 @@ export function translateStickerSet(result) {
 
 export function translateUser(user) {
     if (!user) return null;
+    const userId = Number(user.id);
     return {
         '@type': 'user',
-        id: Number(user.id),
+        id: userId,
         first_name: user.firstName || '',
         last_name: user.lastName || '',
         username: user.username || '',
@@ -323,6 +347,7 @@ export function translateUser(user) {
         is_support: !!user.support,
         restriction_reason: user.restrictionReason?.[0]?.text || '',
         have_access: true,
+        profile_photo: translateProfilePhoto(user, userId),
         language_code: ''
     };
 }
@@ -370,6 +395,7 @@ export function translateChat(entity, dialog) {
     }
 
     const lastMsg = dialog?.message ? translateMessage(dialog.message, chatId) : null;
+    const photo = translateProfilePhoto(entity, chatId);
 
     // El order determina la posición en la lista; usamos date × 1000 para ordenar por recencia.
     const date = dialog?.date || 0;
@@ -381,7 +407,7 @@ export function translateChat(entity, dialog) {
         id: chatId,
         type,
         title,
-        photo: null,
+        photo,
         last_message: lastMsg,
         order,
         is_pinned: pinned,

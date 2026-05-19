@@ -82,6 +82,11 @@ function updateDarkTheme(theme) {
     style.setProperty('--message-out-reply-border', theme.palette.primary.main);
 }
 
+function updateThemeClass(type) {
+    document.body.classList.remove('theme-light', 'theme-dark');
+    document.body.classList.add(type === 'dark' ? 'theme-dark' : 'theme-light');
+}
+
 function createTheme(type, primary) {
     const theme = createMuiTheme({
         palette: {
@@ -122,6 +127,7 @@ function createTheme(type, primary) {
     } else {
         updateLightTheme(theme);
     }
+    updateThemeClass(type);
 
     return theme;
 }

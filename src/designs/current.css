@@ -3,6 +3,46 @@
 
 body.design-current {
     font: 15px/20px 'Roboto', sans-serif;
+    --design-page-background: #ffffff;
+    --design-page-color: #111111;
+    --design-sidebar-background: #ffffff;
+    --design-middle-background: #e6ebee;
+    --design-panel-background: #ffffff;
+    --design-header-background: #ffffff;
+    --design-header-color: #111111;
+    --design-input-background: #e6ebee;
+    --design-input-surface: #ffffff;
+    --design-border-color: rgba(0, 0, 0, 0.12);
+    --design-muted-color: #707579;
+    --design-hover-background: rgba(91, 138, 241, 0.08);
+    --design-active-background: rgba(91, 138, 241, 0.18);
+    --design-dialog-radius: 0;
+    --design-control-radius: 12px 12px 0 12px;
+    --design-message-wrapper-max-width: 806px;
+    --design-message-wrapper-padding: 5px 42px 5px 6px;
+    --design-message-content-max-width: 560px;
+    --design-message-radius-in: 10px 10px 10px 0;
+    --design-message-radius-out: 10px 10px 0 10px;
+    --design-message-radius-short: 10px;
+    --design-message-padding: 6px 9px;
+    --design-message-shadow: 0 1px 2px 0 rgba(16, 35, 47, 0.15);
+    --design-message-tail-display: block;
+}
+
+body.theme-dark.design-current {
+    --design-page-background: #212121;
+    --design-page-color: #ffffff;
+    --design-sidebar-background: #212121;
+    --design-middle-background: #121212;
+    --design-panel-background: #212121;
+    --design-header-background: #212121;
+    --design-header-color: #ffffff;
+    --design-input-background: #121212;
+    --design-input-surface: #303030;
+    --design-border-color: rgba(255, 255, 255, 0.12);
+    --design-muted-color: rgba(255, 255, 255, 0.68);
+    --design-hover-background: rgba(255, 255, 255, 0.06);
+    --design-active-background: rgba(91, 138, 241, 0.24);
 }
 
 /* Sidebar */

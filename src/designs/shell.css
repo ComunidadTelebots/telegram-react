@@ -1,0 +1,177 @@
+/*
+ * Shared design shell.
+ * These rules make each appearance skin control the whole app surface, not only
+ * chat bubbles. Individual design files provide the variables.
+ */
+
+:root {
+    --design-page-background: #ffffff;
+    --design-page-color: #111111;
+    --design-sidebar-background: #ffffff;
+    --design-middle-background: #e6ebee;
+    --design-panel-background: #ffffff;
+    --design-header-background: #ffffff;
+    --design-header-color: #111111;
+    --design-input-background: #e6ebee;
+    --design-input-surface: #ffffff;
+    --design-border-color: rgba(0, 0, 0, 0.12);
+    --design-muted-color: rgba(0, 0, 0, 0.58);
+    --design-hover-background: rgba(0, 0, 0, 0.04);
+    --design-active-background: rgba(91, 138, 241, 0.16);
+    --design-dialog-radius: 8px;
+    --design-control-radius: 8px;
+    --design-message-wrapper-max-width: 806px;
+    --design-message-wrapper-padding: 5px 42px 5px 6px;
+    --design-message-content-max-width: 560px;
+    --design-message-radius-in: 10px 10px 10px 0;
+    --design-message-radius-out: 10px 10px 0 10px;
+    --design-message-radius-short: 10px;
+    --design-message-padding: 6px 9px;
+    --design-message-shadow: 0 1px 2px 0 rgba(16, 35, 47, 0.15);
+    --design-message-tail-display: block;
+}
+
+body[class*='design-'] .page {
+    background: var(--design-page-background) !important;
+    color: var(--design-page-color) !important;
+    border-color: var(--design-border-color) !important;
+}
+
+body[class*='design-'] .dialogs,
+body[class*='design-'] .dialogs-content,
+body[class*='design-'] .dialogs-list,
+body[class*='design-'] .folder-dialogs-list {
+    background: var(--design-sidebar-background) !important;
+    color: var(--design-page-color) !important;
+    border-color: var(--design-border-color) !important;
+}
+
+body[class*='design-'] .dialog-details {
+    background: var(--design-middle-background) !important;
+    color: var(--design-page-color) !important;
+}
+
+body[class*='design-'] .right-column,
+body[class*='design-'] .chat-details,
+body[class*='design-'] .chat-details-list,
+body[class*='design-'] .shared-media,
+body[class*='design-'] .shared-media-list,
+body[class*='design-'] .shared-media-search-list {
+    background: var(--design-panel-background) !important;
+    color: var(--design-page-color) !important;
+    border-color: var(--design-border-color) !important;
+}
+
+body[class*='design-'] .header-master,
+body[class*='design-'] .header-details,
+body[class*='design-'] .header-command,
+body[class*='design-'] .inputbox-header,
+body[class*='design-'] .stickers-picker-header {
+    background: var(--design-header-background) !important;
+    color: var(--design-header-color) !important;
+    border-color: var(--design-border-color) !important;
+}
+
+body[class*='design-'] .header-status,
+body[class*='design-'] .header-status-content {
+    color: var(--design-header-color) !important;
+}
+
+body[class*='design-'] .header-status-title,
+body[class*='design-'] .dialog-content,
+body[class*='design-'] .dialog-meta,
+body[class*='design-'] .chat-status,
+body[class*='design-'] .user-status-control {
+    color: var(--design-muted-color) !important;
+}
+
+body[class*='design-'] .dialog-wrapper {
+    border-radius: var(--design-dialog-radius);
+}
+
+body[class*='design-'] .dialog-wrapper:hover {
+    background: var(--design-hover-background) !important;
+}
+
+body[class*='design-'] .dialog-active .dialog-wrapper {
+    background: var(--design-active-background) !important;
+}
+
+body[class*='design-'] .inputbox-background {
+    background: var(--design-input-background) !important;
+    border-color: var(--design-border-color) !important;
+}
+
+body[class*='design-'] .inputbox-bubble,
+body[class*='design-'] #inputbox-message {
+    background: var(--design-input-surface) !important;
+    color: var(--design-page-color) !important;
+}
+
+body[class*='design-'] .inputbox-bubble {
+    border-radius: var(--design-control-radius);
+}
+
+body[class*='design-'] .message-wrapper {
+    max-width: var(--design-message-wrapper-max-width) !important;
+    padding: var(--design-message-wrapper-padding) !important;
+}
+
+body[class*='design-'] .message-content {
+    max-width: var(--design-message-content-max-width) !important;
+}
+
+body[class*='design-'] .message-bubble {
+    border-radius: var(--design-message-radius-in) !important;
+    padding: var(--design-message-padding) !important;
+    background: var(--message-in-background) !important;
+    color: var(--message-in-color) !important;
+    box-shadow: var(--design-message-shadow) !important;
+}
+
+body[class*='design-'] .message-bubble-out {
+    border-radius: var(--design-message-radius-out) !important;
+    background: var(--message-out-background) !important;
+    color: var(--message-out-color) !important;
+}
+
+body[class*='design-'] .message-short .message-bubble {
+    border-radius: var(--design-message-radius-short) !important;
+}
+
+body[class*='design-'] .message-bubble::after,
+body[class*='design-'] .message-bubble-out::after {
+    display: var(--design-message-tail-display) !important;
+}
+
+body[class*='design-'] #inputbox-message::before,
+body[class*='design-'] #header-search-inputbox::before {
+    color: var(--design-muted-color) !important;
+}
+
+body[class*='design-'] .MuiPaper-root,
+body[class*='design-'] .MuiDialog-paper,
+body[class*='design-'] .MuiMenu-paper,
+body[class*='design-'] .MuiPopover-paper {
+    background: var(--design-panel-background) !important;
+    color: var(--design-page-color) !important;
+}
+
+body[class*='design-'] .MuiDivider-root {
+    background-color: var(--design-border-color) !important;
+}
+
+body[class*='design-'] .MuiIconButton-root {
+    color: inherit;
+}
+
+body[class*='design-'] .auth-root,
+body[class*='design-'] .authorization-form-content {
+    background: var(--design-page-background) !important;
+    color: var(--design-page-color) !important;
+}
+
+body[class*='design-'] .media-viewer,
+body[class*='design-'] .media-viewer-dark {
+    background: rgba(0, 0, 0, 0.88) !important;
+}

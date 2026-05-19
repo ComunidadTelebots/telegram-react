@@ -28,6 +28,31 @@ body.design-tdesktop {
     /* Separadores de día — azul clásico de TDesktop */
     --day-background: rgba(107, 165, 199, 0.75);
     --day-color: #ffffff;
+
+    --design-page-background: #ffffff;
+    --design-page-color: #111111;
+    --design-sidebar-background: #ffffff;
+    --design-middle-background: #c8d8e8;
+    --design-panel-background: #ffffff;
+    --design-header-background: #ffffff;
+    --design-header-color: #111111;
+    --design-input-background: #ffffff;
+    --design-input-surface: #ffffff;
+    --design-border-color: #e7e7e7;
+    --design-muted-color: #707579;
+    --design-hover-background: rgba(0, 0, 0, 0.04);
+    --design-active-background: #d4e8f7;
+    --design-dialog-radius: 0;
+    --design-control-radius: 6px 6px 0 6px;
+    --design-message-wrapper-max-width: 860px;
+    --design-message-wrapper-padding: 3px 36px 3px 6px;
+    --design-message-content-max-width: 500px;
+    --design-message-radius-in: 6px 6px 6px 0;
+    --design-message-radius-out: 6px 6px 0 6px;
+    --design-message-radius-short: 6px;
+    --design-message-padding: 5px 9px;
+    --design-message-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
+    --design-message-tail-display: block;
 }
 
 /* ── Sidebar: blanca, 260px, compacta ──────────────────────────────────── */
@@ -156,4 +181,87 @@ body.design-tdesktop .day-meta-wrapper {
     border-radius: 8px;
     font-size: 12px;
     background: rgba(107, 165, 199, 0.75);
+}
+
+body.theme-dark.design-tdesktop {
+    --message-out-background: #2b5278;
+    --message-out-color: #ffffff;
+    --message-out-link: #8fd1ff;
+    --message-out-author: #8fd1ff;
+    --message-out-meta-color: #a7c8dd;
+    --message-out-reply-title: #8fd1ff;
+    --message-out-reply-border: #8fd1ff;
+
+    --message-in-background: #182533;
+    --message-in-color: #ffffff;
+    --message-in-link: #64b5ef;
+    --message-in-author: #64b5ef;
+    --message-in-meta-color: #8294a3;
+    --message-in-reply-title: #64b5ef;
+    --message-in-reply-border: #64b5ef;
+
+    --badge-green: #53b440;
+    --indicator-green: #53b440;
+    --day-background: rgba(74, 100, 122, 0.78);
+    --day-color: #ffffff;
+
+    --design-page-background: #17212b;
+    --design-page-color: #ffffff;
+    --design-sidebar-background: #17212b;
+    --design-middle-background: #0e1621;
+    --design-panel-background: #17212b;
+    --design-header-background: #17212b;
+    --design-header-color: #ffffff;
+    --design-input-background: #17212b;
+    --design-input-surface: #182533;
+    --design-border-color: #101921;
+    --design-muted-color: #8796a1;
+    --design-hover-background: rgba(255, 255, 255, 0.04);
+    --design-active-background: #2b5278;
+}
+
+body.theme-dark.design-tdesktop .dialogs {
+    background: #17212b;
+    border-right-color: #101921;
+}
+
+body.theme-dark.design-tdesktop .messages-list,
+body.theme-dark.design-tdesktop .messages-list-wrapper {
+    background: #0e1621;
+}
+
+body.theme-dark.design-tdesktop .dialog-wrapper:hover {
+    background: rgba(255, 255, 255, 0.04);
+}
+
+body.theme-dark.design-tdesktop .dialog-active .dialog-wrapper {
+    background: #2b5278;
+}
+
+body.theme-dark.design-tdesktop .dialog-title {
+    color: #ffffff;
+}
+
+body.theme-dark.design-tdesktop .dialog-content,
+body.theme-dark.design-tdesktop .dialog-meta {
+    color: #8796a1;
+}
+
+body.theme-dark.design-tdesktop .header-details,
+body.theme-dark.design-tdesktop .inputbox-background {
+    background: #17212b;
+    border-color: #101921;
+    box-shadow: none;
+}
+
+body.theme-dark.design-tdesktop .inputbox-bubble {
+    background: #182533;
+}
+
+body.theme-dark.design-tdesktop ::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.04);
+}
+
+body.theme-dark.design-tdesktop ::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.22);
 }

@@ -4,11 +4,14 @@
  */
 
 import './designs/current.css';
+import './designs/android.css';
 import './designs/macos.css';
 import './designs/tdesktop.css';
+import './designs/unigram.css';
+import './designs/shell.css';
 
 const DESIGN_KEY = 'tg_design';
-const DESIGNS = ['current', 'macos', 'tdesktop'];
+const DESIGNS = ['current', 'android', 'macos', 'tdesktop', 'unigram'];
 const DEFAULT_DESIGN = 'current';
 
 export function getDesign() {

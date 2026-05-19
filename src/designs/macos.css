@@ -1,158 +1,288 @@
-/* ── Diseño macOS (Telegram para macOS oficial) ───────────────────────────── */
+/*
+ * Telegram for macOS design.
+ * Tuned after the native macOS client distributed from macos.telegram.org and
+ * the Mac App Store: compact sidebar, native system typography, blue outgoing
+ * bubbles, subtle separators, pill composer and no Telegram Web bubble tails.
+ */
 
 body.design-macos {
-    font: 15px/20px -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helvetica Neue', sans-serif;
+    font: 14px/19px -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helvetica Neue', Arial, sans-serif;
     -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
 
-    /* Salientes: azul iOS sólido (#007aff) con texto blanco */
-    --message-out-background: #007aff;
+    --macos-accent: #248bf2;
+    --macos-accent-active: #0a84ff;
+    --macos-sidebar: #f5f5f7;
+    --macos-sidebar-border: rgba(60, 60, 67, 0.18);
+    --macos-chat-background: #ffffff;
+    --macos-row-hover: rgba(0, 0, 0, 0.045);
+    --macos-row-active: #248bf2;
+    --macos-separator: rgba(60, 60, 67, 0.16);
+    --macos-text-secondary: rgba(60, 60, 67, 0.62);
+
+    --message-out-background: #248bf2;
     --message-out-color: #ffffff;
-    --message-out-link: rgba(255, 255, 255, 0.9);
-    --message-out-author: rgba(255, 255, 255, 0.85);
-    --message-out-meta-color: rgba(255, 255, 255, 0.6);
-    --message-out-reply-title: rgba(255, 255, 255, 0.9);
-    --message-out-reply-border: rgba(255, 255, 255, 0.5);
+    --message-out-link: rgba(255, 255, 255, 0.92);
+    --message-out-author: rgba(255, 255, 255, 0.88);
+    --message-out-meta-color: rgba(255, 255, 255, 0.68);
+    --message-out-reply-title: rgba(255, 255, 255, 0.92);
+    --message-out-reply-border: rgba(255, 255, 255, 0.52);
 
-    /* Entrantes: blanco con sombra sutil */
-    --message-in-background: #ffffff;
-    --message-in-color: #000000;
-    --message-in-link: #007aff;
-    --message-in-author: #007aff;
-    --message-in-meta-color: #8e8e93;
-    --message-in-reply-title: #007aff;
-    --message-in-reply-border: #007aff;
+    --message-in-background: #f1f1f3;
+    --message-in-color: #111111;
+    --message-in-link: #248bf2;
+    --message-in-author: #248bf2;
+    --message-in-meta-color: rgba(60, 60, 67, 0.56);
+    --message-in-reply-title: #248bf2;
+    --message-in-reply-border: #248bf2;
 
-    /* Sistema macOS */
     --badge-green: #34c759;
     --indicator-green: #34c759;
-    --day-background: rgba(0, 0, 0, 0.18);
-    --color-accent-main: #007aff;
+    --day-background: rgba(120, 120, 128, 0.2);
+    --day-color: rgba(60, 60, 67, 0.72);
+    --color-accent-main: #248bf2;
+
+    --design-page-background: #ffffff;
+    --design-page-color: #111111;
+    --design-sidebar-background: var(--macos-sidebar);
+    --design-middle-background: var(--macos-chat-background);
+    --design-panel-background: #ffffff;
+    --design-header-background: rgba(248, 248, 248, 0.92);
+    --design-header-color: #111111;
+    --design-input-background: rgba(248, 248, 248, 0.94);
+    --design-input-surface: #ffffff;
+    --design-border-color: var(--macos-separator);
+    --design-muted-color: var(--macos-text-secondary);
+    --design-hover-background: var(--macos-row-hover);
+    --design-active-background: var(--macos-row-active);
+    --design-dialog-radius: 8px;
+    --design-control-radius: 18px;
+    --design-message-wrapper-max-width: 900px;
+    --design-message-wrapper-padding: 2px 18px;
+    --design-message-content-max-width: 520px;
+    --design-message-radius-in: 17px;
+    --design-message-radius-out: 17px;
+    --design-message-radius-short: 17px;
+    --design-message-padding: 6px 11px 7px;
+    --design-message-shadow: none;
+    --design-message-tail-display: none;
 }
 
-/* ── Sidebar ────────────────────────────────────────────────────────────── */
 body.design-macos .dialogs {
-    width: 320px;
-    min-width: 320px;
-    max-width: 320px;
+    width: 316px;
+    min-width: 316px;
+    max-width: 316px;
     flex: none;
-    background: #f2f2f7;
-    border-right: 1px solid rgba(0, 0, 0, 0.12);
+    background: var(--macos-sidebar);
+    border-right: 1px solid var(--macos-sidebar-border);
 }
 
 body.design-macos .dialog-details {
-    width: calc(100% - 320px);
+    width: calc(100% - 316px);
     flex: 1;
 }
 
-/* ── Fondo del área de chat: blanco (como en macOS Telegram) ──────────── */
 body.design-macos .messages-list,
 body.design-macos .messages-list-wrapper {
-    background: #ffffff;
+    background: var(--macos-chat-background);
 }
 
-/* ── Items de la lista de chats ─────────────────────────────────────────── */
+body.design-macos .folder-tabs {
+    padding: 6px 10px 7px;
+    gap: 6px;
+}
+
+body.design-macos .folder-tab {
+    border-radius: 8px;
+    padding: 5px 10px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--macos-text-secondary);
+}
+
+body.design-macos .folder-tab-active {
+    background: rgba(36, 139, 242, 0.14);
+    color: var(--macos-accent);
+}
+
 body.design-macos .dialog-wrapper {
-    padding: 8px 12px;
-    margin: 0 8px;
-    border-radius: 10px;
+    min-height: 58px;
+    margin: 0 8px 1px;
+    padding: 7px 10px;
+    border-radius: 8px;
+    box-sizing: border-box;
 }
 
-body.design-macos .dialog-active .dialog-wrapper {
-    background: #007aff;
-    border-radius: 10px;
+body.design-macos .dialog-wrapper:hover {
+    background: var(--macos-row-hover);
+}
+
+body.design-macos .dialog-active .dialog-wrapper,
+body.design-macos .dialog-active .dialog-wrapper:hover {
+    background: var(--macos-row-active);
+    color: #ffffff;
 }
 
 body.design-macos .dialog-title {
+    font-size: 14px;
     font-weight: 600;
-    letter-spacing: -0.3px;
+    letter-spacing: 0;
 }
 
-/* ── Burbujas: muy redondeadas, estilo iMessage ─────────────────────────── */
-body.design-macos .message-bubble {
-    border-radius: 18px 18px 18px 6px !important;
-    padding: 8px 12px;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08) !important;
-    background: var(--message-in-background);
+body.design-macos .dialog-content,
+body.design-macos .dialog-meta {
+    font-size: 13px;
+    color: var(--macos-text-secondary);
 }
 
-body.design-macos .message-bubble-out {
-    border-radius: 18px 18px 6px 18px !important;
-    background: var(--message-out-background) !important;
+body.design-macos .dialog-active .dialog-content,
+body.design-macos .dialog-active .dialog-content-accent,
+body.design-macos .dialog-active .dialog-meta,
+body.design-macos .dialog-active .dialog-title {
     color: #ffffff;
 }
 
-/* Texto blanco dentro de burbujas salientes */
-body.design-macos .message-bubble-out .message-text,
-body.design-macos .message-bubble-out .message-body,
-body.design-macos .message-bubble-out p,
-body.design-macos .message-bubble-out span {
-    color: #ffffff;
-}
-
-/* Mensajes cortos (sin cola): completamente redondos */
-body.design-macos .message-short .message-bubble {
-    border-radius: 18px !important;
-}
-
-/* Eliminar la cola SVG — macOS Telegram no usa colas en las burbujas */
-body.design-macos .message-bubble::after {
-    content: none !important;
-}
-
-body.design-macos .message-bubble-out::after {
-    content: none !important;
-}
-
-/* ── Wrapper de mensajes ────────────────────────────────────────────────── */
-body.design-macos .message-wrapper {
-    max-width: 860px;
-    padding: 2px 16px 2px 16px;
-}
-
-body.design-macos .message-content {
-    max-width: 500px;
-}
-
-/* ── Header ─────────────────────────────────────────────────────────────── */
-body.design-macos .header-details {
-    min-height: 52px;
-    background: #f2f2f7;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
-    box-shadow: none;
-}
-
-/* ── Input box ──────────────────────────────────────────────────────────── */
-body.design-macos .inputbox-background {
-    background: #f2f2f7;
-    border-top: 1px solid rgba(0, 0, 0, 0.1);
-}
-
-/* Input: pill redondeado, sin cola */
-body.design-macos .inputbox-bubble {
-    border-radius: 20px;
-    margin-right: 8px;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
-}
-
-body.design-macos .inputbox-bubble::after {
-    content: none !important;
-}
-
-/* ── Botón de enviar: azul iOS ──────────────────────────────────────────── */
-body.design-macos .inputbox-send-button {
-    border-radius: 50% !important;
-    box-shadow: 0 2px 6px rgba(0, 122, 255, 0.4) !important;
-}
-
-/* ── Avatares circulares ────────────────────────────────────────────────── */
 body.design-macos .tile {
     border-radius: 50%;
 }
 
-/* ── Scrollbar fino estilo macOS ────────────────────────────────────────── */
+body.design-macos .header-details {
+    min-height: 52px;
+    background: rgba(248, 248, 248, 0.92);
+    border-bottom: 1px solid var(--macos-separator);
+    box-shadow: none;
+    backdrop-filter: saturate(180%) blur(18px);
+}
+
+body.design-macos .header-status {
+    font: 500 14px/19px -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helvetica Neue', Arial, sans-serif;
+    padding: 0 16px;
+}
+
+body.design-macos .header-status-title {
+    font-size: 13px;
+    color: var(--macos-text-secondary);
+}
+
+body.design-macos .message-wrapper {
+    max-width: 900px;
+    padding: 2px 18px;
+}
+
+body.design-macos .message-content {
+    max-width: 520px;
+    min-height: 30px;
+}
+
+body.design-macos .message-bubble {
+    border-radius: 17px;
+    padding: 6px 11px 7px;
+    background: var(--message-in-background);
+    color: var(--message-in-color);
+    box-shadow: none;
+}
+
+body.design-macos .message-bubble-out {
+    border-radius: 17px;
+    background: var(--message-out-background);
+    color: var(--message-out-color);
+}
+
+body.design-macos .message-bubble::after,
+body.design-macos .message-bubble-out::after {
+    content: none;
+}
+
+body.design-macos .message-short .message-bubble {
+    border-radius: 17px;
+}
+
+body.design-macos .message-bubble-out .message-text,
+body.design-macos .message-bubble-out .message-body,
+body.design-macos .message-bubble-out p,
+body.design-macos .message-bubble-out span,
+body.design-macos .message-bubble-out code {
+    color: #ffffff;
+}
+
+body.design-macos .message-title {
+    font-size: 13px;
+}
+
+body.design-macos .message-select-tick {
+    background: rgba(36, 139, 242, 0.12);
+}
+
+body.design-macos .day-meta-wrapper {
+    border-radius: 12px;
+    padding: 3px 8px;
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0;
+    background: var(--day-background);
+    color: var(--day-color);
+    box-shadow: none;
+}
+
+body.design-macos .inputbox-background {
+    background: rgba(248, 248, 248, 0.94);
+    border-top: 1px solid var(--macos-separator);
+    backdrop-filter: saturate(180%) blur(18px);
+}
+
+body.design-macos .inputbox {
+    width: calc(100% - 24px);
+    max-width: 760px;
+    padding: 8px 0 12px;
+    border-top: 0;
+}
+
+body.design-macos .inputbox-bubble {
+    min-height: 36px;
+    border-radius: 18px;
+    margin-right: 8px;
+    background: #ffffff;
+    border: 1px solid rgba(60, 60, 67, 0.18);
+    box-shadow: none;
+}
+
+body.design-macos .inputbox-bubble::after {
+    content: none;
+}
+
+body.design-macos #inputbox-message {
+    padding: 8px 2px;
+    font-size: 14px;
+    line-height: 20px;
+}
+
+body.design-macos .inputbox-icon-button {
+    margin: 4px 6px;
+    padding: 6px;
+    color: var(--macos-accent);
+}
+
+body.design-macos .inputbox-right-column {
+    margin-left: 8px;
+}
+
+body.design-macos .inputbox-send-button {
+    min-width: 36px;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: var(--macos-accent);
+    box-shadow: none;
+    color: #ffffff;
+}
+
+body.design-macos .inputbox-send-button:hover {
+    background: var(--macos-accent-active);
+}
+
 body.design-macos ::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
+    width: 8px;
+    height: 8px;
 }
 
 body.design-macos ::-webkit-scrollbar-track {
@@ -160,23 +290,101 @@ body.design-macos ::-webkit-scrollbar-track {
 }
 
 body.design-macos ::-webkit-scrollbar-thumb {
-    background: rgba(0, 0, 0, 0.2);
-    border-radius: 3px;
+    background: rgba(60, 60, 67, 0.28);
+    border: 2px solid transparent;
+    border-radius: 8px;
+    background-clip: padding-box;
 }
 
 body.design-macos ::-webkit-scrollbar-thumb:hover {
-    background: rgba(0, 0, 0, 0.35);
+    background: rgba(60, 60, 67, 0.42);
+    border: 2px solid transparent;
+    background-clip: padding-box;
 }
 
-/* ── Selección de texto ─────────────────────────────────────────────────── */
 body.design-macos ::selection {
-    background: rgba(0, 122, 255, 0.3);
+    background: rgba(36, 139, 242, 0.28);
 }
 
-/* ── Separador de día ───────────────────────────────────────────────────── */
-body.design-macos .day-meta-wrapper {
-    border-radius: 10px;
-    font-size: 12px;
-    letter-spacing: 0.2px;
-    background: rgba(0, 0, 0, 0.18);
+body.theme-dark.design-macos {
+    --macos-accent: #0a84ff;
+    --macos-accent-active: #409cff;
+    --macos-sidebar: #1c1c1e;
+    --macos-sidebar-border: rgba(255, 255, 255, 0.12);
+    --macos-chat-background: #000000;
+    --macos-row-hover: rgba(255, 255, 255, 0.07);
+    --macos-row-active: #0a84ff;
+    --macos-separator: rgba(255, 255, 255, 0.14);
+    --macos-text-secondary: rgba(235, 235, 245, 0.6);
+
+    --message-out-background: #0a84ff;
+    --message-out-color: #ffffff;
+    --message-out-link: rgba(255, 255, 255, 0.92);
+    --message-out-author: rgba(255, 255, 255, 0.86);
+    --message-out-meta-color: rgba(255, 255, 255, 0.68);
+    --message-out-reply-title: rgba(255, 255, 255, 0.92);
+    --message-out-reply-border: rgba(255, 255, 255, 0.52);
+
+    --message-in-background: #2c2c2e;
+    --message-in-color: #ffffff;
+    --message-in-link: #0a84ff;
+    --message-in-author: #0a84ff;
+    --message-in-meta-color: rgba(235, 235, 245, 0.56);
+    --message-in-reply-title: #0a84ff;
+    --message-in-reply-border: #0a84ff;
+
+    --badge-green: #30d158;
+    --indicator-green: #30d158;
+    --day-background: rgba(120, 120, 128, 0.28);
+    --day-color: rgba(235, 235, 245, 0.72);
+    --color-accent-main: #0a84ff;
+
+    --design-page-background: #000000;
+    --design-page-color: #ffffff;
+    --design-sidebar-background: var(--macos-sidebar);
+    --design-middle-background: var(--macos-chat-background);
+    --design-panel-background: #1c1c1e;
+    --design-header-background: rgba(28, 28, 30, 0.88);
+    --design-header-color: #ffffff;
+    --design-input-background: rgba(28, 28, 30, 0.88);
+    --design-input-surface: #2c2c2e;
+    --design-border-color: var(--macos-separator);
+    --design-muted-color: var(--macos-text-secondary);
+    --design-hover-background: var(--macos-row-hover);
+    --design-active-background: var(--macos-row-active);
+}
+
+body.theme-dark.design-macos .dialogs {
+    background: var(--macos-sidebar);
+}
+
+body.theme-dark.design-macos .messages-list,
+body.theme-dark.design-macos .messages-list-wrapper {
+    background: var(--macos-chat-background);
+}
+
+body.theme-dark.design-macos .header-details,
+body.theme-dark.design-macos .inputbox-background {
+    background: rgba(28, 28, 30, 0.88);
+}
+
+body.theme-dark.design-macos .inputbox-bubble {
+    background: #2c2c2e;
+    border-color: rgba(255, 255, 255, 0.12);
+}
+
+body.theme-dark.design-macos ::-webkit-scrollbar-thumb {
+    background: rgba(235, 235, 245, 0.28);
+    border: 2px solid transparent;
+    background-clip: padding-box;
+}
+
+body.theme-dark.design-macos ::-webkit-scrollbar-thumb:hover {
+    background: rgba(235, 235, 245, 0.42);
+    border: 2px solid transparent;
+    background-clip: padding-box;
+}
+
+body.theme-dark.design-macos ::selection {
+    background: rgba(10, 132, 255, 0.34);
 }
