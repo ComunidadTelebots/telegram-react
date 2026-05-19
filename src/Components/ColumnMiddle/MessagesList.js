@@ -21,7 +21,7 @@ import { throttle, getPhotoSize, itemsInView, historyEquals } from '../../Utils/
 import { loadChatsContent, loadDraftContent, loadMessageContents } from '../../Utils/File';
 import { canMessageBeEdited, filterDuplicateMessages, filterMessages } from '../../Utils/Message';
 import { isServiceMessage } from '../../Utils/ServiceMessage';
-import { canSendFiles, getChatFullInfo, getSupergroupId, isChannelChat } from '../../Utils/Chat';
+import { canSendFiles, getChatFullInfo, getSupergroupId, isChannelChat, isGroupChat } from '../../Utils/Chat';
 import { highlightMessage, openChat } from '../../Actions/Client';
 import { MESSAGE_SLICE_LIMIT, MESSAGE_SPLIT_MAX_TIME_S, SCROLL_PRECISION } from '../../Constants';
 import AppStore from '../../Stores/ApplicationStore';
@@ -1278,6 +1278,7 @@ class MessagesList extends React.Component {
                       const nextShowTitle = this.showMessageTitle(nextMessage, x, false);
 
                       const showTail = !nextMessage || isServiceMessage(nextMessage) || nextShowTitle;
+                      const showAuthor = isGroupChat(x.chat_id) && !x.is_outgoing && !isChannelChat(x.chat_id);
 
                       m = (
                           <Message
@@ -1288,6 +1289,7 @@ class MessagesList extends React.Component {
                               sendingState={x.sending_state}
                               showTitle={showTitle}
                               showTail={showTail}
+                              showAuthor={showAuthor}
                               showUnreadSeparator={separatorMessageId === x.id}
                           />
                       );

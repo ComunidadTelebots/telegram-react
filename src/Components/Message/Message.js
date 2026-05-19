@@ -102,7 +102,16 @@ class Message extends Component {
     }
 
     shouldComponentUpdate(nextProps, nextState) {
-        const { theme, chatId, messageId, sendingState, showUnreadSeparator, showTail, showTitle } = this.props;
+        const {
+            theme,
+            chatId,
+            messageId,
+            sendingState,
+            showUnreadSeparator,
+            showTail,
+            showTitle,
+            showAuthor
+        } = this.props;
         const { contextMenu, selected, highlighted, emojiMatches } = this.state;
 
         if (nextProps.theme !== theme) {
@@ -137,6 +146,10 @@ class Message extends Component {
 
         if (nextProps.showTitle !== showTitle) {
             // console.log('Message.shouldComponentUpdate true');
+            return true;
+        }
+
+        if (nextProps.showAuthor !== showAuthor) {
             return true;
         }
 
@@ -445,7 +458,7 @@ class Message extends Component {
 
     render() {
         // console.log('[m] render', this.props.messageId);
-        const { t, classes, chatId, messageId, showUnreadSeparator, showTail, showTitle } = this.props;
+        const { t, classes, chatId, messageId, showUnreadSeparator, showTail, showTitle, showAuthor } = this.props;
         const { emojiMatches, selected, highlighted, contextMenu, left, top } = this.state;
 
         const message = MessageStore.get(chatId, messageId);
@@ -464,7 +477,7 @@ class Message extends Component {
 
         const showForward = showMessageForward(chatId, messageId);
         const text = getText(message);
-        const hasTitle = showTitle || showForward || Boolean(reply_to_message_id);
+        const hasTitle = showTitle || showAuthor || showForward || Boolean(reply_to_message_id);
         const hasCaption = text !== null && text.length > 0;
         const webPage = getWebPage(message);
         const media = getMedia(message, this.openMedia, hasTitle, hasCaption);
@@ -526,7 +539,7 @@ class Message extends Component {
                             'message-bubble-out': withBubble && is_outgoing
                         })}>
                         <div className='message-title'>
-                            {showTitle && !showForward && (
+                            {(showAuthor || (showTitle && !showForward)) && (
                                 <MessageAuthor chatId={chatId} openChat userId={sender_user_id} openUser />
                             )}
                             {showForward && <Forward forwardInfo={forward_info} />}
