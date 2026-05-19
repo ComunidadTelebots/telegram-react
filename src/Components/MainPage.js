@@ -13,6 +13,8 @@ import withLanguage from '../Language';
 import withTheme from '../Theme';
 import withSnackbarNotifications from '../Notifications';
 import ForwardDialog from './Popup/ForwardDialog';
+import NewGroupDialog from './Popup/NewGroupDialog';
+import NewChannelDialog from './Popup/NewChannelDialog';
 import ChatInfo from './ColumnRight/ChatInfo';
 import Dialogs from './ColumnLeft/Dialogs';
 import DialogDetails from './ColumnMiddle/DialogDetails';
@@ -48,7 +50,9 @@ class MainPage extends React.Component {
             mediaViewerContent: ApplicationStore.mediaViewerContent,
             profileMediaViewerContent: ApplicationStore.profileMediaViewerContent,
             forwardInfo: null,
-            instantViewContent: null
+            instantViewContent: null,
+            newGroupOpen: false,
+            newChannelOpen: false
         };
 
         /*this.store = localForage.createInstance({
@@ -67,6 +71,7 @@ class MainPage extends React.Component {
         ApplicationStore.on('clientUpdateProfileMediaViewerContent', this.onClientUpdateProfileMediaViewerContent);
         ApplicationStore.on('clientUpdateForward', this.onClientUpdateForward);
         InstantViewStore.on('clientUpdateInstantViewContent', this.onClientUpdateInstantViewContent);
+        TdLibController.on('clientUpdate', this.onClientUpdateDialogs);
     }
 
     componentWillUnmount() {
@@ -78,6 +83,7 @@ class MainPage extends React.Component {
         ApplicationStore.off('clientUpdateProfileMediaViewerContent', this.onClientUpdateProfileMediaViewerContent);
         ApplicationStore.off('clientUpdateForward', this.onClientUpdateForward);
         InstantViewStore.off('clientUpdateInstantViewContent', this.onClientUpdateInstantViewContent);
+        TdLibController.off('clientUpdate', this.onClientUpdateDialogs);
     }
 
     onClientUpdateInstantViewContent = update => {
@@ -120,6 +126,14 @@ class MainPage extends React.Component {
         const { info } = update;
 
         this.setState({ forwardInfo: info });
+    };
+
+    onClientUpdateDialogs = update => {
+        if (update['@type'] === 'clientUpdateNewGroupDialog') {
+            this.setState({ newGroupOpen: true });
+        } else if (update['@type'] === 'clientUpdateNewChannelDialog') {
+            this.setState({ newChannelOpen: true });
+        }
     };
 
     handleSelectChat = (chatId, messageId = null, popup = false) => {
@@ -169,7 +183,9 @@ class MainPage extends React.Component {
             isChatDetailsVisible,
             mediaViewerContent,
             profileMediaViewerContent,
-            forwardInfo
+            forwardInfo,
+            newGroupOpen,
+            newChannelOpen
         } = this.state;
 
         return (
@@ -186,6 +202,8 @@ class MainPage extends React.Component {
                 {mediaViewerContent && <MediaViewer {...mediaViewerContent} />}
                 {profileMediaViewerContent && <ProfileMediaViewer {...profileMediaViewerContent} />}
                 {forwardInfo && <ForwardDialog {...forwardInfo} />}
+                <NewGroupDialog open={newGroupOpen} onClose={() => this.setState({ newGroupOpen: false })} />
+                <NewChannelDialog open={newChannelOpen} onClose={() => this.setState({ newChannelOpen: false })} />
             </>
         );
     }
@@ -193,11 +211,6 @@ class MainPage extends React.Component {
 
 MainPage.propTypes = {};
 
-const enhance = compose(
-    withLanguage,
-    withTheme,
-    withStyles(styles),
-    withSnackbarNotifications
-);
+const enhance = compose(withLanguage, withTheme, withStyles(styles), withSnackbarNotifications);
 
 export default enhance(MainPage);

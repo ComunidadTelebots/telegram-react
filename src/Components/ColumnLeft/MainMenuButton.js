@@ -84,6 +84,16 @@ class MainMenuButton extends React.Component {
         this.props.onLogOut();
     };
 
+    handleNewGroup = () => {
+        this.handleMenuClose();
+        TdLibController.clientUpdate({ '@type': 'clientUpdateNewGroupDialog' });
+    };
+
+    handleNewChannel = () => {
+        this.handleMenuClose();
+        TdLibController.clientUpdate({ '@type': 'clientUpdateNewChannelDialog' });
+    };
+
     handleAddAccount = () => {
         this.handleMenuClose();
         if (TdLibController.addAccount) TdLibController.addAccount();
@@ -136,6 +146,9 @@ class MainMenuButton extends React.Component {
                     disableAutoFocusItem
                     disableRestoreFocus={true}
                     anchorOrigin={menuAnchorOrigin}>
+                    <MenuItem onClick={this.handleNewGroup}>Nuevo grupo</MenuItem>
+                    <MenuItem onClick={this.handleNewChannel}>Nuevo canal / supergrupo</MenuItem>
+                    <Divider />
                     <MenuItem onClick={this.handleCheckUpdates}>{t('UpdateTelegram')}</MenuItem>
                     <MenuItem onClick={this.handleAppearance}>{t('Appearance')}</MenuItem>
                     <MenuItem onClick={this.handleLanguage}>{t('Language')}</MenuItem>

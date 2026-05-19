@@ -590,6 +590,12 @@ class GramJsController extends EventEmitter {
                 return this._searchPublicChat(req);
             case 'createPrivateChat':
                 return this._createPrivateChat(req);
+            case 'getContacts':
+                return this._getContacts();
+            case 'createGroupChat':
+                return this._createGroupChat(req);
+            case 'createChannel':
+                return this._createChannel(req);
 
             // ── Mensajes ──────────────────────────────────────────────────────
             case 'getChatHistory':
@@ -995,6 +1001,111 @@ class GramJsController extends EventEmitter {
             }
         } catch (e) {
             /* no-op */
+        }
+        return null;
+    };
+
+    _getContacts = async () => {
+        try {
+            const result = await this.client.invoke(new Api.contacts.GetContacts({ hash: BigInt(0) }));
+            const users = result.users || [];
+            return users
+                .filter(u => !(u.className === 'UserEmpty') && !u.deleted && !u.bot)
+                .map(u => {
+                    const tdUser = translateUser(u);
+                    if (tdUser) {
+                        this._userCache.set(tdUser.id, tdUser);
+                        this._cacheEntity(u);
+                    }
+                    return tdUser;
+                })
+                .filter(Boolean);
+        } catch (e) {
+            console.error('[GramJs] getContacts error:', e);
+            return [];
+        }
+    };
+
+    _createGroupChat = async req => {
+        const { title, user_ids } = req;
+        try {
+            const users = user_ids.map(id => {
+                const entity = this._entityCache.get(id);
+                if (entity && entity.accessHash !== undefined) {
+                    return new Api.InputUser({ userId: BigInt(id), accessHash: entity.accessHash });
+                }
+                return new Api.InputUser({ userId: BigInt(id), accessHash: BigInt(0) });
+            });
+            const result = await this.client.invoke(new Api.messages.CreateChat({ users, title }));
+            const newChat = (result.chats || [])[0];
+            if (!newChat) return null;
+            this._cacheEntity(newChat);
+            this._emitUpdate({
+                '@type': 'updateBasicGroup',
+                basic_group: {
+                    '@type': 'basicGroup',
+                    id: Number(newChat.id),
+                    member_count: user_ids.length + 1,
+                    status: { '@type': 'chatMemberStatusCreator', is_member: true },
+                    is_active: true,
+                    upgraded_to_supergroup_id: 0
+                }
+            });
+            const tdChat = translateChat(newChat, null);
+            if (tdChat) {
+                this._chatCache.set(tdChat.id, tdChat);
+                this._emitUpdate({ '@type': 'updateNewChat', chat: tdChat });
+                return tdChat;
+            }
+        } catch (e) {
+            console.error('[GramJs] createGroupChat error:', e);
+            throw e;
+        }
+        return null;
+    };
+
+    _createChannel = async req => {
+        const { title, about, is_channel } = req;
+        try {
+            const result = await this.client.invoke(
+                new Api.channels.CreateChannel({
+                    title,
+                    about: about || '',
+                    broadcast: !!is_channel,
+                    megagroup: !is_channel
+                })
+            );
+            const newChat = (result.chats || [])[0];
+            if (!newChat) return null;
+            this._cacheEntity(newChat);
+            this._emitUpdate({
+                '@type': 'updateSupergroup',
+                supergroup: {
+                    '@type': 'supergroup',
+                    id: Number(newChat.id),
+                    username: newChat.username || '',
+                    date: newChat.date || 0,
+                    status: { '@type': 'chatMemberStatusCreator', is_member: true },
+                    member_count: 1,
+                    has_linked_chat: false,
+                    has_location: false,
+                    sign_messages: false,
+                    is_slow_mode_enabled: false,
+                    is_channel: !!is_channel,
+                    is_verified: false,
+                    restriction_reason: '',
+                    is_scam: false
+                }
+            });
+            const tdChat = translateChat(newChat, null);
+            if (tdChat) {
+                this._chatCache.set(tdChat.id, tdChat);
+                this._emitUpdate({ '@type': 'updateNewChat', chat: tdChat });
+                return tdChat;
+            }
+        } catch (e) {
+            console.error('[GramJs] createChannel error:', e);
+            throw e;
         }
         return null;
     };
