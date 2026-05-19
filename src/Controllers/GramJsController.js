@@ -17,8 +17,11 @@ import {
     translateUser,
     translateChat,
     translateMessage,
+    translateSticker,
     entityToTdlibChatId,
     tdlibChatIdToInputPeer,
+    translateStickerSetInfo,
+    translateStickerSet,
     mediaCache
 } from '../Utils/GramJs/EntityTranslator';
 import { loadMessages, saveMessages } from '../Utils/MessageCache';
@@ -49,6 +52,9 @@ class GramJsController extends EventEmitter {
         // Chat folders (dialog filters)
         this._folderChats = new Map(); // folderId → Set<chatId>
         this._chatFilters = [];
+
+        // Sticker set access hashes for getStickerSet lookups
+        this._stickerSetAccessHashes = new Map(); // String(id) → BigInt accessHash
 
         // Auth state internos
         this._phone = null;
@@ -453,9 +459,11 @@ class GramJsController extends EventEmitter {
 
             // ── Stickers ──────────────────────────────────────────────────────
             case 'getInstalledStickerSets':
-                return { '@type': 'stickerSets', total_count: 0, sets: [] };
+                return this._getInstalledStickerSets(req);
+            case 'getStickerSet':
+                return this._getStickerSet(req);
             case 'getRecentStickers':
-                return { '@type': 'stickers', stickers: [] };
+                return this._getRecentStickers(req);
 
             // ── Notificaciones ────────────────────────────────────────────────
             case 'setNotificationGroup':
@@ -1116,6 +1124,71 @@ class GramJsController extends EventEmitter {
     };
 
     // ─── File handlers ───────────────────────────────────────────────────────
+
+    // ─── Sticker APIs ────────────────────────────────────────────────────────
+
+    _getInstalledStickerSets = async req => {
+        try {
+            const result = await this.client.invoke(new Api.messages.GetAllStickers({ hash: BigInt(0) }));
+            const sets = (result.sets || []).map(ss => {
+                this._stickerSetAccessHashes.set(String(ss.id), ss.accessHash);
+                return translateStickerSetInfo(ss);
+            });
+            return { '@type': 'stickerSets', total_count: sets.length, sets };
+        } catch (e) {
+            console.warn('[GramJs] getInstalledStickerSets error', e);
+            return { '@type': 'stickerSets', total_count: 0, sets: [] };
+        }
+    };
+
+    _getStickerSet = async req => {
+        try {
+            const { set_id } = req;
+            const idStr = String(set_id);
+            const accessHash = this._stickerSetAccessHashes.get(idStr) || BigInt(0);
+            const result = await this.client.invoke(
+                new Api.messages.GetStickerSet({
+                    stickerset: new Api.InputStickerSetID({
+                        id: BigInt(idStr),
+                        accessHash
+                    }),
+                    hash: 0
+                })
+            );
+            return (
+                translateStickerSet(result) || {
+                    '@type': 'stickerSet',
+                    id: idStr,
+                    title: '',
+                    name: '',
+                    stickers: [],
+                    emojis: []
+                }
+            );
+        } catch (e) {
+            console.warn('[GramJs] getStickerSet error', e);
+            return {
+                '@type': 'stickerSet',
+                id: String(req.set_id || '0'),
+                title: '',
+                name: '',
+                stickers: [],
+                emojis: []
+            };
+        }
+    };
+
+    _getRecentStickers = async req => {
+        try {
+            const result = await this.client.invoke(
+                new Api.messages.GetRecentStickers({ attached: false, hash: BigInt(0) })
+            );
+            const stickers = (result.stickers || []).map(doc => translateSticker(doc)).filter(Boolean);
+            return { '@type': 'stickers', stickers };
+        } catch (e) {
+            return { '@type': 'stickers', stickers: [] };
+        }
+    };
 
     _emitUpdateFile = (fileId, blob, isComplete = false, isActive = false) => {
         const size = blob ? blob.size : 0;

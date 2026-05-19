@@ -214,9 +214,12 @@ export function translateSticker(gDoc) {
         mediaCache.set(Number(gDoc.id), gDoc);
     }
     const size = gDoc.size ? Number(gDoc.size) : 0;
+    const mimeType = gDoc.mimeType || '';
+    const isAnimated = mimeType === 'application/x-tgsticker';
 
     const stickerAttr = (gDoc.attributes || []).find(a => (a.className || a._) === 'DocumentAttributeSticker');
     const alt = stickerAttr?.alt || '';
+    const setId = stickerAttr?.stickerset?.id ? String(stickerAttr.stickerset.id) : '0';
 
     const imgAttr = (gDoc.attributes || []).find(a => (a.className || a._) === 'DocumentAttributeImageSize');
     const width = imgAttr?.w || 512;
@@ -224,14 +227,73 @@ export function translateSticker(gDoc) {
 
     return {
         '@type': 'sticker',
-        set_id: '0',
+        set_id: setId,
         width: Number(width),
         height: Number(height),
         emoji: alt,
-        is_lottie: false,
+        is_animated: isAnimated,
         is_video: false,
         thumbnail: null,
         sticker: translateFile(gDoc.id, size, gDoc.id ? String(gDoc.id) : '')
+    };
+}
+
+export function translateStickerSetInfo(ss) {
+    if (!ss) return null;
+    return {
+        '@type': 'stickerSetInfo',
+        id: String(ss.id),
+        title: ss.title || '',
+        name: ss.shortName || '',
+        thumbnail: null,
+        is_installed: !ss.archived,
+        is_archived: !!ss.archived,
+        is_official: !!ss.official,
+        is_animated: !!ss.animated,
+        is_masks: !!ss.masks,
+        is_viewed: true,
+        size: ss.count || 0,
+        covers: []
+    };
+}
+
+export function translateStickerSet(result) {
+    if (!result || !result.set) return null;
+    const { set, packs, documents } = result;
+
+    // Build emoji map: document_id (string) → emoji
+    const emojiMap = new Map();
+    for (const pack of packs || []) {
+        const emoji = pack.emoticon || '';
+        for (const docId of pack.documents || []) {
+            const key = String(docId);
+            if (!emojiMap.has(key)) emojiMap.set(key, emoji);
+        }
+    }
+
+    const stickers = (documents || [])
+        .map(doc => {
+            const s = translateSticker(doc);
+            if (!s) return null;
+            const emoji = emojiMap.get(String(doc.id)) || s.emoji || '';
+            return { ...s, emoji, set_id: String(set.id) };
+        })
+        .filter(Boolean);
+
+    return {
+        '@type': 'stickerSet',
+        id: String(set.id),
+        title: set.title || '',
+        name: set.shortName || '',
+        thumbnail: null,
+        is_installed: !set.archived,
+        is_archived: !!set.archived,
+        is_official: !!set.official,
+        is_animated: !!set.animated,
+        is_masks: !!set.masks,
+        is_viewed: true,
+        stickers,
+        emojis: stickers.map(s => ({ '@type': 'emojis', emojis: s.emoji ? [s.emoji] : [] }))
     };
 }
 

@@ -41,6 +41,16 @@
 - Eliminada la dependencia de `tdweb` en el flujo principal (sigue en `package.json` hasta confirmar migración completa)
 - Suprimido aviso "app desactualizada" de `updateServiceNotification` (sustituido por `console.warn`)
 
+### Novedades (sesión 2026-05-19 — stickers animados)
+- **Stickers animados TGS** — los stickers Lottie/TGS ahora se reproducen en el chat:
+  - `EntityTranslator.translateSticker`: detecta mime `application/x-tgsticker` y asigna `is_animated: true`; propaga `set_id` desde `DocumentAttributeSticker.stickerset.id`.
+  - El componente `Sticker.js` ya usaba `is_animated` para decidir si inflar el blob gzip con `pako` y renderizar `<Lottie>` — el flag faltante era el único bloqueo.
+- **Picker de stickers funcional** — el selector de stickers ahora carga los packs instalados del usuario:
+  - Implementado `_getInstalledStickerSets` via `messages.GetAllStickers` — almacena `accessHash` de cada pack en `_stickerSetAccessHashes`.
+  - Implementado `_getStickerSet` via `messages.GetStickerSet` — devuelve el set completo con documentos, mapeando emojis desde `StickerPack.documents`.
+  - Implementado `_getRecentStickers` via `messages.GetRecentStickers`.
+  - Añadidos `translateStickerSetInfo` y `translateStickerSet` en `EntityTranslator.js` para convertir respuestas GramJS al formato TDLib que usan `StickerSet.js` y `StickersPicker.js`.
+
 ### Novedades (sesión 2026-05-19)
 - **Carpetas de chats (Chat Folders)** — el sidebar muestra una barra de tabs horizontal con todas las carpetas definidas en Telegram (obtenidas via `messages.GetDialogFilters`). Al pulsar una carpeta, la lista de chats filtra solo los chats incluidos en ella (`include_peers` + `pinned_peers`). La vista "All" restaura el comportamiento normal. Los tabs solo se muestran si el usuario tiene al menos una carpeta configurada.
   - `GramJsController`: nuevo `_loadDialogFilters()`, `_inputPeerToTdlibChatId()`, `_folderChats` (Map folderId→Set\<chatId\>). `_getChats` extendido para `chatListFilter`.
