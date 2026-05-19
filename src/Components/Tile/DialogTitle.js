@@ -11,8 +11,9 @@ import classNames from 'classnames';
 import { compose } from 'recompose';
 import withStyles from '@material-ui/core/styles/withStyles';
 import { withTranslation } from 'react-i18next';
+import LockIcon from '@material-ui/icons/Lock';
 import CheckDecagramIcon from '../../Assets/Icons/Verified';
-import { getChatTitle, isChatVerified } from '../../Utils/Chat';
+import { getChatTitle, isChatVerified, isChatSecret } from '../../Utils/Chat';
 import ChatStore from '../../Stores/ChatStore';
 import './DialogTitle.css';
 
@@ -67,10 +68,12 @@ class DialogTitle extends React.Component {
         const { classes, t, chatId, showSavedMessages } = this.props;
 
         const isVerified = isChatVerified(chatId);
+        const isSecret = isChatSecret(chatId);
         const title = getChatTitle(chatId, showSavedMessages, t);
 
         return (
             <div className='dialog-title'>
+                {isSecret && <LockIcon className={classNames(classes.icon, 'dialog-title-icon')} />}
                 <span className='dialog-title-span'>{title}</span>
                 {isVerified && (
                     <CheckDecagramIcon
@@ -91,9 +94,6 @@ DialogTitle.defaultProps = {
     showSavedMessages: true
 };
 
-const enhance = compose(
-    withTranslation(),
-    withStyles(styles, { withTheme: true })
-);
+const enhance = compose(withTranslation(), withStyles(styles, { withTheme: true }));
 
 export default enhance(DialogTitle);

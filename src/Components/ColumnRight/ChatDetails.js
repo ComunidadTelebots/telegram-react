@@ -14,6 +14,7 @@ import withStyles from '@material-ui/core/styles/withStyles';
 import { withSnackbar } from 'notistack';
 import { withTranslation } from 'react-i18next';
 import AlternateEmailIcon from '@material-ui/icons/AlternateEmail';
+import LockIcon from '@material-ui/icons/Lock';
 import GroupIcon from '@material-ui/icons/Group';
 import CallIcon from '@material-ui/icons/Call';
 import CloseIcon from '@material-ui/icons/Close';
@@ -44,6 +45,7 @@ import {
     getGroupChatMembers,
     getChatFullInfo,
     isPrivateChat,
+    isChatSecret,
     getChatUserId,
     isMeChat
 } from '../../Utils/Chat';
@@ -325,6 +327,21 @@ class ChatDetails extends React.Component {
         }
     };
 
+    handleCreateSecretChat = async () => {
+        const { chatId } = this.props;
+        const chat = ChatStore.get(chatId);
+        if (!chat) return;
+        try {
+            const secretChat = await TdLibController.send({
+                '@type': 'createNewSecretChat',
+                user_id: chat.type.user_id
+            });
+            openChat(secretChat.id);
+        } catch (e) {
+            console.error('[ChatDetails] createNewSecretChat', e);
+        }
+    };
+
     handleOpenUser = userId => {
         openUser(userId, true);
     };
@@ -383,6 +400,7 @@ class ChatDetails extends React.Component {
         const bio = getChatBio(chatId);
         const isGroup = isGroupChat(chatId);
         const isMe = isMeChat(chatId);
+        const isSecret = isChatSecret(chatId);
 
         const members = getGroupChatMembers(chatId);
         const users = [];
@@ -477,6 +495,20 @@ class ChatDetails extends React.Component {
                             <List>
                                 {!isMe && <NotificationsListItem chatId={chatId} />}
                                 {isGroup && <MoreListItem chatId={chatId} />}
+                                {isPrivateChat(chatId) && !isSecret && !isMe && (
+                                    <ListItem button className={classes.listItem} onClick={this.handleCreateSecretChat}>
+                                        <ListItemIcon>
+                                            <LockIcon />
+                                        </ListItemIcon>
+                                        <ListItemText
+                                            primary={
+                                                <Typography color='primary' variant='inherit' noWrap>
+                                                    {t('StartSecretChat').toUpperCase()}
+                                                </Typography>
+                                            }
+                                        />
+                                    </ListItem>
+                                )}
                                 {popup && !isGroup && (
                                     <ListItem button className={classes.listItem} onClick={this.handleOpenChat}>
                                         <ListItemText

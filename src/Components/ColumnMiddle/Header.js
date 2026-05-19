@@ -24,12 +24,14 @@ import MainMenuButton from './MainMenuButton';
 import HeaderCommand from './HeaderCommand';
 import HeaderProgress from './HeaderProgress';
 import { borderStyle } from '../Theme';
+import LockIcon from '@material-ui/icons/Lock';
 import {
     getChatShortTitle,
     getChatSubtitle,
     getChatTitle,
     isAccentChatSubtitle,
-    isPrivateChat
+    isPrivateChat,
+    isChatSecret
 } from '../../Utils/Chat';
 import { clearSelection, searchChat } from '../../Actions/Client';
 import ChatStore from '../../Stores/ChatStore';
@@ -104,6 +106,7 @@ class Header extends Component {
 
         ChatStore.on('updateChatOnlineMemberCount', this.onUpdateChatOnlineMemberCount);
         ChatStore.on('updateChatTitle', this.onUpdateChatTitle);
+        ChatStore.on('updateSecretChat', this.onUpdateSecretChat);
         UserStore.on('updateUserStatus', this.onUpdateUserStatus);
         ChatStore.on('updateUserChatAction', this.onUpdateUserChatAction);
         UserStore.on('updateUserFullInfo', this.onUpdateUserFullInfo);
@@ -124,6 +127,7 @@ class Header extends Component {
 
         ChatStore.off('updateChatOnlineMemberCount', this.onUpdateChatOnlineMemberCount);
         ChatStore.off('updateChatTitle', this.onUpdateChatTitle);
+        ChatStore.off('updateSecretChat', this.onUpdateSecretChat);
         UserStore.off('updateUserStatus', this.onUpdateUserStatus);
         ChatStore.off('updateUserChatAction', this.onUpdateUserChatAction);
         UserStore.off('updateUserFullInfo', this.onUpdateUserFullInfo);
@@ -208,6 +212,14 @@ class Header extends Component {
         const chat = ChatStore.get(AppStore.getChatId());
         if (!chat) return;
         if (chat.id !== update.chat_id) return;
+
+        this.forceUpdate();
+    };
+
+    onUpdateSecretChat = update => {
+        const chat = ChatStore.get(AppStore.getChatId());
+        if (!chat || chat.type['@type'] !== 'chatTypeSecret') return;
+        if (chat.type.secret_chat_id !== update.secret_chat.id) return;
 
         this.forceUpdate();
     };
@@ -366,9 +378,17 @@ class Header extends Component {
         const chat = ChatStore.get(chatId);
 
         const isAccentSubtitle = isAccentChatSubtitle(chatId);
+        const isSecret = isChatSecret(chatId);
         let title = getChatTitle(chatId, true, t);
         let subtitle = getChatSubtitle(chatId, true);
         let showProgressAnimation = false;
+
+        if (isSecret && chat && chat.type['@type'] === 'chatTypeSecret') {
+            const sc = ChatStore.secretChats && ChatStore.secretChats.get(chat.type.secret_chat_id);
+            if (sc && sc.state && sc.state['@type'] === 'secretChatStatePending') {
+                subtitle = t('EncryptionKeyWait');
+            }
+        }
 
         if (connectionState) {
             switch (connectionState['@type']) {
@@ -436,7 +456,10 @@ class Header extends Component {
                 <div
                     className={classNames('header-status', 'grow', chat ? 'cursor-pointer' : 'cursor-default')}
                     onClick={this.openChatDetails}>
-                    <span className='header-status-content'>{title}</span>
+                    <span className='header-status-content'>
+                        {isSecret && <LockIcon style={{ fontSize: 15, verticalAlign: 'middle', marginRight: 3 }} />}
+                        {title}
+                    </span>
                     {showProgressAnimation && <HeaderProgress />}
                     <span
                         className={classNames('header-status-title', classes.headerStatusTitle, {
@@ -500,9 +523,6 @@ class Header extends Component {
     }
 }
 
-const enhance = compose(
-    withTranslation(),
-    withStyles(styles, { withTheme: true })
-);
+const enhance = compose(withTranslation(), withStyles(styles, { withTheme: true }));
 
 export default enhance(Header);
