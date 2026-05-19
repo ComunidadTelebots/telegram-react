@@ -1,0 +1,135 @@
+/* ── Diseño TDesktop (Telegram Desktop) ──────────────────────────────────── */
+
+body.design-tdesktop {
+    font: 13px/18px 'Segoe UI', system-ui, -apple-system, sans-serif;
+
+    /* Colores clásicos de TDesktop */
+    --message-out-background: #edffc3;
+    --message-out-link: #3a9ad0;
+    --message-out-author: #3a9ad0;
+    --message-out-meta-color: #6cc264;
+    --message-out-reply-title: #3a9ad0;
+    --message-out-reply-border: #3a9ad0;
+
+    --message-in-background: #ffffff;
+    --message-in-link: #40a7e3;
+    --message-in-author: #40a7e3;
+    --message-in-meta-color: #aaaaaa;
+    --message-in-reply-title: #40a7e3;
+    --message-in-reply-border: #40a7e3;
+
+    --badge-green: #53b440;
+    --indicator-green: #53b440;
+    --day-background: rgba(107, 165, 199, 0.6);
+}
+
+/* ── Sidebar más estrecha y compacta ────────────────────────────────────── */
+body.design-tdesktop .dialogs {
+    width: 260px;
+    min-width: 260px;
+    max-width: 260px;
+    flex: none;
+    background: #ffffff;
+    border-right: 1px solid #e7e7e7;
+}
+
+body.design-tdesktop .dialog-details {
+    width: calc(100% - 260px);
+    flex: 1;
+    background: #c3d0d8; /* fondo clásico de tdesktop */
+}
+
+/* Fondo de conversación (área de mensajes) */
+body.design-tdesktop .messages-list {
+    background: inherit;
+}
+
+/* ── Items de diálogo más compactos ─────────────────────────────────────── */
+body.design-tdesktop .dialog-content {
+    padding: 6px 10px;
+}
+
+/* ── Burbujas ───────────────────────────────────────────────────────────── */
+body.design-tdesktop .message-bubble {
+    border-radius: 6px 6px 6px 0 !important;
+    padding: 5px 8px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.18) !important;
+    background: var(--message-in-background);
+}
+
+body.design-tdesktop .message-bubble-out {
+    border-radius: 6px 6px 0 6px !important;
+    background: var(--message-out-background);
+}
+
+body.design-tdesktop .message-short .message-bubble {
+    border-radius: 6px !important;
+}
+
+/* Cola de burbuja: más angulosa, fiel a TDesktop */
+body.design-tdesktop .message-bubble::after {
+    width: 9px;
+    height: 15px;
+    left: -7px;
+    bottom: -2px;
+}
+
+/* ── Wrapper de mensajes: más compacto ──────────────────────────────────── */
+body.design-tdesktop .message-wrapper {
+    max-width: 900px;
+    padding: 3px 36px 3px 6px;
+}
+
+body.design-tdesktop .message-content {
+    max-width: 500px;
+}
+
+/* ── Header ─────────────────────────────────────────────────────────────── */
+body.design-tdesktop .header-details {
+    min-height: 54px;
+    background: #ffffff;
+    border-bottom: 1px solid #e7e7e7;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+}
+
+/* ── Input box ──────────────────────────────────────────────────────────── */
+body.design-tdesktop .inputbox-background {
+    background: #ffffff;
+    border-top: 1px solid #e7e7e7;
+}
+
+body.design-tdesktop .inputbox-bubble {
+    border-radius: 6px 6px 0 6px;
+    background: #ffffff;
+}
+
+/* ── Botón de enviar ────────────────────────────────────────────────────── */
+body.design-tdesktop .inputbox-send-button {
+    border-radius: 50% !important;
+}
+
+/* ── Scrollbar ──────────────────────────────────────────────────────────── */
+body.design-tdesktop ::-webkit-scrollbar {
+    width: 8px;
+}
+
+body.design-tdesktop ::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.05);
+}
+
+body.design-tdesktop ::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.22);
+    border-radius: 4px;
+}
+
+/* ── Day separator ──────────────────────────────────────────────────────── */
+body.design-tdesktop .day-meta-bubble {
+    border-radius: 8px;
+    background: rgba(107, 165, 199, 0.6);
+    font-size: 12px;
+}
+
+/* ── Tiles: ligeramente cuadrados (como TDesktop antiguo) ───────────────── */
+body.design-tdesktop .tile {
+    border-radius: 50%;
+}

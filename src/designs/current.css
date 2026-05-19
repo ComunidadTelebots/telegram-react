@@ -1,0 +1,34 @@
+/* ── Diseño actual (Telegram Web) ─────────────────────────────────────────── */
+/* Es el diseño por defecto; este archivo lo documenta explícitamente.        */
+
+body.design-current {
+    font: 15px/20px 'Roboto', sans-serif;
+}
+
+/* Sidebar */
+body.design-current .dialogs {
+    width: calc(25% - 0px);
+}
+
+body.design-current .dialog-details {
+    width: calc(75% - 0px);
+}
+
+/* Burbujas — igual que el CSS base */
+body.design-current .message-bubble {
+    border-radius: 10px 10px 10px 0;
+    padding: 6px 9px;
+    box-shadow: 0 1px 2px 0 rgba(16, 35, 47, 0.15);
+}
+
+body.design-current .message-short .message-bubble {
+    border-radius: 10px;
+}
+
+body.design-current .message-bubble-out {
+    border-radius: 10px 10px 0 10px;
+}
+
+body.design-current .message-bubble::after {
+    display: block;
+}

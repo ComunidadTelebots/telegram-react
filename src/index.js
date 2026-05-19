@@ -14,6 +14,9 @@ import registerServiceWorker from './registerServiceWorker';
 import Cookies from 'universal-cookie';
 import { OPTIMIZATIONS_FIRST_START } from './Constants';
 import './index.css';
+import { initDesign } from './Design';
+
+initDesign();
 
 ReactDOM.render(
     <Router>
