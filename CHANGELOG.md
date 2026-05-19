@@ -1,6 +1,23 @@
 # Changelog
 
-## [Unreleased]
+## [Unreleased] — 2026-05-19 (sesión actual)
+
+### Added
+- **Spoiler de texto** (`textEntityTypeSpoiler`) — el texto aparece borroso y se revela al hacer clic. Implementado en `Utils/Message.js` con CSS en `Message.css`.
+- **Subrayado y tachado** — soporte para `textEntityTypeUnderline` (`<u>`) y `textEntityTypeStrikethrough` (`<s>`) en el renderizado de mensajes.
+- **Encuestas tipo Quiz** — las encuestas con `pollTypeQuiz` muestran subtítulo "Quiz", marcan la respuesta correcta con ✓ (verde) y la incorrecta con ✗ (rojo). Se muestra la explicación debajo de las opciones al votar o cuando la encuesta cierra.
+- **Spoiler de medios** — las fotos con `has_spoiler: true` se muestran con blur y un ícono de ojo; hacer clic las revela sin cerrar la vista. Implementado en `Photo.js` y `Photo.css`.
+- **Múltiples mensajes fijados** — se cargan todos los pins con `searchChatMessages` + `searchMessagesFilterPinned`. Navegación entre ellos con barras indicadoras (hasta 4) y etiqueta "Pinned Message N of M". Degradación elegante en TDLib antiguo. Ahora `unpinChatMessage` recibe el `message_id` correcto.
+- **Traducción de mensajes** — nueva opción "Translate message" en el menú contextual de cualquier mensaje con texto. Llama a la API `translateText` de TDLib y muestra el resultado en línea debajo del mensaje con indicador de carga.
+- **Chats secretos** — soporte completo de UI: ícono de candado en lista de diálogos y cabecera, subtítulo de espera de clave, botón "Start Secret Chat" en detalles de contacto, suscripción a `updateSecretChat`.
+
+### Fixed
+- Badge de no leídos en Archivo ahora muestra el contador real en tiempo real (desde `ChatStore.counters`).
+- Tres TODOs implementados en `ChatStore`: `updateChatDefaultDisableNotification`, `updateSecretChat`, `updateUnreadChatCount`.
+
+---
+
+## [Historial anterior]
 
 ### Fixed
 - Reemplazado paquete `@arseny30/tdweb@1.5.9` (eliminado de npm) por `tdweb@1.6.0` original
