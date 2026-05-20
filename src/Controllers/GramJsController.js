@@ -1225,7 +1225,25 @@ class GramJsController extends EventEmitter {
             offsetId: fromMessageId || 0,
             addOffset: offset
         });
+        // Cache senders from the message batch so profile photos and names load
+        for (const m of msgs) {
+            if (m.sender) this._cacheUser(m.sender);
+        }
         const messages = msgs.map(m => translateMessage(m, chatId)).filter(Boolean);
+        // Emit updateUser for senders not yet in the store (needed for sender names in groups)
+        for (const m of messages) {
+            const uid = m.sender_user_id;
+            if (uid && uid !== chatId && !this._userCache.has(uid)) {
+                const cached = this._entityCache.get(uid);
+                if (cached) {
+                    const tdUser = translateUser(cached);
+                    if (tdUser) {
+                        this._userCache.set(uid, tdUser);
+                        this._emitUpdate({ '@type': 'updateUser', user: tdUser });
+                    }
+                }
+            }
+        }
         return { '@type': 'messages', messages, total_count: messages.length };
     };
 
