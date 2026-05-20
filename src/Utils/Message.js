@@ -638,6 +638,9 @@ function getContent(message, t = key => key) {
         case 'messageChatChangeTitle': {
             return getServiceMessageContent(message);
         }
+        case 'messageChatDeleteHistory': {
+            return getServiceMessageContent(message);
+        }
         case 'messageChatDeleteMember': {
             return getServiceMessageContent(message);
         }

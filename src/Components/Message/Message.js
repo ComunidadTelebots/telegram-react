@@ -451,6 +451,7 @@ class Message extends Component {
         if (!message) return;
 
         const { content } = message;
+        if (!content) return;
         let text = '';
         if (content['@type'] === 'messageText') {
             text = content.text?.text || '';
@@ -471,6 +472,7 @@ class Message extends Component {
         if (!message) return;
 
         const { content } = message;
+        if (!content) return;
         let text = '';
         if (content['@type'] === 'messageText') {
             text = content.text?.text || '';
