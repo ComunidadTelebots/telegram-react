@@ -481,6 +481,48 @@ function translateForwardInfo(fwdFrom) {
     };
 }
 
+function translateServiceContent(action) {
+    const cls = action?.className || action?._;
+    if (!cls) return null;
+
+    if (cls === 'MessageActionChatAddUser' || cls === 'MessageActionChatJoinedByLink') {
+        const members = (action.users || []).map(id => Number(id));
+        return {
+            '@type': 'messageChatAddMembers',
+            member_user_ids: members.length ? members : [0]
+        };
+    }
+    if (cls === 'MessageActionChatDeleteUser') {
+        return { '@type': 'messageChatDeleteMember', user_id: Number(action.userId || 0) };
+    }
+    if (cls === 'MessageActionChatCreate') {
+        return { '@type': 'messageBasicGroupChatCreate', title: action.title || '', member_user_ids: [] };
+    }
+    if (cls === 'MessageActionChannelCreate') {
+        return { '@type': 'messageSupergroupChatCreate', title: action.title || '' };
+    }
+    if (cls === 'MessageActionChatEditTitle') {
+        return { '@type': 'messageChatChangeTitle', title: action.title || '' };
+    }
+    if (cls === 'MessageActionChatEditPhoto') {
+        return { '@type': 'messageChatChangePhoto', photo: null };
+    }
+    if (cls === 'MessageActionChatDeletePhoto') {
+        return { '@type': 'messageChatDeletePhoto' };
+    }
+    if (cls === 'MessageActionPinMessage') {
+        return { '@type': 'messagePinMessage', message_id: action.msgId || 0 };
+    }
+    if (cls === 'MessageActionHistoryClear') {
+        return { '@type': 'messageChatDeleteHistory' };
+    }
+    if (cls === 'MessageActionContactSignUp') {
+        return { '@type': 'messageContactRegistered' };
+    }
+
+    return null;
+}
+
 export function translateMessage(msg, chatId) {
     if (!msg) return null;
     const cls = msg.className || msg._;
@@ -615,6 +657,13 @@ export function translateReactions(raw) {
 }
 
 function translateMessageContent(msg) {
+    const msgCls = msg.className || msg._;
+
+    // Service messages (group join, pin, etc.)
+    if (msgCls === 'MessageService') {
+        return translateServiceContent(msg.action) || { '@type': 'messageUnsupported' };
+    }
+
     const media = msg.media;
     const mediaClass = media?.className || media?._;
 
@@ -737,6 +786,50 @@ function translateMessageContent(msg) {
                 entities: (msg.entities || []).map(translateTextEntity).filter(Boolean)
             },
             web_page: webPage
+        };
+    }
+
+    // Contacto
+    if (mediaClass === 'MessageMediaContact' || mediaClass === 'messageMediaContact') {
+        return {
+            '@type': 'messageContact',
+            contact: {
+                '@type': 'contact',
+                phone_number: media.phoneNumber || '',
+                first_name: media.firstName || '',
+                last_name: media.lastName || '',
+                user_id: media.userId ? Number(media.userId) : 0,
+                vcard: media.vcard || ''
+            }
+        };
+    }
+
+    // Poll
+    if (mediaClass === 'MessageMediaPoll' || mediaClass === 'messageMediaPoll') {
+        const poll = media.poll;
+        return {
+            '@type': 'messagePoll',
+            poll: {
+                '@type': 'poll',
+                id: poll ? String(poll.id) : '0',
+                question: poll?.question || '',
+                options: (poll?.answers || []).map(a => ({
+                    '@type': 'pollOption',
+                    text: a.text || '',
+                    voter_count: 0,
+                    vote_percentage: 0,
+                    is_chosen: false,
+                    is_being_chosen: false
+                })),
+                total_voter_count: media.results?.totalVoters || 0,
+                is_anonymous: poll?.publicVoters === false,
+                type: poll?.quiz
+                    ? { '@type': 'pollTypeQuiz', correct_option_id: media.results?.correct || 0 }
+                    : { '@type': 'pollTypeRegular', allow_multiple_answers: !!poll?.multipleChoice },
+                open_period: poll?.closePeriod || 0,
+                close_date: poll?.closeDate || 0,
+                is_closed: !!poll?.closed
+            }
         };
     }
 
