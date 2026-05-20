@@ -123,6 +123,41 @@ function userStatus(update) {
     };
 }
 
+function translateTypingAction(action) {
+    if (!action) return { '@type': 'chatActionTyping' };
+    const cls = action.className || action._;
+    switch (cls) {
+        case 'SendMessageTypingAction':
+            return { '@type': 'chatActionTyping' };
+        case 'SendMessageCancelAction':
+            return { '@type': 'chatActionCancel' };
+        case 'SendMessageRecordVideoAction':
+            return { '@type': 'chatActionRecordingVideo' };
+        case 'SendMessageUploadVideoAction':
+            return { '@type': 'chatActionUploadingVideo', progress: action.progress || 0 };
+        case 'SendMessageRecordAudioAction':
+            return { '@type': 'chatActionRecordingVoiceNote' };
+        case 'SendMessageUploadAudioAction':
+            return { '@type': 'chatActionUploadingVoiceNote', progress: action.progress || 0 };
+        case 'SendMessageUploadPhotoAction':
+            return { '@type': 'chatActionUploadingPhoto', progress: action.progress || 0 };
+        case 'SendMessageUploadDocumentAction':
+            return { '@type': 'chatActionUploadingDocument', progress: action.progress || 0 };
+        case 'SendMessageGeoLocationAction':
+            return { '@type': 'chatActionChoosingLocation' };
+        case 'SendMessageChooseContactAction':
+            return { '@type': 'chatActionChoosingContact' };
+        case 'SendMessageGamePlayAction':
+            return { '@type': 'chatActionStartPlayingGame' };
+        case 'SendMessageRecordRoundAction':
+            return { '@type': 'chatActionRecordingVideoNote' };
+        case 'SendMessageUploadRoundAction':
+            return { '@type': 'chatActionUploadingVideoNote', progress: action.progress || 0 };
+        default:
+            return { '@type': 'chatActionTyping' };
+    }
+}
+
 function typing(update) {
     let chatId = 0;
     let userId = 0;
@@ -148,7 +183,7 @@ function typing(update) {
         message_thread_id: 0,
         user_id: userId,
         sender_id: { '@type': 'messageSenderUser', user_id: userId },
-        action: { '@type': 'chatActionTyping' }
+        action: translateTypingAction(update.action)
     };
 }
 
