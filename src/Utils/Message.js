@@ -154,6 +154,12 @@ function getFormattedText(formattedText) {
             deleteLineBreakAfterPre = false;
         }
 
+        if (!type) {
+            result.push(entityText);
+            index = offset + length;
+            continue;
+        }
+
         switch (type['@type']) {
             case 'textEntityTypeBold': {
                 result.push(<strong key={entityKey}>{entityText}</strong>);
@@ -1956,6 +1962,7 @@ export function getNodes(text, entities) {
         }
 
         if (!(prevEntity && checkInclusion(x.offset, [prevEntity]))) {
+            if (!x.type) return;
             switch (x.type['@type']) {
                 case 'textEntityTypeBold': {
                     const node = document.createElement('b');
