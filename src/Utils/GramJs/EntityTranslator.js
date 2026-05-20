@@ -553,7 +553,7 @@ export function translateUserProfilePhoto(gPhoto) {
         sizes.push({ '@type': 'photoSize', type: 'x', width: 640, height: 640, photo: makeFile({}) });
     }
 
-    return { id: String(gPhoto.id), sizes, added_date: gPhoto.date || 0 };
+    return { '@type': 'userProfilePhoto', id: String(gPhoto.id), sizes, added_date: gPhoto.date || 0 };
 }
 
 export function translateReactions(raw) {

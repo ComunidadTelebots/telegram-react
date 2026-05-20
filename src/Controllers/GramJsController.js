@@ -606,6 +606,10 @@ class GramJsController extends EventEmitter {
                 return this._getChatHistory(req);
             case 'getMessages':
                 return this._getMessages(req);
+            case 'getMessage':
+                return this._getMessage(req);
+            case 'forwardMessages':
+                return this._forwardMessages(req);
             case 'sendMessage':
                 return this._sendMessage(req);
             case 'editMessageText':
@@ -618,6 +622,10 @@ class GramJsController extends EventEmitter {
                 return this._readAllChatMentions(req);
             case 'reportChat':
                 return this._reportChat(req);
+            case 'pinChatMessage':
+                return this._pinChatMessage(req);
+            case 'unpinChatMessage':
+                return this._unpinChatMessage(req);
 
             // ── Usuarios ──────────────────────────────────────────────────────
             case 'getUser':
@@ -1208,6 +1216,83 @@ class GramJsController extends EventEmitter {
         }
     };
 
+    _getMessage = async req => {
+        const { chat_id, message_id } = req;
+        try {
+            const inputPeer = tdlibChatIdToInputPeer(chat_id, this._entityCache);
+            const msgs = await this.client.getMessages(inputPeer, { ids: [message_id] });
+            const msg = msgs && msgs[0] ? translateMessage(msgs[0], chat_id) : null;
+            if (msg) return msg;
+        } catch (err) {
+            console.error('[GramJs] getMessage error', err);
+        }
+        return null;
+    };
+
+    _forwardMessages = async req => {
+        const { chat_id, from_chat_id, message_ids } = req;
+        try {
+            const toPeer = tdlibChatIdToInputPeer(chat_id, this._entityCache);
+            const fromPeer = tdlibChatIdToInputPeer(from_chat_id, this._entityCache);
+            await this.client.invoke(
+                new Api.messages.ForwardMessages({
+                    fromPeer,
+                    id: message_ids,
+                    toPeer,
+                    randomId: message_ids.map(() => BigInt(Math.floor(Math.random() * Number.MAX_SAFE_INTEGER))),
+                    silent: false,
+                    background: false,
+                    withMyScore: false,
+                    grouped: false,
+                    noforwards: false
+                })
+            );
+        } catch (err) {
+            console.error('[GramJs] forwardMessages error', err);
+        }
+        return {};
+    };
+
+    _pinChatMessage = async req => {
+        const { chat_id, message_id, disable_notification = false } = req;
+        try {
+            const inputPeer = tdlibChatIdToInputPeer(chat_id, this._entityCache);
+            await this.client.invoke(
+                new Api.messages.UpdatePinnedMessage({
+                    peer: inputPeer,
+                    id: message_id,
+                    silent: disable_notification,
+                    unpin: false,
+                    pmOneside: false
+                })
+            );
+            this._emitUpdate({ '@type': 'updateChatPinnedMessage', chat_id, pinned_message_id: message_id });
+        } catch (err) {
+            console.error('[GramJs] pinChatMessage error', err);
+        }
+        return {};
+    };
+
+    _unpinChatMessage = async req => {
+        const { chat_id, message_id } = req;
+        try {
+            const inputPeer = tdlibChatIdToInputPeer(chat_id, this._entityCache);
+            await this.client.invoke(
+                new Api.messages.UpdatePinnedMessage({
+                    peer: inputPeer,
+                    id: message_id,
+                    silent: true,
+                    unpin: true,
+                    pmOneside: false
+                })
+            );
+            this._emitUpdate({ '@type': 'updateChatPinnedMessage', chat_id, pinned_message_id: 0 });
+        } catch (err) {
+            console.error('[GramJs] unpinChatMessage error', err);
+        }
+        return {};
+    };
+
     _sendMessage = async req => {
         const { chat_id, input_message_content, reply_to_message_id = 0, schedule_date, disable_notification } = req;
         const contentType = input_message_content?.['@type'];
@@ -1473,7 +1558,8 @@ class GramJsController extends EventEmitter {
                 searchMessagesFilterDocument: new Api.InputMessagesFilterDocument(),
                 searchMessagesFilterUrl: new Api.InputMessagesFilterUrl(),
                 searchMessagesFilterVoiceNote: new Api.InputMessagesFilterVoice(),
-                searchMessagesFilterAudio: new Api.InputMessagesFilterMusic()
+                searchMessagesFilterAudio: new Api.InputMessagesFilterMusic(),
+                searchMessagesFilterPinned: new Api.InputMessagesFilterPinned()
             };
             const gramFilter = (filter && filterMap[filter['@type']]) || new Api.InputMessagesFilterEmpty();
 
