@@ -89,6 +89,7 @@ class TelegramApp extends Component {
         ApplicationStore.on('clientUpdateTdLibDatabaseExists', this.onClientUpdateTdLibDatabaseExists);
         ApplicationStore.on('updateAuthorizationState', this.onUpdateAuthorizationState);
         ApplicationStore.on('updateFatalError', this.onUpdateFatalError);
+        TdLibController.on('clientUpdate', this.onClientUpdate);
     }
 
     componentWillUnmount() {
@@ -98,7 +99,14 @@ class TelegramApp extends Component {
         ApplicationStore.off('clientUpdateTdLibDatabaseExists', this.onClientUpdateTdLibDatabaseExists);
         ApplicationStore.off('updateAuthorizationState', this.onUpdateAuthorizationState);
         ApplicationStore.off('updateFatalError', this.onUpdateFatalError);
+        TdLibController.off('clientUpdate', this.onClientUpdate);
     }
+
+    onClientUpdate = update => {
+        if (update['@type'] === 'clientUpdateForceWebVersion') {
+            this.setState({ nativeMobile: false });
+        }
+    };
 
     onClientUpdateTdLibDatabaseExists = update => {
         const { exists } = update;

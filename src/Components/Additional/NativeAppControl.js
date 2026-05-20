@@ -7,6 +7,7 @@
 
 import React from 'react';
 import Button from '@material-ui/core/Button';
+import TdLibController from '../../Controllers/TdLibController';
 import { isIOS, isWindowsPhone } from '../../Utils/Common';
 import './NativeAppControl.css';
 
@@ -21,6 +22,10 @@ class NativeAppControl extends React.Component {
         }
     };
 
+    handleContinueWeb = () => {
+        TdLibController.clientUpdate({ '@type': 'clientUpdateForceWebVersion' });
+    };
+
     render() {
         let src = 'Android_2x.jpg';
         if (isIOS()) {
@@ -33,15 +38,18 @@ class NativeAppControl extends React.Component {
             <div className='app-inactive'>
                 <div className='app-inactive-wrapper'>
                     <img src={src} alt='' className='app-inactive-image' onClick={NativeAppControl.handleInstall} />
-                    <h3 className='app-inactive-title'>Work is in progress!</h3>
+                    <h3 className='app-inactive-title'>Mobile not fully optimized</h3>
                     <div className='app-inactive-description'>
-                        This client has not been optimized for mobile devices yet.
+                        This client is not fully optimized for mobile devices yet.
                         <br />
-                        Please consider using our native mobile app.
+                        For the best experience, use our native app.
                     </div>
                     <div className='app-inactive-actions'>
                         <Button color='primary' onClick={NativeAppControl.handleInstall}>
                             Install app
+                        </Button>
+                        <Button color='default' onClick={this.handleContinueWeb}>
+                            Continue in browser
                         </Button>
                     </div>
                 </div>

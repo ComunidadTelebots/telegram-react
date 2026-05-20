@@ -1444,14 +1444,36 @@ class GramJsController extends EventEmitter {
     };
 
     _searchChatMessages = async req => {
-        const { chat_id, query, limit = 20, from_message_id = 0 } = req;
+        const { chat_id, query, limit = 20, from_message_id = 0, filter, sender_user_id } = req;
         try {
             const inputPeer = tdlibChatIdToInputPeer(chat_id, this._entityCache);
+
+            const filterMap = {
+                searchMessagesFilterPhoto: new Api.InputMessagesFilterPhotos(),
+                searchMessagesFilterVideo: new Api.InputMessagesFilterVideo(),
+                searchMessagesFilterDocument: new Api.InputMessagesFilterDocument(),
+                searchMessagesFilterUrl: new Api.InputMessagesFilterUrl(),
+                searchMessagesFilterVoiceNote: new Api.InputMessagesFilterVoice(),
+                searchMessagesFilterAudio: new Api.InputMessagesFilterMusic()
+            };
+            const gramFilter = (filter && filterMap[filter['@type']]) || new Api.InputMessagesFilterEmpty();
+
+            let fromId = undefined;
+            if (sender_user_id) {
+                const entity = this._entityCache.get(sender_user_id);
+                if (entity) {
+                    fromId = new Api.InputPeerUser({
+                        userId: BigInt(sender_user_id),
+                        accessHash: entity.accessHash || BigInt(0)
+                    });
+                }
+            }
+
             const msgs = await this.client.invoke(
                 new Api.messages.Search({
                     peer: inputPeer,
-                    q: query,
-                    filter: new Api.InputMessagesFilterEmpty(),
+                    q: query || '',
+                    filter: gramFilter,
                     minDate: 0,
                     maxDate: 0,
                     offsetId: from_message_id,
@@ -1459,11 +1481,12 @@ class GramJsController extends EventEmitter {
                     limit,
                     maxId: 0,
                     minId: 0,
-                    hash: BigInt(0)
+                    hash: BigInt(0),
+                    ...(fromId ? { fromId } : {})
                 })
             );
             const messages = (msgs.messages || []).map(m => translateMessage(m, chat_id)).filter(Boolean);
-            return { '@type': 'messages', messages, total_count: messages.length };
+            return { '@type': 'messages', messages, total_count: msgs.count || messages.length };
         } catch (e) {
             /* no-op */
         }

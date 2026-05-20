@@ -100,6 +100,24 @@ class Search extends React.Component {
         return arr;
     };
 
+    parseSenderFromQuery = async text => {
+        const match = text.match(/^from:(\S+)\s*(.*)/i);
+        if (!match) return { senderUserId: 0, query: text };
+
+        const username = match[1].replace(/^@/, '');
+        const query = match[2] || '';
+
+        try {
+            const chat = await TdLibController.send({ '@type': 'searchPublicChat', username });
+            if (chat && chat.id) {
+                return { senderUserId: chat.id, query };
+            }
+        } catch (e) {
+            /* no-op */
+        }
+        return { senderUserId: 0, query };
+    };
+
     searchText = async text => {
         this.sessionId = new Date();
         this.text = text;
@@ -108,6 +126,14 @@ class Search extends React.Component {
 
         const { chatId } = this.props;
         const { savedMessages, searchFilter } = this.state;
+
+        let senderUserId = 0;
+        let effectiveQuery = text;
+        if (chatId && text) {
+            const parsed = await this.parseSenderFromQuery(text);
+            senderUserId = parsed.senderUserId;
+            effectiveQuery = parsed.query;
+        }
 
         if (!chatId) {
             const promises = [];
@@ -216,8 +242,8 @@ class Search extends React.Component {
             messages = await TdLibController.send({
                 '@type': 'searchChatMessages',
                 chat_id: chatId,
-                query: text,
-                sender_user_id: 0,
+                query: effectiveQuery,
+                sender_user_id: senderUserId,
                 from_message_id: 0,
                 offset: 0,
                 limit: 50,
