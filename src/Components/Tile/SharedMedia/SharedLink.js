@@ -161,7 +161,7 @@ class SharedLink extends React.Component {
     };
 
     isValidEntityType(type) {
-        if (!type) return false;
+        if (!type || !type.type) return false;
 
         return (
             type.type['@type'] === 'textEntityTypeUrl' ||
@@ -339,9 +339,6 @@ SharedLink.propTypes = {
     openMedia: PropTypes.func
 };
 
-const enhance = compose(
-    withStyles(styles, { withTheme: true }),
-    withTranslation()
-);
+const enhance = compose(withStyles(styles, { withTheme: true }), withTranslation());
 
 export default enhance(SharedLink);

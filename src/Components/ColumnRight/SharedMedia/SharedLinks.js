@@ -28,9 +28,10 @@ class SharedLinks extends SharedMediaBase {
 
         return entities.find(
             x =>
-                x.type['@type'] === 'textEntityTypeUrl' ||
-                x.type['@type'] === 'textEntityTypeTextUrl' ||
-                x.type['@type'] === 'textEntityTypeEmailAddress'
+                x.type &&
+                (x.type['@type'] === 'textEntityTypeUrl' ||
+                    x.type['@type'] === 'textEntityTypeTextUrl' ||
+                    x.type['@type'] === 'textEntityTypeEmailAddress')
         );
     }
 
@@ -74,9 +75,6 @@ SharedLinks.defaultProps = {
     minHeight: 0
 };
 
-const enhance = compose(
-    withStyles(SharedMediaBase.getStyles),
-    withTranslation()
-);
+const enhance = compose(withStyles(SharedMediaBase.getStyles), withTranslation());
 
 export default enhance(SharedLinks);
