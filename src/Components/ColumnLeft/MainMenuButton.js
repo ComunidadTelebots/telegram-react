@@ -20,6 +20,7 @@ import ActiveSessions from '../Additional/ActiveSessions';
 import { update } from '../../registerServiceWorker';
 import { isAuthorizationReady } from '../../Utils/Common';
 import ApplicationStore from '../../Stores/ApplicationStore';
+import UserStore from '../../Stores/UserStore';
 import TdLibController from '../../Controllers/TdLibController';
 import { WASM_FILE_HASH, WASM_FILE_NAME } from '../../Constants';
 
@@ -118,6 +119,14 @@ class MainMenuButton extends React.Component {
         this.activeSessionsRef.open();
     };
 
+    handleSavedMessages = async () => {
+        this.handleMenuClose();
+        const myId = UserStore.getMyId ? UserStore.getMyId() : null;
+        if (!myId) return;
+        const chat = await TdLibController.send({ '@type': 'createPrivateChat', user_id: myId, force: true });
+        if (chat) TdLibController.setChatId(chat.id);
+    };
+
     handleAppearance = event => {
         this.handleMenuClose();
 
@@ -152,6 +161,8 @@ class MainMenuButton extends React.Component {
                     disableAutoFocusItem
                     disableRestoreFocus={true}
                     anchorOrigin={menuAnchorOrigin}>
+                    <MenuItem onClick={this.handleSavedMessages}>Saved Messages</MenuItem>
+                    <Divider />
                     <MenuItem onClick={this.handleNewGroup}>Nuevo grupo</MenuItem>
                     <MenuItem onClick={this.handleNewChannel}>Nuevo canal / supergrupo</MenuItem>
                     <Divider />
