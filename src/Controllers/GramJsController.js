@@ -1589,8 +1589,12 @@ class GramJsController extends EventEmitter {
             const full = result.fullChat || {};
             const participants = (result.users || [])
                 .map(u => {
+                    this._cacheUser(u);
                     const tdUser = translateUser(u);
-                    if (tdUser) this._userCache.set(tdUser.id, tdUser);
+                    if (tdUser) {
+                        this._userCache.set(tdUser.id, tdUser);
+                        this._emitUpdate({ '@type': 'updateUser', user: tdUser });
+                    }
                     return tdUser;
                 })
                 .filter(Boolean);
