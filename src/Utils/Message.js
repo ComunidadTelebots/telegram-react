@@ -734,7 +734,7 @@ function getContent(message, t = key => key) {
             return getServiceMessageContent(message);
         }
         case 'messageText': {
-            return content.text.text + caption;
+            return (content.text?.text || '') + caption;
         }
         case 'messageUnsupported': {
             return getServiceMessageContent(message);

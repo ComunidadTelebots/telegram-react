@@ -191,7 +191,7 @@ class WebPage extends React.Component {
         const { web_page } = content;
         if (!web_page) return null;
 
-        const { description, instant_view_version, site_name, title, url } = web_page;
+        const { description, instant_view_version, site_name, title, url, type } = web_page;
 
         const hasAmp = instant_view_version === 0 && type === 'article' && url && url.startsWith('https://');
 
@@ -202,7 +202,7 @@ class WebPage extends React.Component {
                 {description && <div className='web-page-description'>{description}</div>}
             </>
         );
-        const [webPageMediaTop, webPageMediaBottom] = this.getMedia();
+        const [webPageMediaTop, webPageMediaBottom] = this.getMedia() || [null, null];
         const webPageInstantView = instant_view_version > 0 && (
             <Button
                 variant='outlined'

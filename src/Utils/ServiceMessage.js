@@ -526,7 +526,7 @@ function getServiceMessageContent(message, openUser = false) {
                     }
                     case 'messageText': {
                         const maxLength = 16;
-                        const text = pinnedMessage.content.text.text;
+                        const text = pinnedMessage.content.text?.text || '';
                         if (text.length <= maxLength) {
                             pinnedContent = ` pinned «${text}»`;
                         } else {
