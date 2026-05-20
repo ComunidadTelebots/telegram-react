@@ -20,6 +20,8 @@ import MicIcon from '@material-ui/icons/Mic';
 import StopIcon from '@material-ui/icons/Stop';
 import ScheduleIcon from '@material-ui/icons/Schedule';
 import TagFacesIcon from '@material-ui/icons/TagFaces';
+import VolumeOffIcon from '@material-ui/icons/VolumeOff';
+import VolumeUpIcon from '@material-ui/icons/VolumeUp';
 import Dialog from '@material-ui/core/Dialog';
 import DialogTitle from '@material-ui/core/DialogTitle';
 import DialogContent from '@material-ui/core/DialogContent';
@@ -79,7 +81,8 @@ class InputBoxControl extends Component {
             recording: false,
             scheduleDialogOpen: false,
             scheduleDateValue: '',
-            pendingScheduleContent: null
+            pendingScheduleContent: null,
+            silentSend: false
         };
 
         document.addEventListener(
@@ -1075,7 +1078,7 @@ class InputBoxControl extends Component {
     };
 
     sendMessage = async (content, clearDraft, callback, scheduleDate = 0) => {
-        const { chatId, replyToMessageId } = this.state;
+        const { chatId, replyToMessageId, silentSend } = this.state;
 
         if (!chatId) return;
         if (!content) return;
@@ -1088,7 +1091,8 @@ class InputBoxControl extends Component {
                 chat_id: chatId,
                 reply_to_message_id: replyToMessageId,
                 input_message_content: content,
-                schedule_date: scheduleDate || undefined
+                schedule_date: scheduleDate || undefined,
+                disable_notification: silentSend || undefined
             });
 
             this.setState({ replyToMessageId: 0 }, () => {
@@ -1288,7 +1292,8 @@ class InputBoxControl extends Component {
             openEditMedia,
             recording,
             scheduleDialogOpen,
-            scheduleDateValue
+            scheduleDateValue,
+            silentSend
         } = this.state;
 
         const isMediaEditing = editMessageId > 0 && !isTextMessage(chatId, editMessageId);
@@ -1372,6 +1377,18 @@ class InputBoxControl extends Component {
                             </div>
                         </div>
                     </div>
+                    {!Boolean(editMessageId) && (
+                        <IconButton
+                            size='small'
+                            aria-label='Enviar sin notificación'
+                            title={
+                                silentSend ? 'Notificación desactivada — clic para activar' : 'Enviar sin notificación'
+                            }
+                            onClick={() => this.setState(s => ({ silentSend: !s.silentSend }))}
+                            style={silentSend ? { color: '#e53935', marginRight: 2 } : { marginRight: 2 }}>
+                            {silentSend ? <VolumeOffIcon fontSize='small' /> : <VolumeUpIcon fontSize='small' />}
+                        </IconButton>
+                    )}
                     {!Boolean(editMessageId) && (
                         <IconButton
                             size='small'

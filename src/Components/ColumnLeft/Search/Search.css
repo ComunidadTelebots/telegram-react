@@ -48,3 +48,16 @@
 .search-top-chats-placeholder {
     min-width: 10px;
 }
+
+.search-filter-tabs {
+    min-height: 36px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.search-filter-tabs .MuiTab-root {
+    min-width: 60px;
+    min-height: 36px;
+    padding: 4px 12px;
+    font-size: 0.75rem;
+    text-transform: none;
+}

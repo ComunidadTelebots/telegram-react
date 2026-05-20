@@ -620,6 +620,12 @@ class GramJsController extends EventEmitter {
                 return this._getUser(req);
             case 'getUserFullInfo':
                 return this._getUserFullInfo(req);
+            case 'blockUser':
+                return this._blockUser(req);
+            case 'unblockUser':
+                return this._unblockUser(req);
+            case 'getMessageLink':
+                return this._getMessageLink(req);
 
             // ── Acciones ──────────────────────────────────────────────────────
             case 'sendChatAction':
@@ -719,6 +725,7 @@ class GramJsController extends EventEmitter {
             case 'readFile':
                 return this._readFile(req);
             case 'cancelDownloadFile':
+                return this._cancelDownloadFile(req);
             case 'uploadFile':
                 return {};
 
@@ -1180,7 +1187,7 @@ class GramJsController extends EventEmitter {
     };
 
     _sendMessage = async req => {
-        const { chat_id, input_message_content, reply_to_message_id = 0, schedule_date } = req;
+        const { chat_id, input_message_content, reply_to_message_id = 0, schedule_date, disable_notification } = req;
         const contentType = input_message_content?.['@type'];
 
         try {
@@ -1200,7 +1207,8 @@ class GramJsController extends EventEmitter {
                 message: text,
                 replyTo: reply_to_message_id || undefined,
                 parseMode: undefined,
-                scheduleDate: schedule_date || undefined
+                scheduleDate: schedule_date || undefined,
+                silent: !!disable_notification
             });
 
             const tdMessage = translateMessage(result, chat_id);
@@ -1786,6 +1794,77 @@ class GramJsController extends EventEmitter {
         } catch (e) {
             console.error('[GramJs] readAllChatMentions error', e);
         }
+        return {};
+    };
+
+    _blockUser = async req => {
+        const { user_id } = req;
+        try {
+            await this.client.invoke(
+                new Api.contacts.Block({
+                    id: new Api.InputUser({
+                        userId: BigInt(user_id),
+                        accessHash: this._entityCache.get(user_id)?.accessHash || BigInt(0)
+                    })
+                })
+            );
+            this._emitUpdate({ '@type': 'updateUserFullInfo', user_id, user_full_info: { is_blocked: true } });
+        } catch (e) {
+            console.error('[GramJs] blockUser error', e);
+        }
+        return {};
+    };
+
+    _unblockUser = async req => {
+        const { user_id } = req;
+        try {
+            await this.client.invoke(
+                new Api.contacts.Unblock({
+                    id: new Api.InputUser({
+                        userId: BigInt(user_id),
+                        accessHash: this._entityCache.get(user_id)?.accessHash || BigInt(0)
+                    })
+                })
+            );
+            this._emitUpdate({ '@type': 'updateUserFullInfo', user_id, user_full_info: { is_blocked: false } });
+        } catch (e) {
+            console.error('[GramJs] unblockUser error', e);
+        }
+        return {};
+    };
+
+    _getMessageLink = async req => {
+        const { chat_id, message_id } = req;
+        try {
+            const inputPeer = tdlibChatIdToInputPeer(chat_id, this._entityCache);
+            if (inputPeer instanceof Api.InputPeerChannel) {
+                const result = await this.client.invoke(
+                    new Api.channels.ExportMessageLink({
+                        channel: new Api.InputChannel({
+                            channelId: inputPeer.channelId,
+                            accessHash: inputPeer.accessHash
+                        }),
+                        id: message_id,
+                        grouped: false
+                    })
+                );
+                return { '@type': 'messageLink', link: result.link, is_public: true };
+            }
+        } catch (e) {
+            console.error('[GramJs] getMessageLink error', e);
+        }
+        return { '@type': 'messageLink', link: '', is_public: false };
+    };
+
+    _cancelDownloadFile = async req => {
+        const { file_id } = req;
+        this._emitUpdate({
+            '@type': 'updateFile',
+            file: {
+                id: file_id,
+                local: { is_downloading_active: false, is_downloading_completed: false, downloaded_size: 0 }
+            }
+        });
         return {};
     };
 }

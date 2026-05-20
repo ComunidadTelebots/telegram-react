@@ -13,6 +13,8 @@ import { withTranslation } from 'react-i18next';
 import withStyles from '@material-ui/core/styles/withStyles';
 import CloseIcon from '@material-ui/icons/Close';
 import IconButton from '@material-ui/core/IconButton';
+import Tab from '@material-ui/core/Tab';
+import Tabs from '@material-ui/core/Tabs';
 import ChatControl from '../../Tile/ChatControl';
 import TopChat from '../../Tile/TopChat';
 import RecentlyFoundChat from '../../Tile/RecentlyFoundChat';
@@ -48,7 +50,7 @@ class Search extends React.Component {
         super(props);
 
         this.listRef = React.createRef();
-        this.state = {};
+        this.state = { searchFilter: null };
     }
 
     componentDidMount() {
@@ -105,7 +107,7 @@ class Search extends React.Component {
         let store = null;
 
         const { chatId } = this.props;
-        const { savedMessages } = this.state;
+        const { savedMessages, searchFilter } = this.state;
 
         if (!chatId) {
             const promises = [];
@@ -219,7 +221,7 @@ class Search extends React.Component {
                 from_message_id: 0,
                 offset: 0,
                 limit: 50,
-                filter: null
+                filter: searchFilter ? { '@type': searchFilter } : null
             });
         } else {
             messages = await TdLibController.send({
@@ -393,7 +395,7 @@ class Search extends React.Component {
 
         const sessionId = this.sessionId;
 
-        const { messages } = this.state;
+        const { messages, searchFilter } = this.state;
 
         const offset = this.getOffset(messages);
 
@@ -407,7 +409,7 @@ class Search extends React.Component {
                 sender_user_id: 0,
                 from_message_id: offset.offset_message_id,
                 limit: 50,
-                filter: null
+                filter: searchFilter ? { '@type': searchFilter } : null
             });
         } else {
             result = await TdLibController.send({
@@ -454,9 +456,33 @@ class Search extends React.Component {
         onClose();
     };
 
+    handleFilterChange = (event, value) => {
+        const filters = [
+            null,
+            'searchMessagesFilterPhoto',
+            'searchMessagesFilterVideo',
+            'searchMessagesFilterDocument',
+            'searchMessagesFilterUrl',
+            'searchMessagesFilterVoiceNote'
+        ];
+        const searchFilter = filters[value] || null;
+        this.setState({ searchFilter }, () => {
+            if (this.text) this.searchText(this.text);
+        });
+    };
+
     render() {
         const { classes, chatId } = this.props;
-        const { top, recentlyFound, local, global, messages } = this.state;
+        const { top, recentlyFound, local, global, messages, searchFilter } = this.state;
+
+        const filterIndex = [
+            null,
+            'searchMessagesFilterPhoto',
+            'searchMessagesFilterVideo',
+            'searchMessagesFilterDocument',
+            'searchMessagesFilterUrl',
+            'searchMessagesFilterVoiceNote'
+        ].indexOf(searchFilter);
 
         const chat = ChatStore.get(chatId);
 
@@ -528,6 +554,21 @@ class Search extends React.Component {
                                 <CloseIcon />
                             </IconButton>
                         </div>
+                        <Tabs
+                            value={filterIndex < 0 ? 0 : filterIndex}
+                            onChange={this.handleFilterChange}
+                            variant='scrollable'
+                            scrollButtons='auto'
+                            indicatorColor='primary'
+                            textColor='primary'
+                            className='search-filter-tabs'>
+                            <Tab label='All' />
+                            <Tab label='Photos' />
+                            <Tab label='Videos' />
+                            <Tab label='Files' />
+                            <Tab label='Links' />
+                            <Tab label='Audio' />
+                        </Tabs>
                     </div>
                 )}
                 {topChats.length > 0 && (
@@ -576,9 +617,6 @@ Search.propTypes = {
     onClose: PropTypes.func.isRequired
 };
 
-const enhance = compose(
-    withStyles(styles, { withTheme: true }),
-    withTranslation()
-);
+const enhance = compose(withStyles(styles, { withTheme: true }), withTranslation());
 
 export default enhance(Search);

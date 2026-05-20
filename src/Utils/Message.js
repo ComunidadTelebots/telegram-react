@@ -481,6 +481,39 @@ function getMedia(message, openMedia, hasTitle = false, hasCaption = false) {
                     openMedia={openMedia}
                 />
             );
+        case 'messageStory':
+            return (
+                <div className='message-service-card'>
+                    <span className='message-service-card-icon'>📖</span>
+                    <span className='message-service-card-text'>Forwarded Story</span>
+                </div>
+            );
+        case 'messageGiveaway': {
+            const { winner_count, prize_description } = content;
+            return (
+                <div className='message-service-card message-giveaway'>
+                    <span className='message-service-card-icon'>🎁</span>
+                    <div className='message-service-card-body'>
+                        <b>Giveaway</b>
+                        {winner_count > 0 && <div>{winner_count} winners</div>}
+                        {prize_description && <div>{prize_description}</div>}
+                    </div>
+                </div>
+            );
+        }
+        case 'messageGiveawayWinners': {
+            const { winner_count, prize_description } = content;
+            return (
+                <div className='message-service-card message-giveaway'>
+                    <span className='message-service-card-icon'>🎉</span>
+                    <div className='message-service-card-body'>
+                        <b>Giveaway Finished</b>
+                        {winner_count > 0 && <div>{winner_count} winners selected</div>}
+                        {prize_description && <div>{prize_description}</div>}
+                    </div>
+                </div>
+            );
+        }
         default:
             return '[' + content['@type'] + ']';
     }
@@ -716,6 +749,18 @@ function getContent(message, t = key => key) {
         }
         case 'messageWebsiteConnected': {
             return getServiceMessageContent(message);
+        }
+        case 'messageStory': {
+            return '📖 Forwarded Story';
+        }
+        case 'messageGiveaway': {
+            return '🎁 Giveaway';
+        }
+        case 'messageGiveawayWinners': {
+            return '🎉 Giveaway Finished';
+        }
+        case 'messageProximityAlertTriggered': {
+            return '📍 Proximity Alert';
         }
         default: {
             return t('UnsupportedAttachment');

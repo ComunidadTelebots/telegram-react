@@ -266,3 +266,34 @@ pre code {
     opacity: 0.5;
     font-style: italic;
 }
+
+/* Service card (Story, Giveaway, etc.) */
+.message-service-card {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 6px 2px;
+    min-width: 180px;
+}
+
+.message-service-card-icon {
+    font-size: 2rem;
+    line-height: 1;
+}
+
+.message-service-card-text {
+    font-size: 0.9rem;
+    opacity: 0.85;
+    align-self: center;
+}
+
+.message-service-card-body {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    font-size: 0.9rem;
+}
+
+.message-giveaway .message-service-card-body b {
+    font-size: 1rem;
+}

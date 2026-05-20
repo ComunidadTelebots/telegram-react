@@ -512,6 +512,36 @@ class Message extends Component {
         }
     };
 
+    handleBlockUser = async event => {
+        const { chatId, messageId } = this.props;
+        const message = MessageStore.get(chatId, messageId);
+        const userId = message?.sender_user_id;
+        this.handleCloseContextMenu(event);
+        if (!userId) return;
+        try {
+            await TdLibController.send({ '@type': 'blockUser', user_id: userId });
+        } catch (e) {
+            console.warn('[Message] blockUser error', e);
+        }
+    };
+
+    handleCopyLink = async event => {
+        const { chatId, messageId } = this.props;
+        this.handleCloseContextMenu(event);
+        try {
+            const result = await TdLibController.send({
+                '@type': 'getMessageLink',
+                chat_id: chatId,
+                message_id: messageId
+            });
+            if (result?.link) {
+                await navigator.clipboard.writeText(result.link);
+            }
+        } catch (e) {
+            console.warn('[Message] getMessageLink error', e);
+        }
+    };
+
     render() {
         // console.log('[m] render', this.props.messageId);
         const { t, classes, chatId, messageId, showUnreadSeparator, showTail, showTitle, showAuthor } = this.props;
@@ -579,6 +609,8 @@ class Message extends Component {
                 : !!(message.content.caption && message.content.caption.text);
         const canBeTranslated = canBeCopied;
         const canBeReported = !message.is_outgoing;
+        const canBeBlocked = !message.is_outgoing && !!message.sender_user_id;
+        const canCopyLink = !message.is_outgoing;
         const withBubble =
             message.content['@type'] !== 'messageSticker' && message.content['@type'] !== 'messageVideoNote';
 
@@ -661,6 +693,8 @@ class Message extends Component {
                         {canBeDeleted && <MenuItem onClick={this.handleDelete}>{t('Delete')}</MenuItem>}
                         {canBeTranslated && <MenuItem onClick={this.handleTranslate}>{t('TranslateMessage')}</MenuItem>}
                         {canBeReported && <MenuItem onClick={this.handleReport}>{t('ReportMessage')}</MenuItem>}
+                        {canCopyLink && <MenuItem onClick={this.handleCopyLink}>{t('CopyMessageLink')}</MenuItem>}
+                        {canBeBlocked && <MenuItem onClick={this.handleBlockUser}>{t('BlockUser')}</MenuItem>}
                     </MenuList>
                 </Popover>
             </div>
