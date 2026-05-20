@@ -828,9 +828,7 @@ function translateMessageContent(msg) {
                       type: wp.type || '',
                       site_name: wp.siteName || '',
                       title: wp.title || '',
-                      description: wp.description
-                          ? { '@type': 'formattedText', text: wp.description, entities: [] }
-                          : null,
+                      description: wp.description || null,
                       photo: wp.photo ? translatePhoto(wp.photo) : null,
                       embed_url: wp.embedUrl || '',
                       embed_type: wp.embedType || '',
@@ -839,7 +837,7 @@ function translateMessageContent(msg) {
                       duration: Number(wp.duration || 0),
                       author: wp.author || '',
                       document: null,
-                      instant_view_version: wp.hasLargeMedia ? 1 : 0
+                      instant_view_version: wp.cachedPage ? 2 : 0
                   }
                 : null;
         return {
@@ -996,4 +994,318 @@ function translateTextEntity(entity) {
     if (tdType === 'textEntityTypeTextUrl' && entity.url) result.type.url = entity.url;
     if (tdType === 'textEntityTypeMentionUser' && entity.userId) result.type.user_id = Number(entity.userId);
     return result;
+}
+
+// ─── Instant View (IV) translation ───────────────────────────────────────────
+
+function translateRichText(rt) {
+    if (!rt) return { '@type': 'richTextPlain', text: '' };
+    const cls = rt.className || rt._ || '';
+    switch (cls) {
+        case 'TextEmpty':
+            return { '@type': 'richTextPlain', text: '' };
+        case 'TextPlain':
+            return { '@type': 'richTextPlain', text: rt.text || '' };
+        case 'TextBold':
+            return { '@type': 'richTextBold', text: translateRichText(rt.text) };
+        case 'TextItalic':
+            return { '@type': 'richTextItalic', text: translateRichText(rt.text) };
+        case 'TextUnderline':
+            return { '@type': 'richTextUnderline', text: translateRichText(rt.text) };
+        case 'TextStrike':
+            return { '@type': 'richTextStrikethrough', text: translateRichText(rt.text) };
+        case 'TextFixed':
+            return { '@type': 'richTextFixed', text: translateRichText(rt.text) };
+        case 'TextUrl':
+            return { '@type': 'richTextUrl', text: translateRichText(rt.text), url: rt.url || '', is_cached: false };
+        case 'TextEmail':
+            return { '@type': 'richTextEmailAddress', text: translateRichText(rt.text), email_address: rt.email || '' };
+        case 'TextSubscript':
+            return { '@type': 'richTextSubscript', text: translateRichText(rt.text) };
+        case 'TextSuperscript':
+            return { '@type': 'richTextSuperscript', text: translateRichText(rt.text) };
+        case 'TextMarked':
+            return { '@type': 'richTextMarked', text: translateRichText(rt.text) };
+        case 'TextPhone':
+            return { '@type': 'richTextPhoneNumber', text: translateRichText(rt.text), phone_number: rt.phone || '' };
+        case 'TextImage':
+            return { '@type': 'richTextIcon', document: null, width: rt.w || 0, height: rt.h || 0 };
+        case 'TextAnchor':
+            return { '@type': 'richTextAnchor', text: translateRichText(rt.text), name: rt.name || '' };
+        case 'TextConcat': {
+            const texts = (rt.texts || []).map(translateRichText);
+            if (texts.length === 0) return { '@type': 'richTextPlain', text: '' };
+            if (texts.length === 1) return texts[0];
+            return { '@type': 'richTexts', texts };
+        }
+        default:
+            // Plain string passed directly
+            if (typeof rt === 'string') return { '@type': 'richTextPlain', text: rt };
+            return { '@type': 'richTextPlain', text: '' };
+    }
+}
+
+function translatePageCaption(caption) {
+    const empty = { '@type': 'richTextPlain', text: '' };
+    if (!caption) return { '@type': 'pageBlockCaption', text: empty, credit: empty };
+    return {
+        '@type': 'pageBlockCaption',
+        text: translateRichText(caption.text),
+        credit: translateRichText(caption.credit)
+    };
+}
+
+function translatePageBlock(block, photos, docs) {
+    if (!block) return null;
+    const cls = block.className || block._ || '';
+    switch (cls) {
+        case 'PageBlockTitle':
+            return { '@type': 'pageBlockTitle', title: translateRichText(block.text) };
+        case 'PageBlockSubtitle':
+            return { '@type': 'pageBlockSubtitle', subtitle: translateRichText(block.text) };
+        case 'PageBlockAuthorDate':
+            return {
+                '@type': 'pageBlockAuthorDate',
+                author: translateRichText(block.author),
+                publish_date: Number(block.publishedDate || 0)
+            };
+        case 'PageBlockHeader':
+            return { '@type': 'pageBlockHeader', header: translateRichText(block.text) };
+        case 'PageBlockSubheader':
+            return { '@type': 'pageBlockSubheader', subheader: translateRichText(block.text) };
+        case 'PageBlockKicker':
+            return { '@type': 'pageBlockKicker', kicker: translateRichText(block.text) };
+        case 'PageBlockParagraph':
+            return { '@type': 'pageBlockParagraph', text: translateRichText(block.text) };
+        case 'PageBlockPreformatted':
+            return {
+                '@type': 'pageBlockPreformatted',
+                text: translateRichText(block.text),
+                language: block.language || ''
+            };
+        case 'PageBlockFooter':
+            return { '@type': 'pageBlockFooter', footer: translateRichText(block.text) };
+        case 'PageBlockDivider':
+            return { '@type': 'pageBlockDivider' };
+        case 'PageBlockAnchor':
+            return { '@type': 'pageBlockAnchor', name: block.name || '' };
+        case 'PageBlockBlockquote':
+            return {
+                '@type': 'pageBlockBlockQuote',
+                text: translateRichText(block.text),
+                credit: translateRichText(block.caption)
+            };
+        case 'PageBlockPullquote':
+            return {
+                '@type': 'pageBlockPullQuote',
+                text: translateRichText(block.text),
+                credit: translateRichText(block.caption)
+            };
+        case 'PageBlockList': {
+            return {
+                '@type': 'pageBlockList',
+                items: (block.items || []).map(item => {
+                    const ic = item.className || item._ || '';
+                    if (ic === 'PageListItemBlocks') {
+                        return {
+                            '@type': 'pageBlockListItem',
+                            label: '•',
+                            page_blocks: (item.blocks || [])
+                                .map(b => translatePageBlock(b, photos, docs))
+                                .filter(Boolean)
+                        };
+                    }
+                    return {
+                        '@type': 'pageBlockListItem',
+                        label: '•',
+                        page_blocks: [{ '@type': 'pageBlockParagraph', text: translateRichText(item.text) }]
+                    };
+                })
+            };
+        }
+        case 'PageBlockOrderedList': {
+            return {
+                '@type': 'pageBlockList',
+                items: (block.items || []).map(item => {
+                    const ic = item.className || item._ || '';
+                    if (ic === 'PageListOrderedItemBlocks') {
+                        return {
+                            '@type': 'pageBlockListItem',
+                            label: item.num || '',
+                            page_blocks: (item.blocks || [])
+                                .map(b => translatePageBlock(b, photos, docs))
+                                .filter(Boolean)
+                        };
+                    }
+                    return {
+                        '@type': 'pageBlockListItem',
+                        label: item.num || '',
+                        page_blocks: [{ '@type': 'pageBlockParagraph', text: translateRichText(item.text) }]
+                    };
+                })
+            };
+        }
+        case 'PageBlockPhoto': {
+            const photo = photos && photos.find(p => String(p.id) === String(block.photoId));
+            return {
+                '@type': 'pageBlockPhoto',
+                photo: photo ? translatePhoto(photo) : null,
+                caption: translatePageCaption(block.caption),
+                url: block.url || '',
+                is_cached: false
+            };
+        }
+        case 'PageBlockVideo': {
+            const doc = docs && docs.find(d => String(d.id) === String(block.videoId));
+            return {
+                '@type': 'pageBlockVideo',
+                video: doc ? translateVideo(doc) : null,
+                caption: translatePageCaption(block.caption),
+                need_autoplay: !!block.autoplay,
+                is_looped: !!block.loop
+            };
+        }
+        case 'PageBlockAnimation': {
+            const doc = docs && docs.find(d => String(d.id) === String(block.videoId));
+            return {
+                '@type': 'pageBlockAnimation',
+                animation: doc ? translateAnimation(doc) : null,
+                caption: translatePageCaption(block.caption),
+                need_autoplay: !!block.autoplay
+            };
+        }
+        case 'PageBlockAudio': {
+            const doc = docs && docs.find(d => String(d.id) === String(block.audioId));
+            return {
+                '@type': 'pageBlockAudio',
+                audio: doc ? translateAudio(doc) : null,
+                caption: translatePageCaption(block.caption)
+            };
+        }
+        case 'PageBlockCover':
+            return { '@type': 'pageBlockCover', cover: translatePageBlock(block.cover, photos, docs) };
+        case 'PageBlockEmbed': {
+            const posterPhoto = block.posterPhotoId
+                ? photos && photos.find(p => String(p.id) === String(block.posterPhotoId))
+                : null;
+            return {
+                '@type': 'pageBlockEmbedded',
+                url: block.url || '',
+                html: block.html || '',
+                poster_photo: posterPhoto ? translatePhoto(posterPhoto) : null,
+                width: Number(block.w || 0),
+                height: Number(block.h || 0),
+                caption: translatePageCaption(block.caption),
+                is_full_width: !!block.fullWidth,
+                allow_scrolling: !!block.allowScrolling
+            };
+        }
+        case 'PageBlockEmbedPost': {
+            const authorPhoto = block.authorPhotoId
+                ? photos && photos.find(p => String(p.id) === String(block.authorPhotoId))
+                : null;
+            return {
+                '@type': 'pageBlockEmbeddedPost',
+                url: block.url || '',
+                author: block.author || '',
+                author_photo: authorPhoto ? translatePhoto(authorPhoto) : null,
+                date: Number(block.date || 0),
+                page_blocks: (block.blocks || []).map(b => translatePageBlock(b, photos, docs)).filter(Boolean),
+                caption: translatePageCaption(block.caption)
+            };
+        }
+        case 'PageBlockCollage':
+            return {
+                '@type': 'pageBlockCollage',
+                page_blocks: (block.items || []).map(b => translatePageBlock(b, photos, docs)).filter(Boolean),
+                caption: translatePageCaption(block.caption)
+            };
+        case 'PageBlockSlideshow':
+            return {
+                '@type': 'pageBlockSlideshow',
+                page_blocks: (block.items || []).map(b => translatePageBlock(b, photos, docs)).filter(Boolean),
+                caption: translatePageCaption(block.caption)
+            };
+        case 'PageBlockChannel': {
+            const ch = block.channel || {};
+            return {
+                '@type': 'pageBlockChatLink',
+                title: ch.title || '',
+                username: ch.username || '',
+                invite_link: ''
+            };
+        }
+        case 'PageBlockTable': {
+            return {
+                '@type': 'pageBlockTable',
+                caption: translateRichText(block.title),
+                cells: (block.rows || []).map(row =>
+                    (row.cells || []).map(cell => ({
+                        '@type': 'pageBlockTableCell',
+                        is_header: !!cell.header,
+                        text: translateRichText(cell.text),
+                        align: cell.alignCenter ? 'center' : cell.alignRight ? 'right' : 'left',
+                        valign: cell.valignBottom ? 'bottom' : cell.valignMiddle ? 'middle' : 'top',
+                        colspan: Number(cell.colspan || 1),
+                        rowspan: Number(cell.rowspan || 1)
+                    }))
+                ),
+                is_bordered: !!block.bordered,
+                is_striped: !!block.striped
+            };
+        }
+        case 'PageBlockDetails':
+            return {
+                '@type': 'pageBlockDetails',
+                header: translateRichText(block.title),
+                page_blocks: (block.blocks || []).map(b => translatePageBlock(b, photos, docs)).filter(Boolean),
+                is_open: !!block.open
+            };
+        case 'PageBlockRelatedArticles':
+            return {
+                '@type': 'pageBlockRelatedArticles',
+                header: translateRichText(block.title),
+                articles: (block.articles || []).map(a => ({
+                    '@type': 'pageBlockRelatedArticle',
+                    url: a.url || '',
+                    title: a.title || '',
+                    description: a.description || '',
+                    photo: a.photoId
+                        ? translatePhoto(photos && photos.find(p => String(p.id) === String(a.photoId)))
+                        : null,
+                    author: a.author || '',
+                    publish_date: Number(a.publishedDate || 0)
+                }))
+            };
+        case 'PageBlockMap':
+            return {
+                '@type': 'pageBlockMap',
+                location: {
+                    '@type': 'location',
+                    latitude: block.geo?.lat || 0,
+                    longitude: block.geo?.long || 0,
+                    horizontal_accuracy: 0
+                },
+                zoom: Number(block.zoom || 0),
+                width: Number(block.w || 0),
+                height: Number(block.h || 0),
+                caption: translatePageCaption(block.caption)
+            };
+        default:
+            return null;
+    }
+}
+
+export function translateInstantView(page) {
+    if (!page) return null;
+    const photos = page.photos || [];
+    const docs = page.documents || [];
+    return {
+        '@type': 'webPageInstantView',
+        page_blocks: (page.blocks || []).map(b => translatePageBlock(b, photos, docs)).filter(Boolean),
+        view_count: Number(page.views || 0),
+        version: 2,
+        is_rtl: !!page.rtl,
+        is_full: true
+    };
 }

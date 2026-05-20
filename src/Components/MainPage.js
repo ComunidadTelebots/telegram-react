@@ -20,10 +20,11 @@ import Dialogs from './ColumnLeft/Dialogs';
 import DialogDetails from './ColumnMiddle/DialogDetails';
 import Footer from './Footer';
 import InstantViewer from './InstantView/InstantViewer';
+import AmpViewer from './AmpViewer/AmpViewer';
 import MediaViewer from './Viewer/MediaViewer';
 import ProfileMediaViewer from './Viewer/ProfileMediaViewer';
 import { borderStyle } from './Theme';
-import { highlightMessage } from '../Actions/Client';
+import { highlightMessage, closeAmpViewer } from '../Actions/Client';
 import ApplicationStore from '../Stores/ApplicationStore';
 import ChatStore from '../Stores/ChatStore';
 import InstantViewStore from '../Stores/InstantViewStore';
@@ -51,6 +52,7 @@ class MainPage extends React.Component {
             profileMediaViewerContent: ApplicationStore.profileMediaViewerContent,
             forwardInfo: null,
             instantViewContent: null,
+            ampViewerUrl: null,
             newGroupOpen: false,
             newChannelOpen: false
         };
@@ -72,6 +74,7 @@ class MainPage extends React.Component {
         ApplicationStore.on('clientUpdateForward', this.onClientUpdateForward);
         InstantViewStore.on('clientUpdateInstantViewContent', this.onClientUpdateInstantViewContent);
         TdLibController.on('clientUpdate', this.onClientUpdateDialogs);
+        TdLibController.on('clientUpdate', this.onClientUpdateAmpViewer);
     }
 
     componentWillUnmount() {
@@ -84,6 +87,7 @@ class MainPage extends React.Component {
         ApplicationStore.off('clientUpdateForward', this.onClientUpdateForward);
         InstantViewStore.off('clientUpdateInstantViewContent', this.onClientUpdateInstantViewContent);
         TdLibController.off('clientUpdate', this.onClientUpdateDialogs);
+        TdLibController.off('clientUpdate', this.onClientUpdateAmpViewer);
     }
 
     onClientUpdateInstantViewContent = update => {
@@ -126,6 +130,12 @@ class MainPage extends React.Component {
         const { info } = update;
 
         this.setState({ forwardInfo: info });
+    };
+
+    onClientUpdateAmpViewer = update => {
+        if (update['@type'] === 'clientUpdateAmpViewerContent') {
+            this.setState({ ampViewerUrl: update.url || null });
+        }
     };
 
     onClientUpdateDialogs = update => {
@@ -180,6 +190,7 @@ class MainPage extends React.Component {
         const { classes } = this.props;
         const {
             instantViewContent,
+            ampViewerUrl,
             isChatDetailsVisible,
             mediaViewerContent,
             profileMediaViewerContent,
@@ -199,6 +210,7 @@ class MainPage extends React.Component {
                     {isChatDetailsVisible && <ChatInfo />}
                 </div>
                 {instantViewContent && <InstantViewer {...instantViewContent} />}
+                {ampViewerUrl && <AmpViewer url={ampViewerUrl} onClose={closeAmpViewer} />}
                 {mediaViewerContent && <MediaViewer {...mediaViewerContent} />}
                 {profileMediaViewerContent && <ProfileMediaViewer {...profileMediaViewerContent} />}
                 {forwardInfo && <ForwardDialog {...forwardInfo} />}

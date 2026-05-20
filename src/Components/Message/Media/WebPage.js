@@ -21,6 +21,7 @@ import VoiceNote from './VoiceNote';
 import { getSize } from '../../../Utils/Common';
 import { getSrc } from '../../../Utils/File';
 import { openInstantView } from '../../../Actions/InstantView';
+import { openAmpViewer } from '../../../Actions/Client';
 import {
     PHOTO_DISPLAY_EXTRA_SMALL_SIZE,
     PHOTO_DISPLAY_SIZE,
@@ -160,9 +161,22 @@ class WebPage extends React.Component {
         const { web_page } = content;
         if (!web_page) return null;
 
-        const { url } = web_page;
+        openInstantView(web_page.url);
+    };
 
-        openInstantView(url);
+    handleAmpClick = event => {
+        event.preventDefault();
+        event.stopPropagation();
+
+        const { chatId, messageId } = this.props;
+
+        const message = MessageStore.get(chatId, messageId);
+        if (!message) return;
+
+        const { web_page } = message.content || {};
+        if (!web_page) return;
+
+        openAmpViewer(web_page.url);
     };
 
     getWebPage = () => {
@@ -177,7 +191,9 @@ class WebPage extends React.Component {
         const { web_page } = content;
         if (!web_page) return null;
 
-        const { description, instant_view_version, site_name, title } = web_page;
+        const { description, instant_view_version, site_name, title, url } = web_page;
+
+        const hasAmp = instant_view_version === 0 && type === 'article' && url && url.startsWith('https://');
 
         const webPageContent = (
             <>
@@ -200,6 +216,19 @@ class WebPage extends React.Component {
                 {t('InstantView')}
             </Button>
         );
+        const webPageAmp = hasAmp && (
+            <Button
+                variant='outlined'
+                color='default'
+                fullWidth
+                onClick={this.handleAmpClick}
+                className='web-page-button web-page-button-amp'>
+                <SvgIcon viewBox='0 0 24 24'>
+                    <path d='M11.08 5.16l-4.47 8.36h3.92l-.76 5.52 4.76-8.88H10.5l.58-5z' />
+                </SvgIcon>
+                AMP
+            </Button>
+        );
 
         return (
             <>
@@ -207,6 +236,7 @@ class WebPage extends React.Component {
                 {webPageContent}
                 {webPageMediaBottom}
                 {webPageInstantView}
+                {webPageAmp}
             </>
         );
     };

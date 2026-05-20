@@ -124,6 +124,14 @@ export function setInstantViewContent(content) {
     });
 }
 
+export function openAmpViewer(url) {
+    TdLibController.clientUpdate({ '@type': 'clientUpdateAmpViewerContent', url });
+}
+
+export function closeAmpViewer() {
+    TdLibController.clientUpdate({ '@type': 'clientUpdateAmpViewerContent', url: null });
+}
+
 export function searchChat(chatId, query = null) {
     TdLibController.clientUpdate({
         '@type': 'clientUpdateSearchChat',

@@ -48,6 +48,24 @@
 .web-page-description {
 }
 
+.web-page-button-amp {
+    border-color: #005af0 !important;
+    color: #005af0 !important;
+}
+
+.web-page-button-amp .MuiSvgIcon-root {
+    fill: #005af0;
+}
+
+.message-bubble-out .web-page-button-amp {
+    border-color: rgba(255, 255, 255, 0.7) !important;
+    color: rgba(255, 255, 255, 0.9) !important;
+}
+
+.message-bubble-out .web-page-button-amp .MuiSvgIcon-root {
+    fill: rgba(255, 255, 255, 0.9);
+}
+
 .web-page-photo {
     margin-top: 6px;
     border-radius: 4px;

@@ -24,6 +24,7 @@ import {
     translateStickerSetInfo,
     translateStickerSet,
     translateUserProfilePhoto,
+    translateInstantView,
     mediaCache
 } from '../Utils/GramJs/EntityTranslator';
 import { loadMessages, saveMessages } from '../Utils/MessageCache';
@@ -816,6 +817,10 @@ class GramJsController extends EventEmitter {
                 return this._cancelDownloadFile(req);
             case 'uploadFile':
                 return {};
+
+            // ── Instant View ──────────────────────────────────────────────────
+            case 'getWebPageInstantView':
+                return this._getWebPageInstantView(req);
 
             default:
                 if (!this.disableLog) console.warn('[GramJs] send no implementado:', type);
@@ -1769,18 +1774,42 @@ class GramJsController extends EventEmitter {
                     return tdUser;
                 })
                 .filter(Boolean);
-            const members = participants.map(u => ({
-                '@type': 'chatMember',
-                user_id: u.id,
-                inviter_user_id: 0,
-                joined_chat_date: 0,
-                status: { '@type': 'chatMemberStatusMember' },
-                bot_info: null
-            }));
+            const rawParticipants = full.participants?.participants || [];
+            const creatorRaw = rawParticipants.find(p => (p.className || p._) === 'ChatParticipantCreator');
+            const creator_user_id = creatorRaw ? Number(creatorRaw.userId) : 0;
+
+            const members = participants.map((u, i) => {
+                const rawP = rawParticipants.find(p => Number(p.userId) === u.id);
+                const rawCls = rawP ? rawP.className || rawP._ : '';
+                let status = { '@type': 'chatMemberStatusMember' };
+                if (rawCls === 'ChatParticipantCreator')
+                    status = { '@type': 'chatMemberStatusCreator', is_member: true };
+                else if (rawCls === 'ChatParticipantAdmin')
+                    status = {
+                        '@type': 'chatMemberStatusAdministrator',
+                        can_be_edited: false,
+                        can_change_info: true,
+                        can_post_messages: false,
+                        can_edit_messages: false,
+                        can_delete_messages: true,
+                        can_invite_users: true,
+                        can_restrict_members: true,
+                        can_pin_messages: true,
+                        can_promote_members: false
+                    };
+                return {
+                    '@type': 'chatMember',
+                    user_id: u.id,
+                    inviter_user_id: 0,
+                    joined_chat_date: rawP?.date || 0,
+                    status,
+                    bot_info: null
+                };
+            });
             const info = {
                 '@type': 'basicGroupFullInfo',
                 description: full.about || '',
-                creator_user_id: 0,
+                creator_user_id,
                 members,
                 invite_link: full.exportedInvite?.link || ''
             };
@@ -1808,10 +1837,23 @@ class GramJsController extends EventEmitter {
         const { chat_id, action } = req;
         try {
             const inputPeer = tdlibChatIdToInputPeer(chat_id, this._entityCache);
-            let mtAction = new Api.SendMessageTypingAction();
-            if (action?.['@type'] === 'chatActionUploadingDocument')
-                mtAction = new Api.SendMessageUploadDocumentAction({ progress: 0 });
-            if (action?.['@type'] === 'chatActionRecordingVideo') mtAction = new Api.SendMessageRecordVideoAction();
+            const p = action?.progress || 0;
+            const typeMap = {
+                chatActionTyping: new Api.SendMessageTypingAction(),
+                chatActionRecordingVideo: new Api.SendMessageRecordVideoAction(),
+                chatActionUploadingVideo: new Api.SendMessageUploadVideoAction({ progress: p }),
+                chatActionRecordingVoiceNote: new Api.SendMessageRecordAudioAction(),
+                chatActionUploadingVoiceNote: new Api.SendMessageUploadAudioAction({ progress: p }),
+                chatActionUploadingPhoto: new Api.SendMessageUploadPhotoAction({ progress: p }),
+                chatActionUploadingDocument: new Api.SendMessageUploadDocumentAction({ progress: p }),
+                chatActionChoosingLocation: new Api.SendMessageGeoLocationAction(),
+                chatActionChoosingContact: new Api.SendMessageChooseContactAction(),
+                chatActionStartPlayingGame: new Api.SendMessageGamePlayAction(),
+                chatActionRecordingVideoNote: new Api.SendMessageRecordRoundAction(),
+                chatActionUploadingVideoNote: new Api.SendMessageUploadRoundAction({ progress: p }),
+                chatActionCancel: new Api.SendMessageCancelAction()
+            };
+            const mtAction = typeMap[action?.['@type']] || new Api.SendMessageTypingAction();
             await this.client.invoke(new Api.messages.SetTyping({ peer: inputPeer, action: mtAction }));
         } catch (e) {
             /* no-op */
@@ -1820,7 +1862,7 @@ class GramJsController extends EventEmitter {
     };
 
     _togglePin = async req => {
-        const { chat_list, chat_id, is_pinned } = req;
+        const { chat_id, is_pinned } = req;
         try {
             const inputPeer = tdlibChatIdToInputPeer(chat_id, this._entityCache);
             await this.client.invoke(
@@ -1829,8 +1871,14 @@ class GramJsController extends EventEmitter {
                     pinned: is_pinned
                 })
             );
+            const chat = this._chatCache.get(chat_id);
+            const order = is_pinned
+                ? '9223372036854775807'
+                : String((chat?.last_message?.date || Math.floor(Date.now() / 1000)) * 1000);
+            if (chat) chat.is_pinned = is_pinned;
+            this._emitUpdate({ '@type': 'updateChatIsPinned', chat_id, is_pinned, order });
         } catch (e) {
-            /* no-op */
+            console.error('[GramJs] togglePin error', e);
         }
         return {};
     };
@@ -1914,6 +1962,23 @@ class GramJsController extends EventEmitter {
             /* no-op */
         }
         return { '@type': 'messages', messages: [], total_count: 0 };
+    };
+
+    // ─── Instant View handler ─────────────────────────────────────────────────
+
+    _getWebPageInstantView = async req => {
+        const { url } = req;
+        try {
+            const result = await this.client.invoke(new Api.messages.GetWebPage({ url, hash: 0 }));
+            const wp = result.webpage || result;
+            const wpCls = wp?.className || wp?._;
+            if (wpCls !== 'WebPage' || !wp.cachedPage) return {};
+            const iv = translateInstantView(wp.cachedPage);
+            return iv || {};
+        } catch (e) {
+            console.warn('[GramJs] getWebPageInstantView error:', e);
+            return {};
+        }
     };
 
     // ─── Reaction handlers ───────────────────────────────────────────────────
@@ -2225,11 +2290,15 @@ class GramJsController extends EventEmitter {
                     ...(replyToMsgId ? { replyToMsgId } : {})
                 })
             );
-            // Update local store so draft persists across chat switches
             const chat = this._chatCache.get(chat_id);
-            if (chat) {
-                chat.draft_message = draft_message || null;
-            }
+            if (chat) chat.draft_message = draft_message || null;
+            const order = String((chat?.last_message?.date || Math.floor(Date.now() / 1000)) * 1000);
+            this._emitUpdate({
+                '@type': 'updateChatDraftMessage',
+                chat_id,
+                draft_message: draft_message || null,
+                order
+            });
         } catch (e) {
             console.error('[GramJs] setChatDraftMessage error', e);
         }
@@ -2594,10 +2663,12 @@ class GramJsController extends EventEmitter {
 
     _cancelDownloadFile = async req => {
         const { file_id } = req;
+        const fileId = typeof file_id === 'number' ? file_id : Number(file_id);
+        this._downloadingFiles.delete(fileId);
         this._emitUpdate({
             '@type': 'updateFile',
             file: {
-                id: file_id,
+                id: fileId,
                 local: { is_downloading_active: false, is_downloading_completed: false, downloaded_size: 0 }
             }
         });
