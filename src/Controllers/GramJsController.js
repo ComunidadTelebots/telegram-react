@@ -639,6 +639,8 @@ class GramJsController extends EventEmitter {
                 return this._kickGroupMember(req);
             case 'banGroupMember':
                 return this._banGroupMember(req);
+            case 'setChatDescription':
+                return this._setChatDescription(req);
 
             // ── Acciones ──────────────────────────────────────────────────────
             case 'sendChatAction':
@@ -2040,6 +2042,30 @@ class GramJsController extends EventEmitter {
             return { '@type': 'ok' };
         } catch (e) {
             console.error('[GramJs] banGroupMember error', e);
+        }
+        return null;
+    };
+
+    _setChatDescription = async req => {
+        const { chat_id, description } = req;
+        try {
+            const inputPeer = tdlibChatIdToInputPeer(chat_id, this._entityCache);
+            if (inputPeer instanceof Api.InputPeerChannel) {
+                await this.client.invoke(
+                    new Api.channels.EditAbout({
+                        channel: new Api.InputChannel({
+                            channelId: inputPeer.channelId,
+                            accessHash: inputPeer.accessHash
+                        }),
+                        about: description
+                    })
+                );
+            } else if (inputPeer instanceof Api.InputPeerChat) {
+                await this.client.invoke(new Api.messages.EditChatAbout({ peer: inputPeer, about: description }));
+            }
+            return { '@type': 'ok' };
+        } catch (e) {
+            console.error('[GramJs] setChatDescription error', e);
         }
         return null;
     };

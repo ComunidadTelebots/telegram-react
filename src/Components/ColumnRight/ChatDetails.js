@@ -17,7 +17,10 @@ import AlternateEmailIcon from '@material-ui/icons/AlternateEmail';
 import BlockIcon from '@material-ui/icons/Block';
 import ExitToAppIcon from '@material-ui/icons/ExitToApp';
 import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
+import TextField from '@material-ui/core/TextField';
 import Tooltip from '@material-ui/core/Tooltip';
+import CheckIcon from '@material-ui/icons/Check';
+import EditIcon from '@material-ui/icons/Edit';
 import LockIcon from '@material-ui/icons/Lock';
 import GroupIcon from '@material-ui/icons/Group';
 import CallIcon from '@material-ui/icons/Call';
@@ -94,7 +97,9 @@ class ChatDetails extends React.Component {
 
         this.members = new Map();
         this.state = {
-            prevChatId: chatId
+            prevChatId: chatId,
+            editingDescription: false,
+            descriptionDraft: ''
         };
     }
 
@@ -363,6 +368,23 @@ class ChatDetails extends React.Component {
         await TdLibController.send({ '@type': 'banGroupMember', chat_id: chatId, user_id: userId });
     };
 
+    handleEditDescription = () => {
+        const { chatId } = this.props;
+        const bio = getChatBio(chatId) || '';
+        this.setState({ editingDescription: true, descriptionDraft: bio });
+    };
+
+    handleDescriptionChange = event => {
+        this.setState({ descriptionDraft: event.target.value });
+    };
+
+    handleSaveDescription = async () => {
+        const { chatId } = this.props;
+        const { descriptionDraft } = this.state;
+        await TdLibController.send({ '@type': 'setChatDescription', chat_id: chatId, description: descriptionDraft });
+        this.setState({ editingDescription: false });
+    };
+
     getContentHeight = () => {
         if (!this.chatDetailsListRef) return 0;
 
@@ -416,6 +438,8 @@ class ChatDetails extends React.Component {
         const phoneNumber = getChatPhoneNumber(chatId);
         const bio = getChatBio(chatId);
         const isGroup = isGroupChat(chatId);
+        const isAdmin = isAdminInChat(chatId);
+        const { editingDescription, descriptionDraft } = this.state;
         const isMe = isMeChat(chatId);
         const isSecret = isChatSecret(chatId);
 
@@ -508,15 +532,47 @@ class ChatDetails extends React.Component {
                                         </ListItem>
                                     </>
                                 )}
-                                {bio && (
+                                {(bio || (isAdmin && isGroup)) && (
                                     <ListItem className={classes.listItem}>
                                         <ListItemIcon>
                                             <ErrorOutlineIcon className='chat-details-info-icon' />
                                         </ListItemIcon>
-                                        <ListItemText
-                                            primary={bio}
-                                            style={{ whiteSpace: 'pre-wrap', wordWrap: 'break-word' }}
-                                        />
+                                        {editingDescription ? (
+                                            <>
+                                                <TextField
+                                                    fullWidth
+                                                    multiline
+                                                    autoFocus
+                                                    value={descriptionDraft}
+                                                    onChange={this.handleDescriptionChange}
+                                                    placeholder='Description'
+                                                    variant='standard'
+                                                />
+                                                <ListItemSecondaryAction>
+                                                    <IconButton size='small' onClick={this.handleSaveDescription}>
+                                                        <CheckIcon fontSize='small' />
+                                                    </IconButton>
+                                                </ListItemSecondaryAction>
+                                            </>
+                                        ) : (
+                                            <>
+                                                <ListItemText
+                                                    primary={bio || 'Add a description...'}
+                                                    style={{
+                                                        whiteSpace: 'pre-wrap',
+                                                        wordWrap: 'break-word',
+                                                        opacity: bio ? 1 : 0.5
+                                                    }}
+                                                />
+                                                {isAdmin && isGroup && (
+                                                    <ListItemSecondaryAction>
+                                                        <IconButton size='small' onClick={this.handleEditDescription}>
+                                                            <EditIcon fontSize='small' />
+                                                        </IconButton>
+                                                    </ListItemSecondaryAction>
+                                                )}
+                                            </>
+                                        )}
                                     </ListItem>
                                 )}
                             </List>
