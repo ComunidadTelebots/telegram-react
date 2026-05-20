@@ -911,6 +911,22 @@ function translateMessageContent(msg) {
         };
     }
 
+    // Factura / pago de bot
+    if (mediaClass === 'MessageMediaInvoice' || mediaClass === 'messageMediaInvoice') {
+        return {
+            '@type': 'messageInvoice',
+            title: media.title || '',
+            description: { '@type': 'formattedText', text: media.description || '', entities: [] },
+            photo: media.photo ? translatePhoto(media.photo) : null,
+            currency: media.currency || '',
+            total_amount: media.totalAmount ? Number(media.totalAmount) : 0,
+            start_parameter: media.startParam || '',
+            is_test: !!media.test,
+            need_shipping_address: !!media.shippingAddressRequested,
+            receipt_message_id: 0
+        };
+    }
+
     // Texto con texto en el campo message (media desconocido pero tiene caption)
     if (msg.message) {
         return {

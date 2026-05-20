@@ -325,6 +325,16 @@ class GramJsController extends EventEmitter {
                         const chat = this._chatCache.get(message.chat_id);
                         if (chat) {
                             chat.last_message = message;
+                            // Increment unread count for incoming messages so the badge updates
+                            if (!message.is_outgoing) {
+                                chat.unread_count = (chat.unread_count || 0) + 1;
+                                this._emitUpdate({
+                                    '@type': 'updateChatReadInbox',
+                                    chat_id: message.chat_id,
+                                    last_read_inbox_message_id: chat.last_read_inbox_message_id || 0,
+                                    unread_count: chat.unread_count
+                                });
+                            }
                         }
                         this._emitUpdate({
                             '@type': 'updateChatLastMessage',
@@ -1534,14 +1544,23 @@ class GramJsController extends EventEmitter {
         const { chat_id, message_ids } = req;
         try {
             const inputPeer = tdlibChatIdToInputPeer(chat_id, this._entityCache);
+            const maxId = Math.max(...message_ids);
             if (chat_id < -1000000000000) {
-                await this.client.invoke(
-                    new Api.channels.ReadHistory({ channel: inputPeer, maxId: Math.max(...message_ids) })
-                );
+                await this.client.invoke(new Api.channels.ReadHistory({ channel: inputPeer, maxId }));
             } else {
-                await this.client.invoke(
-                    new Api.messages.ReadHistory({ peer: inputPeer, maxId: Math.max(...message_ids) })
-                );
+                await this.client.invoke(new Api.messages.ReadHistory({ peer: inputPeer, maxId }));
+            }
+            // Reset unread count and update last_read_inbox_message_id locally
+            const chat = this._chatCache.get(chat_id);
+            if (chat) {
+                chat.unread_count = 0;
+                chat.last_read_inbox_message_id = maxId;
+                this._emitUpdate({
+                    '@type': 'updateChatReadInbox',
+                    chat_id,
+                    last_read_inbox_message_id: maxId,
+                    unread_count: 0
+                });
             }
         } catch (e) {
             /* no-op */
