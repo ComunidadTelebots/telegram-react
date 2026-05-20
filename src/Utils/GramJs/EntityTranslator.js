@@ -525,16 +525,15 @@ function translateServiceContent(action) {
     const cls = action?.className || action?._;
     if (!cls) return null;
 
-    if (
-        cls === 'MessageActionChatAddUser' ||
-        cls === 'MessageActionChatJoinedByLink' ||
-        cls === 'MessageActionChatJoinedByRequest'
-    ) {
+    if (cls === 'MessageActionChatAddUser' || cls === 'MessageActionChatJoinedByRequest') {
         const members = (action.users || []).map(id => Number(id));
         return {
             '@type': 'messageChatAddMembers',
             member_user_ids: members.length ? members : [0]
         };
+    }
+    if (cls === 'MessageActionChatJoinedByLink') {
+        return { '@type': 'messageChatJoinByLink' };
     }
     if (cls === 'MessageActionChatDeleteUser') {
         return { '@type': 'messageChatDeleteMember', user_id: Number(action.userId || 0) };

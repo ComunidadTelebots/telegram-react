@@ -142,7 +142,13 @@ class ServiceMessage extends React.Component {
 
         const { photo } = content;
 
-        const text = getServiceMessageContent(message, true);
+        let text;
+        try {
+            text = getServiceMessageContent(message, true);
+        } catch (e) {
+            console.error('[ServiceMessage] render error', e);
+            text = `[${content['@type']}]`;
+        }
 
         const messageClassName = classNames('service-message', { [classes.messageHighlighted]: highlighted });
 
@@ -168,11 +174,6 @@ class ServiceMessage extends React.Component {
     }
 }
 
-const enhance = compose(
-    withSaveRef(),
-    withStyles(styles, { withTheme: true }),
-    withTranslation(),
-    withRestoreRef()
-);
+const enhance = compose(withSaveRef(), withStyles(styles, { withTheme: true }), withTranslation(), withRestoreRef());
 
 export default enhance(ServiceMessage);

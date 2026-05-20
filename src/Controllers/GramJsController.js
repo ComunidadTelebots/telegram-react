@@ -1324,7 +1324,7 @@ class GramJsController extends EventEmitter {
         try {
             const toPeer = tdlibChatIdToInputPeer(chat_id, this._entityCache);
             const fromPeer = tdlibChatIdToInputPeer(from_chat_id, this._entityCache);
-            await this.client.invoke(
+            const result = await this.client.invoke(
                 new Api.messages.ForwardMessages({
                     fromPeer,
                     id: message_ids,
@@ -1337,6 +1337,28 @@ class GramJsController extends EventEmitter {
                     noforwards: false
                 })
             );
+
+            // Extract forwarded messages from the Updates response and emit locally
+            const rawMessages = (result?.updates || []).filter(u => u.message).map(u => u.message);
+
+            let lastTd = null;
+            for (const raw of rawMessages) {
+                const tdMessage = translateMessage(raw, chat_id);
+                if (tdMessage) {
+                    this._emitUpdate({ '@type': 'updateNewMessage', message: tdMessage });
+                    lastTd = tdMessage;
+                }
+            }
+            if (lastTd) {
+                const chat = this._chatCache.get(chat_id);
+                if (chat) chat.last_message = lastTd;
+                this._emitUpdate({
+                    '@type': 'updateChatLastMessage',
+                    chat_id,
+                    last_message: lastTd,
+                    order: String(lastTd.date * 1000)
+                });
+            }
         } catch (err) {
             console.error('[GramJs] forwardMessages error', err);
         }

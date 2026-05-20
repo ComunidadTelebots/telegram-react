@@ -18,6 +18,7 @@ serviceMap.set('messageBasicGroupChatCreate', 'messageBasicGroupChatCreate');
 serviceMap.set('messageChatAddMembers', 'messageChatAddMembers');
 serviceMap.set('messageChatChangePhoto', 'messageChatChangePhoto');
 serviceMap.set('messageChatChangeTitle', 'messageChatChangeTitle');
+serviceMap.set('messageChatDeleteHistory', 'messageChatDeleteHistory');
 serviceMap.set('messageChatDeleteMember', 'messageChatDeleteMember');
 serviceMap.set('messageChatDeletePhoto', 'messageChatDeletePhoto');
 serviceMap.set('messageChatJoinByLink', 'messageChatJoinByLink');
@@ -69,6 +70,7 @@ function getTTLString(ttl) {
 }
 
 function getPassportElementTypeString(type) {
+    if (!type) return '';
     switch (type['@type']) {
         case 'passportElementTypeAddress': {
             return 'Address';
@@ -195,7 +197,7 @@ function getServiceMessageContent(message, openUser = false) {
             );
         }
         case 'messageChatAddMembers': {
-            const members = content.member_user_ids
+            const members = (content.member_user_ids || [])
                 .map(x => <MessageAuthor key={x} userId={x} openUser={openUser} />)
                 .reduce((accumulator, current, index, array) => {
                     const separator = index === array.length - 1 ? ' and ' : ', ';
@@ -284,6 +286,9 @@ function getServiceMessageContent(message, openUser = false) {
                     <MessageAuthor userId={content.user_id} openUser={openUser} />
                 </>
             );
+        }
+        case 'messageChatDeleteHistory': {
+            return 'Chat history was cleared';
         }
         case 'messageChatDeletePhoto': {
             if (isChannel) {
@@ -398,7 +403,7 @@ function getServiceMessageContent(message, openUser = false) {
             const passportChat = ChatStore.get(message.chat_id);
             const passportUserId = passportChat?.type?.user_id || 0;
 
-            const passportElementTypes = content.types
+            const passportElementTypes = (content.types || [])
                 .map(x => getPassportElementTypeString(x))
                 .reduce((accumulator, current) => {
                     return accumulator === null ? [current] : [...accumulator, ', ', current];

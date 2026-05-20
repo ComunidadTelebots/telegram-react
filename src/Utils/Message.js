@@ -379,7 +379,7 @@ function getMedia(message, openMedia, hasTitle = false, hasCaption = false) {
                 <Call
                     chatId={chat_id}
                     messageId={id}
-                    duraton={content.duration}
+                    duration={content.duration}
                     discardReason={content.discard_reason}
                     openMedia={openMedia}
                 />

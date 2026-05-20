@@ -241,7 +241,7 @@ class DialogsList extends React.Component {
 
     reorderChats(chatIds, newChatIds = [], callback) {
         const orderedChatIds = chatIds.concat(newChatIds).sort((a, b) => {
-            return orderCompare(ChatStore.get(b).order, ChatStore.get(a).order);
+            return orderCompare(ChatStore.get(b)?.order || '0', ChatStore.get(a)?.order || '0');
         });
 
         if (!DialogsList.isDifferentOrder(this.state.chats, orderedChatIds)) {

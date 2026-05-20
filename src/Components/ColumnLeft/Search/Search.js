@@ -94,7 +94,7 @@ class Search extends React.Component {
         }
 
         arr.sort((a, b) => {
-            return orderCompare(ChatStore.get(b).order, ChatStore.get(a).order);
+            return orderCompare(ChatStore.get(b)?.order || '0', ChatStore.get(a)?.order || '0');
         });
 
         return arr;
