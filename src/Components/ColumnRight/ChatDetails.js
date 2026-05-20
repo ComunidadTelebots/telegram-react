@@ -14,6 +14,10 @@ import withStyles from '@material-ui/core/styles/withStyles';
 import { withSnackbar } from 'notistack';
 import { withTranslation } from 'react-i18next';
 import AlternateEmailIcon from '@material-ui/icons/AlternateEmail';
+import BlockIcon from '@material-ui/icons/Block';
+import ExitToAppIcon from '@material-ui/icons/ExitToApp';
+import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
+import Tooltip from '@material-ui/core/Tooltip';
 import LockIcon from '@material-ui/icons/Lock';
 import GroupIcon from '@material-ui/icons/Group';
 import CallIcon from '@material-ui/icons/Call';
@@ -47,7 +51,8 @@ import {
     isPrivateChat,
     isChatSecret,
     getChatUserId,
-    isMeChat
+    isMeChat,
+    isAdminInChat
 } from '../../Utils/Chat';
 import { getUserStatusOrder } from '../../Utils/User';
 import { loadUsersContent, loadChatsContent } from '../../Utils/File';
@@ -346,6 +351,18 @@ class ChatDetails extends React.Component {
         openUser(userId, true);
     };
 
+    handleKickMember = async (event, userId) => {
+        event.stopPropagation();
+        const { chatId } = this.props;
+        await TdLibController.send({ '@type': 'kickGroupMember', chat_id: chatId, user_id: userId });
+    };
+
+    handleBanMember = async (event, userId) => {
+        event.stopPropagation();
+        const { chatId } = this.props;
+        await TdLibController.send({ '@type': 'banGroupMember', chat_id: chatId, user_id: userId });
+    };
+
     getContentHeight = () => {
         if (!this.chatDetailsListRef) return 0;
 
@@ -416,9 +433,25 @@ class ChatDetails extends React.Component {
         const sortedUsers = users.sort((x, y) => {
             return getUserStatusOrder(y) - getUserStatusOrder(x);
         });
+        const isAdmin = isAdminInChat(chatId);
+        const myId = UserStore.getMyId ? UserStore.getMyId() : 0;
         const items = sortedUsers.map(user => (
             <ListItem button className={classes.listItem} key={user.id}>
                 <UserControl userId={user.id} onSelect={this.handleOpenUser} />
+                {isAdmin && user.id !== myId && (
+                    <ListItemSecondaryAction>
+                        <Tooltip title='Kick'>
+                            <IconButton size='small' onClick={e => this.handleKickMember(e, user.id)}>
+                                <ExitToAppIcon fontSize='small' />
+                            </IconButton>
+                        </Tooltip>
+                        <Tooltip title='Ban'>
+                            <IconButton size='small' onClick={e => this.handleBanMember(e, user.id)}>
+                                <BlockIcon fontSize='small' />
+                            </IconButton>
+                        </Tooltip>
+                    </ListItemSecondaryAction>
+                )}
             </ListItem>
         ));
 

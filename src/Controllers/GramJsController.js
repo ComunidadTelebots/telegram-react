@@ -635,6 +635,10 @@ class GramJsController extends EventEmitter {
                 return this._terminateSession(req);
             case 'terminateAllOtherSessions':
                 return this._terminateAllOtherSessions(req);
+            case 'kickGroupMember':
+                return this._kickGroupMember(req);
+            case 'banGroupMember':
+                return this._banGroupMember(req);
 
             // ── Acciones ──────────────────────────────────────────────────────
             case 'sendChatAction':
@@ -1930,6 +1934,112 @@ class GramJsController extends EventEmitter {
             return { '@type': 'ok' };
         } catch (e) {
             console.error('[GramJs] terminateAllOtherSessions error', e);
+        }
+        return null;
+    };
+
+    _kickGroupMember = async req => {
+        const { chat_id, user_id } = req;
+        try {
+            const inputPeer = tdlibChatIdToInputPeer(chat_id, this._entityCache);
+            const userEntity = this._entityCache.get(user_id);
+            const inputUser = new Api.InputUser({
+                userId: BigInt(user_id),
+                accessHash: userEntity?.accessHash || BigInt(0)
+            });
+
+            if (inputPeer instanceof Api.InputPeerChannel) {
+                const bannedRights = new Api.ChatBannedRights({
+                    viewMessages: false,
+                    sendMessages: false,
+                    sendMedia: false,
+                    sendStickers: false,
+                    sendGifs: false,
+                    sendGames: false,
+                    sendInline: false,
+                    embedLinks: false,
+                    untilDate: 1
+                });
+                await this.client.invoke(
+                    new Api.channels.EditBanned({
+                        channel: new Api.InputChannel({
+                            channelId: inputPeer.channelId,
+                            accessHash: inputPeer.accessHash
+                        }),
+                        participant: inputUser,
+                        bannedRights
+                    })
+                );
+                await this.client.invoke(
+                    new Api.channels.EditBanned({
+                        channel: new Api.InputChannel({
+                            channelId: inputPeer.channelId,
+                            accessHash: inputPeer.accessHash
+                        }),
+                        participant: inputUser,
+                        bannedRights: new Api.ChatBannedRights({ untilDate: 0 })
+                    })
+                );
+            } else if (inputPeer instanceof Api.InputPeerChat) {
+                await this.client.invoke(
+                    new Api.messages.DeleteChatUser({
+                        chatId: inputPeer.chatId,
+                        userId: inputUser,
+                        revokeHistory: false
+                    })
+                );
+            }
+            return { '@type': 'ok' };
+        } catch (e) {
+            console.error('[GramJs] kickGroupMember error', e);
+        }
+        return null;
+    };
+
+    _banGroupMember = async req => {
+        const { chat_id, user_id } = req;
+        try {
+            const inputPeer = tdlibChatIdToInputPeer(chat_id, this._entityCache);
+            const userEntity = this._entityCache.get(user_id);
+            const inputUser = new Api.InputUser({
+                userId: BigInt(user_id),
+                accessHash: userEntity?.accessHash || BigInt(0)
+            });
+
+            if (inputPeer instanceof Api.InputPeerChannel) {
+                const bannedRights = new Api.ChatBannedRights({
+                    viewMessages: true,
+                    sendMessages: true,
+                    sendMedia: true,
+                    sendStickers: true,
+                    sendGifs: true,
+                    sendGames: true,
+                    sendInline: true,
+                    embedLinks: true,
+                    untilDate: 0
+                });
+                await this.client.invoke(
+                    new Api.channels.EditBanned({
+                        channel: new Api.InputChannel({
+                            channelId: inputPeer.channelId,
+                            accessHash: inputPeer.accessHash
+                        }),
+                        participant: inputUser,
+                        bannedRights
+                    })
+                );
+            } else if (inputPeer instanceof Api.InputPeerChat) {
+                await this.client.invoke(
+                    new Api.messages.DeleteChatUser({
+                        chatId: inputPeer.chatId,
+                        userId: inputUser,
+                        revokeHistory: false
+                    })
+                );
+            }
+            return { '@type': 'ok' };
+        } catch (e) {
+            console.error('[GramJs] banGroupMember error', e);
         }
         return null;
     };

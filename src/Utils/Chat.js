@@ -884,6 +884,30 @@ function hasSupergroupId(chatId, supergroupId) {
     return isSupergroup(chatId) && type.supergroup_id === supergroupId;
 }
 
+function isAdminInChat(chatId) {
+    const chat = ChatStore.get(chatId);
+    if (!chat) return false;
+
+    const { type } = chat;
+    if (!type) return false;
+
+    if (type['@type'] === 'chatTypeSupergroup') {
+        const supergroup = SupergroupStore.get(type.supergroup_id);
+        if (!supergroup || !supergroup.status) return false;
+        const t = supergroup.status['@type'];
+        return t === 'chatMemberStatusCreator' || t === 'chatMemberStatusAdministrator';
+    }
+
+    if (type['@type'] === 'chatTypeBasicGroup') {
+        const basicGroup = BasicGroupStore.get(type.basic_group_id);
+        if (!basicGroup || !basicGroup.status) return false;
+        const t = basicGroup.status['@type'];
+        return t === 'chatMemberStatusCreator' || t === 'chatMemberStatusAdministrator';
+    }
+
+    return false;
+}
+
 function hasUserId(chatId, userId) {
     const chat = ChatStore.get(chatId);
     if (!chat) return false;
@@ -1482,5 +1506,6 @@ export {
     canSendMessages,
     canSendPhotos,
     canSendDocuments,
-    canSendPolls
+    canSendPolls,
+    isAdminInChat
 };
