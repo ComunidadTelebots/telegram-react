@@ -95,15 +95,27 @@ function translateProfilePhoto(entity, chatId) {
 
 export function translatePhoto(gPhoto) {
     if (!gPhoto) return null;
+    const photoCls = gPhoto.className || gPhoto._;
+    if (photoCls === 'PhotoEmpty') return null;
     if (gPhoto.id) {
         mediaCache.set(Number(gPhoto.id), gPhoto);
     }
     const sizes = (gPhoto.sizes || [])
+        .filter(sz => {
+            const szCls = sz.className || sz._;
+            // Skip stripped (minithumbnail bytes), empty, and path sizes — not downloadable
+            return (
+                szCls !== 'PhotoSizeEmpty' &&
+                szCls !== 'PhotoStrippedSize' &&
+                szCls !== 'PhotoPathSize' &&
+                (sz.w || sz.width)
+            );
+        })
         .map(sz => {
             const type = sz.type || 'x';
             const w = sz.w || sz.width || 320;
             const h = sz.h || sz.height || 240;
-            const szBytes = sz.size || (sz.bytes ? sz.bytes.length : 0) || 10000;
+            const szBytes = sz.size || 10000;
             return {
                 '@type': 'photoSize',
                 type,
@@ -239,14 +251,16 @@ export function translateSticker(gDoc) {
     const size = gDoc.size ? Number(gDoc.size) : 0;
     const mimeType = gDoc.mimeType || '';
     const isAnimated = mimeType === 'application/x-tgsticker';
+    const isVideo = mimeType === 'video/webm';
 
     const stickerAttr = (gDoc.attributes || []).find(a => (a.className || a._) === 'DocumentAttributeSticker');
     const alt = stickerAttr?.alt || '';
     const setId = stickerAttr?.stickerset?.id ? String(stickerAttr.stickerset.id) : '0';
 
     const imgAttr = (gDoc.attributes || []).find(a => (a.className || a._) === 'DocumentAttributeImageSize');
-    const width = imgAttr?.w || 512;
-    const height = imgAttr?.h || 512;
+    const videoAttrS = (gDoc.attributes || []).find(a => (a.className || a._) === 'DocumentAttributeVideo');
+    const width = imgAttr?.w || videoAttrS?.w || 512;
+    const height = imgAttr?.h || videoAttrS?.h || 512;
 
     return {
         '@type': 'sticker',
@@ -255,7 +269,7 @@ export function translateSticker(gDoc) {
         height: Number(height),
         emoji: alt,
         is_animated: isAnimated,
-        is_video: false,
+        is_video: isVideo,
         thumbnail: null,
         sticker: translateFile(gDoc.id, size, gDoc.id ? String(gDoc.id) : '')
     };
@@ -511,7 +525,11 @@ function translateServiceContent(action) {
     const cls = action?.className || action?._;
     if (!cls) return null;
 
-    if (cls === 'MessageActionChatAddUser' || cls === 'MessageActionChatJoinedByLink') {
+    if (
+        cls === 'MessageActionChatAddUser' ||
+        cls === 'MessageActionChatJoinedByLink' ||
+        cls === 'MessageActionChatJoinedByRequest'
+    ) {
         const members = (action.users || []).map(id => Number(id));
         return {
             '@type': 'messageChatAddMembers',
@@ -544,6 +562,44 @@ function translateServiceContent(action) {
     }
     if (cls === 'MessageActionContactSignUp') {
         return { '@type': 'messageContactRegistered' };
+    }
+    if (cls === 'MessageActionPhoneCall') {
+        return {
+            '@type': 'messageCall',
+            is_video: !!action.video,
+            discard_reason: { '@type': 'callDiscardReasonEmpty' },
+            duration: action.duration || 0
+        };
+    }
+    if (cls === 'MessageActionGameScore') {
+        return {
+            '@type': 'messageGameScore',
+            game_message_id: action.gameId ? Number(action.gameId) : 0,
+            game_id: action.gameId ? String(action.gameId) : '0',
+            score: action.score || 0
+        };
+    }
+    if (cls === 'MessageActionChatMigrateTo') {
+        return { '@type': 'messageChatUpgradeTo', supergroup_id: action.channelId ? Number(action.channelId) : 0 };
+    }
+    if (cls === 'MessageActionChannelMigrateFrom') {
+        return {
+            '@type': 'messageChatUpgradeFrom',
+            title: action.title || '',
+            basic_group_id: action.chatId ? Number(action.chatId) : 0
+        };
+    }
+    if (cls === 'MessageActionChatSetTtl' || cls === 'MessageActionChatSetMessagesTtl') {
+        return { '@type': 'messageChatSetTtl', ttl: action.period || 0 };
+    }
+    if (cls === 'MessageActionScreenshotTaken') {
+        return { '@type': 'messageScreenshotTaken' };
+    }
+    if (cls === 'MessageActionCustomAction') {
+        return { '@type': 'messageCustomServiceAction', text: action.message || '' };
+    }
+    if (cls === 'MessageActionBotAllowed') {
+        return { '@type': 'messageWebsiteConnected', domain_name: action.domain || '' };
     }
 
     return null;
@@ -701,8 +757,14 @@ function translateMessageContent(msg) {
     const media = msg.media;
     const mediaClass = media?.className || media?._;
 
-    // Texto puro
-    if (!media || mediaClass === 'MessageMediaEmpty' || mediaClass === 'messageMediaEmpty') {
+    // Texto puro / sin media / no soportado explícitamente
+    if (
+        !media ||
+        mediaClass === 'MessageMediaEmpty' ||
+        mediaClass === 'messageMediaEmpty' ||
+        mediaClass === 'MessageMediaUnsupported' ||
+        mediaClass === 'messageMediaUnsupported'
+    ) {
         return {
             '@type': 'messageText',
             text: {
@@ -716,9 +778,11 @@ function translateMessageContent(msg) {
 
     // Foto
     if (mediaClass === 'MessageMediaPhoto' || mediaClass === 'messageMediaPhoto') {
+        const photo = translatePhoto(media.photo);
+        if (!photo) return { '@type': 'messageUnsupported' };
         return {
             '@type': 'messagePhoto',
-            photo: translatePhoto(media.photo),
+            photo,
             caption: makeCaption(msg),
             is_secret: !!media.ttlSeconds
         };
@@ -727,6 +791,7 @@ function translateMessageContent(msg) {
     // Documento / sticker / audio / video
     if (mediaClass === 'MessageMediaDocument' || mediaClass === 'messageMediaDocument') {
         const doc = media.document;
+        if (!doc || !doc.id) return { '@type': 'messageUnsupported' };
         const attrs = doc?.attributes || [];
         const isSticker = attrs.some(a => (a.className || a._) === 'DocumentAttributeSticker');
         const audioAttr = attrs.find(a => (a.className || a._) === 'DocumentAttributeAudio');
@@ -859,10 +924,10 @@ function translateMessageContent(msg) {
             poll: {
                 '@type': 'poll',
                 id: poll ? String(poll.id) : '0',
-                question: poll?.question || '',
+                question: typeof poll?.question === 'string' ? poll.question : poll?.question?.text || '',
                 options: (poll?.answers || []).map(a => ({
                     '@type': 'pollOption',
-                    text: a.text || '',
+                    text: typeof a.text === 'string' ? a.text : a.text?.text || '',
                     voter_count: 0,
                     vote_percentage: 0,
                     is_chosen: false,
@@ -948,6 +1013,43 @@ function translateMessageContent(msg) {
             is_test: !!media.test,
             need_shipping_address: !!media.shippingAddressRequested,
             receipt_message_id: 0
+        };
+    }
+
+    // Dado / emoji animado
+    if (mediaClass === 'MessageMediaDice' || mediaClass === 'messageMediaDice') {
+        return {
+            '@type': 'messageDice',
+            dice: {
+                '@type': 'dice',
+                emoji: media.emoticon || '🎲',
+                value: media.value || 0
+            },
+            initial_state: null,
+            final_state: null,
+            success_animation_frame_number: 0
+        };
+    }
+
+    // Juego de bot
+    if (mediaClass === 'MessageMediaGame' || mediaClass === 'messageMediaGame') {
+        const game = media.game;
+        return {
+            '@type': 'messageGame',
+            game: {
+                '@type': 'game',
+                id: game ? String(game.id) : '0',
+                short_name: game?.shortName || '',
+                title: game?.title || '',
+                text: {
+                    '@type': 'formattedText',
+                    text: game?.description || '',
+                    entities: []
+                },
+                description: game?.description || '',
+                photo: game?.photo ? translatePhoto(game.photo) : null,
+                animation: game?.document ? translateAnimation(game.document) : null
+            }
         };
     }
 

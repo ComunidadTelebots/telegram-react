@@ -2171,7 +2171,7 @@ class GramJsController extends EventEmitter {
                 });
             }
 
-            const fileSize = gMedia.size ? Number(gMedia.size) : 0;
+            const fileSize = gMedia.size ? BigInt(Math.round(Number(gMedia.size))) : BigInt(0);
             const buffer = await this.client.downloadFile(inputLocation, { dcId, fileSize, workers: 1 });
             const blob = new Blob([buffer]);
             this._downloadedFiles.set(fileId, blob);
