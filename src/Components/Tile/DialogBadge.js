@@ -97,7 +97,7 @@ class DialogBadge extends React.Component {
         const { chatId } = this.props;
 
         const chat = ChatStore.get(chatId);
-        if (!chat) return;
+        if (!chat || !chat.type) return;
 
         switch (update.scope['@type']) {
             case 'notificationSettingsScopeGroupChats': {

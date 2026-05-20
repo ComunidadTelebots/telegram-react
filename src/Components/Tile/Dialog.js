@@ -153,6 +153,7 @@ class Dialog extends Component {
             const left = event.clientX;
             const top = event.clientY;
             const chat = ChatStore.get(chatId);
+            if (!chat) return;
             const { is_pinned } = chat;
             const canTogglePin = (await this.canPinChats(chatId)) || is_pinned;
             const canToggleArchive = canSetChatChatList(chatId);
@@ -237,7 +238,7 @@ class Dialog extends Component {
     getViewInfoTitle = () => {
         const { chatId, t } = this.props;
         const chat = ChatStore.get(chatId);
-        if (!chat) return;
+        if (!chat || !chat.type) return;
 
         const { type } = chat;
         switch (type['@type']) {

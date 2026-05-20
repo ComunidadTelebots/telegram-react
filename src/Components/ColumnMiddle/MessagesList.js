@@ -286,7 +286,7 @@ class MessagesList extends React.Component {
             const { chatId, messageId } = this.props;
             if (chatId) {
                 const chat = ChatStore.get(chatId);
-                if (chat) {
+                if (chat && chat.type) {
                     const { type } = chat;
                     switch (type['@type']) {
                         case 'chatTypePrivate':
