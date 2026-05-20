@@ -658,6 +658,10 @@ class GramJsController extends EventEmitter {
                 return this._getUserFullInfo(req);
             case 'getUserProfilePhotos':
                 return this._getUserProfilePhotos(req);
+            case 'getSupergroupFullInfo':
+                return this._getSupergroupFullInfo(req);
+            case 'getBasicGroupFullInfo':
+                return this._getBasicGroupFullInfo(req);
             case 'blockUser':
                 return this._blockUser(req);
             case 'unblockUser':
@@ -1524,6 +1528,102 @@ class GramJsController extends EventEmitter {
             has_private_forwards: false,
             need_phone_number_privacy_exception: false,
             commands: []
+        };
+    };
+
+    _getSupergroupFullInfo = async req => {
+        const { supergroup_id } = req;
+        // Map supergroup_id to the negative TDLib chat ID for the channel
+        const chatId = -1000000000000 - supergroup_id;
+        const empty = {
+            '@type': 'supergroupFullInfo',
+            description: '',
+            member_count: 0,
+            administrator_count: 0,
+            restricted_count: 0,
+            banned_count: 0,
+            can_get_members: false,
+            can_set_sticker_set: false,
+            can_set_location: false,
+            can_get_statistics: false,
+            sticker_set_id: '0',
+            invite_link: '',
+            upgraded_from_basic_group_id: 0
+        };
+        try {
+            const inputPeer = tdlibChatIdToInputPeer(chatId, this._entityCache);
+            const result = await this.client.invoke(new Api.channels.GetFullChannel({ channel: inputPeer }));
+            const full = result.fullChat || {};
+            const info = {
+                '@type': 'supergroupFullInfo',
+                description: full.about || '',
+                member_count: full.participantsCount || 0,
+                administrator_count: full.adminsCount || 0,
+                restricted_count: full.kickedCount || 0,
+                banned_count: full.bannedCount || 0,
+                can_get_members: !!full.canViewParticipants,
+                can_set_sticker_set: !!full.canSetStickers,
+                can_set_location: !!full.canSetLocation,
+                can_get_statistics: !!full.canViewStats,
+                sticker_set_id: full.stickerset ? String(full.stickerset.id) : '0',
+                invite_link: full.exportedInvite?.link || '',
+                upgraded_from_basic_group_id: 0
+            };
+            this._emitUpdate({
+                '@type': 'updateSupergroupFullInfo',
+                supergroup_id,
+                supergroup_full_info: info
+            });
+            return info;
+        } catch (e) {
+            console.error('[GramJs] getSupergroupFullInfo error', e);
+        }
+        return empty;
+    };
+
+    _getBasicGroupFullInfo = async req => {
+        const { basic_group_id } = req;
+        const chatId = -basic_group_id;
+        try {
+            const result = await this.client.invoke(new Api.messages.GetFullChat({ chatId: BigInt(basic_group_id) }));
+            const full = result.fullChat || {};
+            const participants = (result.users || [])
+                .map(u => {
+                    const tdUser = translateUser(u);
+                    if (tdUser) this._userCache.set(tdUser.id, tdUser);
+                    return tdUser;
+                })
+                .filter(Boolean);
+            const members = participants.map(u => ({
+                '@type': 'chatMember',
+                user_id: u.id,
+                inviter_user_id: 0,
+                joined_chat_date: 0,
+                status: { '@type': 'chatMemberStatusMember' },
+                bot_info: null
+            }));
+            const info = {
+                '@type': 'basicGroupFullInfo',
+                description: full.about || '',
+                creator_user_id: 0,
+                members,
+                invite_link: full.exportedInvite?.link || ''
+            };
+            this._emitUpdate({
+                '@type': 'updateBasicGroupFullInfo',
+                basic_group_id,
+                basic_group_full_info: info
+            });
+            return info;
+        } catch (e) {
+            console.error('[GramJs] getBasicGroupFullInfo error', e);
+        }
+        return {
+            '@type': 'basicGroupFullInfo',
+            description: '',
+            creator_user_id: 0,
+            members: [],
+            invite_link: ''
         };
     };
 
