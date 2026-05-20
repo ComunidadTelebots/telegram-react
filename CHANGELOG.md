@@ -1,5 +1,24 @@
 # Changelog
 
+## [2026-05-20] (sesión 4)
+
+### Added
+- **MediaViewer mejorado** — botón de Picture-in-Picture para vídeos, velocidad de reproducción cíclica (0.5×→1×→1.5×→2×). Archivos: `MediaViewer.js`, `MediaViewerContent.js`.
+- **"Mostrar en chat" para mensajes reenviados** — opción en menú contextual de mensajes reenviados desde canales que navega al chat/mensaje original. Archivos: `Message.js`, `LocalizationStore.js`.
+- **Búsqueda por remitente** — prefijo `from:username` en el buscador de un chat filtra mensajes del usuario. Resuelve el usuario con `searchPublicChat`. Archivos: `Search.js`, `GramJsController.js`.
+- **Filtros aplicados en GramJS** — `searchChatMessages` ahora pasa el filtro de tipo y `fromId` real a `messages.Search`. Archivo: `GramJsController.js`.
+- **Override móvil** — botón "Continue in browser" en la pantalla de NativeAppControl evita el bloqueo del cliente en móvil. Archivos: `NativeAppControl.js`, `TelegramApp.js`.
+- **Panel de sesiones activas** — menú ≡ → "Active Sessions" abre un diálogo listando todos los dispositivos conectados con opción de cerrar sesiones individuales o todas a la vez. Archivos: `ActiveSessions.js`, `GramJsController.js`, `MainMenuButton.js`.
+- **Herramientas de administrador** — botones Kick/Ban en la lista de miembros del grupo cuando el usuario es administrador. Archivos: `ChatDetails.js`, `GramJsController.js`, `Utils/Chat.js`.
+- **Edición de descripción inline** — los administradores pueden editar la descripción del grupo/canal directamente en el panel de detalles con un campo de texto inline. Archivos: `ChatDetails.js`, `GramJsController.js`.
+- **Read receipts con checkmarks** — ✓ enviado, ✓✓ leído, ! fallido en los mensajes enviados propios. Archivos: `MessageStatus.js`, `MessageStatus.css`.
+- **Ctrl+K abre búsqueda global** — atajo de teclado `Ctrl+K` / `Cmd+K` abre el buscador global de chats. Archivo: `TelegramApp.js`.
+- **Badge de no leídos en ScrollDownButton** — el botón de bajar al final muestra el contador de mensajes no leídos abajo. Archivos: `ScrollDownButton.js`, `MessagesList.js`.
+- **"Leave/Delete" en menú de chats** — clic derecho en un chat → "Leave / Delete" lo abandona. Archivos: `Dialog.js`, `GramJsController.js`.
+- **Notificaciones de escritorio** — solicita permiso al inicio y muestra notificaciones del sistema para mensajes entrantes cuando la ventana no está enfocada. Archivo: `Utils/NotificationManager.js`.
+
+---
+
 ## [2026-05-20] (sesión 3)
 
 ### Added
