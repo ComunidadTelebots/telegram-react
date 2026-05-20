@@ -21,6 +21,7 @@ import DialogTitle from './DialogTitle';
 import DialogMeta from './DialogMeta';
 import {
     canSetChatChatList,
+    canDeleteChat,
     isArchivedChat,
     isChatArchived,
     isChatMuted,
@@ -156,10 +157,13 @@ class Dialog extends Component {
             const canTogglePin = (await this.canPinChats(chatId)) || is_pinned;
             const canToggleArchive = canSetChatChatList(chatId);
 
+            const canDelete = canDeleteChat(chatId);
+
             this.setState({
                 contextMenu: true,
                 canTogglePin,
                 canToggleArchive,
+                canDelete,
                 left,
                 top
             });
@@ -283,9 +287,21 @@ class Dialog extends Component {
         }
     };
 
+    handleDeleteChat = async event => {
+        this.handleCloseContextMenu(event);
+        const { chatId } = this.props;
+        await TdLibController.send({ '@type': 'leaveChat', chat_id: chatId });
+        TdLibController.clientUpdate({
+            '@type': 'clientUpdateChatId',
+            chatId: 0,
+            previousChatId: chatId,
+            nextChatId: 0
+        });
+    };
+
     render() {
         const { classes, chatId, showSavedMessages, hidden, t } = this.props;
-        const { contextMenu, left, top, canToggleArchive, canTogglePin } = this.state;
+        const { contextMenu, left, top, canToggleArchive, canTogglePin, canDelete } = this.state;
 
         if (hidden) return null;
 
@@ -356,6 +372,11 @@ class Dialog extends Component {
                         <MenuItem onClick={this.handleViewInfo}>{this.getViewInfoTitle()}</MenuItem>
                         <MenuItem onClick={this.handleMute}>{isMuted ? t('Unmute') : t('Mute')}</MenuItem>
                         <MenuItem onClick={this.handleRead}>{isUnread ? t('MarkAsRead') : t('MarkAsUnread')}</MenuItem>
+                        {canDelete && (
+                            <MenuItem onClick={this.handleDeleteChat} style={{ color: '#e53935' }}>
+                                Leave / Delete
+                            </MenuItem>
+                        )}
                     </MenuList>
                 </Popover>
             </div>

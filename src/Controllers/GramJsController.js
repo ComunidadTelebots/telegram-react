@@ -641,6 +641,8 @@ class GramJsController extends EventEmitter {
                 return this._banGroupMember(req);
             case 'setChatDescription':
                 return this._setChatDescription(req);
+            case 'leaveChat':
+                return this._leaveChat(req);
 
             // ── Acciones ──────────────────────────────────────────────────────
             case 'sendChatAction':
@@ -2066,6 +2068,39 @@ class GramJsController extends EventEmitter {
             return { '@type': 'ok' };
         } catch (e) {
             console.error('[GramJs] setChatDescription error', e);
+        }
+        return null;
+    };
+
+    _leaveChat = async req => {
+        const { chat_id } = req;
+        try {
+            const inputPeer = tdlibChatIdToInputPeer(chat_id, this._entityCache);
+            if (inputPeer instanceof Api.InputPeerChannel) {
+                await this.client.invoke(
+                    new Api.channels.LeaveChannel({
+                        channel: new Api.InputChannel({
+                            channelId: inputPeer.channelId,
+                            accessHash: inputPeer.accessHash
+                        })
+                    })
+                );
+            } else if (inputPeer instanceof Api.InputPeerChat) {
+                await this.client.invoke(
+                    new Api.messages.DeleteChatUser({
+                        chatId: inputPeer.chatId,
+                        userId: new Api.InputUserSelf()
+                    })
+                );
+            }
+            this._emitUpdate({
+                '@type': 'updateChatChatList',
+                chat_id,
+                chat_list: null
+            });
+            return { '@type': 'ok' };
+        } catch (e) {
+            console.error('[GramJs] leaveChat error', e);
         }
         return null;
     };
