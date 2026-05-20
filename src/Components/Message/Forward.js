@@ -105,6 +105,7 @@ class Forward extends React.Component {
         if (!forwardInfo) return null;
 
         const { origin } = forwardInfo;
+        if (!origin) return;
 
         switch (origin['@type']) {
             case 'messageForwardOriginUser': {
@@ -167,9 +168,6 @@ Forward.propTypes = {
     forwardInfo: PropTypes.object.isRequired
 };
 
-const enhance = compose(
-    withStyles(styles, { withTheme: true }),
-    withTranslation()
-);
+const enhance = compose(withStyles(styles, { withTheme: true }), withTranslation());
 
 export default enhance(Forward);
