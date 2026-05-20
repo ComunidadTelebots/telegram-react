@@ -503,6 +503,59 @@ export function translateMessage(msg, chatId) {
     };
 }
 
+export function translateUserProfilePhoto(gPhoto) {
+    if (!gPhoto) return null;
+    const cls = gPhoto.className || gPhoto._;
+    if (cls === 'PhotoEmpty') return null;
+
+    const fileId = Number(gPhoto.id);
+    mediaCache.set(fileId, gPhoto);
+
+    const makeFile = sz => {
+        const bytes = sz.size || (sz.bytes ? sz.bytes.length : 0) || 10000;
+        return {
+            '@type': 'file',
+            id: fileId,
+            size: bytes,
+            expected_size: bytes,
+            local: {
+                '@type': 'localFile',
+                path: '',
+                can_be_downloaded: true,
+                can_be_deleted: false,
+                is_downloading_active: false,
+                is_downloading_completed: false,
+                downloaded_prefix_size: 0,
+                downloaded_size: 0
+            },
+            remote: {
+                '@type': 'remoteFile',
+                id: String(fileId),
+                unique_id: String(gPhoto.id),
+                is_uploading_active: false,
+                is_uploading_completed: true,
+                uploaded_size: bytes
+            }
+        };
+    };
+
+    const sizes = (gPhoto.sizes || [])
+        .filter(sz => sz.w || sz.width)
+        .map(sz => ({
+            '@type': 'photoSize',
+            type: sz.type || 'x',
+            width: Number(sz.w || sz.width || 0),
+            height: Number(sz.h || sz.height || 0),
+            photo: makeFile(sz)
+        }));
+
+    if (sizes.length === 0) {
+        sizes.push({ '@type': 'photoSize', type: 'x', width: 640, height: 640, photo: makeFile({}) });
+    }
+
+    return { id: String(gPhoto.id), sizes, added_date: gPhoto.date || 0 };
+}
+
 export function translateReactions(raw) {
     if (!raw || !raw.results || raw.results.length === 0) return null;
     return {

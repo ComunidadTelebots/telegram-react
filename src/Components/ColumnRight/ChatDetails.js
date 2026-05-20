@@ -480,7 +480,6 @@ class ChatDetails extends React.Component {
         const sortedUsers = users.sort((x, y) => {
             return getUserStatusOrder(y) - getUserStatusOrder(x);
         });
-        const isAdmin = isAdminInChat(chatId);
         const myId = UserStore.getMyId ? UserStore.getMyId() : 0;
         const items = sortedUsers.map(user => (
             <ListItem button className={classes.listItem} key={user.id}>

@@ -22,6 +22,7 @@ import {
     tdlibChatIdToInputPeer,
     translateStickerSetInfo,
     translateStickerSet,
+    translateUserProfilePhoto,
     mediaCache
 } from '../Utils/GramJs/EntityTranslator';
 import { loadMessages, saveMessages } from '../Utils/MessageCache';
@@ -623,6 +624,8 @@ class GramJsController extends EventEmitter {
                 return this._getUser(req);
             case 'getUserFullInfo':
                 return this._getUserFullInfo(req);
+            case 'getUserProfilePhotos':
+                return this._getUserProfilePhotos(req);
             case 'blockUser':
                 return this._blockUser(req);
             case 'unblockUser':
@@ -2105,6 +2108,31 @@ class GramJsController extends EventEmitter {
             console.error('[GramJs] leaveChat error', e);
         }
         return null;
+    };
+
+    _getUserProfilePhotos = async req => {
+        const { user_id, offset, limit } = req;
+        try {
+            const u = this._entityCache.get(user_id);
+            const inputUser = new Api.InputUser({
+                userId: BigInt(user_id),
+                accessHash: u?.accessHash || BigInt(0)
+            });
+            const result = await this.client.invoke(
+                new Api.photos.GetUserPhotos({
+                    userId: inputUser,
+                    offset: offset || 0,
+                    maxId: BigInt(0),
+                    limit: Math.min(limit || 100, 100)
+                })
+            );
+            const photos = (result.photos || []).map(translateUserProfilePhoto).filter(Boolean);
+            const totalCount = result.count !== undefined ? result.count : photos.length;
+            return { '@type': 'userProfilePhotos', total_count: totalCount, photos };
+        } catch (e) {
+            console.error('[GramJs] getUserProfilePhotos error', e);
+            return { '@type': 'userProfilePhotos', total_count: 0, photos: [] };
+        }
     };
 
     _getInviteLink = async req => {
