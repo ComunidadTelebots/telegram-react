@@ -97,6 +97,7 @@ class MessageStore extends EventEmitter {
                 const message = this.get(chat_id, message_id);
                 if (message) {
                     const { content } = message;
+                    if (!content) break;
                     switch (content['@type']) {
                         case 'messageVoiceNote': {
                             message.content.is_listened = true;
