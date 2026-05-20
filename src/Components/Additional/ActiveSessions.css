@@ -1,0 +1,27 @@
+.active-sessions-content {
+    min-height: 120px;
+}
+
+.active-sessions-loading {
+    display: flex;
+    justify-content: center;
+    padding: 32px 0;
+}
+
+.active-sessions-section-label {
+    display: block;
+    padding: 8px 0 4px;
+    color: var(--accent-color, #2481cc);
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.active-sessions-item {
+    padding-top: 4px;
+    padding-bottom: 4px;
+}
+
+.active-sessions-item--current .MuiListItemText-primary {
+    font-weight: 500;
+}

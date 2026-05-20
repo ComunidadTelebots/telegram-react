@@ -16,6 +16,7 @@ import { withTranslation } from 'react-i18next';
 import { compose } from 'recompose';
 import ThemePicker from './ThemePicker';
 import LanguagePicker from './LanguagePicker';
+import ActiveSessions from '../Additional/ActiveSessions';
 import { update } from '../../registerServiceWorker';
 import { isAuthorizationReady } from '../../Utils/Common';
 import ApplicationStore from '../../Stores/ApplicationStore';
@@ -112,6 +113,11 @@ class MainMenuButton extends React.Component {
         //await update();
     };
 
+    handleActiveSessions = () => {
+        this.handleMenuClose();
+        this.activeSessionsRef.open();
+    };
+
     handleAppearance = event => {
         this.handleMenuClose();
 
@@ -152,6 +158,7 @@ class MainMenuButton extends React.Component {
                     <MenuItem onClick={this.handleCheckUpdates}>{t('UpdateTelegram')}</MenuItem>
                     <MenuItem onClick={this.handleAppearance}>{t('Appearance')}</MenuItem>
                     <MenuItem onClick={this.handleLanguage}>{t('Language')}</MenuItem>
+                    <MenuItem onClick={this.handleActiveSessions}>Active Sessions</MenuItem>
                     <Divider />
                     {otherAccounts.map(a => (
                         <MenuItem key={a.index} onClick={() => this.handleSwitchAccount(a.index)}>
@@ -178,6 +185,7 @@ class MainMenuButton extends React.Component {
                 {mainMenuControl}
                 <ThemePicker innerRef={ref => (this.themePicker = ref)} />
                 <LanguagePicker ref={ref => (this.languagePicker = ref)} />
+                <ActiveSessions ref={ref => (this.activeSessionsRef = ref)} />
             </>
         );
     }

@@ -629,6 +629,12 @@ class GramJsController extends EventEmitter {
                 return this._unblockUser(req);
             case 'getMessageLink':
                 return this._getMessageLink(req);
+            case 'getActiveSessions':
+                return this._getActiveSessions(req);
+            case 'terminateSession':
+                return this._terminateSession(req);
+            case 'terminateAllOtherSessions':
+                return this._terminateAllOtherSessions(req);
 
             // ── Acciones ──────────────────────────────────────────────────────
             case 'sendChatAction':
@@ -1880,6 +1886,52 @@ class GramJsController extends EventEmitter {
             console.error('[GramJs] getMessageLink error', e);
         }
         return { '@type': 'messageLink', link: '', is_public: false };
+    };
+
+    _getActiveSessions = async () => {
+        try {
+            const result = await this.client.invoke(new Api.account.GetAuthorizations());
+            const sessions = (result.authorizations || []).map(auth => ({
+                id: auth.hash.toString(),
+                hash: auth.hash,
+                app_name: auth.appName || '',
+                app_version: auth.appVersion || '',
+                device_model: auth.deviceModel || '',
+                platform: auth.platform || '',
+                system_version: auth.systemVersion || '',
+                country: auth.country || '',
+                region: auth.region || '',
+                date_active: auth.dateActive || 0,
+                date_created: auth.dateCreated || 0,
+                is_current: auth.current || false,
+                is_password_pending: auth.passwordPending || false
+            }));
+            return { '@type': 'sessions', sessions };
+        } catch (e) {
+            console.error('[GramJs] getActiveSessions error', e);
+        }
+        return { '@type': 'sessions', sessions: [] };
+    };
+
+    _terminateSession = async req => {
+        const { session_id } = req;
+        try {
+            await this.client.invoke(new Api.account.ResetAuthorization({ hash: BigInt(session_id) }));
+            return { '@type': 'ok' };
+        } catch (e) {
+            console.error('[GramJs] terminateSession error', e);
+        }
+        return null;
+    };
+
+    _terminateAllOtherSessions = async () => {
+        try {
+            await this.client.invoke(new Api.auth.ResetAuthorizations());
+            return { '@type': 'ok' };
+        } catch (e) {
+            console.error('[GramJs] terminateAllOtherSessions error', e);
+        }
+        return null;
     };
 
     _cancelDownloadFile = async req => {
