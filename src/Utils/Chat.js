@@ -259,7 +259,7 @@ function getMessageSenderName(message) {
     if (isServiceMessage(message)) return null;
 
     const chat = ChatStore.get(message.chat_id);
-    if (chat && chat.type['@type'] !== 'chatTypeBasicGroup' && chat.type['@type'] !== 'chatTypeSupergroup') {
+    if (chat && chat.type?.['@type'] !== 'chatTypeBasicGroup' && chat.type?.['@type'] !== 'chatTypeSupergroup') {
         return null;
     }
 

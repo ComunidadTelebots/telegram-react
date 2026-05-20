@@ -175,7 +175,7 @@ class ForwardDialog extends React.Component {
         if (!message) return null;
 
         const { can_be_forwarded, content } = message;
-        if (!can_be_forwarded && content['@type'] === 'messageChatChangePhoto') {
+        if (!can_be_forwarded && content && content['@type'] === 'messageChatChangePhoto') {
             const { photo } = content;
             if (!photo) return null;
 
@@ -544,10 +544,6 @@ ForwardDialog.propTypes = {
     inputMessageContent: PropTypes.object
 };
 
-const enhance = compose(
-    withStyles(styles, { withTheme: true }),
-    withTranslation(),
-    withSnackbar
-);
+const enhance = compose(withStyles(styles, { withTheme: true }), withTranslation(), withSnackbar);
 
 export default enhance(ForwardDialog);
