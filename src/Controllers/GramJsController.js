@@ -643,6 +643,8 @@ class GramJsController extends EventEmitter {
                 return this._setChatDescription(req);
             case 'leaveChat':
                 return this._leaveChat(req);
+            case 'getInviteLink':
+                return this._getInviteLink(req);
 
             // ── Acciones ──────────────────────────────────────────────────────
             case 'sendChatAction':
@@ -2101,6 +2103,18 @@ class GramJsController extends EventEmitter {
             return { '@type': 'ok' };
         } catch (e) {
             console.error('[GramJs] leaveChat error', e);
+        }
+        return null;
+    };
+
+    _getInviteLink = async req => {
+        const { chat_id } = req;
+        try {
+            const inputPeer = tdlibChatIdToInputPeer(chat_id, this._entityCache);
+            const result = await this.client.invoke(new Api.messages.ExportChatInvite({ peer: inputPeer }));
+            return { '@type': 'chatInviteLink', invite_link: result.link };
+        } catch (e) {
+            console.error('[GramJs] getInviteLink error', e);
         }
         return null;
     };

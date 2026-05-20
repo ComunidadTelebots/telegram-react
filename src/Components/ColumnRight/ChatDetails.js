@@ -394,6 +394,20 @@ class ChatDetails extends React.Component {
         this.setState({ editingDescription: false });
     };
 
+    handleCopyInviteLink = async () => {
+        const { chatId } = this.props;
+        try {
+            const result = await TdLibController.send({ '@type': 'getInviteLink', chat_id: chatId });
+            if (result && result.invite_link) {
+                copy(result.invite_link);
+                const { enqueueSnackbar } = this.props;
+                if (enqueueSnackbar) enqueueSnackbar('Invite link copied', { variant: 'info', autoHideDuration: 2000 });
+            }
+        } catch (e) {
+            console.error('getInviteLink error', e);
+        }
+    };
+
     getContentHeight = () => {
         if (!this.chatDetailsListRef) return 0;
 
@@ -593,6 +607,20 @@ class ChatDetails extends React.Component {
                             <List>
                                 {!isMe && <NotificationsListItem chatId={chatId} />}
                                 {isGroup && <MoreListItem chatId={chatId} />}
+                                {isAdmin && isGroup && (
+                                    <ListItem button className={classes.listItem} onClick={this.handleCopyInviteLink}>
+                                        <ListItemIcon>
+                                            <InsertLinkIcon />
+                                        </ListItemIcon>
+                                        <ListItemText
+                                            primary={
+                                                <Typography color='primary' variant='inherit' noWrap>
+                                                    Copy Invite Link
+                                                </Typography>
+                                            }
+                                        />
+                                    </ListItem>
+                                )}
                                 {isPrivateChat(chatId) && !isSecret && !isMe && (
                                     <ListItem button className={classes.listItem} onClick={this.handleCreateSecretChat}>
                                         <ListItemIcon>
