@@ -1840,7 +1840,7 @@ export function hasMention(message) {
 }
 
 export function hasPinnedMessage(message) {
-    return message && message.content['@type'] === 'messagePinMessage';
+    return message && message.content && message.content['@type'] === 'messagePinMessage';
 }
 
 export function isMessageMuted(message) {

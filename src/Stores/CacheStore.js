@@ -158,27 +158,28 @@ class CacheStore extends EventEmitter {
                 }
             }
 
-            switch (type['@type']) {
-                case 'chatTypeBasicGroup': {
-                    const basicGroup = BasicGroupStore.get(type.basic_group_id);
-                    if (basicGroup) {
-                        basicGroupMap.set(basicGroup.id, basicGroup);
+            if (type)
+                switch (type['@type']) {
+                    case 'chatTypeBasicGroup': {
+                        const basicGroup = BasicGroupStore.get(type.basic_group_id);
+                        if (basicGroup) {
+                            basicGroupMap.set(basicGroup.id, basicGroup);
+                        }
+                    }
+                    case 'chatTypePrivate':
+                    case 'chatTypeSecret': {
+                        const user = UserStore.get(type.user_id);
+                        if (user) {
+                            userMap.set(user.id, user);
+                        }
+                    }
+                    case 'chatTypeSupergroup': {
+                        const supergroup = SupergroupStore.get(type.supergroup_id);
+                        if (supergroup) {
+                            supergroupMap.set(supergroup.id, supergroup);
+                        }
                     }
                 }
-                case 'chatTypePrivate':
-                case 'chatTypeSecret': {
-                    const user = UserStore.get(type.user_id);
-                    if (user) {
-                        userMap.set(user.id, user);
-                    }
-                }
-                case 'chatTypeSupergroup': {
-                    const supergroup = SupergroupStore.get(type.supergroup_id);
-                    if (supergroup) {
-                        supergroupMap.set(supergroup.id, supergroup);
-                    }
-                }
-            }
 
             if (last_message) {
                 const { sender_user_id } = last_message;

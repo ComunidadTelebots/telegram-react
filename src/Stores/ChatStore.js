@@ -231,22 +231,23 @@ class ChatStore extends EventEmitter {
                 if (chat) {
                     this.assign(chat, { photo });
 
-                    switch (chat.type['@type']) {
-                        case 'chatTypeBasicGroup': {
-                            break;
-                        }
-                        case 'chatTypeSupergroup': {
-                            break;
-                        }
-                        case 'chatTypePrivate':
-                        case 'chatTypeSecret': {
-                            const user = UserStore.get(chat.type.user_id);
-                            if (user) {
-                                UserStore.assign(user, { profile_photo: update.photo });
+                    if (chat.type)
+                        switch (chat.type['@type']) {
+                            case 'chatTypeBasicGroup': {
+                                break;
                             }
-                            break;
+                            case 'chatTypeSupergroup': {
+                                break;
+                            }
+                            case 'chatTypePrivate':
+                            case 'chatTypeSecret': {
+                                const user = UserStore.get(chat.type.user_id);
+                                if (user) {
+                                    UserStore.assign(user, { profile_photo: update.photo });
+                                }
+                                break;
+                            }
                         }
-                    }
                 }
 
                 this.emitFastUpdate(update);
