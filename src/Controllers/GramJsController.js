@@ -313,7 +313,25 @@ class GramJsController extends EventEmitter {
             if (raw.chats) raw.chats.forEach(c => this._cacheEntity(c));
 
             const tdUpdate = translateUpdate(raw);
-            if (tdUpdate) this._emitUpdate(tdUpdate);
+            if (tdUpdate) {
+                this._emitUpdate(tdUpdate);
+                // When a new message arrives, also update the chat's last_message in the dialog list
+                if (tdUpdate['@type'] === 'updateNewMessage') {
+                    const { message } = tdUpdate;
+                    if (message) {
+                        const chat = this._chatCache.get(message.chat_id);
+                        if (chat) {
+                            chat.last_message = message;
+                        }
+                        this._emitUpdate({
+                            '@type': 'updateChatLastMessage',
+                            chat_id: message.chat_id,
+                            last_message: message,
+                            order: String(message.date)
+                        });
+                    }
+                }
+            }
         });
     };
 

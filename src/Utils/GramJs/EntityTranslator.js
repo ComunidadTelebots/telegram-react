@@ -530,6 +530,7 @@ export function translateMessage(msg, chatId) {
                   reply_info: null
               }
             : null,
+        reply_to_message_id: msg.replyTo ? msg.replyTo.replyToMsgId || 0 : 0,
         reply_to: msg.replyTo
             ? { '@type': 'messageReplyToMessage', chat_id: chatId, message_id: msg.replyTo.replyToMsgId || 0 }
             : null,
