@@ -26,6 +26,7 @@ import StubPage from './Components/StubPage';
 import registerServiceWorker from './registerServiceWorker';
 import { isMobile } from './Utils/Common';
 import { OPTIMIZATIONS_FIRST_START } from './Constants';
+import NotificationManager from './Utils/NotificationManager';
 import ChatStore from './Stores/ChatStore';
 import UserStore from './Stores/UserStore';
 import ApplicationStore from './Stores/ApplicationStore';
@@ -90,6 +91,7 @@ class TelegramApp extends Component {
         ApplicationStore.on('updateAuthorizationState', this.onUpdateAuthorizationState);
         ApplicationStore.on('updateFatalError', this.onUpdateFatalError);
         TdLibController.on('clientUpdate', this.onClientUpdate);
+        NotificationManager.init();
     }
 
     componentWillUnmount() {
@@ -100,6 +102,7 @@ class TelegramApp extends Component {
         ApplicationStore.off('updateAuthorizationState', this.onUpdateAuthorizationState);
         ApplicationStore.off('updateFatalError', this.onUpdateFatalError);
         TdLibController.off('clientUpdate', this.onClientUpdate);
+        NotificationManager.destroy();
     }
 
     onClientUpdate = update => {
