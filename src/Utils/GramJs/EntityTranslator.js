@@ -656,6 +656,14 @@ export function translateReactions(raw) {
     };
 }
 
+function makeCaption(msg) {
+    return {
+        '@type': 'formattedText',
+        text: msg.message || '',
+        entities: (msg.entities || []).map(translateTextEntity).filter(Boolean)
+    };
+}
+
 function translateMessageContent(msg) {
     const msgCls = msg.className || msg._;
 
@@ -685,11 +693,7 @@ function translateMessageContent(msg) {
         return {
             '@type': 'messagePhoto',
             photo: translatePhoto(media.photo),
-            caption: {
-                '@type': 'formattedText',
-                text: msg.message || '',
-                entities: []
-            },
+            caption: makeCaption(msg),
             is_secret: !!media.ttlSeconds
         };
     }
@@ -712,7 +716,7 @@ function translateMessageContent(msg) {
             return {
                 '@type': 'messageAnimation',
                 animation: translateAnimation(doc),
-                caption: { '@type': 'formattedText', text: msg.message || '', entities: [] },
+                caption: makeCaption(msg),
                 is_secret: false
             };
         if (isVideoNote) {
@@ -737,7 +741,7 @@ function translateMessageContent(msg) {
             return {
                 '@type': 'messageVideo',
                 video: translateVideo(doc),
-                caption: { '@type': 'formattedText', text: msg.message || '', entities: [] },
+                caption: makeCaption(msg),
                 is_secret: false
             };
         if (isVoice) {
@@ -760,17 +764,13 @@ function translateMessageContent(msg) {
             return {
                 '@type': 'messageAudio',
                 audio: translateAudio(doc),
-                caption: { '@type': 'formattedText', text: msg.message || '', entities: [] }
+                caption: makeCaption(msg)
             };
 
         return {
             '@type': 'messageDocument',
             document: translateDocument(doc),
-            caption: {
-                '@type': 'formattedText',
-                text: msg.message || '',
-                entities: []
-            }
+            caption: makeCaption(msg)
         };
     }
 
