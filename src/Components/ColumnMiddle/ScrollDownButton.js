@@ -22,10 +22,11 @@ const styles = theme => ({
 
 class ScrollDownButton extends React.Component {
     render() {
-        const { classes, onClick } = this.props;
+        const { classes, onClick, unreadCount } = this.props;
 
         return (
             <div className={classNames('scroll-down-button', classes.scrollDownButton)}>
+                {unreadCount > 0 && <div className='scroll-down-badge'>{unreadCount > 99 ? '99+' : unreadCount}</div>}
                 <IconButton disableRipple={true} onMouseDown={onClick}>
                     <ArrowDownwardIcon />
                 </IconButton>
@@ -35,7 +36,8 @@ class ScrollDownButton extends React.Component {
 }
 
 ScrollDownButton.propTypes = {
-    onClick: PropTypes.func.isRequired
+    onClick: PropTypes.func.isRequired,
+    unreadCount: PropTypes.number
 };
 
 export default withStyles(styles)(ScrollDownButton);

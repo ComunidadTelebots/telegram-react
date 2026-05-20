@@ -1352,7 +1352,9 @@ class MessagesList extends React.Component {
                 {jumpToUnreadVisible && (
                     <JumpToUnreadButton onClick={this.handleJumpToUnreadClick} unreadCount={unreadCount} />
                 )}
-                {scrollDownVisible && <ScrollDownButton onClick={this.handleScrollDownClick} />}
+                {scrollDownVisible && (
+                    <ScrollDownButton onClick={this.handleScrollDownClick} unreadCount={unreadCount} />
+                )}
                 <PinnedMessage chatId={chatId} />
                 <FilesDropTarget />
                 <StickersHint />
