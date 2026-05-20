@@ -1,6 +1,20 @@
 # Changelog
 
-## [Unreleased] — 2026-05-19 (sesión actual)
+## [Unreleased] — 2026-05-20
+
+### Added
+- **Silenciar/activar notificaciones de chat** — `setChatNotificationSettings` ahora llama a `account.UpdateNotifySettings` de GramJS. Emite `updateChatNotificationSettings` para reflejar el cambio localmente de forma inmediata. Archivo: `GramJsController.js`.
+- **Marcar chat como no leído** — `toggleChatIsMarkedAsUnread` llama a `messages.MarkDialogUnread` y emite `updateChatIsMarkedAsUnread`. Archivo: `GramJsController.js`.
+- **Leer todas las menciones** — `readAllChatMentions` llama a `messages.ReadMentions`. Archivo: `GramJsController.js`.
+- **Reportar mensajes** — nuevo método `reportChat` que mapea los motivos TDLib a `InputReportReason*` de MTProto. Nueva opción "Report" en el menú contextual de mensajes entrantes. Archivos: `GramJsController.js`, `Message.js`.
+- **Dados animados** (`messageDice`) — nuevo componente `Dice.js` que muestra el emoji del dado con la cara correspondiente al valor (🎲 → ⚀‒⚅) y animación CSS de aterrizaje. Archivos: `Dice.js`, `Dice.css`, `Utils/Message.js`.
+- **Facturas / pagos** (`messageInvoice`) — nuevo componente `Invoice.js` que muestra título, descripción, precio formateado con `Intl.NumberFormat` y badge TEST. Archivos: `Invoice.js`, `Invoice.css`, `Utils/Message.js`.
+- **Botón "Ir a no leídos"** — `JumpToUnreadButton` flotante con contador de mensajes no leídos. Aparece encima del botón de bajar al final cuando hay un separador de no leídos y el usuario está scrolleado arriba. Archivos: `JumpToUnreadButton.js`, `JumpToUnreadButton.css`, `MessagesList.js`.
+- **Botón dedicado de Stickers en InputBox** — icono `TagFaces` junto al emoji que abre el picker directamente en la pestaña de stickers mediante el evento `clientUpdateOpenStickersPanel`. `EmojiPickerButton` escucha ese evento y activa la pestaña automáticamente. Archivos: `InputBoxControl.js`, `EmojiPickerButton.js`.
+
+---
+
+## [2026-05-19]
 
 ### Added
 - **Spoiler de texto** (`textEntityTypeSpoiler`) — el texto aparece borroso y se revela al hacer clic. Implementado en `Utils/Message.js` con CSS en `Message.css`.
