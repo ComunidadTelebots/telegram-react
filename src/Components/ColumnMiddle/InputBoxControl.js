@@ -19,6 +19,7 @@ import SendIcon from '../../Assets/Icons/Send';
 import MicIcon from '@material-ui/icons/Mic';
 import StopIcon from '@material-ui/icons/Stop';
 import ScheduleIcon from '@material-ui/icons/Schedule';
+import TagFacesIcon from '@material-ui/icons/TagFaces';
 import Dialog from '@material-ui/core/Dialog';
 import DialogTitle from '@material-ui/core/DialogTitle';
 import DialogContent from '@material-ui/core/DialogContent';
@@ -1312,6 +1313,15 @@ class InputBoxControl extends Component {
                                     }>
                                     <EmojiPickerButton onSelect={this.handleEmojiSelect} />
                                 </React.Suspense>
+                                <IconButton
+                                    className='inputbox-icon-button'
+                                    aria-label='Stickers'
+                                    title='Stickers'
+                                    onClick={() =>
+                                        TdLibController.clientUpdate({ '@type': 'clientUpdateOpenStickersPanel' })
+                                    }>
+                                    <TagFacesIcon />
+                                </IconButton>
                             </div>
                             <div className='inputbox-middle-column'>
                                 <div

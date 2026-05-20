@@ -496,6 +496,22 @@ class Message extends Component {
         }
     };
 
+    handleReport = async event => {
+        const { chatId, messageId } = this.props;
+        this.handleCloseContextMenu(event);
+        try {
+            await TdLibController.send({
+                '@type': 'reportChat',
+                chat_id: chatId,
+                message_ids: [messageId],
+                reason: { '@type': 'chatReportReasonSpam' },
+                text: ''
+            });
+        } catch (e) {
+            console.warn('[Message] reportChat error', e);
+        }
+    };
+
     render() {
         // console.log('[m] render', this.props.messageId);
         const { t, classes, chatId, messageId, showUnreadSeparator, showTail, showTitle, showAuthor } = this.props;
@@ -562,6 +578,7 @@ class Message extends Component {
                 ? !!(message.content.text && message.content.text.text)
                 : !!(message.content.caption && message.content.caption.text);
         const canBeTranslated = canBeCopied;
+        const canBeReported = !message.is_outgoing;
         const withBubble =
             message.content['@type'] !== 'messageSticker' && message.content['@type'] !== 'messageVideoNote';
 
@@ -643,6 +660,7 @@ class Message extends Component {
                         {canBeEdited && <MenuItem onClick={this.handleEdit}>{t('Edit')}</MenuItem>}
                         {canBeDeleted && <MenuItem onClick={this.handleDelete}>{t('Delete')}</MenuItem>}
                         {canBeTranslated && <MenuItem onClick={this.handleTranslate}>{t('TranslateMessage')}</MenuItem>}
+                        {canBeReported && <MenuItem onClick={this.handleReport}>{t('ReportMessage')}</MenuItem>}
                     </MenuList>
                 </Popover>
             </div>

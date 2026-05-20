@@ -45,6 +45,8 @@ import MessageStore from '../Stores/MessageStore';
 import UserStore from '../Stores/UserStore';
 import TdLibController from '../Controllers/TdLibController';
 import Call from '../Components/Message/Media/Call';
+import Dice from '../Components/Message/Media/Dice';
+import Invoice from '../Components/Message/Media/Invoice';
 
 function getAuthor(message) {
     if (!message) return null;
@@ -384,6 +386,10 @@ function getMedia(message, openMedia, hasTitle = false, hasCaption = false) {
             );
         case 'messageContact':
             return <Contact chatId={chat_id} messageId={id} contact={content.contact} openMedia={openMedia} />;
+        case 'messageDice':
+            return <Dice chatId={chat_id} messageId={id} dice={content.dice} />;
+        case 'messageInvoice':
+            return <Invoice chatId={chat_id} messageId={id} invoice={content} />;
         case 'messageDocument':
             return <Document chatId={chat_id} messageId={id} document={content.document} openMedia={openMedia} />;
         case 'messageGame':

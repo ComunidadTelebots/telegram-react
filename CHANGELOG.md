@@ -102,31 +102,123 @@
 - `GramJsController`: implementados `_downloadFile`, `_emitUpdateFile` y `_readFile` para descarga y lectura de archivos multimedia vía GramJS (`InputPhotoFileLocation` / `InputDocumentFileLocation`)
 - `public/index.html`: polyfill `window.process` para contextos eval/worker de GramJS (`path-browserify`)
 
-### Roadmap de Brechas con Telegram Android (Planificado)
+### Mejoras pendientes — Auditoría 2026-05-20
 
-#### Alta prioridad
-- ~~**Nota de voz**~~ ✅ implementado — grabación con `MediaRecorder` (webm/opus), botón en InputBoxControl, envío vía `GramJS sendFile`
-- ~~**Reacciones a mensajes**~~ ✅ implementado — `Reactions.js` renderiza burbujas de emoji con contador; picker rápido (6 emojis) al pulsar "+"; toggle para añadir/quitar; `messages.SendReaction` vía GramJS; `updateMessageReactions` en UpdateTranslator, MessageStore y EntityTranslator
+Resultado de auditoría exhaustiva del código. Organizado por prioridad real de impacto en el usuario.
 
-#### Prioridad media
-- ~~**Copiar texto del mensaje**~~ ✅ implementado — ítem "Copy" en menú contextual con `navigator.clipboard.writeText`
-- ~~**Mensajes programados**~~ ✅ implementado — botón de reloj (⏰) en InputBoxControl abre un dialog con `datetime-local`; `schedule_date` (Unix timestamp) se pasa a `_sendMessage` y `_sendFile` en GramJsController vía `scheduleDate` de GramJS
-- **Crear grupos y canales desde la UI** — diálogo de creación conectado a `channels.CreateChannel` / `messages.CreateChat`
-- **Persistencia offline (IndexedDB)** — capa de caché con `localForage` para evitar descargas completas del servidor tras cada refresco
+---
 
-#### Prioridad baja
-- **Topics en supergrupos** — soporte de `message_thread_id` en historial y envío
-- **Carpetas de chats** (chat filters) — `DialogFilter` de MTProto, panel de gestión en el sidebar
-- **Stickers animados (TGS)** — reproductor Lottie/WASM para stickers y reacciones animadas
-- **Soporte multicuenta** — arquitectura para alternar sesiones activas de distintos números
-- **Llamadas y videollamadas WebRTC** — flujos VoIP/audio/video para llamadas de grupo
+#### Prioridad CRÍTICA — Funciones rotas que impactan el uso diario
 
-#### Planificado anteriormente
-- **Persistencia de Base de Datos Offline (IndexedDB):** Implementación de una capa de base de datos persistente en el navegador utilizando `localForage` / `IndexedDB` para evitar descargas completas del servidor tras cada refresco de la página.
-- **Gestión Completa de Descargas / Subidas de Archivos:** Integrar `client.downloadMedia()` de GramJS para procesar descargas progresivas y de gran tamaño con barra de progreso interactiva en lugar de no-ops.
-- **Stickers Animados (TGS) y Reacciones Dinámicas:** Integración de un reproductor vectorial en WebAssembly (Lottie/TGS) para soportar stickers en movimiento y animaciones enriquecidas de reacciones a mensajes.
-- **Soporte Multicuenta:** Arquitectura para alternar y controlar múltiples sesiones activas asociadas a diferentes números telefónicos en caliente.
-- **Llamadas y Videollamadas WebRTC:** Mapear flujos de VoIP y audio/video en tiempo real para emular llamadas de grupo.
+- **Silenciar/activar notificaciones de chat** — `setChatNotificationSettings` en `GramJsController.js` retorna `{}` vacío sin hacer nada. Archivo: `src/Controllers/GramJsController.js` ~línea 628.
+- **Marcar chat como no leído** — `toggleChatIsMarkedAsUnread` retorna `{}` vacío. Archivo: `src/Controllers/GramJsController.js` ~línea 630.
+- **Leer todas las menciones** — `readAllChatMentions` retorna `{}` vacío. Archivo: `src/Controllers/GramJsController.js` ~línea 614.
+- **Login por código QR** — `requestQrCodeAuthentication` retorna `{}` sin implementación. Archivo: `src/Controllers/GramJsController.js` ~línea 567.
+
+---
+
+#### Prioridad ALTA — Features esenciales de un cliente moderno
+
+**Caja de entrada (InputBoxControl):**
+- **Botón de stickers visible** — el picker existe (`StickersPicker`) pero no hay un botón en el render que lo abra. Solo se activa via `onClientUpdateStickerSend` sin punto de entrada en la UI.
+- **Enviar sin notificación** — no hay checkbox/opción "Send without sound" al enviar mensajes.
+- **Mensajes con autodestrucción (TTL)** — no hay UI para seleccionar temporizador de autodestrucción al enviar fotos/vídeos en chats secretos.
+
+**Menú contextual de mensajes (Message.js):**
+- **Reportar mensaje** — no existe opción "Report" en el menú contextual.
+- **"Ver en el chat"** para mensajes reenviados — no implementado.
+- **Agregar reacción desde menú** — solo existe `Reactions.js` en el cuerpo del mensaje, no accesible desde el menú contextual.
+
+**Lista de mensajes (MessagesList.js):**
+- **Botón "Ir al primer no leído"** — existe `separatorMessageId` y `UnreadSeparator` pero no hay botón flotante para saltar al separador de no leídos.
+- **Botón "Bajar al final"** (`ScrollDownButton`) — existe el componente importado pero verificar si se renderiza correctamente en todos los casos.
+
+**Búsqueda (ColumnLeft):**
+- **Filtros de búsqueda por tipo** — no hay tabs "Fotos / Vídeos / Documentos / Links / Audio" en los resultados de búsqueda.
+- **Búsqueda por fecha** — no hay selector de rango de fechas.
+- **Búsqueda por remitente** — no hay opción `from:usuario`.
+
+---
+
+#### Prioridad ALTA — Tipos de mensajes no renderizados
+
+Los siguientes tipos de `content` de TDLib no tienen componente en `src/Components/Message/Media/` y se muestran en blanco o se ignoran:
+
+- **`messageDice`** — dados/dados animados (emojis interactivos como 🎲🎯🏀). Muy usados.
+- **`messageInvoice`** — pagos y facturas de bots de tienda.
+- **`messageStory`** — historias reenviadas (Telegram 7.4+).
+- **`messageGiveaway`** / **`messageGiveawayWinners`** — sorteos de Telegram Premium.
+- **`messagePassportData`** — datos de Telegram Passport.
+- **`messageProximityAlertTriggered`** — alerta de proximidad en grupos con ubicación en vivo.
+
+---
+
+#### Prioridad MEDIA — Mejoras de UX relevantes
+
+**Visor de medios (Viewer):**
+- **Información del archivo** — no muestra tamaño, fecha ni fuente del archivo en el visor.
+- **Navegación por teclado** — las teclas ← → no navegan entre fotos del álbum en el visor.
+- **Control de velocidad en vídeos** — no hay selector 0.5×, 1×, 1.5×, 2×.
+- **"Copiar imagen"** al portapapeles — solo existe descarga, no copia directa.
+- **Picture-in-Picture** — no hay soporte PiP para vídeos.
+
+**Panel derecho (ChatDetails / ColumnRight):**
+- **Múltiples fotos de perfil** — solo muestra la foto actual, no el historial de fotos de perfil.
+- **Herramientas de administrador** — no hay UI para expulsar, silenciar o banear miembros.
+- **Invitaciones pendientes** — no hay vista de solicitudes de unión (`join requests`).
+- **Edición de descripción de canal/grupo** — no hay formulario de edición inline.
+- **Estadísticas de canal** — no hay pestaña de estadísticas para canales.
+
+**Información/acciones de chat:**
+- **"Bloquear usuario"** — no exportado en `Actions/Client.js`, no hay botón en la UI de perfil.
+- **"Obtener enlace al mensaje"** — no existe `getMessageLink` en `Actions/Client.js`.
+- **Reenvío de mensajes programados** — no hay UI para ver y gestionar mensajes programados existentes.
+
+---
+
+#### Prioridad BAJA — Funciones avanzadas / futuro
+
+- **Topics en supergrupos** — soporte de `message_thread_id` en historial, envío y UI de hilos.
+- **Llamadas y videollamadas WebRTC** — `Call.js` solo muestra información estática; no hay flujo VoIP real.
+- **Web Apps (bots)** — `messageWebAppDataReceived` no implementado; no se pueden abrir Mini Apps de Telegram desde mensajes de bot.
+- **Grupos de notificaciones** — `setNotificationGroup` / `removeNotification` retornan `{}` en el controlador.
+- **Cancelación de descarga** — `cancelDownloadFile` retorna `{}`; no se puede cancelar una descarga en curso.
+- **Modo responsive / móvil** — `NativeAppControl.js` muestra "Work is in progress" en pantallas pequeñas.
+- **Autenticación en dos pasos visual** — no hay UI para configurar/cambiar la contraseña 2FA desde la app.
+- **Gestión de sesiones activas** — no hay panel para ver y cerrar otras sesiones de Telegram.
+
+---
+
+#### Deuda técnica interna
+
+- **`GramJsController._dispatch`**: ~20 casos retornan `{}` vacío sin implementación. Los más críticos están marcados arriba.
+- **`SharedMediaBase.js`**: 3 métodos virtuales lanzan `Error` si no se sobreescriben; documentar qué subclases deben implementarlos.
+- **`NativeAppControl.js`**: texto "Work is in progress" visible para usuarios móviles — reemplazar por diseño responsive real.
+- **Bloques `catch {}`** silenciosos en `AuthorizationStore`, `ChatStore`, `MessageCache`, `GramJsController` (8 casos) — añadir logging mínimo para facilitar depuración.
+- **Código comentado** en `CacheManager.js`, `Theme.js`, `MessagesList.js` — revisar si debe eliminarse o reactivarse.
+
+---
+
+#### Ya implementado ✅ (referencia)
+
+| Feature | Estado |
+|---|---|
+| Nota de voz (grabación + envío) | ✅ |
+| Reacciones a mensajes | ✅ |
+| Copiar texto del mensaje | ✅ |
+| Mensajes programados | ✅ |
+| Spoiler de texto | ✅ |
+| Spoiler de medios (fotos) | ✅ |
+| Encuestas tipo Quiz | ✅ |
+| Múltiples mensajes fijados | ✅ |
+| Traducción de mensajes | ✅ |
+| Chats secretos (UI) | ✅ |
+| Multicuenta | ✅ |
+| Stickers animados TGS | ✅ |
+| Carpetas de chats | ✅ |
+| Caché offline de mensajes | ✅ |
+| Crear grupos y canales | ✅ |
+| Diseños de tema (Android, macOS, TDesktop…) | ✅ |
 
 ---
 

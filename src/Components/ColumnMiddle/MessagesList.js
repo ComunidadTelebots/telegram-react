@@ -15,6 +15,7 @@ import Message from '../Message/Message';
 import PinnedMessage from './PinnedMessage';
 import Placeholder from './Placeholder';
 import ScrollDownButton from './ScrollDownButton';
+import JumpToUnreadButton from './JumpToUnreadButton';
 import ServiceMessage from '../Message/ServiceMessage';
 import StickersHint from './StickersHint';
 import { throttle, getPhotoSize, itemsInView, historyEquals } from '../../Utils/Common';
@@ -1189,6 +1190,34 @@ class MessagesList extends React.Component {
         AppStore.setDragging(true);
     };
 
+    handleJumpToUnreadClick = () => {
+        const { separatorMessageId, history } = this.state;
+        if (!separatorMessageId) return;
+
+        const index = history.findIndex(m => m.id === separatorMessageId);
+        if (index < 0) return;
+
+        const el = this.itemsMap.get(index);
+        if (el && el.ref) {
+            el.ref.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        } else {
+            const list = this.listRef.current;
+            if (!list) return;
+            const items = list.querySelectorAll('[data-message-id]');
+            for (const item of items) {
+                if (Number(item.getAttribute('data-message-id')) === separatorMessageId) {
+                    item.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    break;
+                }
+            }
+            // fallback: scroll proporcional por posición en el historial
+            if (index >= 0) {
+                const fraction = index / history.length;
+                list.scrollTop = fraction * list.scrollHeight;
+            }
+        }
+    };
+
     handleScrollDownClick = event => {
         const { replyHistory } = this.state;
 
@@ -1248,6 +1277,10 @@ class MessagesList extends React.Component {
     render() {
         const { classes, chatId } = this.props;
         const { history, separatorMessageId, clearHistory, selectionActive, scrollDownVisible } = this.state;
+        const jumpToUnreadVisible = scrollDownVisible && separatorMessageId > 0;
+        const unreadCount = jumpToUnreadVisible
+            ? history.filter(m => m.id >= separatorMessageId && !m.is_outgoing).length
+            : 0;
 
         // console.log('[ml] render ', history);
 
@@ -1316,6 +1349,9 @@ class MessagesList extends React.Component {
                     </div>
                 </div>
                 <Placeholder />
+                {jumpToUnreadVisible && (
+                    <JumpToUnreadButton onClick={this.handleJumpToUnreadClick} unreadCount={unreadCount} />
+                )}
                 {scrollDownVisible && <ScrollDownButton onClick={this.handleScrollDownClick} />}
                 <PinnedMessage chatId={chatId} />
                 <FilesDropTarget />

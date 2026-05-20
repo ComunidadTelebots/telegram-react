@@ -611,7 +611,9 @@ class GramJsController extends EventEmitter {
             case 'viewMessages':
                 return this._viewMessages(req);
             case 'readAllChatMentions':
-                return {};
+                return this._readAllChatMentions(req);
+            case 'reportChat':
+                return this._reportChat(req);
 
             // ── Usuarios ──────────────────────────────────────────────────────
             case 'getUser':
@@ -625,9 +627,9 @@ class GramJsController extends EventEmitter {
             case 'toggleChatIsPinned':
                 return this._togglePin(req);
             case 'setChatNotificationSettings':
-                return {};
+                return this._setChatNotificationSettings(req);
             case 'toggleChatIsMarkedAsUnread':
-                return {};
+                return this._toggleChatIsMarkedAsUnread(req);
 
             // ── Búsqueda ──────────────────────────────────────────────────────
             case 'searchMessages':
@@ -1666,6 +1668,125 @@ class GramJsController extends EventEmitter {
 
     sendTdParameters = async () => {
         // No-op: en GramJS los parámetros se pasan al constructor del cliente
+    };
+
+    // ─── Notificaciones / estado de chat ────────────────────────────────────
+
+    _setChatNotificationSettings = async req => {
+        const { chat_id, notification_settings } = req;
+        try {
+            const inputPeer = tdlibChatIdToInputPeer(chat_id, this._entityCache);
+            const muteUntil = notification_settings?.mute_for
+                ? Math.floor(Date.now() / 1000) + notification_settings.mute_for
+                : notification_settings?.use_default_mute_for
+                ? 0
+                : 0;
+
+            await this.client.invoke(
+                new Api.account.UpdateNotifySettings({
+                    peer: new Api.InputNotifyPeer({ peer: inputPeer }),
+                    settings: new Api.InputPeerNotifySettings({
+                        muteUntil,
+                        showPreviews: notification_settings?.show_preview ?? true,
+                        silent: notification_settings?.mute_for > 0
+                    })
+                })
+            );
+
+            // Refleja el cambio en el store localmente
+            this._emitUpdate({
+                '@type': 'updateChatNotificationSettings',
+                chat_id,
+                notification_settings: {
+                    '@type': 'chatNotificationSettings',
+                    use_default_mute_for: false,
+                    mute_for: notification_settings?.mute_for ?? 0,
+                    use_default_sound: true,
+                    sound: '',
+                    use_default_show_preview: false,
+                    show_preview: notification_settings?.show_preview ?? true,
+                    use_default_disable_pinned_message_notifications: true,
+                    disable_pinned_message_notifications: false,
+                    use_default_disable_mention_notifications: true,
+                    disable_mention_notifications: false
+                }
+            });
+        } catch (e) {
+            console.error('[GramJs] setChatNotificationSettings error', e);
+        }
+        return {};
+    };
+
+    _toggleChatIsMarkedAsUnread = async req => {
+        const { chat_id, is_marked_as_unread } = req;
+        try {
+            const inputPeer = tdlibChatIdToInputPeer(chat_id, this._entityCache);
+            await this.client.invoke(
+                new Api.messages.MarkDialogUnread({
+                    peer: new Api.InputDialogPeer({ peer: inputPeer }),
+                    unread: is_marked_as_unread
+                })
+            );
+            this._emitUpdate({
+                '@type': 'updateChatIsMarkedAsUnread',
+                chat_id,
+                is_marked_as_unread
+            });
+        } catch (e) {
+            console.error('[GramJs] toggleChatIsMarkedAsUnread error', e);
+        }
+        return {};
+    };
+
+    _reportChat = async req => {
+        const { chat_id, message_ids, reason, text } = req;
+        try {
+            const inputPeer = tdlibChatIdToInputPeer(chat_id, this._entityCache);
+            let mtReason = new Api.InputReportReasonSpam();
+            if (reason) {
+                switch (reason['@type']) {
+                    case 'chatReportReasonViolence':
+                        mtReason = new Api.InputReportReasonViolence();
+                        break;
+                    case 'chatReportReasonPornography':
+                        mtReason = new Api.InputReportReasonPornography();
+                        break;
+                    case 'chatReportReasonChildAbuse':
+                        mtReason = new Api.InputReportReasonChildAbuse();
+                        break;
+                    case 'chatReportReasonCopyright':
+                        mtReason = new Api.InputReportReasonCopyright();
+                        break;
+                    case 'chatReportReasonUnrelatedLocation':
+                        mtReason = new Api.InputReportReasonGeoIrrelevant();
+                        break;
+                    default:
+                        mtReason = new Api.InputReportReasonSpam();
+                }
+            }
+            await this.client.invoke(
+                new Api.messages.Report({
+                    peer: inputPeer,
+                    id: message_ids || [],
+                    reason: mtReason,
+                    message: text || ''
+                })
+            );
+        } catch (e) {
+            console.error('[GramJs] reportChat error', e);
+        }
+        return {};
+    };
+
+    _readAllChatMentions = async req => {
+        const { chat_id } = req;
+        try {
+            const inputPeer = tdlibChatIdToInputPeer(chat_id, this._entityCache);
+            await this.client.invoke(new Api.messages.ReadMentions({ peer: inputPeer }));
+        } catch (e) {
+            console.error('[GramJs] readAllChatMentions error', e);
+        }
+        return {};
     };
 }
 

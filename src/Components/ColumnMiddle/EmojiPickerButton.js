@@ -59,12 +59,21 @@ class EmojiPickerButton extends React.Component {
     componentDidMount() {
         ApplicationStore.on('clientUpdateThemeChange', this.onClientUpdateChange);
         LocalizationStore.on('clientUpdateLanguageChange', this.onClientUpdateChange);
+        TdLibController.on('clientUpdateOpenStickersPanel', this.onClientUpdateOpenStickersPanel);
     }
 
     componentWillUnmount() {
         ApplicationStore.off('clientUpdateThemeChange', this.onClientUpdateChange);
         LocalizationStore.off('clientUpdateLanguageChange', this.onClientUpdateChange);
+        TdLibController.off('clientUpdateOpenStickersPanel', this.onClientUpdateOpenStickersPanel);
     }
+
+    onClientUpdateOpenStickersPanel = () => {
+        this.updatePicker(true);
+        this.loadStickerSets().then(() => {
+            this.handleStickersClick();
+        });
+    };
 
     onClientUpdateChange = update => {
         this.picker = null;
@@ -287,9 +296,6 @@ class EmojiPickerButton extends React.Component {
     }
 }
 
-const enhance = compose(
-    withStyles(styles, { withTheme: true }),
-    withTranslation()
-);
+const enhance = compose(withStyles(styles, { withTheme: true }), withTranslation());
 
 export default enhance(EmojiPickerButton);
