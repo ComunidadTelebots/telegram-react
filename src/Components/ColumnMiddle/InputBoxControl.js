@@ -154,6 +154,10 @@ class InputBoxControl extends Component {
             return true;
         }
 
+        if (nextState.silentSend !== this.state.silentSend) {
+            return true;
+        }
+
         return false;
     }
 
