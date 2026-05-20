@@ -668,6 +668,8 @@ class GramJsController extends EventEmitter {
                 return this._setChatNotificationSettings(req);
             case 'toggleChatIsMarkedAsUnread':
                 return this._toggleChatIsMarkedAsUnread(req);
+            case 'setChatDraftMessage':
+                return this._setChatDraftMessage(req);
 
             // ── Búsqueda ──────────────────────────────────────────────────────
             case 'searchMessages':
@@ -1892,6 +1894,30 @@ class GramJsController extends EventEmitter {
             });
         } catch (e) {
             console.error('[GramJs] toggleChatIsMarkedAsUnread error', e);
+        }
+        return {};
+    };
+
+    _setChatDraftMessage = async req => {
+        const { chat_id, draft_message } = req;
+        try {
+            const inputPeer = tdlibChatIdToInputPeer(chat_id, this._entityCache);
+            const text = draft_message?.input_message_text?.text?.text || '';
+            const replyToMsgId = draft_message?.reply_to_message_id || 0;
+            await this.client.invoke(
+                new Api.messages.SaveDraft({
+                    peer: inputPeer,
+                    message: text,
+                    ...(replyToMsgId ? { replyToMsgId } : {})
+                })
+            );
+            // Update local store so draft persists across chat switches
+            const chat = this._chatCache.get(chat_id);
+            if (chat) {
+                chat.draft_message = draft_message || null;
+            }
+        } catch (e) {
+            console.error('[GramJs] setChatDraftMessage error', e);
         }
         return {};
     };

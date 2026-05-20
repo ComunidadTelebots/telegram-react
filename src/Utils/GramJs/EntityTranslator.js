@@ -701,6 +701,44 @@ function translateMessageContent(msg) {
         };
     }
 
+    // Web page preview
+    if (mediaClass === 'MessageMediaWebPage' || mediaClass === 'messageMediaWebPage') {
+        const wp = media.webpage;
+        const wpCls = wp?.className || wp?._;
+        const webPage =
+            wpCls === 'WebPage'
+                ? {
+                      '@type': 'webPage',
+                      url: wp.url || '',
+                      display_url: wp.displayUrl || wp.url || '',
+                      type: wp.type || '',
+                      site_name: wp.siteName || '',
+                      title: wp.title || '',
+                      description: wp.description
+                          ? { '@type': 'formattedText', text: wp.description, entities: [] }
+                          : null,
+                      photo: wp.photo ? translatePhoto(wp.photo) : null,
+                      embed_url: wp.embedUrl || '',
+                      embed_type: wp.embedType || '',
+                      embed_width: Number(wp.embedWidth || 0),
+                      embed_height: Number(wp.embedHeight || 0),
+                      duration: Number(wp.duration || 0),
+                      author: wp.author || '',
+                      document: null,
+                      instant_view_version: wp.hasLargeMedia ? 1 : 0
+                  }
+                : null;
+        return {
+            '@type': 'messageText',
+            text: {
+                '@type': 'formattedText',
+                text: msg.message || '',
+                entities: (msg.entities || []).map(translateTextEntity).filter(Boolean)
+            },
+            web_page: webPage
+        };
+    }
+
     // Localización
     if (mediaClass === 'MessageMediaGeo' || mediaClass === 'messageMediaGeo') {
         return {
