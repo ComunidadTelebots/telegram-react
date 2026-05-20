@@ -388,6 +388,7 @@ export function getChatDisableMentionNotifications(chatId) {
 export function getScopeNotificationSettings(chatId) {
     const chat = ChatStore.get(chatId);
     if (!chat) return null;
+    if (!chat.type) return null;
 
     switch (chat.type['@type']) {
         case 'chatTypePrivate':
@@ -766,7 +767,7 @@ function isMeChat(chatId) {
     const chat = ChatStore.get(chatId);
     if (!chat) return fallbackValue;
 
-    switch (chat.type['@type']) {
+    switch (chat.type?.['@type']) {
         case 'chatTypeBasicGroup':
         case 'chatTypeSupergroup': {
             return false;
@@ -785,6 +786,7 @@ function getGroupChatMembers(chatId) {
 
     const chat = ChatStore.get(chatId);
     if (!chat) return fallbackValue;
+    if (!chat.type) return fallbackValue;
 
     switch (chat.type['@type']) {
         case 'chatTypeBasicGroup': {

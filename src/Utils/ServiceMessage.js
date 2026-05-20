@@ -204,8 +204,9 @@ function getServiceMessageContent(message, openUser = false) {
                     return accumulator === null ? [current] : [...accumulator, separator, current];
                 }, null);
 
+            const memberIds = content.member_user_ids || [];
             if (isOutgoing) {
-                return content.member_user_ids.length === 1 && content.member_user_ids[0] === UserStore.getMyId() ? (
+                return memberIds.length === 1 && memberIds[0] === UserStore.getMyId() ? (
                     'You joined the group'
                 ) : (
                     <>
@@ -215,7 +216,7 @@ function getServiceMessageContent(message, openUser = false) {
                 );
             }
 
-            return content.member_user_ids.length === 1 && content.member_user_ids[0] === message.sender_user_id ? (
+            return memberIds.length === 1 && memberIds[0] === message.sender_user_id ? (
                 <>
                     <MessageAuthor userId={sender_user_id} openUser={openUser} />
                     {' joined the group'}

@@ -598,7 +598,7 @@ function filterDuplicateMessages(result, history) {
 }
 
 function filterMessages(messages) {
-    return messages.filter(x => x.content['@type'] !== 'messageChatUpgradeTo');
+    return messages.filter(x => x.content && x.content['@type'] !== 'messageChatUpgradeTo');
 }
 
 function getContent(message, t = key => key) {
@@ -716,7 +716,7 @@ function getContent(message, t = key => key) {
         case 'messagePoll': {
             const { poll } = content;
 
-            return '📊 ' + (poll.question || t('Poll')) + caption;
+            return '📊 ' + (poll ? poll.question || t('Poll') : t('Poll')) + caption;
         }
         case 'messagePinMessage': {
             return getServiceMessageContent(message);

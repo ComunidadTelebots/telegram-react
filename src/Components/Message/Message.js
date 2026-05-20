@@ -638,10 +638,11 @@ class Message extends Component {
         const canBeDeleted = message.can_be_deleted_only_for_self || message.can_be_deleted_for_all_users;
         const canBeSelected = !MessageStore.hasSelectedMessage(chatId, messageId);
         const canBeEdited = canMessageBeEdited(chatId, messageId);
+        const contentType = message.content ? message.content['@type'] : null;
         const canBeCopied =
-            message.content['@type'] === 'messageText'
+            contentType === 'messageText'
                 ? !!(message.content.text && message.content.text.text)
-                : !!(message.content.caption && message.content.caption.text);
+                : !!(message.content && message.content.caption && message.content.caption.text);
         const canBeTranslated = canBeCopied;
         const canBeReported = !message.is_outgoing;
         const canBeBlocked = !message.is_outgoing && !!message.sender_user_id;
@@ -649,8 +650,7 @@ class Message extends Component {
         const forwardOriginType = message.forward_info?.origin?.['@type'];
         const canShowInChat = !!forwardOriginType && forwardOriginType === 'messageForwardOriginChannel';
         const canReplyInPrivate = !message.is_outgoing && !!message.sender_user_id && isGroupChat(chatId);
-        const withBubble =
-            message.content['@type'] !== 'messageSticker' && message.content['@type'] !== 'messageVideoNote';
+        const withBubble = contentType !== 'messageSticker' && contentType !== 'messageVideoNote';
 
         return (
             <div

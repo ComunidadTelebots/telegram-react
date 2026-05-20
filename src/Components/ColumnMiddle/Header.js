@@ -218,7 +218,7 @@ class Header extends Component {
 
     onUpdateSecretChat = update => {
         const chat = ChatStore.get(AppStore.getChatId());
-        if (!chat || chat.type['@type'] !== 'chatTypeSecret') return;
+        if (!chat || !chat.type || chat.type['@type'] !== 'chatTypeSecret') return;
         if (chat.type.secret_chat_id !== update.secret_chat.id) return;
 
         this.forceUpdate();
@@ -383,7 +383,7 @@ class Header extends Component {
         let subtitle = getChatSubtitle(chatId, true);
         let showProgressAnimation = false;
 
-        if (isSecret && chat && chat.type['@type'] === 'chatTypeSecret') {
+        if (isSecret && chat && chat.type && chat.type['@type'] === 'chatTypeSecret') {
             const sc = ChatStore.secretChats && ChatStore.secretChats.get(chat.type.secret_chat_id);
             if (sc && sc.state && sc.state['@type'] === 'secretChatStatePending') {
                 subtitle = t('EncryptionKeyWait');
