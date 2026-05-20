@@ -626,6 +626,8 @@ class GramJsController extends EventEmitter {
                 return this._pinChatMessage(req);
             case 'unpinChatMessage':
                 return this._unpinChatMessage(req);
+            case 'translateText':
+                return this._translateText(req);
 
             // ── Usuarios ──────────────────────────────────────────────────────
             case 'getUser':
@@ -1615,6 +1617,23 @@ class GramJsController extends EventEmitter {
             console.error('[GramJs] sendReaction error', err);
         }
         return {};
+    };
+
+    _translateText = async req => {
+        const { text, to_language_code } = req;
+        try {
+            const result = await this.client.invoke(
+                new Api.messages.TranslateText({
+                    text: [new Api.TextWithEntities({ text, entities: [] })],
+                    toLang: to_language_code || 'en'
+                })
+            );
+            const translated = result?.result?.[0]?.text || '';
+            return { '@type': 'text', text: translated };
+        } catch (e) {
+            console.error('[GramJs] translateText error', e);
+            throw e;
+        }
     };
 
     // ─── File handlers ───────────────────────────────────────────────────────

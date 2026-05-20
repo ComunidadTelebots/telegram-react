@@ -443,6 +443,44 @@ export function translateChat(entity, dialog) {
 
 // ─── Message ──────────────────────────────────────────────────────────────────
 
+function translateForwardInfo(fwdFrom) {
+    if (!fwdFrom) return null;
+
+    let origin;
+    if (fwdFrom.fromId) {
+        const fc = fwdFrom.fromId.className || fwdFrom.fromId._;
+        if (fc === 'PeerUser') {
+            origin = { '@type': 'messageForwardOriginUser', sender_user_id: Number(fwdFrom.fromId.userId) };
+        } else if (fc === 'PeerChannel') {
+            const chatId = -1000000000000 - Number(fwdFrom.fromId.channelId);
+            origin = {
+                '@type': 'messageForwardOriginChannel',
+                chat_id: chatId,
+                message_id: fwdFrom.channelPost || 0,
+                author_signature: fwdFrom.postAuthor || ''
+            };
+        } else if (fc === 'PeerChat') {
+            origin = { '@type': 'messageForwardOriginUser', sender_user_id: 0 };
+        }
+    }
+
+    if (!origin) {
+        origin = {
+            '@type': 'messageForwardOriginHiddenUser',
+            sender_name: fwdFrom.fromName || 'Unknown'
+        };
+    }
+
+    return {
+        '@type': 'messageForwardInfo',
+        origin,
+        date: fwdFrom.date || 0,
+        public_service_announcement_type: fwdFrom.psaType || '',
+        from_chat_id: 0,
+        from_message_id: 0
+    };
+}
+
 export function translateMessage(msg, chatId) {
     if (!msg) return null;
     const cls = msg.className || msg._;
@@ -452,10 +490,12 @@ export function translateMessage(msg, chatId) {
     if (!content) return null;
 
     let sender_id;
+    let sender_user_id = 0;
     if (msg.fromId) {
         const fc = msg.fromId.className || msg.fromId._;
         if (fc === 'PeerUser') {
-            sender_id = { '@type': 'messageSenderUser', user_id: Number(msg.fromId.userId) };
+            sender_user_id = Number(msg.fromId.userId);
+            sender_id = { '@type': 'messageSenderUser', user_id: sender_user_id };
         } else if (fc === 'PeerChannel') {
             sender_id = { '@type': 'messageSenderChat', chat_id: -1000000000000 - Number(msg.fromId.channelId) };
         }
@@ -468,6 +508,7 @@ export function translateMessage(msg, chatId) {
         '@type': 'message',
         id: msg.id,
         sender_id,
+        sender_user_id,
         chat_id: chatId,
         is_outgoing: !!msg.out,
         is_pinned: !!msg.pinned,
@@ -479,7 +520,8 @@ export function translateMessage(msg, chatId) {
         contains_unread_mention: !!msg.mentioned,
         date: msg.date || 0,
         edit_date: msg.editDate || 0,
-        forward_info: null,
+        views: msg.views || 0,
+        forward_info: translateForwardInfo(msg.fwdFrom),
         interaction_info: msg.views
             ? {
                   '@type': 'messageInteractionInfo',
