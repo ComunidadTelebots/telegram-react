@@ -1,5 +1,60 @@
 # Changelog
 
+## [2026-05-20] (sesión 7)
+
+### Fixed
+- **Pin/unpin de chats no actualizaba la UI** — `_togglePin` llamaba a `messages.ToggleDialogPin` pero no emitía `updateChatIsPinned`. El diálogo no se movía al principio/final de la lista hasta recargar. Ahora emite el update con `order: '9223372036854775807'` cuando se fija, o con `date × 1000` cuando se desancla. Archivo: `GramJsController.js`.
+- **Borrador no se mostraba en la lista de chats** — `_setChatDraftMessage` guardaba el borrador en servidor y en `_chatCache` pero no emitía `updateChatDraftMessage`. El subtítulo "Draft:" del diálogo nunca aparecía. Ahora emite el update correctamente. Archivo: `GramJsController.js`.
+- **Indicadores de escritura solo enviaban "typing"** — `_sendChatAction` mapeaba solo 2 de los 13 tipos de acción (`chatActionTyping` y `chatActionUploadingDocument`). Ahora mapea los 13: grabando vídeo, subiendo foto/vídeo/documento/audio/vídeonota, eligiendo ubicación/contacto, jugando, cancelando, etc. Archivo: `GramJsController.js`.
+- **Cancelar descarga bloqueaba reintento** — `_cancelDownloadFile` emitía el update de estado pero no llamaba a `this._downloadingFiles.delete(fileId)`. La siguiente llamada a `downloadFile` entraba en el guard `if (_downloadingFiles.has(fileId)) return` y quedaba bloqueada. Archivo: `GramJsController.js`.
+- **`creator_user_id: 0` en grupos básicos** — `_getBasicGroupFullInfo` siempre devolvía `creator_user_id: 0` porque no buscaba el `ChatParticipantCreator` en la lista de participantes. Ahora extrae el creador correctamente. También mapea el status de cada miembro (`chatMemberStatusCreator`, `chatMemberStatusAdministrator`, `chatMemberStatusMember`) y la fecha de unión. Archivo: `GramJsController.js`.
+
+---
+
+## [2026-05-20] (sesión 6)
+
+### Added
+- **Instant View funcional** — los mensajes con enlaces ahora muestran el botón "Instant View" (⚡) cuando el servidor de Telegram tiene una plantilla IV para esa página. Al pulsar el botón, se abre el visor `InstantViewer` integrado sin salir de la app. El visor ya existía en el código original (con todos sus tipos de bloque) pero nunca recibía datos reales porque `getWebPageInstantView` devolvía `{}`. Archivos: `GramJsController.js`, `EntityTranslator.js`.
+- **AMP Viewer in-app** — cuando un enlace no tiene Instant View de Telegram (`instant_view_version === 0`) pero la URL es HTTPS, aparece un botón ⚡ "AMP" en el preview del mensaje. Al pulsarlo se abre un visor iframe full-screen que carga la página vía **Google AMP Cache** (`cdn.ampproject.org/c/s/…`), que convierte cualquier URL AMP válida en una versión rápida y ligera. Si la página no es AMP (timeout de 8 s sin respuesta del AMP runtime), el visor muestra un fallback con botón "Abrir en navegador". Archivos nuevos: `AmpViewer.js`, `AmpViewer.css`.
+
+### Fixed
+- **Detección de Instant View** — `instant_view_version` en el objeto `webPage` ahora se calcula comprobando `wp.cachedPage` (presencia real del contenido IV en el mensaje). Antes se usaba `wp.hasLargeMedia` que es una flag de medios pesados sin relación con el IV. Archivo: `EntityTranslator.js`.
+- **`description` de web page mostraba `[object Object]`** — el campo `description` se devolvía como `{ '@type': 'formattedText', ... }` pero el componente `WebPage.js` lo renderiza directamente en JSX. Corregido a string plano. Archivo: `EntityTranslator.js`.
+
+### Implementation details
+- Nuevo método `_getWebPageInstantView(req)` en `GramJsController.js` que invoca `Api.messages.GetWebPage({ url, hash: 0 })` y extrae `result.webpage.cachedPage`.
+- Nuevas funciones en `EntityTranslator.js`:
+  - `translateInstantView(page)` — traduce un objeto `Page` de GramJS a `webPageInstantView` de TDLib.
+  - `translatePageBlock(block, photos, docs)` — mapea los 22 tipos de `PageBlock` MTProto a sus equivalentes TDLib (`pageBlockTitle`, `pageBlockParagraph`, `pageBlockPhoto`, `pageBlockVideo`, `pageBlockCollage`, `pageBlockTable`, `pageBlockDetails`, `pageBlockRelatedArticles`, `pageBlockMap`, etc.).
+  - `translateRichText(rt)` — mapea los 14 tipos de `RichText` MTProto (`TextBold`, `TextItalic`, `TextUrl`, `TextConcat`, etc.) a sus equivalentes TDLib.
+  - `translatePageCaption(caption)` — envuelve el texto e crédito de un caption IV.
+
+---
+
+## [2026-05-20] (sesión 5)
+
+### Fixed
+- **Eventos de UI tras editar/borrar mensajes** — `_editMessage` ahora emite `updateMessageContent` y `updateMessageEdited`; `_deleteMessages` emite `updateDeleteMessages`. La UI refleja los cambios en tiempo real. Archivo: `GramJsController.js`.
+- **Búsqueda global de mensajes** — `_searchMessages` traducía resultados pero los descartaba; ahora construye y devuelve el array `messages` correctamente con `peerToTdlibChatId`. Archivo: `GramJsController.js`.
+- **Orden de chats roto tras nuevo mensaje** — todos los `updateChatLastMessage` usaban `String(date)` (10 dígitos) en lugar de `String(date * 1000)` (13 dígitos). `orderCompare` ordena por longitud de string primero, por lo que chats con mensaje nuevo caían al fondo. Corregido en los 4 puntos de emisión. Archivos: `GramJsController.js`.
+- **Badge de no leídos estático** — `DialogBadge` lee `chat.unread_count` que nunca se incrementaba para mensajes entrantes; ahora `_setupUpdateHandler` incrementa el contador y emite `updateChatReadInbox`. Archivo: `GramJsController.js`.
+- **Entidades de texto perdidas en captions de medios** — todas las captions de medios tenían `entities: []` fijo; reemplazado por `makeCaption(msg)` que propaga `translateTextEntity` para negrita, cursiva, spoiler, etc. Archivo: `EntityTranslator.js`.
+- **Cache de remitentes al cargar historial** — `_doFetchChatHistory` ahora llama a `_cacheUser` por cada sender y emite `updateUser`, evitando nombres en blanco al abrir un chat por primera vez. Archivo: `GramJsController.js`.
+- **`updateMessageEdited` en mensajes del servidor** — cuando `_setupUpdateHandler` recibe `updateMessageContent` con `editDate` presente, emite también `updateMessageEdited` para que la UI muestre el indicador "editado". Archivo: `GramJsController.js`.
+- **`updateChatReadInbox` tras marcar leído** — `_viewMessages` emite `updateChatReadInbox` con `unread_count: 0` después de la llamada MTProto, cerrando el badge de no leídos inmediatamente. Archivo: `GramJsController.js`.
+
+### Added
+- **Tipos de mensaje: nota de voz y nota de video** — `translateMessageContent` en `EntityTranslator.js` diferencia `audioAttr.voice` → `messageVoiceNote` y `videoAttr.roundMessage` → `messageVideoNote`; antes ambos se mostraban como audio/video genérico.
+- **Tipos de mensaje: lugar y ubicación en vivo** — `MessageMediaVenue` → `messageVenue`; `MessageMediaGeoLive` → `messageLocation` con `live_period` y `heading`. Archivo: `EntityTranslator.js`.
+- **Enviar stickers y animaciones por referencia** — `_sendFile` detecta `inputMessageSticker` e `inputMessageAnimation` y usa `Api.messages.SendMedia` + `InputMediaDocument` leyendo el hash de `mediaCache`, evitando la re-subida innecesaria. Archivo: `GramJsController.js`.
+- **`updateChatLastMessage` tras cada envío** — `_sendMessage` y `_sendFile` emiten `updateChatLastMessage` justo después de `updateNewMessage` para que la lista de diálogos actualice la preview del último mensaje. Archivo: `GramJsController.js`.
+- **Configuración de notificaciones del diálogo** — `translateChat` lee `dialog.notifySettings` (mute, showPreviews), `dialog.unreadMark`, `dialog.readInboxMaxId`, `dialog.readOutboxMaxId`, `dialog.unreadMentionsCount`, `dialog.pinnedMsgId` y `dialog.draft`. Archivo: `EntityTranslator.js`.
+- **`getUser` emite `updateUser`** — `_getUser` llama a `_cacheEntity` y emite `updateUser` para mantener el `UserStore` actualizado. Archivo: `GramJsController.js`.
+- **`getUserFullInfo` retorna comandos de bot y `has_private_forwards`** — extrae `botInfo.commands`, actualiza el `User` embebido en `UserStore` y devuelve `has_private_forwards`. Archivo: `GramJsController.js`.
+- **Indicadores de escritura completos** — nuevo helper `translateTypingAction(action)` en `UpdateTranslator.js` mapea los 13 tipos MTProto (`SendMessageTypingAction`, `SendMessageRecordVideoAction`, `SendMessageUploadPhotoAction`, etc.) a sus equivalentes TDLib en lugar de devolver siempre `chatActionTyping`.
+
+---
+
 ## [2026-05-20] (sesión 4)
 
 ### Added
@@ -280,6 +335,14 @@ Los siguientes tipos de `content` de TDLib no tienen componente en `src/Componen
 | Enlace al mensaje (Copy Link) | ✅ |
 | Cancelar descarga | ✅ |
 | Filtros de búsqueda por tipo (fotos, vídeos, docs…) | ✅ |
+| Nota de video (mensajes redondos) | ✅ |
+| Lugar (messageVenue) y ubicación en vivo | ✅ |
+| Enviar stickers/animaciones por referencia (sin re-subida) | ✅ |
+| Indicadores de escritura completos (13 tipos de acción) | ✅ |
+| Badge de no leídos en tiempo real | ✅ |
+| Entidades de texto en captions de medios | ✅ |
+| Configuración de notificaciones del diálogo (mute, draft, read markers) | ✅ |
+| Instant View / AMP para mensajes con enlaces | ✅ |
 
 ---
 
