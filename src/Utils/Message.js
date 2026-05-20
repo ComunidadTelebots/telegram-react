@@ -679,6 +679,10 @@ function getContent(message, t = key => key) {
         case 'messageExpiredVideo': {
             return t('AttachVideo') + caption;
         }
+        case 'messageDice': {
+            const emoji = content.dice ? content.dice.emoji : '🎲';
+            return emoji + caption;
+        }
         case 'messageGame': {
             return t('AttachGame') + caption;
         }

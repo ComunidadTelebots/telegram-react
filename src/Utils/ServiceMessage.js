@@ -135,7 +135,7 @@ function getServiceMessageContent(message, openUser = false) {
 
     const isOutgoing = message.sender_user_id === UserStore.getMyId();
     const chat = ChatStore.get(message.chat_id);
-    const isChannel = chat.type['@type'] === 'chatTypeSupergroup' && chat.type.is_channel;
+    const isChannel = chat?.type?.['@type'] === 'chatTypeSupergroup' && chat?.type?.is_channel;
 
     const { ttl, sender_user_id, content } = message;
     if (ttl > 0) {
@@ -181,7 +181,7 @@ function getServiceMessageContent(message, openUser = false) {
 
     switch (content['@type']) {
         case 'messageBasicGroupChatCreate': {
-            const { title } = ChatStore.get(message.chat_id);
+            const { title } = ChatStore.get(message.chat_id) || {};
 
             if (isOutgoing) {
                 return `You created group «${title}»`;
@@ -395,7 +395,8 @@ function getServiceMessageContent(message, openUser = false) {
             return 'Telegram Passport data received';
         }
         case 'messagePassportDataSent': {
-            const chat = ChatStore.get(message.chat_id);
+            const passportChat = ChatStore.get(message.chat_id);
+            const passportUserId = passportChat?.type?.user_id || 0;
 
             const passportElementTypes = content.types
                 .map(x => getPassportElementTypeString(x))
@@ -405,14 +406,15 @@ function getServiceMessageContent(message, openUser = false) {
 
             return (
                 <>
-                    <MessageAuthor userId={chat.type.user_id} openUser={openUser} />
+                    <MessageAuthor userId={passportUserId} openUser={openUser} />
                     {' received the following documents: '}
                     {passportElementTypes}
                 </>
             );
         }
         case 'messagePaymentSuccessful': {
-            const chat = ChatStore.get(message.chat_id);
+            const paymentChat = ChatStore.get(message.chat_id);
+            const paymentUserId = paymentChat?.type?.user_id || 0;
 
             const messageInvoice = MessageStore.get(message.chat_id, content.invoice_message_id);
             if (
@@ -429,7 +431,7 @@ function getServiceMessageContent(message, openUser = false) {
                             content.total_amount,
                             content.currency
                         )} to `}
-                        <MessageAuthor userId={chat.type.user_id} openUser={openUser} />
+                        <MessageAuthor userId={paymentUserId} openUser={openUser} />
                         {` for ${invoice.title}`}
                     </>
                 );
@@ -441,7 +443,7 @@ function getServiceMessageContent(message, openUser = false) {
                         content.total_amount,
                         content.currency
                     )} to `}
-                    <MessageAuthor userId={chat.type.user_id} openUser={openUser} />
+                    <MessageAuthor userId={paymentUserId} openUser={openUser} />
                 </>
             );
         }
