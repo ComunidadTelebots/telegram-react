@@ -344,6 +344,13 @@ document.addEventListener('keydown', async event => {
     if (authorizationState['@type'] !== 'authorizationStateReady') return;
     if (keyMap.size > 3) return;
 
+    if ((event.ctrlKey || event.metaKey) && event.key === 'k') {
+        event.preventDefault();
+        event.stopPropagation();
+        TdLibController.clientUpdate({ '@type': 'clientUpdateSearchChat', chatId: 0, query: '' });
+        return;
+    }
+
     if (event.altKey && event.ctrlKey) {
         switch (event.key) {
             case '0': {

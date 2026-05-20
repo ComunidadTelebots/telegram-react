@@ -15,13 +15,16 @@ import PropTypes from 'prop-types';
 
 const styles = theme => ({
     messageStatusFailed: {
-        background: theme.palette.error.light
+        color: theme.palette.error.main
     },
     messageStatusPending: {
-        background: theme.palette.primary.light
+        color: theme.palette.text.disabled
     },
-    messageStatusSucceeded: {
-        background: theme.palette.primary.light
+    messageStatusRead: {
+        color: theme.palette.primary.main
+    },
+    messageStatusSent: {
+        color: theme.palette.text.secondary
     }
 });
 
@@ -93,15 +96,18 @@ class MessageStatus extends React.Component {
         const { classes } = this.props;
         const { sendingState, unread } = this.state;
 
-        let stateClassName = classNames('message-status-succeeded', classes.messageStatusSucceeded);
         if (sendingState) {
-            stateClassName =
-                sendingState['@type'] === 'messageSendingStateFailed'
-                    ? classNames('message-status-failed', classes.messageStatusFailed)
-                    : classNames('message-status-pending', classes.messageStatusPending);
+            if (sendingState['@type'] === 'messageSendingStateFailed') {
+                return <span className={classNames('message-status-check', classes.messageStatusFailed)}>!</span>;
+            }
+            return <span className={classNames('message-status-check', classes.messageStatusPending)}>✓</span>;
         }
 
-        return unread && <i className={classNames('message-status-icon', stateClassName)} />;
+        if (!unread) {
+            return <span className={classNames('message-status-check', classes.messageStatusRead)}>✓✓</span>;
+        }
+
+        return <span className={classNames('message-status-check', classes.messageStatusSent)}>✓</span>;
     }
 }
 
