@@ -699,8 +699,12 @@ function translateMessageContent(msg) {
         const doc = media.document;
         const attrs = doc?.attributes || [];
         const isSticker = attrs.some(a => (a.className || a._) === 'DocumentAttributeSticker');
-        const isAudio = attrs.some(a => (a.className || a._) === 'DocumentAttributeAudio');
-        const isVideo = attrs.some(a => (a.className || a._) === 'DocumentAttributeVideo');
+        const audioAttr = attrs.find(a => (a.className || a._) === 'DocumentAttributeAudio');
+        const isAudio = !!audioAttr;
+        const isVoice = isAudio && !!audioAttr.voice;
+        const videoAttr = attrs.find(a => (a.className || a._) === 'DocumentAttributeVideo');
+        const isVideo = !!videoAttr;
+        const isVideoNote = isVideo && !!videoAttr.roundMessage;
         const isAnim = attrs.some(a => (a.className || a._) === 'DocumentAttributeAnimated');
 
         if (isSticker) return { '@type': 'messageSticker', sticker: translateSticker(doc) };
@@ -711,6 +715,24 @@ function translateMessageContent(msg) {
                 caption: { '@type': 'formattedText', text: msg.message || '', entities: [] },
                 is_secret: false
             };
+        if (isVideoNote) {
+            if (doc?.id) mediaCache.set(Number(doc.id), doc);
+            const dur = videoAttr?.duration || 0;
+            const wh = videoAttr?.w || 240;
+            return {
+                '@type': 'messageVideoNote',
+                video_note: {
+                    '@type': 'videoNote',
+                    duration: Number(dur),
+                    length: Number(wh),
+                    minithumbnail: null,
+                    thumbnail: null,
+                    video: translateFile(doc.id, doc.size ? Number(doc.size) : 0, doc.id ? String(doc.id) : '')
+                },
+                is_viewed: false,
+                is_secret: false
+            };
+        }
         if (isVideo)
             return {
                 '@type': 'messageVideo',
@@ -718,6 +740,22 @@ function translateMessageContent(msg) {
                 caption: { '@type': 'formattedText', text: msg.message || '', entities: [] },
                 is_secret: false
             };
+        if (isVoice) {
+            if (doc?.id) mediaCache.set(Number(doc.id), doc);
+            const size = doc.size ? Number(doc.size) : 0;
+            const waveformAttr = audioAttr.waveform;
+            return {
+                '@type': 'messageVoiceNote',
+                voice_note: {
+                    '@type': 'voiceNote',
+                    duration: Number(audioAttr.duration || 0),
+                    waveform: waveformAttr || '',
+                    mime_type: doc.mimeType || 'audio/ogg',
+                    voice: translateFile(doc.id, size, doc.id ? String(doc.id) : '')
+                },
+                is_listened: false
+            };
+        }
         if (isAudio)
             return {
                 '@type': 'messageAudio',
@@ -818,19 +856,58 @@ function translateMessageContent(msg) {
         };
     }
 
-    // Localización
+    // Localización simple
     if (mediaClass === 'MessageMediaGeo' || mediaClass === 'messageMediaGeo') {
         return {
             '@type': 'messageLocation',
             location: {
                 '@type': 'location',
                 latitude: media.geo?.lat || 0,
-                longitude: media.geo?.long || 0
+                longitude: media.geo?.long || 0,
+                horizontal_accuracy: 0
             },
             live_period: 0,
             expires_in: 0,
             heading: 0,
             proximity_alert_radius: 0
+        };
+    }
+
+    // Localización con nombre (venue)
+    if (mediaClass === 'MessageMediaVenue' || mediaClass === 'messageMediaVenue') {
+        return {
+            '@type': 'messageVenue',
+            venue: {
+                '@type': 'venue',
+                location: {
+                    '@type': 'location',
+                    latitude: media.geo?.lat || 0,
+                    longitude: media.geo?.long || 0,
+                    horizontal_accuracy: 0
+                },
+                title: media.title || '',
+                address: media.address || '',
+                provider: media.provider || '',
+                id: media.venueId || '',
+                type: media.venueType || ''
+            }
+        };
+    }
+
+    // Localización en vivo
+    if (mediaClass === 'MessageMediaGeoLive' || mediaClass === 'messageMediaGeoLive') {
+        return {
+            '@type': 'messageLocation',
+            location: {
+                '@type': 'location',
+                latitude: media.geo?.lat || 0,
+                longitude: media.geo?.long || 0,
+                horizontal_accuracy: 0
+            },
+            live_period: media.period || 0,
+            expires_in: 0,
+            heading: media.heading || 0,
+            proximity_alert_radius: media.proximityNotificationRadius || 0
         };
     }
 

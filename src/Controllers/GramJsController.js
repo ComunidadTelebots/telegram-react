@@ -1361,7 +1361,9 @@ class GramJsController extends EventEmitter {
                 contentType === 'inputMessageDocument' ||
                 contentType === 'inputMessageVoiceNote' ||
                 contentType === 'inputMessageAudio' ||
-                contentType === 'inputMessagePhoto'
+                contentType === 'inputMessagePhoto' ||
+                contentType === 'inputMessageVideo' ||
+                contentType === 'inputMessageVideoNote'
             ) {
                 return this._sendFile(chat_id, inputPeer, input_message_content, reply_to_message_id, schedule_date);
             }
@@ -1422,6 +1424,20 @@ class GramJsController extends EventEmitter {
             } else if (contentType === 'inputMessagePhoto') {
                 file = content.photo?.data;
                 caption = content.caption?.text || '';
+            } else if (contentType === 'inputMessageVideo') {
+                file = content.video?.data;
+                caption = content.caption?.text || '';
+                const dur = content.duration || 0;
+                const w = content.width || 0;
+                const h = content.height || 0;
+                attributes = [new Api.DocumentAttributeVideo({ duration: dur, w, h, supportsStreaming: true })];
+            } else if (contentType === 'inputMessageVideoNote') {
+                const raw = content.video_note?.data;
+                file = raw instanceof File ? raw : new File([raw || []], 'videonote.mp4', { type: 'video/mp4' });
+                caption = '';
+                const dur = content.duration || 0;
+                const len = content.length || 240;
+                attributes = [new Api.DocumentAttributeVideo({ duration: dur, w: len, h: len, roundMessage: true })];
             }
 
             if (!file) return {};
