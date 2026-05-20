@@ -1,6 +1,18 @@
 # Changelog
 
-## [Unreleased] — 2026-05-20
+## [Unreleased] — 2026-05-20 (sesión 2)
+
+### Added
+- **Tipos de mensaje nuevos** — `messageStory` (📖 historia reenviada), `messageGiveaway` (🎁), `messageGiveawayWinners` (🎉) y `messageProximityAlertTriggered` (📍) ahora se renderizan con tarjeta visual en lugar de `[tipo]`. Archivos: `Utils/Message.js`, `Message.css`.
+- **Enviar sin notificación** — botón 🔔/🔕 en la barra de entrada. Cuando está activo (rojo), el mensaje se envía con `silent: true` vía MTProto. `GramJsController._sendMessage` acepta `disable_notification`. Archivos: `InputBoxControl.js`, `GramJsController.js`.
+- **Bloquear usuario** — opción "Block User" en el menú contextual de mensajes entrantes de usuarios privados. Implementado con `contacts.Block`. Archivos: `GramJsController.js`, `Message.js`, `LocalizationStore.js`.
+- **Enlace al mensaje** — opción "Copy Link" en el menú contextual de mensajes. Para canales usa `channels.ExportMessageLink` y copia al portapapeles. Archivos: `GramJsController.js`, `Message.js`.
+- **Cancelar descarga** — `cancelDownloadFile` ahora emite `updateFile` limpiando el estado de descarga en la UI. Archivo: `GramJsController.js`.
+- **Filtros de búsqueda por tipo** — al buscar dentro de un chat aparecen tabs: All / Photos / Videos / Files / Links / Audio. Cada tab pasa el filtro `searchMessagesFilter*` a `searchChatMessages`. Archivos: `Search.js`, `Search.css`.
+
+---
+
+## [2026-05-20] (sesión 1)
 
 ### Added
 - **Silenciar/activar notificaciones de chat** — `setChatNotificationSettings` ahora llama a `account.UpdateNotifySettings` de GramJS. Emite `updateChatNotificationSettings` para reflejar el cambio localmente de forma inmediata. Archivo: `GramJsController.js`.
@@ -233,6 +245,12 @@ Los siguientes tipos de `content` de TDLib no tienen componente en `src/Componen
 | Caché offline de mensajes | ✅ |
 | Crear grupos y canales | ✅ |
 | Diseños de tema (Android, macOS, TDesktop…) | ✅ |
+| messageStory / messageGiveaway / messageGiveawayWinners | ✅ |
+| Enviar sin notificación (modo silencioso) | ✅ |
+| Bloquear usuario desde menú contextual | ✅ |
+| Enlace al mensaje (Copy Link) | ✅ |
+| Cancelar descarga | ✅ |
+| Filtros de búsqueda por tipo (fotos, vídeos, docs…) | ✅ |
 
 ---
 
