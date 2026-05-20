@@ -28,6 +28,7 @@ import MediaViewerFooterText from './MediaViewerFooterText';
 import MediaViewerFooterButton from './MediaViewerFooterButton';
 import MediaViewerDownloadButton from './MediaViewerDownloadButton';
 import FileCopyIcon from '@material-ui/icons/FileCopy';
+import PictureInPictureAltIcon from '@material-ui/icons/PictureInPictureAlt';
 import { setMediaViewerContent } from '../../Actions/Client';
 import FileStore from '../../Stores/FileStore';
 import {
@@ -735,16 +736,31 @@ class MediaViewer extends React.Component {
 
     handleChangeSpeed = () => {
         if (!this.contentRef) return;
-
         const { current } = this.contentRef;
         if (!current) return;
 
         const { speed } = this.state;
-        const nextSpeed = speed < 1 ? 1 : 0.1;
+        const speeds = [0.5, 1, 1.5, 2];
+        const idx = speeds.indexOf(speed);
+        const nextSpeed = speeds[(idx + 1) % speeds.length];
 
         this.setState({ speed: nextSpeed });
-
         current.changeSpeed(nextSpeed);
+    };
+
+    handlePictureInPicture = async () => {
+        if (!this.contentRef?.current) return;
+        const video = this.contentRef.current.getVideo();
+        if (!video) return;
+        try {
+            if (document.pictureInPictureElement) {
+                await document.exitPictureInPicture();
+            } else {
+                await video.requestPictureInPicture();
+            }
+        } catch (e) {
+            console.warn('[MediaViewer] PiP error', e);
+        }
     };
 
     canBeForwarded = (chatId, messageId) => {
@@ -870,6 +886,18 @@ class MediaViewer extends React.Component {
                         <MediaViewerDownloadButton title='Copy Image' fileId={fileId} onClick={this.handleCopyImage}>
                             <FileCopyIcon />
                         </MediaViewerDownloadButton>
+                    )}
+                    {isVideoMessage(chatId, currentMessageId) && (
+                        <MediaViewerFooterButton title={`Speed: ${speed}×`} onClick={this.handleChangeSpeed}>
+                            <span style={{ fontSize: '0.75rem', fontWeight: 700, minWidth: 28, textAlign: 'center' }}>
+                                {speed}×
+                            </span>
+                        </MediaViewerFooterButton>
+                    )}
+                    {isVideoMessage(chatId, currentMessageId) && 'pictureInPictureEnabled' in document && (
+                        <MediaViewerFooterButton title='Picture in Picture' onClick={this.handlePictureInPicture}>
+                            <PictureInPictureAltIcon />
+                        </MediaViewerFooterButton>
                     )}
                     <MediaViewerFooterButton
                         title={t('Forward')}

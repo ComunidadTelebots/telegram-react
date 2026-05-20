@@ -162,10 +162,12 @@ class MediaViewerContent extends React.Component {
     };
 
     changeSpeed = speed => {
-        this.setState({
-            speed
-        });
+        this.setState({ speed });
+        const player = this.videoRef.current;
+        if (player) player.playbackRate = speed;
     };
+
+    getVideo = () => this.videoRef.current;
 
     render() {
         const { chatId, messageId } = this.props;

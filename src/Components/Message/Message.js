@@ -525,6 +525,23 @@ class Message extends Component {
         }
     };
 
+    handleShowInChat = event => {
+        const { chatId, messageId } = this.props;
+        const message = MessageStore.get(chatId, messageId);
+        this.handleCloseContextMenu(event);
+        const origin = message?.forward_info?.origin;
+        if (!origin) return;
+        if (origin['@type'] === 'messageForwardOriginChannel') {
+            openChat(origin.chat_id, origin.message_id);
+        } else if (
+            origin['@type'] === 'messageForwardOriginUser' ||
+            origin['@type'] === 'messageForwardOriginHiddenUser'
+        ) {
+            const userId = origin.sender_user_id;
+            if (userId) openChat(userId > 0 ? userId : -userId);
+        }
+    };
+
     handleCopyLink = async event => {
         const { chatId, messageId } = this.props;
         this.handleCloseContextMenu(event);
@@ -611,6 +628,8 @@ class Message extends Component {
         const canBeReported = !message.is_outgoing;
         const canBeBlocked = !message.is_outgoing && !!message.sender_user_id;
         const canCopyLink = !message.is_outgoing;
+        const forwardOriginType = message.forward_info?.origin?.['@type'];
+        const canShowInChat = !!forwardOriginType && forwardOriginType === 'messageForwardOriginChannel';
         const withBubble =
             message.content['@type'] !== 'messageSticker' && message.content['@type'] !== 'messageVideoNote';
 
@@ -695,6 +714,7 @@ class Message extends Component {
                         {canBeReported && <MenuItem onClick={this.handleReport}>{t('ReportMessage')}</MenuItem>}
                         {canCopyLink && <MenuItem onClick={this.handleCopyLink}>{t('CopyMessageLink')}</MenuItem>}
                         {canBeBlocked && <MenuItem onClick={this.handleBlockUser}>{t('BlockUser')}</MenuItem>}
+                        {canShowInChat && <MenuItem onClick={this.handleShowInChat}>{t('ShowInChat')}</MenuItem>}
                     </MenuList>
                 </Popover>
             </div>
