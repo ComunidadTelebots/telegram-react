@@ -1004,7 +1004,7 @@ function translateMessageContent(msg) {
         return {
             '@type': 'messageInvoice',
             title: media.title || '',
-            description: { '@type': 'formattedText', text: media.description || '', entities: [] },
+            description: typeof media.description === 'string' ? media.description : media.description?.text || '',
             photo: media.photo ? translatePhoto(media.photo) : null,
             currency: media.currency || '',
             total_amount: media.totalAmount ? Number(media.totalAmount) : 0,

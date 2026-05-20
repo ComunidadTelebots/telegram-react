@@ -8,6 +8,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import ShoppingCartIcon from '@material-ui/icons/ShoppingCart';
+import { getSrc } from '../../../Utils/File';
 import './Invoice.css';
 
 class Invoice extends React.Component {
@@ -28,7 +29,7 @@ class Invoice extends React.Component {
                     <div className='invoice-photo'>
                         <img
                             className='invoice-photo-image'
-                            src={photo.sizes[0]?.photo?.blob || ''}
+                            src={getSrc(photo.sizes[0]?.photo) || ''}
                             alt={title}
                             draggable={false}
                         />

@@ -2177,7 +2177,12 @@ class GramJsController extends EventEmitter {
             let inputLocation;
 
             if (cls === 'Photo') {
-                const biggestSize = (gMedia.sizes || []).slice(-1)[0];
+                // Filter out non-downloadable size types (stripped/empty/path)
+                const downloadableSizes = (gMedia.sizes || []).filter(s => {
+                    const sc = s.className || s._;
+                    return sc !== 'PhotoStrippedSize' && sc !== 'PhotoSizeEmpty' && sc !== 'PhotoPathSize';
+                });
+                const biggestSize = downloadableSizes.slice(-1)[0];
                 inputLocation = new Api.InputPhotoFileLocation({
                     id: gMedia.id,
                     accessHash: gMedia.accessHash,
