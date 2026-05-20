@@ -589,6 +589,10 @@ class GramJsController extends EventEmitter {
                 return this._requestQrCodeAuthentication(req);
             case 'logOut':
                 return this._logOut();
+            case 'destroy':
+                return this._logOut();
+            case 'getCountryCode':
+                return this._getCountryCode();
 
             // ── Multi-cuenta ──────────────────────────────────────────────────
             case 'getAccounts':
@@ -983,6 +987,15 @@ class GramJsController extends EventEmitter {
             authorization_state: { '@type': 'authorizationStateClosed' }
         });
         return {};
+    };
+
+    _getCountryCode = async () => {
+        try {
+            const result = await this.client.invoke(new Api.help.GetNearestDc());
+            return { '@type': 'text', text: result.country || '' };
+        } catch (e) {
+            return { '@type': 'text', text: '' };
+        }
     };
 
     logOut = () => {
