@@ -1373,7 +1373,9 @@ class GramJsController extends EventEmitter {
                 contentType === 'inputMessageAudio' ||
                 contentType === 'inputMessagePhoto' ||
                 contentType === 'inputMessageVideo' ||
-                contentType === 'inputMessageVideoNote'
+                contentType === 'inputMessageVideoNote' ||
+                contentType === 'inputMessageSticker' ||
+                contentType === 'inputMessageAnimation'
             ) {
                 return this._sendFile(chat_id, inputPeer, input_message_content, reply_to_message_id, schedule_date);
             }
@@ -1448,6 +1450,48 @@ class GramJsController extends EventEmitter {
                 const dur = content.duration || 0;
                 const len = content.length || 240;
                 attributes = [new Api.DocumentAttributeVideo({ duration: dur, w: len, h: len, roundMessage: true })];
+            } else if (contentType === 'inputMessageSticker' || contentType === 'inputMessageAnimation') {
+                // The sticker/animation is already on Telegram servers — send by file ID reference
+                const fileId = content.sticker?.id ?? content.animation?.id;
+                const gDoc = fileId != null ? mediaCache.get(Number(fileId)) : null;
+                if (gDoc) {
+                    const result = await this.client.invoke(
+                        new Api.messages.SendMedia({
+                            peer: inputPeer,
+                            media: new Api.InputMediaDocument({
+                                id: new Api.InputDocument({
+                                    id: gDoc.id,
+                                    accessHash: gDoc.accessHash,
+                                    fileReference: gDoc.fileReference
+                                }),
+                                ttlSeconds: 0
+                            }),
+                            message: '',
+                            randomId: BigInt(Math.floor(Math.random() * Number.MAX_SAFE_INTEGER)),
+                            ...(replyToMessageId
+                                ? { replyTo: new Api.InputReplyToMessage({ replyToMsgId: replyToMessageId }) }
+                                : {})
+                        })
+                    );
+                    // Extract the Message from the Updates object
+                    const sentMsg = result?.updates?.find?.(u => u.message) || result?.update?.message || null;
+                    if (sentMsg) {
+                        const tdMessage = translateMessage(sentMsg, chatId);
+                        if (tdMessage) {
+                            this._emitUpdate({ '@type': 'updateNewMessage', message: tdMessage });
+                            const chat = this._chatCache.get(chatId);
+                            if (chat) chat.last_message = tdMessage;
+                            this._emitUpdate({
+                                '@type': 'updateChatLastMessage',
+                                chat_id: chatId,
+                                last_message: tdMessage,
+                                order: String(tdMessage.date)
+                            });
+                            return tdMessage;
+                        }
+                    }
+                }
+                return {};
             }
 
             if (!file) return {};
