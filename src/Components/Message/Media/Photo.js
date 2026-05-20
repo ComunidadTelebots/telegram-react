@@ -29,8 +29,8 @@ class Photo extends React.Component {
         if (photo !== state.prevPhoto) {
             return {
                 prevPhoto: photo,
-                photoSize: getSize(photo.sizes, size),
-                thumbSize: getSize(photo.sizes, thumbnailSize),
+                photoSize: photo ? getSize(photo.sizes, size) : null,
+                thumbSize: photo ? getSize(photo.sizes, thumbnailSize) : null,
                 minithumbnail: photo ? photo.minithumbnail : null
             };
         }

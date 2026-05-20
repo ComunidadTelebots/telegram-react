@@ -170,7 +170,7 @@ function getUserLetters(userId, firstName, lastName) {
 function getUserStatusOrder(user) {
     if (!user) return 0;
     if (!user.status) return 0;
-    if (user.type['@type'] === 'userTypeBot') return 0;
+    if (user.type && user.type['@type'] === 'userTypeBot') return 0;
 
     switch (user.status['@type']) {
         case 'userStatusEmpty': {
