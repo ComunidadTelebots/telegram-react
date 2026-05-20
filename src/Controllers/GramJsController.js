@@ -340,7 +340,7 @@ class GramJsController extends EventEmitter {
                             '@type': 'updateChatLastMessage',
                             chat_id: message.chat_id,
                             last_message: message,
-                            order: String(message.date)
+                            order: String(message.date * 1000)
                         });
                     }
                 }
@@ -1398,7 +1398,7 @@ class GramJsController extends EventEmitter {
                     '@type': 'updateChatLastMessage',
                     chat_id,
                     last_message: tdMessage,
-                    order: String(tdMessage.date)
+                    order: String(tdMessage.date * 1000)
                 });
                 return tdMessage;
             }
@@ -1485,7 +1485,7 @@ class GramJsController extends EventEmitter {
                                 '@type': 'updateChatLastMessage',
                                 chat_id: chatId,
                                 last_message: tdMessage,
-                                order: String(tdMessage.date)
+                                order: String(tdMessage.date * 1000)
                             });
                             return tdMessage;
                         }
@@ -1515,7 +1515,7 @@ class GramJsController extends EventEmitter {
                     '@type': 'updateChatLastMessage',
                     chat_id: chatId,
                     last_message: tdMessage,
-                    order: String(tdMessage.date)
+                    order: String(tdMessage.date * 1000)
                 });
                 return tdMessage;
             }
