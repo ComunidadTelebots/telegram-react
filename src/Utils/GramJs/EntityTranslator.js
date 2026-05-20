@@ -789,21 +789,6 @@ function translateMessageContent(msg) {
         };
     }
 
-    // Contacto
-    if (mediaClass === 'MessageMediaContact' || mediaClass === 'messageMediaContact') {
-        return {
-            '@type': 'messageContact',
-            contact: {
-                '@type': 'contact',
-                phone_number: media.phoneNumber || '',
-                first_name: media.firstName || '',
-                last_name: media.lastName || '',
-                user_id: media.userId ? Number(media.userId) : 0,
-                vcard: media.vcard || ''
-            }
-        };
-    }
-
     // Poll
     if (mediaClass === 'MessageMediaPoll' || mediaClass === 'messageMediaPoll') {
         const poll = media.poll;

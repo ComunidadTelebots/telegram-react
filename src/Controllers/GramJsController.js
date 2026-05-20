@@ -19,6 +19,7 @@ import {
     translateMessage,
     translateSticker,
     entityToTdlibChatId,
+    peerToTdlibChatId,
     tdlibChatIdToInputPeer,
     translateStickerSetInfo,
     translateStickerSet,
@@ -315,8 +316,10 @@ class GramJsController extends EventEmitter {
             const tdUpdate = translateUpdate(raw);
             if (tdUpdate) {
                 this._emitUpdate(tdUpdate);
+                const updateType = tdUpdate['@type'];
+
                 // When a new message arrives, also update the chat's last_message in the dialog list
-                if (tdUpdate['@type'] === 'updateNewMessage') {
+                if (updateType === 'updateNewMessage') {
                     const { message } = tdUpdate;
                     if (message) {
                         const chat = this._chatCache.get(message.chat_id);
@@ -328,6 +331,21 @@ class GramJsController extends EventEmitter {
                             chat_id: message.chat_id,
                             last_message: message,
                             order: String(message.date)
+                        });
+                    }
+                }
+
+                // When a message is edited remotely, also emit updateMessageEdited so the
+                // "edited" label and edit_date get refreshed in the UI
+                if (updateType === 'updateMessageContent') {
+                    const msg = raw.message;
+                    if (msg && msg.editDate) {
+                        this._emitUpdate({
+                            '@type': 'updateMessageEdited',
+                            chat_id: tdUpdate.chat_id,
+                            message_id: tdUpdate.message_id,
+                            edit_date: msg.editDate,
+                            reply_markup: null
                         });
                     }
                 }
@@ -1360,6 +1378,14 @@ class GramJsController extends EventEmitter {
             const tdMessage = translateMessage(result, chat_id);
             if (tdMessage) {
                 this._emitUpdate({ '@type': 'updateNewMessage', message: tdMessage });
+                const chat = this._chatCache.get(chat_id);
+                if (chat) chat.last_message = tdMessage;
+                this._emitUpdate({
+                    '@type': 'updateChatLastMessage',
+                    chat_id,
+                    last_message: tdMessage,
+                    order: String(tdMessage.date)
+                });
                 return tdMessage;
             }
         } catch (err) {
@@ -1413,6 +1439,14 @@ class GramJsController extends EventEmitter {
             const tdMessage = translateMessage(result, chatId);
             if (tdMessage) {
                 this._emitUpdate({ '@type': 'updateNewMessage', message: tdMessage });
+                const chat = this._chatCache.get(chatId);
+                if (chat) chat.last_message = tdMessage;
+                this._emitUpdate({
+                    '@type': 'updateChatLastMessage',
+                    chat_id: chatId,
+                    last_message: tdMessage,
+                    order: String(tdMessage.date)
+                });
                 return tdMessage;
             }
         } catch (err) {
@@ -1434,6 +1468,24 @@ class GramJsController extends EventEmitter {
                     message: text
                 })
             );
+            const editDate = Math.floor(Date.now() / 1000);
+            this._emitUpdate({
+                '@type': 'updateMessageContent',
+                chat_id,
+                message_id,
+                new_content: {
+                    '@type': 'messageText',
+                    text: { '@type': 'formattedText', text, entities: [] },
+                    web_page: null
+                }
+            });
+            this._emitUpdate({
+                '@type': 'updateMessageEdited',
+                chat_id,
+                message_id,
+                edit_date: editDate,
+                reply_markup: null
+            });
         } catch (err) {
             throw err;
         }
@@ -1445,11 +1497,17 @@ class GramJsController extends EventEmitter {
         try {
             const inputPeer = tdlibChatIdToInputPeer(chat_id, this._entityCache);
             if (chat_id < -1000000000000) {
-                // Canal
                 await this.client.invoke(new Api.channels.DeleteMessages({ channel: inputPeer, id: message_ids }));
             } else {
                 await this.client.invoke(new Api.messages.DeleteMessages({ id: message_ids, revoke }));
             }
+            this._emitUpdate({
+                '@type': 'updateDeleteMessages',
+                chat_id,
+                message_ids,
+                is_permanent: true,
+                from_cache: false
+            });
         } catch (err) {
             throw err;
         }
@@ -1679,9 +1737,17 @@ class GramJsController extends EventEmitter {
                     limit
                 })
             );
-            return { '@type': 'messages', messages: [], total_count: 0 };
+            if (result.users) result.users.forEach(u => this._cacheUser(u));
+            if (result.chats) result.chats.forEach(c => this._cacheEntity(c));
+            const messages = (result.messages || [])
+                .map(m => {
+                    const chatId = peerToTdlibChatId(m.peerId);
+                    return chatId ? translateMessage(m, chatId) : null;
+                })
+                .filter(Boolean);
+            return { '@type': 'messages', messages, total_count: result.count || messages.length };
         } catch (e) {
-            /* no-op */
+            console.error('[GramJs] searchMessages error', e);
         }
         return { '@type': 'messages', messages: [], total_count: 0 };
     };
