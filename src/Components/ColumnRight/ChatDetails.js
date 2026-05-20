@@ -133,6 +133,7 @@ class ChatDetails extends React.Component {
 
     shouldComponentUpdate(nextProps, nextState) {
         const { chatId, theme, counters, migratedCounters } = this.props;
+        const { editingDescription, descriptionDraft } = this.state;
 
         if (nextProps.chatId !== chatId) {
             return true;
@@ -147,6 +148,14 @@ class ChatDetails extends React.Component {
         }
 
         if (nextProps.theme !== theme) {
+            return true;
+        }
+
+        if (nextState.editingDescription !== editingDescription) {
+            return true;
+        }
+
+        if (nextState.descriptionDraft !== descriptionDraft) {
             return true;
         }
 
