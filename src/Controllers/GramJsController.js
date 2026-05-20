@@ -1619,12 +1619,13 @@ class GramJsController extends EventEmitter {
         const cached = this._userCache.get(user_id);
         if (cached) return cached;
         try {
-            const entity = await this.client.getEntity(
-                new Api.InputUser({ userId: BigInt(user_id), accessHash: BigInt(0) })
-            );
+            const accessHash = this._entityCache.get(user_id)?.accessHash || BigInt(0);
+            const entity = await this.client.getEntity(new Api.InputUser({ userId: BigInt(user_id), accessHash }));
+            this._cacheEntity(entity);
             const tdUser = translateUser(entity);
             if (tdUser) {
                 this._userCache.set(tdUser.id, tdUser);
+                this._emitUpdate({ '@type': 'updateUser', user: tdUser });
                 return tdUser;
             }
         } catch (e) {
@@ -1644,15 +1645,30 @@ class GramJsController extends EventEmitter {
                     })
                 })
             );
+            // GramJS returns UserFull wrapped in users.UserFull (result.fullUser) or directly
             const full = result.fullUser || result;
+            // Also update user from the embedded User object if present
+            const userObj = (result.users || [])[0];
+            if (userObj) {
+                this._cacheEntity(userObj);
+                const tdUser = translateUser(userObj);
+                if (tdUser) {
+                    this._userCache.set(tdUser.id, tdUser);
+                    this._emitUpdate({ '@type': 'updateUser', user: tdUser });
+                }
+            }
             return {
                 '@type': 'userFullInfo',
                 bio: full.about || '',
                 supports_calls: true,
                 has_private_calls: !!full.phoneCallsPrivate,
-                has_private_forwards: false,
+                has_private_forwards: !!full.privateForwards,
                 need_phone_number_privacy_exception: false,
-                commands: []
+                commands: (full.botInfo?.commands || []).map(c => ({
+                    '@type': 'botCommand',
+                    command: c.command || '',
+                    description: c.description || ''
+                }))
             };
         } catch (e) {
             /* no-op */
