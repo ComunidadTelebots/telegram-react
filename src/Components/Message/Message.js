@@ -32,7 +32,7 @@ import {
     canMessageBeEdited,
     isMessagePinned
 } from '../../Utils/Message';
-import { canPinMessages, canSendMessages } from '../../Utils/Chat';
+import { canPinMessages, canSendMessages, isGroupChat } from '../../Utils/Chat';
 import {
     openUser,
     openChat,
@@ -512,6 +512,22 @@ class Message extends Component {
         }
     };
 
+    handleReplyInPrivate = async event => {
+        const { chatId, messageId } = this.props;
+        const message = MessageStore.get(chatId, messageId);
+        const userId = message?.sender_user_id;
+        this.handleCloseContextMenu(event);
+        if (!userId) return;
+        try {
+            const chat = await TdLibController.send({ '@type': 'createPrivateChat', user_id: userId, force: true });
+            if (chat) {
+                openChat(chat.id);
+            }
+        } catch (e) {
+            console.warn('[Message] replyInPrivate error', e);
+        }
+    };
+
     handleBlockUser = async event => {
         const { chatId, messageId } = this.props;
         const message = MessageStore.get(chatId, messageId);
@@ -630,6 +646,7 @@ class Message extends Component {
         const canCopyLink = !message.is_outgoing;
         const forwardOriginType = message.forward_info?.origin?.['@type'];
         const canShowInChat = !!forwardOriginType && forwardOriginType === 'messageForwardOriginChannel';
+        const canReplyInPrivate = !message.is_outgoing && !!message.sender_user_id && isGroupChat(chatId);
         const withBubble =
             message.content['@type'] !== 'messageSticker' && message.content['@type'] !== 'messageVideoNote';
 
@@ -713,6 +730,9 @@ class Message extends Component {
                         {canBeTranslated && <MenuItem onClick={this.handleTranslate}>{t('TranslateMessage')}</MenuItem>}
                         {canBeReported && <MenuItem onClick={this.handleReport}>{t('ReportMessage')}</MenuItem>}
                         {canCopyLink && <MenuItem onClick={this.handleCopyLink}>{t('CopyMessageLink')}</MenuItem>}
+                        {canReplyInPrivate && (
+                            <MenuItem onClick={this.handleReplyInPrivate}>{t('ReplyInPrivate')}</MenuItem>
+                        )}
                         {canBeBlocked && <MenuItem onClick={this.handleBlockUser}>{t('BlockUser')}</MenuItem>}
                         {canShowInChat && <MenuItem onClick={this.handleShowInChat}>{t('ShowInChat')}</MenuItem>}
                     </MenuList>
