@@ -402,6 +402,32 @@ export function translateChat(entity, dialog) {
     const pinned = dialog?.pinned || false;
     const order = pinned ? '9223372036854775807' : String(date * 1000);
 
+    // Notification settings from dialog
+    const ns = dialog?.notifySettings;
+    const muteUntil = ns?.muteUntil || 0;
+    const now = Math.floor(Date.now() / 1000);
+    const isMuted = muteUntil > now || muteUntil === -1 || muteUntil === 2147483647;
+    const muteFor = isMuted ? (muteUntil === 2147483647 || muteUntil === -1 ? 2147483647 : muteUntil - now) : 0;
+    const showPreviews = ns?.showPreviews ?? null;
+
+    // Draft message
+    let draftMessage = null;
+    const draftObj = dialog?.draft;
+    const draftCls = draftObj?.className || draftObj?._;
+    if (draftCls === 'DraftMessage' && draftObj.message) {
+        draftMessage = {
+            '@type': 'draftMessage',
+            reply_to_message_id: draftObj.replyToMsgId || 0,
+            date: draftObj.date || 0,
+            input_message_text: {
+                '@type': 'inputMessageText',
+                text: { '@type': 'formattedText', text: draftObj.message, entities: [] },
+                disable_web_page_preview: false,
+                clear_draft: false
+            }
+        };
+    }
+
     return {
         '@type': 'chat',
         id: chatId,
@@ -411,32 +437,32 @@ export function translateChat(entity, dialog) {
         last_message: lastMsg,
         order,
         is_pinned: pinned,
-        is_marked_as_unread: false,
+        is_marked_as_unread: !!dialog?.unreadMark,
         is_sponsored: false,
         can_be_deleted_only_for_self: true,
         can_be_deleted_for_all_users: false,
         can_be_reported: false,
-        default_disable_notification: false,
+        default_disable_notification: isMuted,
         unread_count: dialog?.unreadCount || 0,
-        last_read_inbox_message_id: 0,
-        last_read_outbox_message_id: 0,
-        unread_mention_count: 0,
+        last_read_inbox_message_id: dialog?.readInboxMaxId || 0,
+        last_read_outbox_message_id: dialog?.readOutboxMaxId || 0,
+        unread_mention_count: dialog?.unreadMentionsCount || 0,
         notification_settings: {
             '@type': 'chatNotificationSettings',
-            use_default_mute_for: true,
-            mute_for: 0,
+            use_default_mute_for: muteFor === 0,
+            mute_for: muteFor,
             use_default_sound: true,
             sound: 'default',
-            use_default_show_preview: true,
-            show_preview: true,
+            use_default_show_preview: showPreviews === null,
+            show_preview: showPreviews ?? true,
             use_default_disable_pinned_message_notifications: true,
             disable_pinned_message_notifications: false,
             use_default_disable_mention_notifications: true,
             disable_mention_notifications: false
         },
-        pinned_message_id: 0,
-        reply_markup_message_id: 0,
-        draft_message: null,
+        pinned_message_id: dialog?.pinnedMsgId || 0,
+        reply_markup_message_id: dialog?.replyMarkupMsgId || 0,
+        draft_message: draftMessage,
         client_data: ''
     };
 }
