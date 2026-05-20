@@ -1,5 +1,15 @@
 # Changelog
 
+## [2026-05-20] (sesión 3)
+
+### Added
+- **Info de archivo en el visor** — el subtítulo del MediaViewer muestra "N of M · 1.2 MB · 15 may 2026". Archivos: `MediaViewer.js`.
+- **Copiar imagen al portapapeles** — botón en el footer del visor (FileCopy icon) que copia el blob de la imagen via `navigator.clipboard.write()`. Archivos: `MediaViewer.js`.
+- **Login por código QR** — botón "Log in by QR Code" en la pantalla del teléfono; genera el token via `auth.ExportLoginToken` y lo muestra en un canvas QR con polling automático. Archivos: `QrCode.js`, `QrCode.css`, `GramJsController.js`, `AuthFormControl.js`, `TelegramApp.js`, `Phone.js`.
+- Instalado `qrcode@1.5.4` para renderizar el QR en canvas.
+
+---
+
 ## [Unreleased] — 2026-05-20 (sesión 2)
 
 ### Added
