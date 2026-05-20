@@ -10,6 +10,7 @@ import Caption from './Caption';
 import Code from './Code';
 import Password from './Password';
 import Phone from './Phone';
+import QrCode from './QrCode';
 import AuthErrorDialog from './AuthErrorDialog';
 import ApplicationStore from '../../Stores/ApplicationStore';
 import AuthStore from '../../Stores/AuthorizationStore';
@@ -100,6 +101,11 @@ class AuthFormControl extends React.Component {
                         onChangePhone={onChangePhone}
                     />
                 );
+                break;
+            }
+            case 'authorizationStateWaitQrCode': {
+                const { onChangePhone } = this.props;
+                control = <QrCode authorizationState={state} onChangePhone={onChangePhone} />;
                 break;
             }
             default:

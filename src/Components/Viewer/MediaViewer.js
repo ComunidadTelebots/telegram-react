@@ -27,7 +27,9 @@ import MediaViewerButton from './MediaViewerButton';
 import MediaViewerFooterText from './MediaViewerFooterText';
 import MediaViewerFooterButton from './MediaViewerFooterButton';
 import MediaViewerDownloadButton from './MediaViewerDownloadButton';
+import FileCopyIcon from '@material-ui/icons/FileCopy';
 import { setMediaViewerContent } from '../../Actions/Client';
+import FileStore from '../../Stores/FileStore';
 import {
     cancelPreloadMediaViewerContent,
     getMediaFile,
@@ -390,6 +392,22 @@ class MediaViewer extends React.Component {
         const index = this.history.findIndex(x => x.id === currentMessageId);
         if (index !== -1) {
             cancelPreloadMediaViewerContent(index, this.history);
+        }
+    };
+
+    handleCopyImage = async event => {
+        event.stopPropagation();
+        const { chatId } = this.props;
+        const { currentMessageId } = this.state;
+        const [, , file] = getMediaFile(chatId, currentMessageId, PHOTO_BIG_SIZE);
+        if (!file) return;
+        const blob = FileStore.getBlob(file.id);
+        if (!blob) return;
+        try {
+            const type = blob.type && blob.type.startsWith('image/') ? blob.type : 'image/jpeg';
+            await navigator.clipboard.write([new ClipboardItem({ [type]: blob })]);
+        } catch (e) {
+            console.warn('[MediaViewer] copy image failed', e);
         }
     };
 
@@ -822,15 +840,37 @@ class MediaViewer extends React.Component {
             title = '';
         }
 
+        const fileSizeBytes = file ? file.size || file.local?.downloaded_size || 0 : 0;
+        const fileSizeStr =
+            fileSizeBytes > 0
+                ? fileSizeBytes < 1048576
+                    ? (fileSizeBytes / 1024).toFixed(1) + ' KB'
+                    : (fileSizeBytes / 1048576).toFixed(1) + ' MB'
+                : '';
+        const msgDate = message
+            ? new Date(message.date * 1000).toLocaleDateString(undefined, {
+                  day: 'numeric',
+                  month: 'short',
+                  year: 'numeric'
+              })
+            : '';
+        const countStr = maxCount && index >= 0 ? `${maxCount - index} of ${maxCount}` : '';
+        const subtitleParts = [countStr, fileSizeStr, msgDate].filter(Boolean);
+        const subtitle = subtitleParts.join(' · ') || null;
+
+        const canCopyImage = !isVideoMessage(chatId, currentMessageId) && !isAnimationMessage(chatId, currentMessageId);
+
         return (
             <div className={classNames('media-viewer', background)}>
                 <div className='media-viewer-footer'>
                     <MediaViewerControl chatId={chatId} messageId={currentMessageId} />
-                    <MediaViewerFooterText
-                        title={title}
-                        subtitle={maxCount && index >= 0 ? `${maxCount - index} of ${maxCount}` : null}
-                    />
+                    <MediaViewerFooterText title={title} subtitle={subtitle} />
                     <MediaViewerDownloadButton title={t('Save')} fileId={fileId} onClick={this.handleSave} />
+                    {canCopyImage && (
+                        <MediaViewerDownloadButton title='Copy Image' fileId={fileId} onClick={this.handleCopyImage}>
+                            <FileCopyIcon />
+                        </MediaViewerDownloadButton>
+                    )}
                     <MediaViewerFooterButton
                         title={t('Forward')}
                         disabled={!canBeForwarded}

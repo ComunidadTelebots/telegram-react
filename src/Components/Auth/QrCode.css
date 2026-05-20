@@ -1,0 +1,40 @@
+.qr-auth {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 24px 32px;
+    max-width: 340px;
+    text-align: center;
+    gap: 16px;
+}
+
+.qr-auth-title {
+    font-weight: 600;
+}
+
+.qr-auth-subtitle {
+    color: rgba(0, 0, 0, 0.6);
+    line-height: 1.6;
+    text-align: left;
+}
+
+.qr-auth-canvas-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 216px;
+    height: 216px;
+    border: 2px solid rgba(0, 0, 0, 0.08);
+    border-radius: 12px;
+    overflow: hidden;
+    background: #fff;
+}
+
+.qr-auth-canvas {
+    display: block;
+}
+
+.qr-auth-phone-btn {
+    text-transform: none;
+    font-size: 0.9rem;
+}

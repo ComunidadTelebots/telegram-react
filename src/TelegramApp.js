@@ -231,6 +231,7 @@ class TelegramApp extends Component {
                 case 'authorizationStateWaitCode':
                 case 'authorizationStateWaitPassword':
                 case 'authorizationStateWaitPhoneNumber':
+                case 'authorizationStateWaitQrCode':
                 case 'authorizationStateWaitTdlib':
                     page = (
                         <AuthFormControl
@@ -425,11 +426,6 @@ window.onpopstate = function() {
     window.history.go(1);
 };
 
-const enhance = compose(
-    withLanguage,
-    withTranslation(),
-    withTheme,
-    withStyles(styles, { withTheme: true })
-);
+const enhance = compose(withLanguage, withTranslation(), withTheme, withStyles(styles, { withTheme: true }));
 
 export default enhance(TelegramApp);

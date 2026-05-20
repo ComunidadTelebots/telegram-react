@@ -507,6 +507,16 @@ class Phone extends React.Component {
                         {Boolean(nextLanguage) ? t('ContinueOnThisLanguage', { lng: nextLanguage }) : ' '}
                     </Link>
                 </Typography>
+                <Typography className='sign-in-continue-on' style={{ marginTop: 4 }}>
+                    <Link
+                        style={{ cursor: 'pointer' }}
+                        onClick={() => {
+                            const TdLib = require('../../Controllers/TdLibController').default;
+                            TdLib.send({ '@type': 'requestQrCodeAuthentication', other_user_ids: [] });
+                        }}>
+                        Log in by QR Code
+                    </Link>
+                </Typography>
             </form>
         );
     }

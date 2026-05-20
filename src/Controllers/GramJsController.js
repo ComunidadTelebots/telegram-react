@@ -223,6 +223,9 @@ class GramJsController extends EventEmitter {
         const apiId = parseInt(process.env.REACT_APP_TELEGRAM_API_ID, 10);
         const apiHash = process.env.REACT_APP_TELEGRAM_API_HASH;
 
+        this.apiId = apiId;
+        this.apiHash = apiHash;
+
         if (!apiId || !apiHash) {
             console.error('[GramJs] Faltan credenciales API. Configura .env');
             return;
@@ -564,7 +567,7 @@ class GramJsController extends EventEmitter {
             case 'resendAuthenticationCode':
                 return this._resendCode();
             case 'requestQrCodeAuthentication':
-                return {};
+                return this._requestQrCodeAuthentication(req);
             case 'logOut':
                 return this._logOut();
 
@@ -1866,6 +1869,69 @@ class GramJsController extends EventEmitter {
             }
         });
         return {};
+    };
+
+    _requestQrCodeAuthentication = async req => {
+        try {
+            const result = await this.client.invoke(
+                new Api.auth.ExportLoginToken({
+                    apiId: this.apiId,
+                    apiHash: this.apiHash,
+                    exceptIds: []
+                })
+            );
+            if (result instanceof Api.auth.LoginToken) {
+                const tokenBase64 = Buffer.from(result.token).toString('base64url');
+                const link = `tg://login?token=${tokenBase64}`;
+                this._emitUpdate({
+                    '@type': 'updateAuthorizationState',
+                    authorization_state: {
+                        '@type': 'authorizationStateWaitQrCode',
+                        other_user_ids: [],
+                        link
+                    }
+                });
+                this._pollQrToken(result.expires);
+            }
+        } catch (e) {
+            console.error('[GramJs] requestQrCodeAuthentication error', e);
+        }
+        return {};
+    };
+
+    _pollQrToken = async expires => {
+        const waitMs = Math.max(0, (expires - Math.floor(Date.now() / 1000) - 2) * 1000);
+        await new Promise(r => setTimeout(r, Math.min(waitMs, 20000)));
+        try {
+            const result = await this.client.invoke(
+                new Api.auth.ExportLoginToken({
+                    apiId: this.apiId,
+                    apiHash: this.apiHash,
+                    exceptIds: []
+                })
+            );
+            if (result instanceof Api.auth.LoginToken) {
+                const tokenBase64 = Buffer.from(result.token).toString('base64url');
+                const link = `tg://login?token=${tokenBase64}`;
+                this._emitUpdate({
+                    '@type': 'updateAuthorizationState',
+                    authorization_state: {
+                        '@type': 'authorizationStateWaitQrCode',
+                        other_user_ids: [],
+                        link
+                    }
+                });
+                this._pollQrToken(result.expires);
+            } else if (result instanceof Api.auth.LoginTokenSuccess) {
+                this._emitUpdate({
+                    '@type': 'updateAuthorizationState',
+                    authorization_state: { '@type': 'authorizationStateReady' }
+                });
+                await this._loadInitialData();
+            }
+        } catch (e) {
+            console.warn('[GramJs] QR poll error', e);
+        }
     };
 }
 
