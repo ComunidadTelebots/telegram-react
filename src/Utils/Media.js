@@ -33,6 +33,7 @@ export function isEditedMedia(chatId, messageId) {
     if (!message) return;
 
     const { content } = message;
+    if (!content) return false;
     switch (content['@type']) {
         case 'messageAnimation': {
             return true;
