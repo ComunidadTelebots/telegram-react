@@ -563,10 +563,19 @@ function translateServiceContent(action) {
         return { '@type': 'messageContactRegistered' };
     }
     if (cls === 'MessageActionPhoneCall') {
+        const reasonCls = action.reason?.className || action.reason?._ || '';
+        let discard_reason;
+        if (reasonCls === 'PhoneCallDiscardReasonMissed') {
+            discard_reason = { '@type': 'callDiscardReasonMissed' };
+        } else if (reasonCls === 'PhoneCallDiscardReasonBusy') {
+            discard_reason = { '@type': 'callDiscardReasonDeclined' };
+        } else {
+            discard_reason = { '@type': 'callDiscardReasonEmpty' };
+        }
         return {
             '@type': 'messageCall',
             is_video: !!action.video,
-            discard_reason: { '@type': 'callDiscardReasonEmpty' },
+            discard_reason,
             duration: action.duration || 0,
         };
     }

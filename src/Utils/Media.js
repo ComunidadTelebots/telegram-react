@@ -13,14 +13,15 @@ export function getCallTitle(chatId, messageId) {
     if (!message) return null;
 
     const { content, is_outgoing } = message;
-    if (content['@type'] !== 'messageCall') return null;
+    if (!content || content['@type'] !== 'messageCall') return null;
 
-    const { discard_reason, duration } = content;
+    const { discard_reason } = content;
+    const discardType = discard_reason?.['@type'];
     if (is_outgoing) {
-        return discard_reason['@type'] === 'callDiscardReasonMissed' ? 'Cancelled Call' : 'Outgoing Call';
-    } else if (discard_reason['@type'] === 'callDiscardReasonMissed') {
+        return discardType === 'callDiscardReasonMissed' ? 'Cancelled Call' : 'Outgoing Call';
+    } else if (discardType === 'callDiscardReasonMissed') {
         return 'Missed Call';
-    } else if (discard_reason['@type'] === 'callDiscardReasonDeclined') {
+    } else if (discardType === 'callDiscardReasonDeclined') {
         return 'Declined Call';
     }
 
@@ -250,10 +251,10 @@ function getInputMediaThumbnail(thumbnail) {
         '@type': 'inputThumbnail',
         thumbnail: {
             '@type': 'inputFileId',
-            id: photo.id
+            id: photo.id,
         },
         width,
-        height
+        height,
     };
 }
 
@@ -263,7 +264,7 @@ function getInputMediaCaption(text) {
     return {
         '@type': 'formattedText',
         text: text,
-        entities: null
+        entities: null,
     };
 }
 
@@ -278,13 +279,13 @@ export function getInputMediaContent(media, text) {
                 '@type': 'inputMessageAnimation',
                 animation: {
                     '@type': 'inputFileId',
-                    id: file.id
+                    id: file.id,
                 },
                 thumbnail: getInputMediaThumbnail(thumbnail),
                 duration,
                 width,
                 height,
-                caption: getInputMediaCaption(text)
+                caption: getInputMediaCaption(text),
             };
         }
         case 'audio': {
@@ -294,19 +295,19 @@ export function getInputMediaContent(media, text) {
                 '@type': 'inputMessageAudio',
                 audio: {
                     '@type': 'inputFileId',
-                    id: file.id
+                    id: file.id,
                 },
                 album_cover_thumbnail: getInputMediaThumbnail(thumbnail),
                 duration,
                 title,
                 performer,
-                caption: getInputMediaCaption(text)
+                caption: getInputMediaCaption(text),
             };
         }
         case 'contact': {
             return {
                 '@type': 'inputMessageContact',
-                contact: media
+                contact: media,
             };
         }
         case 'document': {
@@ -316,10 +317,10 @@ export function getInputMediaContent(media, text) {
                 '@type': 'inputMessageDocument',
                 document: {
                     '@type': 'inputFileId',
-                    id: file.id
+                    id: file.id,
                 },
                 thumbnail: getInputMediaThumbnail(thumbnail),
-                caption: getInputMediaCaption(text)
+                caption: getInputMediaCaption(text),
             };
         }
         case 'game': {
@@ -332,7 +333,7 @@ export function getInputMediaContent(media, text) {
             return {
                 '@type': 'inputMessageLocation',
                 location: media,
-                live_period: 0
+                live_period: 0,
             };
         }
         case 'photo': {
@@ -349,14 +350,14 @@ export function getInputMediaContent(media, text) {
                 '@type': 'inputMessagePhoto',
                 photo: {
                     '@type': 'inputFileId',
-                    id: file.id
+                    id: file.id,
                 },
                 thumbnail: getInputMediaThumbnail(thumbnail),
                 added_sticker_file_ids: [],
                 width,
                 height,
                 caption: getInputMediaCaption(text),
-                ttl: 0
+                ttl: 0,
             };
         }
         case 'poll': {
@@ -369,18 +370,18 @@ export function getInputMediaContent(media, text) {
                 '@type': 'inputMessageSticker',
                 sticker: {
                     '@type': 'inputFileId',
-                    id: file.id
+                    id: file.id,
                 },
                 thumbnail: getInputMediaThumbnail(thumbnail),
                 width,
                 height,
-                caption: getInputMediaCaption(text)
+                caption: getInputMediaCaption(text),
             };
         }
         case 'venue': {
             return {
                 '@type': 'inputMessageVenue',
-                venue: media
+                venue: media,
             };
         }
         case 'video': {
@@ -390,7 +391,7 @@ export function getInputMediaContent(media, text) {
                 '@type': 'inputMessageVideo',
                 video: {
                     '@type': 'inputFileId',
-                    id: file.id
+                    id: file.id,
                 },
                 thumbnail: getInputMediaThumbnail(thumbnail),
                 added_sticker_file_ids: [],
@@ -399,7 +400,7 @@ export function getInputMediaContent(media, text) {
                 height,
                 supports_streaming,
                 caption: getInputMediaCaption(text),
-                ttl: 0
+                ttl: 0,
             };
         }
         case 'videoNote': {
@@ -409,12 +410,12 @@ export function getInputMediaContent(media, text) {
                 '@type': 'inputMessageVideoNote',
                 video: {
                     '@type': 'inputFileId',
-                    id: file.id
+                    id: file.id,
                 },
                 thumbnail: getInputMediaThumbnail(thumbnail),
                 duration,
                 length,
-                ttl: 0
+                ttl: 0,
             };
         }
         case 'voiceNote': {
@@ -424,10 +425,10 @@ export function getInputMediaContent(media, text) {
                 '@type': 'inputMessageVideoNote',
                 voice_note: {
                     '@type': 'inputFileId',
-                    id: file.id
+                    id: file.id,
                 },
                 duration,
-                waveform
+                waveform,
             };
         }
     }
