@@ -1,5 +1,17 @@
 # Changelog
 
+## [2026-05-21] (sesión 8)
+
+### Added
+- **Actualizaciones de nombre de usuario en tiempo real** (`UpdateTranslator.js`): `UpdateUserName` ahora emite `updateUser` con el nuevo nombre/apellido/username; los cambios de nombre de contactos se reflejan sin recargar. Archivo: `src/Utils/GramJs/UpdateTranslator.js`.
+- **Actualizaciones de foto de perfil en tiempo real** (`UpdateTranslator.js`): `UpdateUserPhoto` emite `updateUser` con la nueva foto de perfil usando `translateUserProfilePhoto`. Archivo: `src/Utils/GramJs/UpdateTranslator.js`.
+- **Actualizaciones de membresía en tiempo real** (`UpdateTranslator.js`): `UpdateChatMember` y `UpdateChannelParticipant` emiten `updateChatMember` con el estado anterior/nuevo del miembro (member, admin, banned, left, creator). Archivo: `src/Utils/GramJs/UpdateTranslator.js`.
+- **Formato de texto al enviar mensajes** (`GramJsController.js`): `_sendMessage` convierte entidades TDLib (`textEntityTypeBold`, `textEntityTypeItalic`, `textEntityTypeCode`, `textEntityTypePre`, `textEntityTypeSpoiler`, `textEntityTypeTextUrl`, `textEntityTypeMentionUser`, etc.) a `MessageEntity*` de GramJS y las pasa como `formattingEntities`. El formato se preserva al enviar mensajes. Archivo: `src/Controllers/GramJsController.js`.
+- **Recuentos reales de votos en encuestas** (`EntityTranslator.js`): `translateMessageContent` usa `media.results.results` para poblar `voter_count` y `vote_percentage` reales por opción, y marca `is_chosen`. Las encuestas muestran cuántos votos tiene cada opción. Archivo: `src/Utils/GramJs/EntityTranslator.js`.
+- **Thumbnails de stickers** (`EntityTranslator.js`): `translateSticker` extrae el primer `PhotoSize` válido de `gDoc.thumbs` y lo convierte en `thumbnail` con dimensiones reales en lugar de devolver siempre `null`. Archivo: `src/Utils/GramJs/EntityTranslator.js`.
+
+---
+
 ## [2026-05-20] (sesión 7)
 
 ### Fixed

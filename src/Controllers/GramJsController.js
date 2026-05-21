@@ -25,7 +25,7 @@ import {
     translateStickerSet,
     translateUserProfilePhoto,
     translateInstantView,
-    mediaCache
+    mediaCache,
 } from '../Utils/GramJs/EntityTranslator';
 import { loadMessages, saveMessages } from '../Utils/MessageCache';
 
@@ -96,7 +96,7 @@ class GramJsController extends EventEmitter {
         this.clientUpdate({
             '@type': 'clientUpdateAccounts',
             accounts: [...this._accounts],
-            activeIndex: this._activeAccountIndex
+            activeIndex: this._activeAccountIndex,
         });
     };
 
@@ -143,11 +143,11 @@ class GramJsController extends EventEmitter {
         this._resetInitialDialogsPromise();
         this._emitUpdate({
             '@type': 'updateAuthorizationState',
-            authorization_state: { '@type': 'authorizationStateLoggingOut' }
+            authorization_state: { '@type': 'authorizationStateLoggingOut' },
         });
         this._emitUpdate({
             '@type': 'updateAuthorizationState',
-            authorization_state: { '@type': 'authorizationStateClosed' }
+            authorization_state: { '@type': 'authorizationStateClosed' },
         });
         // ApplicationStore handles authorizationStateClosed → calls init() → _startClient()
     };
@@ -164,7 +164,7 @@ class GramJsController extends EventEmitter {
             sessionKey: `${SESSION_KEY_PREFIX}${nextIndex}`,
             userId: null,
             name: null,
-            phone: null
+            phone: null,
         });
         this._saveAccounts();
         await this._switchToAccount(nextIndex);
@@ -237,7 +237,7 @@ class GramJsController extends EventEmitter {
         // Simular el flujo de estados de auth que esperan los stores
         this._emitUpdate({
             '@type': 'updateAuthorizationState',
-            authorization_state: { '@type': 'authorizationStateWaitTdlibParameters' }
+            authorization_state: { '@type': 'authorizationStateWaitTdlibParameters' },
         });
 
         this._clearCaches();
@@ -267,7 +267,7 @@ class GramJsController extends EventEmitter {
         // Simular waitEncryptionKey para mantener compatibilidad con ApplicationStore
         this._emitUpdate({
             '@type': 'updateAuthorizationState',
-            authorization_state: { '@type': 'authorizationStateWaitEncryptionKey' }
+            authorization_state: { '@type': 'authorizationStateWaitEncryptionKey' },
         });
 
         if (await this.client.isUserAuthorized()) {
@@ -275,7 +275,7 @@ class GramJsController extends EventEmitter {
         } else {
             this._emitUpdate({
                 '@type': 'updateAuthorizationState',
-                authorization_state: { '@type': 'authorizationStateWaitPhoneNumber' }
+                authorization_state: { '@type': 'authorizationStateWaitPhoneNumber' },
             });
         }
     };
@@ -289,7 +289,7 @@ class GramJsController extends EventEmitter {
         this._emitUpdate({ '@type': 'updateConnectionState', state: { '@type': 'connectionStateReady' } });
         this._emitUpdate({
             '@type': 'updateAuthorizationState',
-            authorization_state: { '@type': 'authorizationStateReady' }
+            authorization_state: { '@type': 'authorizationStateReady' },
         });
 
         await this._loadInitialData();
@@ -333,7 +333,7 @@ class GramJsController extends EventEmitter {
                                     '@type': 'updateChatReadInbox',
                                     chat_id: message.chat_id,
                                     last_read_inbox_message_id: chat.last_read_inbox_message_id || 0,
-                                    unread_count: chat.unread_count
+                                    unread_count: chat.unread_count,
                                 });
                             }
                         }
@@ -341,7 +341,7 @@ class GramJsController extends EventEmitter {
                             '@type': 'updateChatLastMessage',
                             chat_id: message.chat_id,
                             last_message: message,
-                            order: String(message.date * 1000)
+                            order: String(message.date * 1000),
                         });
                     }
                 }
@@ -356,7 +356,7 @@ class GramJsController extends EventEmitter {
                             chat_id: tdUpdate.chat_id,
                             message_id: tdUpdate.message_id,
                             edit_date: msg.editDate,
-                            reply_markup: null
+                            reply_markup: null,
                         });
                     }
                 }
@@ -379,7 +379,7 @@ class GramJsController extends EventEmitter {
             this._emitUpdate({
                 '@type': 'updateOption',
                 name: 'my_id',
-                value: { '@type': 'optionValueInteger', value: Number(me.id) }
+                value: { '@type': 'optionValueInteger', value: Number(me.id) },
             });
         }
 
@@ -395,7 +395,7 @@ class GramJsController extends EventEmitter {
             const dialogs = await this.client.getDialogs({
                 limit,
                 offsetDate: offsetDate || undefined,
-                offsetId: offsetId || undefined
+                offsetId: offsetId || undefined,
             });
 
             for (const dialog of dialogs) {
@@ -426,8 +426,8 @@ class GramJsController extends EventEmitter {
                             member_count: entity.participantsCount || 0,
                             status,
                             is_active: !entity.deactivated,
-                            upgraded_to_supergroup_id: 0
-                        }
+                            upgraded_to_supergroup_id: 0,
+                        },
                     });
                 } else if (cls === 'Channel' || cls === 'ChannelForbidden') {
                     const status = entity.creator
@@ -445,7 +445,7 @@ class GramJsController extends EventEmitter {
                               can_invite_users: true,
                               can_restrict_members: true,
                               can_pin_messages: true,
-                              can_promote_members: false
+                              can_promote_members: false,
                           }
                         : { '@type': 'chatMemberStatusMember' };
                     this._emitUpdate({
@@ -464,8 +464,8 @@ class GramJsController extends EventEmitter {
                             is_channel: !entity.megagroup,
                             is_verified: !!entity.verified,
                             restriction_reason: '',
-                            is_scam: !!entity.scam
-                        }
+                            is_scam: !!entity.scam,
+                        },
                     });
                 }
 
@@ -478,7 +478,7 @@ class GramJsController extends EventEmitter {
                             '@type': 'updateChatLastMessage',
                             chat_id: tdChat.id,
                             last_message: tdChat.last_message,
-                            order: tdChat.order
+                            order: tdChat.order,
                         });
                     }
                 }
@@ -750,7 +750,7 @@ class GramJsController extends EventEmitter {
                             is_installed: true,
                             total_string_count: 0,
                             translated_string_count: 0,
-                            translation_url: ''
+                            translation_url: '',
                         },
                         {
                             '@type': 'languagePackInfo',
@@ -765,9 +765,9 @@ class GramJsController extends EventEmitter {
                             is_installed: true,
                             total_string_count: 0,
                             translated_string_count: 0,
-                            translation_url: ''
-                        }
-                    ]
+                            translation_url: '',
+                        },
+                    ],
                 };
             case 'getLanguagePackInfo':
                 return {
@@ -783,7 +783,7 @@ class GramJsController extends EventEmitter {
                     is_installed: true,
                     total_string_count: 0,
                     translated_string_count: 0,
-                    translation_url: ''
+                    translation_url: '',
                 };
             case 'getLanguagePackStrings':
                 return { '@type': 'languagePackStrings', strings: [] };
@@ -840,7 +840,7 @@ class GramJsController extends EventEmitter {
         appVersion: packageJson.version,
         deviceModel: getBrowser(),
         systemVersion: getOSName(),
-        langCode: navigator.language || 'en'
+        langCode: navigator.language || 'en',
     });
 
     _sendPhone = async req => {
@@ -858,8 +858,8 @@ class GramJsController extends EventEmitter {
                     phoneNumber: phone_number,
                     apiId,
                     apiHash,
-                    settings: new Api.CodeSettings({})
-                })
+                    settings: new Api.CodeSettings({}),
+                }),
             );
 
         let result;
@@ -940,9 +940,9 @@ class GramJsController extends EventEmitter {
                     phone_number,
                     type: { '@type': 'authenticationCodeTypeTelegramMessage', length: 5 },
                     next_type: null,
-                    timeout: 120
-                }
-            }
+                    timeout: 120,
+                },
+            },
         });
         return {};
     };
@@ -953,8 +953,8 @@ class GramJsController extends EventEmitter {
                 new Api.auth.SignIn({
                     phoneNumber: this._phone,
                     phoneCodeHash: this._phoneHash,
-                    phoneCode: req.code
-                })
+                    phoneCode: req.code,
+                }),
             );
             await this._onAuthorized();
         } catch (err) {
@@ -965,8 +965,8 @@ class GramJsController extends EventEmitter {
                         '@type': 'authorizationStateWaitPassword',
                         password_hint: '',
                         has_recovery_email_address: false,
-                        recovery_email_address_pattern: ''
-                    }
+                        recovery_email_address_pattern: '',
+                    },
                 });
                 return {};
             }
@@ -986,7 +986,7 @@ class GramJsController extends EventEmitter {
     _resendCode = async () => {
         if (this._phone && this._phoneHash) {
             await this.client.invoke(
-                new Api.auth.ResendCode({ phoneNumber: this._phone, phoneCodeHash: this._phoneHash })
+                new Api.auth.ResendCode({ phoneNumber: this._phone, phoneCodeHash: this._phoneHash }),
             );
         }
         return {};
@@ -1017,11 +1017,11 @@ class GramJsController extends EventEmitter {
         this._resetInitialDialogsPromise();
         this._emitUpdate({
             '@type': 'updateAuthorizationState',
-            authorization_state: { '@type': 'authorizationStateLoggingOut' }
+            authorization_state: { '@type': 'authorizationStateLoggingOut' },
         });
         this._emitUpdate({
             '@type': 'updateAuthorizationState',
-            authorization_state: { '@type': 'authorizationStateClosed' }
+            authorization_state: { '@type': 'authorizationStateClosed' },
         });
         return {};
     };
@@ -1101,7 +1101,7 @@ class GramJsController extends EventEmitter {
         if (cached) return cached;
         try {
             const entity = await this.client.getEntity(
-                new Api.InputUser({ userId: BigInt(user_id), accessHash: BigInt(0) })
+                new Api.InputUser({ userId: BigInt(user_id), accessHash: BigInt(0) }),
             );
             this._cacheEntity(entity);
             const tdChat = translateChat(entity, null);
@@ -1159,8 +1159,8 @@ class GramJsController extends EventEmitter {
                     member_count: user_ids.length + 1,
                     status: { '@type': 'chatMemberStatusCreator', is_member: true },
                     is_active: true,
-                    upgraded_to_supergroup_id: 0
-                }
+                    upgraded_to_supergroup_id: 0,
+                },
             });
             const tdChat = translateChat(newChat, null);
             if (tdChat) {
@@ -1183,8 +1183,8 @@ class GramJsController extends EventEmitter {
                     title,
                     about: about || '',
                     broadcast: !!is_channel,
-                    megagroup: !is_channel
-                })
+                    megagroup: !is_channel,
+                }),
             );
             const newChat = (result.chats || [])[0];
             if (!newChat) return null;
@@ -1205,8 +1205,8 @@ class GramJsController extends EventEmitter {
                     is_channel: !!is_channel,
                     is_verified: false,
                     restriction_reason: '',
-                    is_scam: false
-                }
+                    is_scam: false,
+                },
             });
             const tdChat = translateChat(newChat, null);
             if (tdChat) {
@@ -1228,7 +1228,7 @@ class GramJsController extends EventEmitter {
         const msgs = await this.client.getMessages(inputPeer, {
             limit,
             offsetId: fromMessageId || 0,
-            addOffset: offset
+            addOffset: offset,
         });
         // Cache senders from the message batch so profile photos and names load
         for (const m of msgs) {
@@ -1334,8 +1334,8 @@ class GramJsController extends EventEmitter {
                     background: false,
                     withMyScore: false,
                     grouped: false,
-                    noforwards: false
-                })
+                    noforwards: false,
+                }),
             );
 
             // Extract forwarded messages from the Updates response and emit locally
@@ -1356,7 +1356,7 @@ class GramJsController extends EventEmitter {
                     '@type': 'updateChatLastMessage',
                     chat_id,
                     last_message: lastTd,
-                    order: String(lastTd.date * 1000)
+                    order: String(lastTd.date * 1000),
                 });
             }
         } catch (err) {
@@ -1375,8 +1375,8 @@ class GramJsController extends EventEmitter {
                     id: message_id,
                     silent: disable_notification,
                     unpin: false,
-                    pmOneside: false
-                })
+                    pmOneside: false,
+                }),
             );
             this._emitUpdate({ '@type': 'updateChatPinnedMessage', chat_id, pinned_message_id: message_id });
         } catch (err) {
@@ -1395,8 +1395,8 @@ class GramJsController extends EventEmitter {
                     id: message_id,
                     silent: true,
                     unpin: true,
-                    pmOneside: false
-                })
+                    pmOneside: false,
+                }),
             );
             this._emitUpdate({ '@type': 'updateChatPinnedMessage', chat_id, pinned_message_id: 0 });
         } catch (err) {
@@ -1426,12 +1426,14 @@ class GramJsController extends EventEmitter {
             }
 
             const text = input_message_content?.text?.text || '';
+            const formattingEntities = tdEntitiesToGramJs(input_message_content?.text?.entities);
             const result = await this.client.sendMessage(inputPeer, {
                 message: text,
                 replyTo: reply_to_message_id || undefined,
                 parseMode: undefined,
+                formattingEntities: formattingEntities.length ? formattingEntities : undefined,
                 scheduleDate: schedule_date || undefined,
-                silent: !!disable_notification
+                silent: !!disable_notification,
             });
 
             const tdMessage = translateMessage(result, chat_id);
@@ -1443,7 +1445,7 @@ class GramJsController extends EventEmitter {
                     '@type': 'updateChatLastMessage',
                     chat_id,
                     last_message: tdMessage,
-                    order: String(tdMessage.date * 1000)
+                    order: String(tdMessage.date * 1000),
                 });
                 return tdMessage;
             }
@@ -1475,8 +1477,8 @@ class GramJsController extends EventEmitter {
                     new Api.DocumentAttributeAudio({
                         duration: content.duration || 0,
                         title: content.title || '',
-                        performer: content.performer || ''
-                    })
+                        performer: content.performer || '',
+                    }),
                 ];
             } else if (contentType === 'inputMessagePhoto') {
                 file = content.photo?.data;
@@ -1507,16 +1509,16 @@ class GramJsController extends EventEmitter {
                                 id: new Api.InputDocument({
                                     id: gDoc.id,
                                     accessHash: gDoc.accessHash,
-                                    fileReference: gDoc.fileReference
+                                    fileReference: gDoc.fileReference,
                                 }),
-                                ttlSeconds: 0
+                                ttlSeconds: 0,
                             }),
                             message: '',
                             randomId: BigInt(Math.floor(Math.random() * Number.MAX_SAFE_INTEGER)),
                             ...(replyToMessageId
                                 ? { replyTo: new Api.InputReplyToMessage({ replyToMsgId: replyToMessageId }) }
-                                : {})
-                        })
+                                : {}),
+                        }),
                     );
                     // Extract the Message from the Updates object
                     const sentMsg = result?.updates?.find?.(u => u.message) || result?.update?.message || null;
@@ -1530,7 +1532,7 @@ class GramJsController extends EventEmitter {
                                 '@type': 'updateChatLastMessage',
                                 chat_id: chatId,
                                 last_message: tdMessage,
-                                order: String(tdMessage.date * 1000)
+                                order: String(tdMessage.date * 1000),
                             });
                             return tdMessage;
                         }
@@ -1548,7 +1550,7 @@ class GramJsController extends EventEmitter {
                 voiceNote: voiceNote || false,
                 attributes: attributes && attributes.length ? attributes : undefined,
                 scheduleDate: scheduleDate || undefined,
-                workers: 1
+                workers: 1,
             });
 
             const tdMessage = translateMessage(result, chatId);
@@ -1560,7 +1562,7 @@ class GramJsController extends EventEmitter {
                     '@type': 'updateChatLastMessage',
                     chat_id: chatId,
                     last_message: tdMessage,
-                    order: String(tdMessage.date * 1000)
+                    order: String(tdMessage.date * 1000),
                 });
                 return tdMessage;
             }
@@ -1580,8 +1582,8 @@ class GramJsController extends EventEmitter {
                 new Api.messages.EditMessage({
                     peer: inputPeer,
                     id: message_id,
-                    message: text
-                })
+                    message: text,
+                }),
             );
             const editDate = Math.floor(Date.now() / 1000);
             this._emitUpdate({
@@ -1591,15 +1593,15 @@ class GramJsController extends EventEmitter {
                 new_content: {
                     '@type': 'messageText',
                     text: { '@type': 'formattedText', text, entities: [] },
-                    web_page: null
-                }
+                    web_page: null,
+                },
             });
             this._emitUpdate({
                 '@type': 'updateMessageEdited',
                 chat_id,
                 message_id,
                 edit_date: editDate,
-                reply_markup: null
+                reply_markup: null,
             });
         } catch (err) {
             throw err;
@@ -1621,7 +1623,7 @@ class GramJsController extends EventEmitter {
                 chat_id,
                 message_ids,
                 is_permanent: true,
-                from_cache: false
+                from_cache: false,
             });
         } catch (err) {
             throw err;
@@ -1648,7 +1650,7 @@ class GramJsController extends EventEmitter {
                     '@type': 'updateChatReadInbox',
                     chat_id,
                     last_read_inbox_message_id: maxId,
-                    unread_count: 0
+                    unread_count: 0,
                 });
             }
         } catch (e) {
@@ -1686,9 +1688,9 @@ class GramJsController extends EventEmitter {
                 new Api.users.GetFullUser({
                     id: new Api.InputUser({
                         userId: BigInt(user_id),
-                        accessHash: this._entityCache.get(user_id)?.accessHash || BigInt(0)
-                    })
-                })
+                        accessHash: this._entityCache.get(user_id)?.accessHash || BigInt(0),
+                    }),
+                }),
             );
             // GramJS returns UserFull wrapped in users.UserFull (result.fullUser) or directly
             const full = result.fullUser || result;
@@ -1712,8 +1714,8 @@ class GramJsController extends EventEmitter {
                 commands: (full.botInfo?.commands || []).map(c => ({
                     '@type': 'botCommand',
                     command: c.command || '',
-                    description: c.description || ''
-                }))
+                    description: c.description || '',
+                })),
             };
         } catch (e) {
             /* no-op */
@@ -1725,7 +1727,7 @@ class GramJsController extends EventEmitter {
             has_private_calls: false,
             has_private_forwards: false,
             need_phone_number_privacy_exception: false,
-            commands: []
+            commands: [],
         };
     };
 
@@ -1746,7 +1748,7 @@ class GramJsController extends EventEmitter {
             can_get_statistics: false,
             sticker_set_id: '0',
             invite_link: '',
-            upgraded_from_basic_group_id: 0
+            upgraded_from_basic_group_id: 0,
         };
         try {
             const inputPeer = tdlibChatIdToInputPeer(chatId, this._entityCache);
@@ -1765,12 +1767,12 @@ class GramJsController extends EventEmitter {
                 can_get_statistics: !!full.canViewStats,
                 sticker_set_id: full.stickerset ? String(full.stickerset.id) : '0',
                 invite_link: full.exportedInvite?.link || '',
-                upgraded_from_basic_group_id: 0
+                upgraded_from_basic_group_id: 0,
             };
             this._emitUpdate({
                 '@type': 'updateSupergroupFullInfo',
                 supergroup_id,
-                supergroup_full_info: info
+                supergroup_full_info: info,
             });
             return info;
         } catch (e) {
@@ -1817,7 +1819,7 @@ class GramJsController extends EventEmitter {
                         can_invite_users: true,
                         can_restrict_members: true,
                         can_pin_messages: true,
-                        can_promote_members: false
+                        can_promote_members: false,
                     };
                 return {
                     '@type': 'chatMember',
@@ -1825,7 +1827,7 @@ class GramJsController extends EventEmitter {
                     inviter_user_id: 0,
                     joined_chat_date: rawP?.date || 0,
                     status,
-                    bot_info: null
+                    bot_info: null,
                 };
             });
             const info = {
@@ -1833,12 +1835,12 @@ class GramJsController extends EventEmitter {
                 description: full.about || '',
                 creator_user_id,
                 members,
-                invite_link: full.exportedInvite?.link || ''
+                invite_link: full.exportedInvite?.link || '',
             };
             this._emitUpdate({
                 '@type': 'updateBasicGroupFullInfo',
                 basic_group_id,
-                basic_group_full_info: info
+                basic_group_full_info: info,
             });
             return info;
         } catch (e) {
@@ -1849,7 +1851,7 @@ class GramJsController extends EventEmitter {
             description: '',
             creator_user_id: 0,
             members: [],
-            invite_link: ''
+            invite_link: '',
         };
     };
 
@@ -1873,7 +1875,7 @@ class GramJsController extends EventEmitter {
                 chatActionStartPlayingGame: new Api.SendMessageGamePlayAction(),
                 chatActionRecordingVideoNote: new Api.SendMessageRecordRoundAction(),
                 chatActionUploadingVideoNote: new Api.SendMessageUploadRoundAction({ progress: p }),
-                chatActionCancel: new Api.SendMessageCancelAction()
+                chatActionCancel: new Api.SendMessageCancelAction(),
             };
             const mtAction = typeMap[action?.['@type']] || new Api.SendMessageTypingAction();
             await this.client.invoke(new Api.messages.SetTyping({ peer: inputPeer, action: mtAction }));
@@ -1890,8 +1892,8 @@ class GramJsController extends EventEmitter {
             await this.client.invoke(
                 new Api.messages.ToggleDialogPin({
                     peer: new Api.InputDialogPeer({ peer: inputPeer }),
-                    pinned: is_pinned
-                })
+                    pinned: is_pinned,
+                }),
             );
             const chat = this._chatCache.get(chat_id);
             const order = is_pinned
@@ -1917,8 +1919,8 @@ class GramJsController extends EventEmitter {
                     offsetRate: 0,
                     offsetPeer: new Api.InputPeerEmpty(),
                     offsetId: 0,
-                    limit
-                })
+                    limit,
+                }),
             );
             if (result.users) result.users.forEach(u => this._cacheUser(u));
             if (result.chats) result.chats.forEach(c => this._cacheEntity(c));
@@ -1947,7 +1949,7 @@ class GramJsController extends EventEmitter {
                 searchMessagesFilterUrl: new Api.InputMessagesFilterUrl(),
                 searchMessagesFilterVoiceNote: new Api.InputMessagesFilterVoice(),
                 searchMessagesFilterAudio: new Api.InputMessagesFilterMusic(),
-                searchMessagesFilterPinned: new Api.InputMessagesFilterPinned()
+                searchMessagesFilterPinned: new Api.InputMessagesFilterPinned(),
             };
             const gramFilter = (filter && filterMap[filter['@type']]) || new Api.InputMessagesFilterEmpty();
 
@@ -1957,7 +1959,7 @@ class GramJsController extends EventEmitter {
                 if (entity) {
                     fromId = new Api.InputPeerUser({
                         userId: BigInt(sender_user_id),
-                        accessHash: entity.accessHash || BigInt(0)
+                        accessHash: entity.accessHash || BigInt(0),
                     });
                 }
             }
@@ -1975,8 +1977,8 @@ class GramJsController extends EventEmitter {
                     maxId: 0,
                     minId: 0,
                     hash: BigInt(0),
-                    ...(fromId ? { fromId } : {})
-                })
+                    ...(fromId ? { fromId } : {}),
+                }),
             );
             const messages = (msgs.messages || []).map(m => translateMessage(m, chat_id)).filter(Boolean);
             return { '@type': 'messages', messages, total_count: msgs.count || messages.length };
@@ -2013,8 +2015,8 @@ class GramJsController extends EventEmitter {
                 new Api.messages.SendReaction({
                     peer: inputPeer,
                     msgId: message_id,
-                    reaction: reaction ? [new Api.ReactionEmoji({ emoticon: reaction })] : []
-                })
+                    reaction: reaction ? [new Api.ReactionEmoji({ emoticon: reaction })] : [],
+                }),
             );
         } catch (err) {
             console.error('[GramJs] sendReaction error', err);
@@ -2028,8 +2030,8 @@ class GramJsController extends EventEmitter {
             const result = await this.client.invoke(
                 new Api.messages.TranslateText({
                     text: [new Api.TextWithEntities({ text, entities: [] })],
-                    toLang: to_language_code || 'en'
-                })
+                    toLang: to_language_code || 'en',
+                }),
             );
             const translated = result?.result?.[0]?.text || '';
             return { '@type': 'text', text: translated };
@@ -2066,10 +2068,10 @@ class GramJsController extends EventEmitter {
                 new Api.messages.GetStickerSet({
                     stickerset: new Api.InputStickerSetID({
                         id: BigInt(idStr),
-                        accessHash
+                        accessHash,
                     }),
-                    hash: 0
-                })
+                    hash: 0,
+                }),
             );
             return (
                 translateStickerSet(result) || {
@@ -2078,7 +2080,7 @@ class GramJsController extends EventEmitter {
                     title: '',
                     name: '',
                     stickers: [],
-                    emojis: []
+                    emojis: [],
                 }
             );
         } catch (e) {
@@ -2089,7 +2091,7 @@ class GramJsController extends EventEmitter {
                 title: '',
                 name: '',
                 stickers: [],
-                emojis: []
+                emojis: [],
             };
         }
     };
@@ -2097,7 +2099,7 @@ class GramJsController extends EventEmitter {
     _getRecentStickers = async req => {
         try {
             const result = await this.client.invoke(
-                new Api.messages.GetRecentStickers({ attached: false, hash: BigInt(0) })
+                new Api.messages.GetRecentStickers({ attached: false, hash: BigInt(0) }),
             );
             const stickers = (result.stickers || []).map(doc => translateSticker(doc)).filter(Boolean);
             return { '@type': 'stickers', stickers };
@@ -2123,7 +2125,7 @@ class GramJsController extends EventEmitter {
                     is_downloading_active: isActive,
                     is_downloading_completed: isComplete,
                     downloaded_prefix_size: isComplete ? size : 0,
-                    downloaded_size: isComplete ? size : 0
+                    downloaded_size: isComplete ? size : 0,
                 },
                 remote: {
                     '@type': 'remoteFile',
@@ -2131,9 +2133,9 @@ class GramJsController extends EventEmitter {
                     unique_id: String(fileId),
                     is_uploading_active: false,
                     is_uploading_completed: true,
-                    uploaded_size: size
-                }
-            }
+                    uploaded_size: size,
+                },
+            },
         });
     };
 
@@ -2165,7 +2167,7 @@ class GramJsController extends EventEmitter {
             if (gMedia['@type'] === 'profilePhoto') {
                 const buffer = await this.client.downloadProfilePhoto(gMedia.entity, {
                     isBig: !!gMedia.isBig,
-                    workers: 1
+                    workers: 1,
                 });
                 const blob = new Blob([buffer || new Uint8Array()]);
                 this._downloadedFiles.set(fileId, blob);
@@ -2187,14 +2189,14 @@ class GramJsController extends EventEmitter {
                     id: gMedia.id,
                     accessHash: gMedia.accessHash,
                     fileReference: gMedia.fileReference,
-                    thumbSize: biggestSize ? biggestSize.type : 'x'
+                    thumbSize: biggestSize ? biggestSize.type : 'x',
                 });
             } else {
                 inputLocation = new Api.InputDocumentFileLocation({
                     id: gMedia.id,
                     accessHash: gMedia.accessHash,
                     fileReference: gMedia.fileReference,
-                    thumbSize: ''
+                    thumbSize: '',
                 });
             }
 
@@ -2254,9 +2256,9 @@ class GramJsController extends EventEmitter {
                     settings: new Api.InputPeerNotifySettings({
                         muteUntil,
                         showPreviews: notification_settings?.show_preview ?? true,
-                        silent: notification_settings?.mute_for > 0
-                    })
-                })
+                        silent: notification_settings?.mute_for > 0,
+                    }),
+                }),
             );
 
             // Refleja el cambio en el store localmente
@@ -2274,8 +2276,8 @@ class GramJsController extends EventEmitter {
                     use_default_disable_pinned_message_notifications: true,
                     disable_pinned_message_notifications: false,
                     use_default_disable_mention_notifications: true,
-                    disable_mention_notifications: false
-                }
+                    disable_mention_notifications: false,
+                },
             });
         } catch (e) {
             console.error('[GramJs] setChatNotificationSettings error', e);
@@ -2290,13 +2292,13 @@ class GramJsController extends EventEmitter {
             await this.client.invoke(
                 new Api.messages.MarkDialogUnread({
                     peer: new Api.InputDialogPeer({ peer: inputPeer }),
-                    unread: is_marked_as_unread
-                })
+                    unread: is_marked_as_unread,
+                }),
             );
             this._emitUpdate({
                 '@type': 'updateChatIsMarkedAsUnread',
                 chat_id,
-                is_marked_as_unread
+                is_marked_as_unread,
             });
         } catch (e) {
             console.error('[GramJs] toggleChatIsMarkedAsUnread error', e);
@@ -2314,8 +2316,8 @@ class GramJsController extends EventEmitter {
                 new Api.messages.SaveDraft({
                     peer: inputPeer,
                     message: text,
-                    ...(replyToMsgId ? { replyToMsgId } : {})
-                })
+                    ...(replyToMsgId ? { replyToMsgId } : {}),
+                }),
             );
             const chat = this._chatCache.get(chat_id);
             if (chat) chat.draft_message = draft_message || null;
@@ -2324,7 +2326,7 @@ class GramJsController extends EventEmitter {
                 '@type': 'updateChatDraftMessage',
                 chat_id,
                 draft_message: draft_message || null,
-                order
+                order,
             });
         } catch (e) {
             console.error('[GramJs] setChatDraftMessage error', e);
@@ -2363,8 +2365,8 @@ class GramJsController extends EventEmitter {
                     peer: inputPeer,
                     id: message_ids || [],
                     reason: mtReason,
-                    message: text || ''
-                })
+                    message: text || '',
+                }),
             );
         } catch (e) {
             console.error('[GramJs] reportChat error', e);
@@ -2390,9 +2392,9 @@ class GramJsController extends EventEmitter {
                 new Api.contacts.Block({
                     id: new Api.InputUser({
                         userId: BigInt(user_id),
-                        accessHash: this._entityCache.get(user_id)?.accessHash || BigInt(0)
-                    })
-                })
+                        accessHash: this._entityCache.get(user_id)?.accessHash || BigInt(0),
+                    }),
+                }),
             );
             this._emitUpdate({ '@type': 'updateUserFullInfo', user_id, user_full_info: { is_blocked: true } });
         } catch (e) {
@@ -2408,9 +2410,9 @@ class GramJsController extends EventEmitter {
                 new Api.contacts.Unblock({
                     id: new Api.InputUser({
                         userId: BigInt(user_id),
-                        accessHash: this._entityCache.get(user_id)?.accessHash || BigInt(0)
-                    })
-                })
+                        accessHash: this._entityCache.get(user_id)?.accessHash || BigInt(0),
+                    }),
+                }),
             );
             this._emitUpdate({ '@type': 'updateUserFullInfo', user_id, user_full_info: { is_blocked: false } });
         } catch (e) {
@@ -2428,11 +2430,11 @@ class GramJsController extends EventEmitter {
                     new Api.channels.ExportMessageLink({
                         channel: new Api.InputChannel({
                             channelId: inputPeer.channelId,
-                            accessHash: inputPeer.accessHash
+                            accessHash: inputPeer.accessHash,
                         }),
                         id: message_id,
-                        grouped: false
-                    })
+                        grouped: false,
+                    }),
                 );
                 return { '@type': 'messageLink', link: result.link, is_public: true };
             }
@@ -2458,7 +2460,7 @@ class GramJsController extends EventEmitter {
                 date_active: auth.dateActive || 0,
                 date_created: auth.dateCreated || 0,
                 is_current: auth.current || false,
-                is_password_pending: auth.passwordPending || false
+                is_password_pending: auth.passwordPending || false,
             }));
             return { '@type': 'sessions', sessions };
         } catch (e) {
@@ -2495,7 +2497,7 @@ class GramJsController extends EventEmitter {
             const userEntity = this._entityCache.get(user_id);
             const inputUser = new Api.InputUser({
                 userId: BigInt(user_id),
-                accessHash: userEntity?.accessHash || BigInt(0)
+                accessHash: userEntity?.accessHash || BigInt(0),
             });
 
             if (inputPeer instanceof Api.InputPeerChannel) {
@@ -2508,35 +2510,35 @@ class GramJsController extends EventEmitter {
                     sendGames: false,
                     sendInline: false,
                     embedLinks: false,
-                    untilDate: 1
+                    untilDate: 1,
                 });
                 await this.client.invoke(
                     new Api.channels.EditBanned({
                         channel: new Api.InputChannel({
                             channelId: inputPeer.channelId,
-                            accessHash: inputPeer.accessHash
+                            accessHash: inputPeer.accessHash,
                         }),
                         participant: inputUser,
-                        bannedRights
-                    })
+                        bannedRights,
+                    }),
                 );
                 await this.client.invoke(
                     new Api.channels.EditBanned({
                         channel: new Api.InputChannel({
                             channelId: inputPeer.channelId,
-                            accessHash: inputPeer.accessHash
+                            accessHash: inputPeer.accessHash,
                         }),
                         participant: inputUser,
-                        bannedRights: new Api.ChatBannedRights({ untilDate: 0 })
-                    })
+                        bannedRights: new Api.ChatBannedRights({ untilDate: 0 }),
+                    }),
                 );
             } else if (inputPeer instanceof Api.InputPeerChat) {
                 await this.client.invoke(
                     new Api.messages.DeleteChatUser({
                         chatId: inputPeer.chatId,
                         userId: inputUser,
-                        revokeHistory: false
-                    })
+                        revokeHistory: false,
+                    }),
                 );
             }
             return { '@type': 'ok' };
@@ -2553,7 +2555,7 @@ class GramJsController extends EventEmitter {
             const userEntity = this._entityCache.get(user_id);
             const inputUser = new Api.InputUser({
                 userId: BigInt(user_id),
-                accessHash: userEntity?.accessHash || BigInt(0)
+                accessHash: userEntity?.accessHash || BigInt(0),
             });
 
             if (inputPeer instanceof Api.InputPeerChannel) {
@@ -2566,25 +2568,25 @@ class GramJsController extends EventEmitter {
                     sendGames: true,
                     sendInline: true,
                     embedLinks: true,
-                    untilDate: 0
+                    untilDate: 0,
                 });
                 await this.client.invoke(
                     new Api.channels.EditBanned({
                         channel: new Api.InputChannel({
                             channelId: inputPeer.channelId,
-                            accessHash: inputPeer.accessHash
+                            accessHash: inputPeer.accessHash,
                         }),
                         participant: inputUser,
-                        bannedRights
-                    })
+                        bannedRights,
+                    }),
                 );
             } else if (inputPeer instanceof Api.InputPeerChat) {
                 await this.client.invoke(
                     new Api.messages.DeleteChatUser({
                         chatId: inputPeer.chatId,
                         userId: inputUser,
-                        revokeHistory: false
-                    })
+                        revokeHistory: false,
+                    }),
                 );
             }
             return { '@type': 'ok' };
@@ -2603,10 +2605,10 @@ class GramJsController extends EventEmitter {
                     new Api.channels.EditAbout({
                         channel: new Api.InputChannel({
                             channelId: inputPeer.channelId,
-                            accessHash: inputPeer.accessHash
+                            accessHash: inputPeer.accessHash,
                         }),
-                        about: description
-                    })
+                        about: description,
+                    }),
                 );
             } else if (inputPeer instanceof Api.InputPeerChat) {
                 await this.client.invoke(new Api.messages.EditChatAbout({ peer: inputPeer, about: description }));
@@ -2627,22 +2629,22 @@ class GramJsController extends EventEmitter {
                     new Api.channels.LeaveChannel({
                         channel: new Api.InputChannel({
                             channelId: inputPeer.channelId,
-                            accessHash: inputPeer.accessHash
-                        })
-                    })
+                            accessHash: inputPeer.accessHash,
+                        }),
+                    }),
                 );
             } else if (inputPeer instanceof Api.InputPeerChat) {
                 await this.client.invoke(
                     new Api.messages.DeleteChatUser({
                         chatId: inputPeer.chatId,
-                        userId: new Api.InputUserSelf()
-                    })
+                        userId: new Api.InputUserSelf(),
+                    }),
                 );
             }
             this._emitUpdate({
                 '@type': 'updateChatChatList',
                 chat_id,
-                chat_list: null
+                chat_list: null,
             });
             return { '@type': 'ok' };
         } catch (e) {
@@ -2657,15 +2659,15 @@ class GramJsController extends EventEmitter {
             const u = this._entityCache.get(user_id);
             const inputUser = new Api.InputUser({
                 userId: BigInt(user_id),
-                accessHash: u?.accessHash || BigInt(0)
+                accessHash: u?.accessHash || BigInt(0),
             });
             const result = await this.client.invoke(
                 new Api.photos.GetUserPhotos({
                     userId: inputUser,
                     offset: offset || 0,
                     maxId: BigInt(0),
-                    limit: Math.min(limit || 100, 100)
-                })
+                    limit: Math.min(limit || 100, 100),
+                }),
             );
             const photos = (result.photos || []).map(translateUserProfilePhoto).filter(Boolean);
             const totalCount = result.count !== undefined ? result.count : photos.length;
@@ -2696,8 +2698,8 @@ class GramJsController extends EventEmitter {
             '@type': 'updateFile',
             file: {
                 id: fileId,
-                local: { is_downloading_active: false, is_downloading_completed: false, downloaded_size: 0 }
-            }
+                local: { is_downloading_active: false, is_downloading_completed: false, downloaded_size: 0 },
+            },
         });
         return {};
     };
@@ -2708,8 +2710,8 @@ class GramJsController extends EventEmitter {
                 new Api.auth.ExportLoginToken({
                     apiId: this.apiId,
                     apiHash: this.apiHash,
-                    exceptIds: []
-                })
+                    exceptIds: [],
+                }),
             );
             if (result instanceof Api.auth.LoginToken) {
                 const tokenBase64 = Buffer.from(result.token).toString('base64url');
@@ -2719,8 +2721,8 @@ class GramJsController extends EventEmitter {
                     authorization_state: {
                         '@type': 'authorizationStateWaitQrCode',
                         other_user_ids: [],
-                        link
-                    }
+                        link,
+                    },
                 });
                 this._pollQrToken(result.expires);
             }
@@ -2738,8 +2740,8 @@ class GramJsController extends EventEmitter {
                 new Api.auth.ExportLoginToken({
                     apiId: this.apiId,
                     apiHash: this.apiHash,
-                    exceptIds: []
-                })
+                    exceptIds: [],
+                }),
             );
             if (result instanceof Api.auth.LoginToken) {
                 const tokenBase64 = Buffer.from(result.token).toString('base64url');
@@ -2749,14 +2751,14 @@ class GramJsController extends EventEmitter {
                     authorization_state: {
                         '@type': 'authorizationStateWaitQrCode',
                         other_user_ids: [],
-                        link
-                    }
+                        link,
+                    },
                 });
                 this._pollQrToken(result.expires);
             } else if (result instanceof Api.auth.LoginTokenSuccess) {
                 this._emitUpdate({
                     '@type': 'updateAuthorizationState',
-                    authorization_state: { '@type': 'authorizationStateReady' }
+                    authorization_state: { '@type': 'authorizationStateReady' },
                 });
                 await this._loadInitialData();
             }
@@ -2764,6 +2766,40 @@ class GramJsController extends EventEmitter {
             console.warn('[GramJs] QR poll error', e);
         }
     };
+}
+
+const TDLIB_TO_GRAMJS_ENTITY = {
+    textEntityTypeBold: 'MessageEntityBold',
+    textEntityTypeItalic: 'MessageEntityItalic',
+    textEntityTypeUnderline: 'MessageEntityUnderline',
+    textEntityTypeStrikethrough: 'MessageEntityStrike',
+    textEntityTypeCode: 'MessageEntityCode',
+    textEntityTypePre: 'MessageEntityPre',
+    textEntityTypeUrl: 'MessageEntityUrl',
+    textEntityTypeTextUrl: 'MessageEntityTextUrl',
+    textEntityTypeMention: 'MessageEntityMention',
+    textEntityTypeMentionUser: 'MessageEntityMentionName',
+    textEntityTypeHashtag: 'MessageEntityHashtag',
+    textEntityTypeBotCommand: 'MessageEntityBotCommand',
+    textEntityTypeCashtag: 'MessageEntityCashtag',
+    textEntityTypeSpoiler: 'MessageEntitySpoiler',
+    textEntityTypePhoneNumber: 'MessageEntityPhone',
+    textEntityTypeEmailAddress: 'MessageEntityEmail',
+};
+
+function tdEntitiesToGramJs(tdEntities) {
+    if (!tdEntities?.length) return [];
+    return tdEntities
+        .map(e => {
+            const tdType = e.type?.['@type'];
+            const gramCls = TDLIB_TO_GRAMJS_ENTITY[tdType];
+            if (!gramCls || !Api[gramCls]) return null;
+            const opts = { offset: e.offset, length: e.length };
+            if (tdType === 'textEntityTypeTextUrl') opts.url = e.type.url || '';
+            if (tdType === 'textEntityTypeMentionUser') opts.userId = BigInt(e.type.user_id || 0);
+            return new Api[gramCls](opts);
+        })
+        .filter(Boolean);
 }
 
 const controller = new GramJsController();

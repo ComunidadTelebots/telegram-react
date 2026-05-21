@@ -262,6 +262,20 @@ export function translateSticker(gDoc) {
     const width = imgAttr?.w || videoAttrS?.w || 512;
     const height = imgAttr?.h || videoAttrS?.h || 512;
 
+    const validThumb = (gDoc.thumbs || []).find(t => {
+        const tc = t.className || t._;
+        return tc !== 'PhotoStrippedSize' && tc !== 'PhotoSizeEmpty' && tc !== 'PhotoPathSize' && (t.w || t.h);
+    });
+    const thumbnail = validThumb
+        ? {
+              '@type': 'thumbnail',
+              format: { '@type': 'thumbnailFormatJpeg' },
+              width: Number(validThumb.w || validThumb.width || 100),
+              height: Number(validThumb.h || validThumb.height || 100),
+              file: translateFile(gDoc.id, validThumb.size || 0, gDoc.id ? String(gDoc.id) : ''),
+          }
+        : null;
+
     return {
         '@type': 'sticker',
         set_id: setId,
@@ -270,7 +284,7 @@ export function translateSticker(gDoc) {
         emoji: alt,
         is_animated: isAnimated,
         is_video: isVideo,
-        thumbnail: null,
+        thumbnail,
         sticker: translateFile(gDoc.id, size, gDoc.id ? String(gDoc.id) : ''),
     };
 }
@@ -980,14 +994,27 @@ function translateMessageContent(msg) {
                 '@type': 'poll',
                 id: poll ? String(poll.id) : '0',
                 question: typeof poll?.question === 'string' ? poll.question : poll?.question?.text || '',
-                options: (poll?.answers || []).map(a => ({
-                    '@type': 'pollOption',
-                    text: typeof a.text === 'string' ? a.text : a.text?.text || '',
-                    voter_count: 0,
-                    vote_percentage: 0,
-                    is_chosen: false,
-                    is_being_chosen: false,
-                })),
+                options: (() => {
+                    const totalVoters = media.results?.totalVoters || 0;
+                    const voterMap = new Map();
+                    for (const r of media.results?.results || []) {
+                        const key = r.option ? Buffer.from(r.option).toString('hex') : '';
+                        voterMap.set(key, { voters: r.voters || 0, chosen: !!r.chosen });
+                    }
+                    return (poll?.answers || []).map(a => {
+                        const key = a.option ? Buffer.from(a.option).toString('hex') : '';
+                        const rv = voterMap.get(key) || { voters: 0, chosen: false };
+                        const pct = totalVoters > 0 ? Math.round((rv.voters / totalVoters) * 100) : 0;
+                        return {
+                            '@type': 'pollOption',
+                            text: typeof a.text === 'string' ? a.text : a.text?.text || '',
+                            voter_count: rv.voters,
+                            vote_percentage: pct,
+                            is_chosen: rv.chosen,
+                            is_being_chosen: false,
+                        };
+                    });
+                })(),
                 total_voter_count: media.results?.totalVoters || 0,
                 is_anonymous: poll?.publicVoters === false,
                 type: poll?.quiz

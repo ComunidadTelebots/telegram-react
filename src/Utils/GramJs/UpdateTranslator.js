@@ -8,6 +8,7 @@ import {
     translateUser,
     translateUserStatus,
     translateReactions,
+    translateUserProfilePhoto,
 } from './EntityTranslator';
 
 export function translateUpdate(update) {
@@ -77,6 +78,18 @@ export function translateUpdate(update) {
         // ── Unread marks ─────────────────────────────────────────────────────
         case 'UpdateDialogUnreadMark':
             return dialogUnreadMark(update);
+
+        // ── Cambios de usuario ────────────────────────────────────────────────
+        case 'UpdateUserName':
+            return userName(update);
+        case 'UpdateUserPhoto':
+            return userPhoto(update);
+
+        // ── Cambios de membresía ──────────────────────────────────────────────
+        case 'UpdateChatMember':
+            return chatMember(update, false);
+        case 'UpdateChannelParticipant':
+            return chatMember(update, true);
 
         default:
             return null;
@@ -325,5 +338,128 @@ function dialogUnreadMark(update) {
         '@type': 'updateChatIsMarkedAsUnread',
         chat_id: chatId,
         is_marked_as_unread: !!update.unread,
+    };
+}
+
+function userName(update) {
+    const userId = Number(update.userId);
+    if (!userId) return null;
+    const username = update.usernames?.[0]?.username || update.username || '';
+    return {
+        '@type': 'updateUser',
+        user: {
+            '@type': 'user',
+            id: userId,
+            first_name: update.firstName || '',
+            last_name: update.lastName || '',
+            username,
+            phone_number: '',
+            status: { '@type': 'userStatusEmpty' },
+            type: { '@type': 'userTypeRegular' },
+            is_verified: false,
+            is_support: false,
+            restriction_reason: '',
+            have_access: true,
+            profile_photo: null,
+            language_code: '',
+        },
+    };
+}
+
+function userPhoto(update) {
+    const userId = Number(update.userId);
+    if (!userId) return null;
+    const photoCls = update.photo?.className || update.photo?._;
+    const profile_photo =
+        photoCls && photoCls !== 'UserProfilePhotoEmpty' ? translateUserProfilePhoto(update.photo, userId) : null;
+    return {
+        '@type': 'updateUser',
+        user: {
+            '@type': 'user',
+            id: userId,
+            first_name: '',
+            last_name: '',
+            username: '',
+            phone_number: '',
+            status: { '@type': 'userStatusEmpty' },
+            type: { '@type': 'userTypeRegular' },
+            is_verified: false,
+            is_support: false,
+            restriction_reason: '',
+            have_access: true,
+            profile_photo,
+            language_code: '',
+        },
+    };
+}
+
+function translateParticipantStatus(participant) {
+    if (!participant) return { '@type': 'chatMemberStatusLeft' };
+    const cls = participant.className || participant._;
+    switch (cls) {
+        case 'ChannelParticipantCreator':
+        case 'ChatParticipantCreator':
+            return { '@type': 'chatMemberStatusCreator', is_anonymous: false, custom_title: participant.rank || '' };
+        case 'ChannelParticipantAdmin':
+        case 'ChatParticipantAdmin':
+            return {
+                '@type': 'chatMemberStatusAdministrator',
+                custom_title: participant.rank || '',
+                can_be_edited: false,
+                can_manage_chat: true,
+                can_change_info: true,
+                can_post_messages: false,
+                can_edit_messages: false,
+                can_delete_messages: true,
+                can_invite_users: true,
+                can_restrict_members: true,
+                can_pin_messages: true,
+                can_promote_members: false,
+                can_manage_video_chats: false,
+                is_anonymous: false,
+            };
+        case 'ChannelParticipantBanned':
+            return participant.left
+                ? { '@type': 'chatMemberStatusLeft' }
+                : { '@type': 'chatMemberStatusBanned', banned_until_date: participant.bannedRights?.untilDate || 0 };
+        case 'ChannelParticipantLeft':
+            return { '@type': 'chatMemberStatusLeft' };
+        default:
+            return { '@type': 'chatMemberStatusMember' };
+    }
+}
+
+function chatMember(update, isChannel) {
+    let chatId = 0;
+    if (isChannel) {
+        chatId = update.channelId ? -1000000000000 - Number(update.channelId) : 0;
+    } else {
+        chatId = update.chatId ? -Number(update.chatId) : 0;
+    }
+    if (!chatId) return null;
+
+    const userId = Number(update.userId || update.actorId || 0);
+    const actorUserId = Number(update.actorId || 0);
+
+    return {
+        '@type': 'updateChatMember',
+        chat_id: chatId,
+        actor_user_id: actorUserId,
+        date: update.date || 0,
+        invite_link: null,
+        old_chat_member: {
+            '@type': 'chatMember',
+            user_id: userId,
+            inviter_user_id: 0,
+            joined_chat_date: 0,
+            status: translateParticipantStatus(update.prevParticipant),
+        },
+        new_chat_member: {
+            '@type': 'chatMember',
+            user_id: userId,
+            inviter_user_id: actorUserId,
+            joined_chat_date: update.date || 0,
+            status: translateParticipantStatus(update.newParticipant),
+        },
     };
 }
