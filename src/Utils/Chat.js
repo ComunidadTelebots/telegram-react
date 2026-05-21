@@ -96,10 +96,10 @@ function entitiesEquals(entities1, entities2) {
 
     const map = new Map();
     entities1.forEach(x => {
-        map.set(`${x.type['@type']}_${x.offset}_${x.length}`, x);
+        map.set(`${x.type?.['@type']}_${x.offset}_${x.length}`, x);
     });
 
-    return entities2.every(x => map.has(`${x.type['@type']}_${x.offset}_${x.length}`));
+    return entities2.every(x => map.has(`${x.type?.['@type']}_${x.offset}_${x.length}`));
 }
 
 function getGroupChatTypingString(inputTypingManager) {
@@ -357,7 +357,7 @@ export function getChatDisablePinnedMessageNotifications(chatId) {
 
     const {
         use_default_disable_pinned_message_notifications,
-        disable_pinned_message_notifications
+        disable_pinned_message_notifications,
     } = notification_settings;
     if (use_default_disable_pinned_message_notifications) {
         const settings = getScopeNotificationSettings(chatId);
@@ -820,25 +820,25 @@ async function getChatFullInfo(chatId) {
         case 'chatTypePrivate': {
             return await TdLibController.send({
                 '@type': 'getUserFullInfo',
-                user_id: type.user_id
+                user_id: type.user_id,
             });
         }
         case 'chatTypeSecret': {
             return await TdLibController.send({
                 '@type': 'getUserFullInfo',
-                user_id: type.user_id
+                user_id: type.user_id,
             });
         }
         case 'chatTypeBasicGroup': {
             return await TdLibController.send({
                 '@type': 'getBasicGroupFullInfo',
-                basic_group_id: type.basic_group_id
+                basic_group_id: type.basic_group_id,
             });
         }
         case 'chatTypeSupergroup': {
             return await TdLibController.send({
                 '@type': 'getSupergroupFullInfo',
-                supergroup_id: type.supergroup_id
+                supergroup_id: type.supergroup_id,
             });
         }
     }
@@ -1509,5 +1509,5 @@ export {
     canSendPhotos,
     canSendDocuments,
     canSendPolls,
-    isAdminInChat
+    isAdminInChat,
 };

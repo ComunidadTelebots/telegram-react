@@ -57,7 +57,7 @@ function translateFile(id, size = 0, remoteId = '') {
             is_downloading_active: false,
             is_downloading_completed: false,
             downloaded_prefix_size: 0,
-            downloaded_size: 0
+            downloaded_size: 0,
         },
         remote: {
             '@type': 'remoteFile',
@@ -65,8 +65,8 @@ function translateFile(id, size = 0, remoteId = '') {
             unique_id: remoteId || String(fileId),
             is_uploading_active: false,
             is_uploading_completed: true,
-            uploaded_size: size || 0
-        }
+            uploaded_size: size || 0,
+        },
     };
 }
 
@@ -89,7 +89,7 @@ function translateProfilePhoto(entity, chatId) {
         '@type': 'profilePhoto',
         id: String(photo.photoId || chatId),
         small: translateFile(smallId, 0, String(smallId)),
-        big: translateFile(bigId, 0, String(bigId))
+        big: translateFile(bigId, 0, String(bigId)),
     };
 }
 
@@ -121,7 +121,7 @@ export function translatePhoto(gPhoto) {
                 type,
                 width: Number(w),
                 height: Number(h),
-                photo: translateFile(gPhoto.id, szBytes, gPhoto.id ? String(gPhoto.id) : '')
+                photo: translateFile(gPhoto.id, szBytes, gPhoto.id ? String(gPhoto.id) : ''),
             };
         })
         .filter(Boolean);
@@ -132,7 +132,7 @@ export function translatePhoto(gPhoto) {
             type: 'x',
             width: 320,
             height: 240,
-            photo: translateFile(gPhoto.id || 0, 10000, '')
+            photo: translateFile(gPhoto.id || 0, 10000, ''),
         });
     }
 
@@ -140,7 +140,7 @@ export function translatePhoto(gPhoto) {
         '@type': 'photo',
         has_stickers: false,
         minithumbnail: null,
-        sizes
+        sizes,
     };
 }
 
@@ -160,7 +160,7 @@ export function translateDocument(gDoc) {
         mime_type: mimeType,
         minithumbnail: null,
         thumbnail: null,
-        document: translateFile(gDoc.id, size, gDoc.id ? String(gDoc.id) : '')
+        document: translateFile(gDoc.id, size, gDoc.id ? String(gDoc.id) : ''),
     };
 }
 
@@ -187,7 +187,7 @@ export function translateAnimation(gDoc) {
         has_stickers: false,
         minithumbnail: null,
         thumbnail: null,
-        animation: translateFile(gDoc.id, size, gDoc.id ? String(gDoc.id) : '')
+        animation: translateFile(gDoc.id, size, gDoc.id ? String(gDoc.id) : ''),
     };
 }
 
@@ -214,7 +214,7 @@ export function translateVideo(gDoc) {
         has_stickers: false,
         minithumbnail: null,
         thumbnail: null,
-        video: translateFile(gDoc.id, size, gDoc.id ? String(gDoc.id) : '')
+        video: translateFile(gDoc.id, size, gDoc.id ? String(gDoc.id) : ''),
     };
 }
 
@@ -239,7 +239,7 @@ export function translateAudio(gDoc) {
         mime_type: mimeType,
         album_cover_minithumbnail: null,
         album_cover_thumbnail: null,
-        audio: translateFile(gDoc.id, size, gDoc.id ? String(gDoc.id) : '')
+        audio: translateFile(gDoc.id, size, gDoc.id ? String(gDoc.id) : ''),
     };
 }
 
@@ -271,7 +271,7 @@ export function translateSticker(gDoc) {
         is_animated: isAnimated,
         is_video: isVideo,
         thumbnail: null,
-        sticker: translateFile(gDoc.id, size, gDoc.id ? String(gDoc.id) : '')
+        sticker: translateFile(gDoc.id, size, gDoc.id ? String(gDoc.id) : ''),
     };
 }
 
@@ -290,7 +290,7 @@ export function translateStickerSetInfo(ss) {
         is_masks: !!ss.masks,
         is_viewed: true,
         size: ss.count || 0,
-        covers: []
+        covers: [],
     };
 }
 
@@ -330,7 +330,7 @@ export function translateStickerSet(result) {
         is_masks: !!set.masks,
         is_viewed: true,
         stickers,
-        emojis: stickers.map(s => ({ '@type': 'emojis', emojis: s.emoji ? [s.emoji] : [] }))
+        emojis: stickers.map(s => ({ '@type': 'emojis', emojis: s.emoji ? [s.emoji] : [] })),
     };
 }
 
@@ -354,7 +354,7 @@ export function translateUser(user) {
                   can_read_all_group_messages: false,
                   is_inline: !!user.botInlineGeo,
                   inline_query_placeholder: '',
-                  need_location: false
+                  need_location: false,
               }
             : { '@type': 'userTypeRegular' },
         is_verified: !!user.verified,
@@ -362,7 +362,7 @@ export function translateUser(user) {
         restriction_reason: user.restrictionReason?.[0]?.text || '',
         have_access: true,
         profile_photo: translateProfilePhoto(user, userId),
-        language_code: ''
+        language_code: '',
     };
 }
 
@@ -437,8 +437,8 @@ export function translateChat(entity, dialog) {
                 '@type': 'inputMessageText',
                 text: { '@type': 'formattedText', text: draftObj.message, entities: [] },
                 disable_web_page_preview: false,
-                clear_draft: false
-            }
+                clear_draft: false,
+            },
         };
     }
 
@@ -472,12 +472,12 @@ export function translateChat(entity, dialog) {
             use_default_disable_pinned_message_notifications: true,
             disable_pinned_message_notifications: false,
             use_default_disable_mention_notifications: true,
-            disable_mention_notifications: false
+            disable_mention_notifications: false,
         },
         pinned_message_id: dialog?.pinnedMsgId || 0,
         reply_markup_message_id: dialog?.replyMarkupMsgId || 0,
         draft_message: draftMessage,
-        client_data: ''
+        client_data: '',
     };
 }
 
@@ -497,7 +497,7 @@ function translateForwardInfo(fwdFrom) {
                 '@type': 'messageForwardOriginChannel',
                 chat_id: chatId,
                 message_id: fwdFrom.channelPost || 0,
-                author_signature: fwdFrom.postAuthor || ''
+                author_signature: fwdFrom.postAuthor || '',
             };
         } else if (fc === 'PeerChat') {
             origin = { '@type': 'messageForwardOriginUser', sender_user_id: 0 };
@@ -507,7 +507,7 @@ function translateForwardInfo(fwdFrom) {
     if (!origin) {
         origin = {
             '@type': 'messageForwardOriginHiddenUser',
-            sender_name: fwdFrom.fromName || 'Unknown'
+            sender_name: fwdFrom.fromName || 'Unknown',
         };
     }
 
@@ -517,7 +517,7 @@ function translateForwardInfo(fwdFrom) {
         date: fwdFrom.date || 0,
         public_service_announcement_type: fwdFrom.psaType || '',
         from_chat_id: 0,
-        from_message_id: 0
+        from_message_id: 0,
     };
 }
 
@@ -529,7 +529,7 @@ function translateServiceContent(action) {
         const members = (action.users || []).map(id => Number(id));
         return {
             '@type': 'messageChatAddMembers',
-            member_user_ids: members.length ? members : [0]
+            member_user_ids: members.length ? members : [0],
         };
     }
     if (cls === 'MessageActionChatJoinedByLink') {
@@ -567,7 +567,7 @@ function translateServiceContent(action) {
             '@type': 'messageCall',
             is_video: !!action.video,
             discard_reason: { '@type': 'callDiscardReasonEmpty' },
-            duration: action.duration || 0
+            duration: action.duration || 0,
         };
     }
     if (cls === 'MessageActionGameScore') {
@@ -575,7 +575,7 @@ function translateServiceContent(action) {
             '@type': 'messageGameScore',
             game_message_id: action.gameId ? Number(action.gameId) : 0,
             game_id: action.gameId ? String(action.gameId) : '0',
-            score: action.score || 0
+            score: action.score || 0,
         };
     }
     if (cls === 'MessageActionChatMigrateTo') {
@@ -585,7 +585,7 @@ function translateServiceContent(action) {
         return {
             '@type': 'messageChatUpgradeFrom',
             title: action.title || '',
-            basic_group_id: action.chatId ? Number(action.chatId) : 0
+            basic_group_id: action.chatId ? Number(action.chatId) : 0,
         };
     }
     if (cls === 'MessageActionChatSetTtl' || cls === 'MessageActionChatSetMessagesTtl') {
@@ -605,8 +605,54 @@ function translateServiceContent(action) {
             '@type': 'messageProximityAlertTriggered',
             traveler_id: action.fromId?.userId ? Number(action.fromId.userId) : 0,
             watcher_id: action.toId?.userId ? Number(action.toId.userId) : 0,
-            distance: action.distance || 0
+            distance: action.distance || 0,
         };
+    }
+    if (cls === 'MessageActionGroupCall') {
+        const dur = action.duration;
+        const text = dur ? `Group call ended (${dur}s)` : 'Group call started';
+        return { '@type': 'messageCustomServiceAction', text };
+    }
+    if (cls === 'MessageActionInviteToGroupCall') {
+        return { '@type': 'messageCustomServiceAction', text: 'Invited to video call' };
+    }
+    if (cls === 'MessageActionSetChatTheme') {
+        const emoticon = action.emoticon || '';
+        return {
+            '@type': 'messageCustomServiceAction',
+            text: emoticon ? `Chat theme changed to ${emoticon}` : 'Chat theme removed',
+        };
+    }
+    if (cls === 'MessageActionTopicCreate') {
+        return { '@type': 'messageCustomServiceAction', text: `Topic «${action.title || ''}» created` };
+    }
+    if (cls === 'MessageActionTopicEdit') {
+        const title = action.title;
+        return { '@type': 'messageCustomServiceAction', text: title ? `Topic renamed to «${title}»` : 'Topic edited' };
+    }
+    if (cls === 'MessageActionBoostApply') {
+        const n = action.boosts || 1;
+        return { '@type': 'messageCustomServiceAction', text: n === 1 ? '1 boost applied' : `${n} boosts applied` };
+    }
+    if (cls === 'MessageActionPaymentSent') {
+        const cur = action.currency || '';
+        const amt = action.totalAmount ? Number(action.totalAmount) : 0;
+        return { '@type': 'messageCustomServiceAction', text: `Payment of ${(amt / 100).toFixed(2)} ${cur} sent` };
+    }
+    if (cls === 'MessageActionPaymentSentMe') {
+        return { '@type': 'messagePaymentSuccessfulBot' };
+    }
+    if (cls === 'MessageActionWebViewDataSent' || cls === 'MessageActionWebViewDataSentMe') {
+        return { '@type': 'messageCustomServiceAction', text: `Data sent via ${action.text || 'web app'}` };
+    }
+    if (cls === 'MessageActionRequestedPeer' || cls === 'MessageActionRequestedPeerSentMe') {
+        return { '@type': 'messageCustomServiceAction', text: 'Peer shared' };
+    }
+    if (cls === 'MessageActionSetMessagesTtl') {
+        return { '@type': 'messageChatSetTtl', ttl: action.period || 0 };
+    }
+    if (cls === 'MessageActionChatJoinedByRequest') {
+        return { '@type': 'messageChatJoinByLink' };
     }
 
     return null;
@@ -658,7 +704,7 @@ export function translateMessage(msg, chatId) {
                   '@type': 'messageInteractionInfo',
                   view_count: msg.views || 0,
                   forward_count: msg.forwards || 0,
-                  reply_info: null
+                  reply_info: null,
               }
             : null,
         reply_to_message_id: msg.replyTo ? msg.replyTo.replyToMsgId || 0 : 0,
@@ -673,7 +719,7 @@ export function translateMessage(msg, chatId) {
         ttl: 0,
         ttl_expires_in: 0,
         via_bot_user_id: msg.viaBotId ? Number(msg.viaBotId) : 0,
-        reactions: translateReactions(msg.reactions)
+        reactions: translateReactions(msg.reactions),
     };
 }
 
@@ -700,7 +746,7 @@ export function translateUserProfilePhoto(gPhoto) {
                 is_downloading_active: false,
                 is_downloading_completed: false,
                 downloaded_prefix_size: 0,
-                downloaded_size: 0
+                downloaded_size: 0,
             },
             remote: {
                 '@type': 'remoteFile',
@@ -708,8 +754,8 @@ export function translateUserProfilePhoto(gPhoto) {
                 unique_id: String(gPhoto.id),
                 is_uploading_active: false,
                 is_uploading_completed: true,
-                uploaded_size: bytes
-            }
+                uploaded_size: bytes,
+            },
         };
     };
 
@@ -720,7 +766,7 @@ export function translateUserProfilePhoto(gPhoto) {
             type: sz.type || 'x',
             width: Number(sz.w || sz.width || 0),
             height: Number(sz.h || sz.height || 0),
-            photo: makeFile(sz)
+            photo: makeFile(sz),
         }));
 
     if (sizes.length === 0) {
@@ -740,8 +786,8 @@ export function translateReactions(raw) {
                 '@type': 'messageReaction',
                 reaction: r.reaction.emoticon || '',
                 total_count: r.count || 0,
-                is_chosen: r.chosenOrder != null
-            }))
+                is_chosen: r.chosenOrder != null,
+            })),
     };
 }
 
@@ -749,7 +795,7 @@ function makeCaption(msg) {
     return {
         '@type': 'formattedText',
         text: msg.message || '',
-        entities: (msg.entities || []).map(translateTextEntity).filter(Boolean)
+        entities: (msg.entities || []).map(translateTextEntity).filter(Boolean),
     };
 }
 
@@ -777,9 +823,9 @@ function translateMessageContent(msg) {
             text: {
                 '@type': 'formattedText',
                 text: msg.message || '',
-                entities: (msg.entities || []).map(translateTextEntity).filter(Boolean)
+                entities: (msg.entities || []).map(translateTextEntity).filter(Boolean),
             },
-            web_page: null
+            web_page: null,
         };
     }
 
@@ -791,7 +837,7 @@ function translateMessageContent(msg) {
             '@type': 'messagePhoto',
             photo,
             caption: makeCaption(msg),
-            is_secret: !!media.ttlSeconds
+            is_secret: !!media.ttlSeconds,
         };
     }
 
@@ -815,7 +861,7 @@ function translateMessageContent(msg) {
                 '@type': 'messageAnimation',
                 animation: translateAnimation(doc),
                 caption: makeCaption(msg),
-                is_secret: false
+                is_secret: false,
             };
         if (isVideoNote) {
             if (doc?.id) mediaCache.set(Number(doc.id), doc);
@@ -829,10 +875,10 @@ function translateMessageContent(msg) {
                     length: Number(wh),
                     minithumbnail: null,
                     thumbnail: null,
-                    video: translateFile(doc.id, doc.size ? Number(doc.size) : 0, doc.id ? String(doc.id) : '')
+                    video: translateFile(doc.id, doc.size ? Number(doc.size) : 0, doc.id ? String(doc.id) : ''),
                 },
                 is_viewed: false,
-                is_secret: false
+                is_secret: false,
             };
         }
         if (isVideo)
@@ -840,7 +886,7 @@ function translateMessageContent(msg) {
                 '@type': 'messageVideo',
                 video: translateVideo(doc),
                 caption: makeCaption(msg),
-                is_secret: false
+                is_secret: false,
             };
         if (isVoice) {
             if (doc?.id) mediaCache.set(Number(doc.id), doc);
@@ -853,22 +899,22 @@ function translateMessageContent(msg) {
                     duration: Number(audioAttr.duration || 0),
                     waveform: waveformAttr || '',
                     mime_type: doc.mimeType || 'audio/ogg',
-                    voice: translateFile(doc.id, size, doc.id ? String(doc.id) : '')
+                    voice: translateFile(doc.id, size, doc.id ? String(doc.id) : ''),
                 },
-                is_listened: false
+                is_listened: false,
             };
         }
         if (isAudio)
             return {
                 '@type': 'messageAudio',
                 audio: translateAudio(doc),
-                caption: makeCaption(msg)
+                caption: makeCaption(msg),
             };
 
         return {
             '@type': 'messageDocument',
             document: translateDocument(doc),
-            caption: makeCaption(msg)
+            caption: makeCaption(msg),
         };
     }
 
@@ -882,8 +928,8 @@ function translateMessageContent(msg) {
                 first_name: media.firstName || '',
                 last_name: media.lastName || '',
                 vcard: '',
-                user_id: media.userId ? Number(media.userId) : 0
-            }
+                user_id: media.userId ? Number(media.userId) : 0,
+            },
         };
     }
 
@@ -909,7 +955,7 @@ function translateMessageContent(msg) {
                       duration: Number(wp.duration || 0),
                       author: wp.author || '',
                       document: null,
-                      instant_view_version: wp.cachedPage ? 2 : 0
+                      instant_view_version: wp.cachedPage ? 2 : 0,
                   }
                 : null;
         return {
@@ -917,9 +963,9 @@ function translateMessageContent(msg) {
             text: {
                 '@type': 'formattedText',
                 text: msg.message || '',
-                entities: (msg.entities || []).map(translateTextEntity).filter(Boolean)
+                entities: (msg.entities || []).map(translateTextEntity).filter(Boolean),
             },
-            web_page: webPage
+            web_page: webPage,
         };
     }
 
@@ -938,7 +984,7 @@ function translateMessageContent(msg) {
                     voter_count: 0,
                     vote_percentage: 0,
                     is_chosen: false,
-                    is_being_chosen: false
+                    is_being_chosen: false,
                 })),
                 total_voter_count: media.results?.totalVoters || 0,
                 is_anonymous: poll?.publicVoters === false,
@@ -947,8 +993,8 @@ function translateMessageContent(msg) {
                     : { '@type': 'pollTypeRegular', allow_multiple_answers: !!poll?.multipleChoice },
                 open_period: poll?.closePeriod || 0,
                 close_date: poll?.closeDate || 0,
-                is_closed: !!poll?.closed
-            }
+                is_closed: !!poll?.closed,
+            },
         };
     }
 
@@ -960,12 +1006,12 @@ function translateMessageContent(msg) {
                 '@type': 'location',
                 latitude: media.geo?.lat || 0,
                 longitude: media.geo?.long || 0,
-                horizontal_accuracy: 0
+                horizontal_accuracy: 0,
             },
             live_period: 0,
             expires_in: 0,
             heading: 0,
-            proximity_alert_radius: 0
+            proximity_alert_radius: 0,
         };
     }
 
@@ -979,14 +1025,14 @@ function translateMessageContent(msg) {
                     '@type': 'location',
                     latitude: media.geo?.lat || 0,
                     longitude: media.geo?.long || 0,
-                    horizontal_accuracy: 0
+                    horizontal_accuracy: 0,
                 },
                 title: media.title || '',
                 address: media.address || '',
                 provider: media.provider || '',
                 id: media.venueId || '',
-                type: media.venueType || ''
-            }
+                type: media.venueType || '',
+            },
         };
     }
 
@@ -998,12 +1044,12 @@ function translateMessageContent(msg) {
                 '@type': 'location',
                 latitude: media.geo?.lat || 0,
                 longitude: media.geo?.long || 0,
-                horizontal_accuracy: 0
+                horizontal_accuracy: 0,
             },
             live_period: media.period || 0,
             expires_in: 0,
             heading: media.heading || 0,
-            proximity_alert_radius: media.proximityNotificationRadius || 0
+            proximity_alert_radius: media.proximityNotificationRadius || 0,
         };
     }
 
@@ -1019,7 +1065,7 @@ function translateMessageContent(msg) {
             start_parameter: media.startParam || '',
             is_test: !!media.test,
             need_shipping_address: !!media.shippingAddressRequested,
-            receipt_message_id: 0
+            receipt_message_id: 0,
         };
     }
 
@@ -1030,11 +1076,11 @@ function translateMessageContent(msg) {
             dice: {
                 '@type': 'dice',
                 emoji: media.emoticon || '🎲',
-                value: media.value || 0
+                value: media.value || 0,
             },
             initial_state: null,
             final_state: null,
-            success_animation_frame_number: 0
+            success_animation_frame_number: 0,
         };
     }
 
@@ -1051,12 +1097,12 @@ function translateMessageContent(msg) {
                 text: {
                     '@type': 'formattedText',
                     text: game?.description || '',
-                    entities: []
+                    entities: [],
                 },
                 description: game?.description || '',
                 photo: game?.photo ? translatePhoto(game.photo) : null,
-                animation: game?.document ? translateAnimation(game.document) : null
-            }
+                animation: game?.document ? translateAnimation(game.document) : null,
+            },
         };
     }
 
@@ -1065,7 +1111,7 @@ function translateMessageContent(msg) {
         return {
             '@type': 'messageText',
             text: { '@type': 'formattedText', text: msg.message, entities: [] },
-            web_page: null
+            web_page: null,
         };
     }
 
@@ -1090,7 +1136,7 @@ function translateTextEntity(entity) {
         MessageEntityCashtag: 'textEntityTypeCashtag',
         MessageEntitySpoiler: 'textEntityTypeSpoiler',
         MessageEntityPhone: 'textEntityTypePhoneNumber',
-        MessageEntityEmail: 'textEntityTypeEmailAddress'
+        MessageEntityEmail: 'textEntityTypeEmailAddress',
     };
     const tdType = MAP[cls];
     if (!tdType) return null;
@@ -1098,7 +1144,7 @@ function translateTextEntity(entity) {
         '@type': 'textEntity',
         offset: entity.offset,
         length: entity.length,
-        type: { '@type': tdType }
+        type: { '@type': tdType },
     };
     if (tdType === 'textEntityTypeTextUrl' && entity.url) result.type.url = entity.url;
     if (tdType === 'textEntityTypeMentionUser' && entity.userId) result.type.user_id = Number(entity.userId);
@@ -1160,7 +1206,7 @@ function translatePageCaption(caption) {
     return {
         '@type': 'pageBlockCaption',
         text: translateRichText(caption.text),
-        credit: translateRichText(caption.credit)
+        credit: translateRichText(caption.credit),
     };
 }
 
@@ -1176,7 +1222,7 @@ function translatePageBlock(block, photos, docs) {
             return {
                 '@type': 'pageBlockAuthorDate',
                 author: translateRichText(block.author),
-                publish_date: Number(block.publishedDate || 0)
+                publish_date: Number(block.publishedDate || 0),
             };
         case 'PageBlockHeader':
             return { '@type': 'pageBlockHeader', header: translateRichText(block.text) };
@@ -1190,7 +1236,7 @@ function translatePageBlock(block, photos, docs) {
             return {
                 '@type': 'pageBlockPreformatted',
                 text: translateRichText(block.text),
-                language: block.language || ''
+                language: block.language || '',
             };
         case 'PageBlockFooter':
             return { '@type': 'pageBlockFooter', footer: translateRichText(block.text) };
@@ -1202,13 +1248,13 @@ function translatePageBlock(block, photos, docs) {
             return {
                 '@type': 'pageBlockBlockQuote',
                 text: translateRichText(block.text),
-                credit: translateRichText(block.caption)
+                credit: translateRichText(block.caption),
             };
         case 'PageBlockPullquote':
             return {
                 '@type': 'pageBlockPullQuote',
                 text: translateRichText(block.text),
-                credit: translateRichText(block.caption)
+                credit: translateRichText(block.caption),
             };
         case 'PageBlockList': {
             return {
@@ -1221,15 +1267,15 @@ function translatePageBlock(block, photos, docs) {
                             label: '•',
                             page_blocks: (item.blocks || [])
                                 .map(b => translatePageBlock(b, photos, docs))
-                                .filter(Boolean)
+                                .filter(Boolean),
                         };
                     }
                     return {
                         '@type': 'pageBlockListItem',
                         label: '•',
-                        page_blocks: [{ '@type': 'pageBlockParagraph', text: translateRichText(item.text) }]
+                        page_blocks: [{ '@type': 'pageBlockParagraph', text: translateRichText(item.text) }],
                     };
-                })
+                }),
             };
         }
         case 'PageBlockOrderedList': {
@@ -1243,15 +1289,15 @@ function translatePageBlock(block, photos, docs) {
                             label: item.num || '',
                             page_blocks: (item.blocks || [])
                                 .map(b => translatePageBlock(b, photos, docs))
-                                .filter(Boolean)
+                                .filter(Boolean),
                         };
                     }
                     return {
                         '@type': 'pageBlockListItem',
                         label: item.num || '',
-                        page_blocks: [{ '@type': 'pageBlockParagraph', text: translateRichText(item.text) }]
+                        page_blocks: [{ '@type': 'pageBlockParagraph', text: translateRichText(item.text) }],
                     };
-                })
+                }),
             };
         }
         case 'PageBlockPhoto': {
@@ -1261,7 +1307,7 @@ function translatePageBlock(block, photos, docs) {
                 photo: photo ? translatePhoto(photo) : null,
                 caption: translatePageCaption(block.caption),
                 url: block.url || '',
-                is_cached: false
+                is_cached: false,
             };
         }
         case 'PageBlockVideo': {
@@ -1271,7 +1317,7 @@ function translatePageBlock(block, photos, docs) {
                 video: doc ? translateVideo(doc) : null,
                 caption: translatePageCaption(block.caption),
                 need_autoplay: !!block.autoplay,
-                is_looped: !!block.loop
+                is_looped: !!block.loop,
             };
         }
         case 'PageBlockAnimation': {
@@ -1280,7 +1326,7 @@ function translatePageBlock(block, photos, docs) {
                 '@type': 'pageBlockAnimation',
                 animation: doc ? translateAnimation(doc) : null,
                 caption: translatePageCaption(block.caption),
-                need_autoplay: !!block.autoplay
+                need_autoplay: !!block.autoplay,
             };
         }
         case 'PageBlockAudio': {
@@ -1288,7 +1334,7 @@ function translatePageBlock(block, photos, docs) {
             return {
                 '@type': 'pageBlockAudio',
                 audio: doc ? translateAudio(doc) : null,
-                caption: translatePageCaption(block.caption)
+                caption: translatePageCaption(block.caption),
             };
         }
         case 'PageBlockCover':
@@ -1306,7 +1352,7 @@ function translatePageBlock(block, photos, docs) {
                 height: Number(block.h || 0),
                 caption: translatePageCaption(block.caption),
                 is_full_width: !!block.fullWidth,
-                allow_scrolling: !!block.allowScrolling
+                allow_scrolling: !!block.allowScrolling,
             };
         }
         case 'PageBlockEmbedPost': {
@@ -1320,20 +1366,20 @@ function translatePageBlock(block, photos, docs) {
                 author_photo: authorPhoto ? translatePhoto(authorPhoto) : null,
                 date: Number(block.date || 0),
                 page_blocks: (block.blocks || []).map(b => translatePageBlock(b, photos, docs)).filter(Boolean),
-                caption: translatePageCaption(block.caption)
+                caption: translatePageCaption(block.caption),
             };
         }
         case 'PageBlockCollage':
             return {
                 '@type': 'pageBlockCollage',
                 page_blocks: (block.items || []).map(b => translatePageBlock(b, photos, docs)).filter(Boolean),
-                caption: translatePageCaption(block.caption)
+                caption: translatePageCaption(block.caption),
             };
         case 'PageBlockSlideshow':
             return {
                 '@type': 'pageBlockSlideshow',
                 page_blocks: (block.items || []).map(b => translatePageBlock(b, photos, docs)).filter(Boolean),
-                caption: translatePageCaption(block.caption)
+                caption: translatePageCaption(block.caption),
             };
         case 'PageBlockChannel': {
             const ch = block.channel || {};
@@ -1341,7 +1387,7 @@ function translatePageBlock(block, photos, docs) {
                 '@type': 'pageBlockChatLink',
                 title: ch.title || '',
                 username: ch.username || '',
-                invite_link: ''
+                invite_link: '',
             };
         }
         case 'PageBlockTable': {
@@ -1356,11 +1402,11 @@ function translatePageBlock(block, photos, docs) {
                         align: cell.alignCenter ? 'center' : cell.alignRight ? 'right' : 'left',
                         valign: cell.valignBottom ? 'bottom' : cell.valignMiddle ? 'middle' : 'top',
                         colspan: Number(cell.colspan || 1),
-                        rowspan: Number(cell.rowspan || 1)
-                    }))
+                        rowspan: Number(cell.rowspan || 1),
+                    })),
                 ),
                 is_bordered: !!block.bordered,
-                is_striped: !!block.striped
+                is_striped: !!block.striped,
             };
         }
         case 'PageBlockDetails':
@@ -1368,7 +1414,7 @@ function translatePageBlock(block, photos, docs) {
                 '@type': 'pageBlockDetails',
                 header: translateRichText(block.title),
                 page_blocks: (block.blocks || []).map(b => translatePageBlock(b, photos, docs)).filter(Boolean),
-                is_open: !!block.open
+                is_open: !!block.open,
             };
         case 'PageBlockRelatedArticles':
             return {
@@ -1383,8 +1429,8 @@ function translatePageBlock(block, photos, docs) {
                         ? translatePhoto(photos && photos.find(p => String(p.id) === String(a.photoId)))
                         : null,
                     author: a.author || '',
-                    publish_date: Number(a.publishedDate || 0)
-                }))
+                    publish_date: Number(a.publishedDate || 0),
+                })),
             };
         case 'PageBlockMap':
             return {
@@ -1393,12 +1439,12 @@ function translatePageBlock(block, photos, docs) {
                     '@type': 'location',
                     latitude: block.geo?.lat || 0,
                     longitude: block.geo?.long || 0,
-                    horizontal_accuracy: 0
+                    horizontal_accuracy: 0,
                 },
                 zoom: Number(block.zoom || 0),
                 width: Number(block.w || 0),
                 height: Number(block.h || 0),
-                caption: translatePageCaption(block.caption)
+                caption: translatePageCaption(block.caption),
             };
         default:
             return null;
@@ -1415,6 +1461,6 @@ export function translateInstantView(page) {
         view_count: Number(page.views || 0),
         version: 2,
         is_rtl: !!page.rtl,
-        is_full: true
+        is_full: true,
     };
 }
