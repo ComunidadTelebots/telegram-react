@@ -7,7 +7,7 @@ import {
     translateMessage,
     translateUser,
     translateUserStatus,
-    translateReactions
+    translateReactions,
 } from './EntityTranslator';
 
 export function translateUpdate(update) {
@@ -62,6 +62,22 @@ export function translateUpdate(update) {
         case 'UpdateMessageReactions':
             return messageReactions(update);
 
+        // ── Chat title/photo ─────────────────────────────────────────────────
+        case 'UpdateChatTitle':
+            return chatTitle(update);
+        case 'UpdateChatPhoto':
+            return chatPhoto(update);
+
+        // ── Pinned messages ──────────────────────────────────────────────────
+        case 'UpdatePinnedMessages':
+            return pinnedMessages(update, false);
+        case 'UpdatePinnedChannelMessages':
+            return pinnedMessages(update, true);
+
+        // ── Unread marks ─────────────────────────────────────────────────────
+        case 'UpdateDialogUnreadMark':
+            return dialogUnreadMark(update);
+
         default:
             return null;
     }
@@ -90,7 +106,7 @@ function editedMessage(update) {
         '@type': 'updateMessageContent',
         chat_id: chatId,
         message_id: msg.id,
-        new_content: message.content
+        new_content: message.content,
     };
 }
 
@@ -100,7 +116,7 @@ function deleteMessages(update, chatId) {
         chat_id: chatId || 0,
         message_ids: update.messages || [],
         is_permanent: true,
-        from_cache: false
+        from_cache: false,
     };
 }
 
@@ -111,7 +127,7 @@ function deleteChannelMessages(update) {
         chat_id: chatId,
         message_ids: update.messages || [],
         is_permanent: true,
-        from_cache: false
+        from_cache: false,
     };
 }
 
@@ -119,7 +135,7 @@ function userStatus(update) {
     return {
         '@type': 'updateUserStatus',
         user_id: Number(update.userId),
-        status: translateUserStatus(update.status)
+        status: translateUserStatus(update.status),
     };
 }
 
@@ -183,7 +199,7 @@ function typing(update) {
         message_thread_id: 0,
         user_id: userId,
         sender_id: { '@type': 'messageSenderUser', user_id: userId },
-        action: translateTypingAction(update.action)
+        action: translateTypingAction(update.action),
     };
 }
 
@@ -196,7 +212,7 @@ function readInbox(update) {
         '@type': 'updateChatReadInbox',
         chat_id: chatId,
         last_read_inbox_message_id: update.maxId || 0,
-        unread_count: update.stillUnreadCount || 0
+        unread_count: update.stillUnreadCount || 0,
     };
 }
 
@@ -208,7 +224,7 @@ function readOutbox(update) {
     return {
         '@type': 'updateChatReadOutbox',
         chat_id: chatId,
-        last_read_outbox_message_id: update.maxId || 0
+        last_read_outbox_message_id: update.maxId || 0,
     };
 }
 
@@ -219,7 +235,7 @@ function dialogPinned(update) {
         '@type': 'updateChatIsPinned',
         chat_id: chatId,
         is_pinned: !update.unpinned,
-        order: update.unpinned ? '0' : '9223372036854775807'
+        order: update.unpinned ? '0' : '9223372036854775807',
     };
 }
 
@@ -244,14 +260,14 @@ function draftMessage(update) {
                           text: {
                               '@type': 'formattedText',
                               text: draft.message || '',
-                              entities: []
+                              entities: [],
                           },
                           disable_web_page_preview: false,
-                          clear_draft: false
-                      }
+                          clear_draft: false,
+                      },
                   }
                 : null,
-        order: '0'
+        order: '0',
     };
 }
 
@@ -262,6 +278,52 @@ function messageReactions(update) {
         '@type': 'updateMessageReactions',
         chat_id: chatId,
         message_id: update.msgId || 0,
-        reactions: translateReactions(update.reactions)
+        reactions: translateReactions(update.reactions),
+    };
+}
+
+function chatTitle(update) {
+    const chatId = update.chatId ? -Number(update.chatId) : 0;
+    if (!chatId) return null;
+    return {
+        '@type': 'updateChatTitle',
+        chat_id: chatId,
+        title: update.title || '',
+    };
+}
+
+function chatPhoto(update) {
+    const chatId = update.chatId ? -Number(update.chatId) : 0;
+    if (!chatId) return null;
+    return {
+        '@type': 'updateChatPhoto',
+        chat_id: chatId,
+        photo: null,
+    };
+}
+
+function pinnedMessages(update, isChannel) {
+    let chatId = 0;
+    if (isChannel) {
+        chatId = update.channelId ? -1000000000000 - Number(update.channelId) : 0;
+    } else {
+        chatId = update.peer ? peerToTdlibChatId(update.peer) : 0;
+    }
+    if (!chatId) return null;
+    const messageId = (update.messages || [])[0] || 0;
+    return {
+        '@type': 'updateChatPinnedMessage',
+        chat_id: chatId,
+        pinned_message_id: update.pinned ? messageId : 0,
+    };
+}
+
+function dialogUnreadMark(update) {
+    const chatId = peerToTdlibChatId(update.peer?.peer || update.peer);
+    if (!chatId) return null;
+    return {
+        '@type': 'updateChatIsMarkedAsUnread',
+        chat_id: chatId,
+        is_marked_as_unread: !!update.unread,
     };
 }
