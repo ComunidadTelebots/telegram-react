@@ -33,6 +33,7 @@ serviceMap.set('messagePassportDataSent', 'messagePassportDataSent');
 serviceMap.set('messagePaymentSuccessful', 'messagePaymentSuccessful');
 serviceMap.set('messagePaymentSuccessfulBot', 'messagePaymentSuccessfulBot');
 serviceMap.set('messagePinMessage', 'messagePinMessage');
+serviceMap.set('messageProximityAlertTriggered', 'messageProximityAlertTriggered');
 serviceMap.set('messageScreenshotTaken', 'messageScreenshotTaken');
 serviceMap.set('messageSupergroupChatCreate', 'messageSupergroupChatCreate');
 serviceMap.set('messageUnsupported', 'messageUnsupported');
@@ -593,6 +594,19 @@ function getServiceMessageContent(message, openUser = false) {
                 <>
                     <MessageAuthor userId={sender_user_id} openUser={openUser} />
                     {` created group «${title}»`}
+                </>
+            );
+        }
+        case 'messageProximityAlertTriggered': {
+            const { traveler_id, watcher_id, distance } = content;
+            const meters = distance >= 1000 ? `${(distance / 1000).toFixed(1)} km` : `${distance} m`;
+            return (
+                <>
+                    <MessageAuthor userId={traveler_id} openUser={openUser} />
+                    {' is within '}
+                    {meters}
+                    {' from '}
+                    <MessageAuthor userId={watcher_id} openUser={openUser} />
                 </>
             );
         }

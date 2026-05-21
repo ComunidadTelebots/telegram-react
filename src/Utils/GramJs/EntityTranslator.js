@@ -600,6 +600,14 @@ function translateServiceContent(action) {
     if (cls === 'MessageActionBotAllowed') {
         return { '@type': 'messageWebsiteConnected', domain_name: action.domain || '' };
     }
+    if (cls === 'MessageActionGeoProximityReached') {
+        return {
+            '@type': 'messageProximityAlertTriggered',
+            traveler_id: action.fromId?.userId ? Number(action.fromId.userId) : 0,
+            watcher_id: action.toId?.userId ? Number(action.toId.userId) : 0,
+            distance: action.distance || 0
+        };
+    }
 
     return null;
 }

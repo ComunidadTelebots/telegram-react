@@ -342,7 +342,7 @@ class Sticker extends React.Component {
             openMedia,
             preview
         } = this.props;
-        const { thumbnail, sticker, width, height } = source;
+        const { thumbnail, sticker, width, height, is_video: isVideo } = source;
         const { animationData, hasError } = this.state;
 
         const isAnimated = isValidAnimatedSticker(source, chatId, messageId);
@@ -402,6 +402,19 @@ class Sticker extends React.Component {
                             ]}
                             onMouseOut={this.handleAnimationMouseOut}
                         />
+                    ) : (
+                        <img
+                            className={classNames('sticker-image', { 'media-blurred': isBlurred && blur })}
+                            draggable={false}
+                            src={thumbnailSrc}
+                            alt=''
+                        />
+                    )}
+                </>
+            ) : isVideo ? (
+                <>
+                    {src && !preview ? (
+                        <video className='sticker-image' autoPlay loop muted playsInline src={src} />
                     ) : (
                         <img
                             className={classNames('sticker-image', { 'media-blurred': isBlurred && blur })}
