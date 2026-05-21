@@ -657,13 +657,6 @@ function translateServiceContent(action) {
     if (cls === 'MessageActionRequestedPeer' || cls === 'MessageActionRequestedPeerSentMe') {
         return { '@type': 'messageCustomServiceAction', text: 'Peer shared' };
     }
-    if (cls === 'MessageActionSetMessagesTtl') {
-        return { '@type': 'messageChatSetTtl', ttl: action.period || 0 };
-    }
-    if (cls === 'MessageActionChatJoinedByRequest') {
-        return { '@type': 'messageChatJoinByLink' };
-    }
-
     return null;
 }
 
