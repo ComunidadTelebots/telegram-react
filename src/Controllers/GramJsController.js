@@ -398,11 +398,23 @@ class GramJsController extends EventEmitter {
                 offsetId: offsetId || undefined,
             });
 
+            // Collect sender user IDs from last messages so we can resolve them
+            const senderUserIds = new Set();
+
             for (const dialog of dialogs) {
                 const entity = dialog.entity;
                 if (!entity) continue;
 
                 this._cacheEntity(entity);
+
+                // Track sender of last message in groups/channels
+                const msg = dialog.message;
+                if (msg && msg.fromId) {
+                    const fc = msg.fromId.className || msg.fromId._;
+                    if (fc === 'PeerUser') {
+                        senderUserIds.add(Number(msg.fromId.userId));
+                    }
+                }
 
                 const cls = entity.className || entity._;
 
@@ -484,6 +496,13 @@ class GramJsController extends EventEmitter {
                 }
             }
 
+            // Resolve last-message senders that are not yet in UserStore
+            // (MTProto returns them in the response; GramJS caches them internally)
+            const missingSenders = [...senderUserIds].filter(id => !this._userCache.has(id));
+            if (missingSenders.length > 0) {
+                this._resolveSenderUsers(missingSenders).catch(() => {});
+            }
+
             // Notificar que los diálogos están listos
             this.clientUpdate({ '@type': 'clientUpdateDialogsReady' });
         } catch (err) {
@@ -493,6 +512,44 @@ class GramJsController extends EventEmitter {
             if (this._initialDialogsResolver) {
                 this._initialDialogsResolver();
             }
+        }
+    };
+
+    // Fetch and emit users that sent last messages in groups but weren't in the dialog entity list
+    _resolveSenderUsers = async userIds => {
+        // Batch resolve via GramJS entity cache first, then API fallback
+        const toFetch = [];
+        for (const id of userIds) {
+            const cached = this._entityCache.get(id);
+            if (cached) {
+                const tdUser = translateUser(cached);
+                if (tdUser) {
+                    this._userCache.set(tdUser.id, tdUser);
+                    this._emitUpdate({ '@type': 'updateUser', user: tdUser });
+                }
+            } else {
+                toFetch.push(id);
+            }
+        }
+
+        // Fetch remaining ones from API in small batches
+        for (let i = 0; i < toFetch.length; i += 10) {
+            const batch = toFetch.slice(i, i + 10);
+            await Promise.all(
+                batch.map(async id => {
+                    try {
+                        const entity = await this.client.getEntity(BigInt(id));
+                        if (entity) {
+                            this._cacheEntity(entity);
+                            const tdUser = translateUser(entity);
+                            if (tdUser) {
+                                this._userCache.set(tdUser.id, tdUser);
+                                this._emitUpdate({ '@type': 'updateUser', user: tdUser });
+                            }
+                        }
+                    } catch {}
+                }),
+            );
         }
     };
 
