@@ -13,6 +13,7 @@ import { StylesProvider } from '@material-ui/core/styles';
 import { getDisplayName } from './Utils/HOC';
 import Cookies from 'universal-cookie';
 import ApplicationStore from './Stores/ApplicationStore';
+import { getDesign } from './Design';
 
 function updateLightTheme(theme) {
     // const root = document.querySelector(':root');
@@ -87,47 +88,72 @@ function updateThemeClass(type) {
     document.body.classList.add(type === 'dark' ? 'theme-dark' : 'theme-light');
 }
 
+// Configuración MUI específica por diseño: radio de bordes, acento y tipografía
+const DESIGN_MUI = {
+    current: { radius: 8, accent: null, font: "'Roboto', sans-serif", type: null },
+    android: { radius: 12, accent: '#2AABEE', font: "'Roboto', 'Noto Sans', sans-serif", type: null },
+    ios: { radius: 16, accent: '#007AFF', font: "-apple-system, 'Helvetica Neue', sans-serif", type: null },
+    macos: { radius: 10, accent: '#248BF2', font: "-apple-system, 'Helvetica Neue', sans-serif", type: null },
+    tdesktop: { radius: 4, accent: '#40A7E3', font: "'Segoe UI', system-ui, sans-serif", type: null },
+    unigram: { radius: 4, accent: '#2B7FE0', font: "'Segoe UI', 'Segoe UI Variable Text', sans-serif", type: null },
+    aurora: { radius: 14, accent: '#34D9A8', font: "'Manrope', 'Inter', system-ui, sans-serif", type: 'dark' },
+};
+
 function createTheme(type, primary) {
+    const design = getDesign();
+    const dc = DESIGN_MUI[design] || DESIGN_MUI.current;
+
+    // Aurora es siempre dark; el resto respeta la elección del usuario
+    const effectiveType = dc.type || type;
+    // El acento del diseño sobreescribe la elección de color del usuario
+    const effectivePrimary = dc.accent ? { main: dc.accent } : primary;
+
     const theme = createMuiTheme({
         palette: {
-            type: type,
-            primary: primary,
-            secondary: { main: '#E53935' }
+            type: effectiveType,
+            primary: effectivePrimary,
+            secondary: { main: '#E53935' },
         },
         typography: {
-            useNextVariants: true
+            useNextVariants: true,
+            fontFamily: dc.font,
         },
         shape: {
-            borderRadius: 8
+            borderRadius: dc.radius,
         },
         overrides: {
             MuiOutlinedInput: {
                 input: {
-                    padding: '17.5px 14px'
-                }
+                    padding: '17.5px 14px',
+                },
             },
             MuiAutocomplete: {
                 option: {
                     paddingLeft: 0,
                     paddingTop: 0,
                     paddingRight: 0,
-                    paddingBottom: 0
+                    paddingBottom: 0,
                 },
                 paper: {
                     '& > ul': {
-                        maxHeight: 56 * 5.5
-                    }
-                }
-            }
-        }
+                        maxHeight: 56 * 5.5,
+                    },
+                },
+            },
+        },
     });
 
-    if (type === 'dark') {
+    if (effectiveType === 'dark') {
         updateDarkTheme(theme);
     } else {
         updateLightTheme(theme);
     }
-    updateThemeClass(type);
+    updateThemeClass(effectiveType);
+
+    // Si el diseño tiene un acento propio, sobreescribir el token CSS
+    if (dc.accent) {
+        document.documentElement.style.setProperty('--color-accent-main', dc.accent);
+    }
 
     return theme;
 }

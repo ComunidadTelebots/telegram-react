@@ -113,6 +113,11 @@ class ThemePicker extends React.Component {
         const design = event.target.value;
         this.setState({ design });
         setDesign(design);
+        // Regenerar el tema MUI con la configuración del nuevo diseño
+        ApplicationStore.emit('clientUpdateThemeChanging', {
+            type: this.state.type,
+            primary: this.getColor(this.state.color),
+        });
     };
 
     getColorString = value => {
