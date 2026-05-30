@@ -191,7 +191,7 @@ class ThemePicker extends React.Component {
             },
             {
                 value: 'android',
-                label: 'Android 12.5',
+                label: 'Android 12.5 pre-redesign',
                 preview: {
                     sidebar: '#ffffff',
                     chatBg: '#dfe8ef',
@@ -205,7 +205,7 @@ class ThemePicker extends React.Component {
             },
             {
                 value: 'android-glass',
-                label: 'Android Beta 12.6.4',
+                label: 'Android Beta 12.6.4 Glass',
                 preview: {
                     sidebar: '#f8fbfc',
                     chatBg: 'linear-gradient(135deg, #d7e1c4, #edf5df)',
@@ -219,7 +219,7 @@ class ThemePicker extends React.Component {
             },
             {
                 value: 'android-redesign',
-                label: 'Android 12.6',
+                label: 'Android 12.6 Feb 9',
                 preview: {
                     sidebar: '#ffffff',
                     chatBg: '#dce8cd',
@@ -233,7 +233,7 @@ class ThemePicker extends React.Component {
             },
             {
                 value: 'android-classic',
-                label: 'Android 7.x',
+                label: 'Android 7.x Classic',
                 preview: {
                     sidebar: '#ffffff',
                     chatBg: '#c8d9b6',
