@@ -2055,7 +2055,10 @@ class GramJsController extends EventEmitter {
             const wpCls = wp?.className || wp?._;
             if (wpCls !== 'WebPage' || !wp.cachedPage) return {};
             const iv = translateInstantView(wp.cachedPage);
-            return iv || {};
+            if (!iv) return {};
+            // Attach the canonical URL so InstantViewer.componentDidUpdate can use it
+            iv.url = wp.url || url;
+            return iv;
         } catch (e) {
             console.warn('[GramJs] getWebPageInstantView error:', e);
             return {};

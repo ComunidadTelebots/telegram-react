@@ -213,35 +213,31 @@ class InstantViewer extends React.Component {
         }
     }
 
-    componentDidUpdate(prevProps, prevState, snapshot) {
-        const { instantView, url } = this.props;
-        console.log('[IV] componentDidUpdate', instantView.url, instantView.url === prevProps.instantView.url);
+    componentDidUpdate(prevProps) {
+        const { instantView } = this.props;
+        if (prevProps.instantView === instantView) return;
 
-        const hash = new URL(instantView.url).hash;
-        if (prevProps.instantView !== instantView) {
-            if (prevProps.instantView.url !== instantView.url) {
-                if (instantView.url.indexOf('#') === instantView.url.length - 1) {
-                    console.log('[IV] componentDidUpdate scrollTop auto');
-                    this.scrollTop('auto');
-                } else if (hash) {
-                    console.log('[IV] componentDidUpdate scrollToHash', hash);
-                    this.scrollToHash(hash, 'auto');
-                } else {
-                    console.log('[IV] componentDidUpdate scrollTop auto');
-                    this.scrollTop('auto');
-                }
+        const ivUrl = instantView.url || '';
+        const prevUrl = prevProps.instantView ? prevProps.instantView.url || '' : '';
+        const hash = ivUrl ? new URL(ivUrl).hash : '';
+
+        if (prevUrl !== ivUrl) {
+            if (ivUrl && ivUrl.indexOf('#') === ivUrl.length - 1) {
+                this.scrollTop('auto');
+            } else if (hash) {
+                this.scrollToHash(hash, 'auto');
             } else {
-                if (hash) {
-                    console.log('[IV] componentDidUpdate scrollToHash', hash);
-                    this.scrollToHash(hash, 'auto');
-                } else {
-                    console.log('[IV] componentDidUpdate scrollTop smooth');
-                    this.scrollTop('smooth');
-                }
+                this.scrollTop('auto');
             }
-
-            this.handleScroll();
+        } else {
+            if (hash) {
+                this.scrollToHash(hash, 'auto');
+            } else {
+                this.scrollTop('smooth');
+            }
         }
+
+        this.handleScroll();
     }
 
     onKeyDown = event => {
