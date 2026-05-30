@@ -2560,3 +2560,287 @@ body.theme-dark.design-android-glass .invoice {
 body.theme-dark.design-android-glass .emoji-mart {
     background: rgba(20, 35, 45, 0.88) !important;
 }
+
+/* ════════════════════════════════════════════════════════════════════════════
+   NOVEDADES III: Búsqueda · Scroll-down/Jump · Check marks · Header reply
+                  Foto/Vídeo/Animación · Documento · Sticker · Juego
+   ════════════════════════════════════════════════════════════════════════════ */
+
+/* ── Búsqueda: tabs de filtro por tipo ──────────────────────────────────── */
+body.design-android .search-filter-tabs {
+    border-bottom-color: var(--android-separator);
+}
+body.design-android .search-filter-tabs .MuiTab-root {
+    color: var(--android-text-secondary);
+    font-weight: 500;
+}
+body.design-android .search-filter-tabs .MuiTab-root.Mui-selected {
+    color: var(--android-accent) !important;
+}
+body.design-android .search-filter-tabs .MuiTabs-indicator {
+    background: var(--android-accent) !important;
+    height: 2px;
+    border-radius: 2px 2px 0 0;
+}
+
+body.design-android-holo .search-filter-tabs .MuiTab-root.Mui-selected {
+    color: #00bcd4 !important;
+}
+body.design-android-holo .search-filter-tabs .MuiTabs-indicator {
+    background: #00bcd4 !important;
+    border-radius: 0;
+}
+body.design-android-classic .search-filter-tabs .MuiTab-root.Mui-selected {
+    color: #527da3 !important;
+}
+body.design-android-classic .search-filter-tabs .MuiTabs-indicator {
+    background: #527da3 !important;
+    border-radius: 0;
+    height: 3px;
+}
+body.design-android-v9 .search-filter-tabs .MuiTab-root.Mui-selected {
+    color: #2ca5e0 !important;
+}
+body.design-android-v9 .search-filter-tabs .MuiTabs-indicator {
+    background: #2ca5e0 !important;
+}
+body.design-android-glass .search-filter-tabs .MuiTab-root.Mui-selected {
+    color: #28c9b7 !important;
+}
+body.design-android-glass .search-filter-tabs .MuiTabs-indicator {
+    background: #28c9b7 !important;
+    border-radius: 4px 4px 0 0;
+}
+
+/* ── Botón scroll-down ───────────────────────────────────────────────────── */
+body.design-android .scroll-down-button {
+    background: var(--design-header-background, #fff) !important;
+    border-color: var(--android-separator) !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.14) !important;
+    border-radius: 50% !important;
+}
+body.design-android .scroll-down-badge {
+    background: var(--android-accent) !important;
+    border-radius: 9px;
+}
+
+body.design-android-holo .scroll-down-button {
+    background: #1a2633 !important;
+    border-color: rgba(255, 255, 255, 0.08) !important;
+}
+body.design-android-holo .scroll-down-badge {
+    background: #00bcd4 !important;
+    border-radius: 2px;
+}
+body.design-android-classic .scroll-down-button {
+    background: #ffffff !important;
+    border-color: #ddd !important;
+    border-radius: 2px !important;
+}
+body.design-android-classic .scroll-down-badge {
+    background: #527da3 !important;
+    border-radius: 2px;
+}
+body.design-android-glass .scroll-down-button {
+    background: rgba(255, 255, 255, 0.72) !important;
+    backdrop-filter: blur(12px) !important;
+    -webkit-backdrop-filter: blur(12px) !important;
+    border-color: rgba(40, 201, 183, 0.2) !important;
+}
+body.design-android-glass .scroll-down-badge {
+    background: #28c9b7 !important;
+    border-radius: 9px;
+}
+
+/* ── Botón jump-to-unread ────────────────────────────────────────────────── */
+body.design-android .jump-to-unread-button {
+    background: var(--design-header-background, #fff) !important;
+    border-color: var(--android-separator) !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.14) !important;
+}
+body.design-android .jump-to-unread-count {
+    background: var(--android-accent);
+    border-radius: 9px;
+}
+body.design-android-holo .jump-to-unread-button {
+    background: #1a2633 !important;
+}
+body.design-android-holo .jump-to-unread-count {
+    background: #00bcd4;
+    border-radius: 2px;
+}
+body.design-android-classic .jump-to-unread-count {
+    background: #527da3;
+    border-radius: 2px;
+}
+body.design-android-glass .jump-to-unread-button {
+    background: rgba(255, 255, 255, 0.72) !important;
+    backdrop-filter: blur(12px) !important;
+    -webkit-backdrop-filter: blur(12px) !important;
+}
+body.design-android-glass .jump-to-unread-count {
+    background: #28c9b7;
+}
+
+/* ── Check marks (✓ enviado, ✓✓ leído) ─────────────────────────────────── */
+body.design-android .message-status-check {
+    color: var(--message-out-meta-color);
+    letter-spacing: -1px;
+}
+body.design-android-holo .message-status-check {
+    color: #5faa52;
+}
+body.design-android-classic .message-status-check {
+    color: #4fae4e;
+}
+body.design-android-v9 .message-status-check {
+    color: #5faa52;
+}
+body.design-android-glass .message-status-check {
+    color: #28c9b7;
+}
+
+/* ── Header reply bar (cuando respondes a un mensaje) ───────────────────── */
+body.design-android .inputbox-header {
+    border-top: 1px solid var(--android-separator);
+    padding: 6px 12px;
+    background: var(--design-input-background);
+}
+body.design-android .inputbox-header .border {
+    background: var(--android-accent);
+    min-width: 3px;
+    border-radius: 3px;
+}
+body.design-android-holo .inputbox-header {
+    background: #1a2633;
+    border-top-color: rgba(255, 255, 255, 0.06);
+}
+body.design-android-holo .inputbox-header .border {
+    background: #00bcd4;
+    border-radius: 0;
+}
+body.design-android-classic .inputbox-header {
+    background: #ffffff;
+    border-top-color: #e0e0e0;
+}
+body.design-android-classic .inputbox-header .border {
+    background: #527da3;
+    border-radius: 0;
+    min-width: 2px;
+}
+body.design-android-v9 .inputbox-header .border {
+    background: #2ca5e0;
+}
+body.design-android-glass .inputbox-header {
+    background: rgba(255, 255, 255, 0.6);
+    backdrop-filter: blur(12px);
+    border-top-color: rgba(40, 201, 183, 0.15);
+}
+body.design-android-glass .inputbox-header .border {
+    background: #28c9b7;
+    border-radius: 3px;
+}
+
+/* ── Foto / Vídeo: radio de esquinas por era ────────────────────────────── */
+body.design-android .photo,
+body.design-android .video {
+    border-radius: var(--design-message-radius-in);
+    overflow: hidden;
+}
+body.design-android-holo .photo,
+body.design-android-holo .video {
+    border-radius: 2px;
+}
+body.design-android-classic .photo,
+body.design-android-classic .video {
+    border-radius: 2px;
+}
+body.design-android-redesign .photo,
+body.design-android-redesign .video {
+    border-radius: 14px;
+}
+body.design-android-glass .photo,
+body.design-android-glass .video {
+    border-radius: 16px;
+}
+
+/* ── Animación (GIF): igual que foto ────────────────────────────────────── */
+body.design-android .animation {
+    border-radius: var(--design-message-radius-in);
+    overflow: hidden;
+}
+body.design-android-holo .animation {
+    border-radius: 2px;
+}
+body.design-android-classic .animation {
+    border-radius: 2px;
+}
+body.design-android-redesign .animation {
+    border-radius: 14px;
+}
+body.design-android-glass .animation {
+    border-radius: 16px;
+}
+
+/* ── Documento: icono y nombre por accent ───────────────────────────────── */
+body.design-android .document-name {
+    color: var(--android-accent);
+}
+body.design-android-holo .document-name {
+    color: #00bcd4;
+}
+body.design-android-classic .document-name {
+    color: #527da3;
+}
+body.design-android-v9 .document-name {
+    color: #2ca5e0;
+}
+body.design-android-glass .document-name {
+    color: #28c9b7;
+}
+
+/* ── Juego (Game) ────────────────────────────────────────────────────────── */
+body.design-android .game {
+    border-radius: var(--design-message-radius-in);
+    overflow: hidden;
+    border: 1px solid var(--android-separator);
+}
+body.design-android-holo .game {
+    border-radius: 2px;
+    border-color: rgba(255, 255, 255, 0.08);
+}
+body.design-android-classic .game {
+    border-radius: 2px;
+}
+body.design-android-redesign .game {
+    border-radius: 14px;
+}
+body.design-android-glass .game {
+    border-radius: 16px;
+    border-color: rgba(40, 201, 183, 0.15);
+    backdrop-filter: blur(6px);
+}
+
+/* ── Dark mode III ───────────────────────────────────────────────────────── */
+body.theme-dark.design-android .scroll-down-button {
+    background: #17212b !important;
+}
+body.theme-dark.design-android .jump-to-unread-button {
+    background: #17212b !important;
+}
+body.theme-dark.design-android .search-filter-tabs {
+    border-bottom-color: rgba(255, 255, 255, 0.07);
+}
+body.theme-dark.design-android .inputbox-header {
+    background: #17212b;
+    border-top-color: rgba(255, 255, 255, 0.07);
+}
+body.theme-dark.design-android-glass .scroll-down-button {
+    background: rgba(23, 33, 43, 0.78) !important;
+}
+body.theme-dark.design-android-glass .jump-to-unread-button {
+    background: rgba(23, 33, 43, 0.78) !important;
+}
+body.theme-dark.design-android-glass .inputbox-header {
+    background: rgba(23, 33, 43, 0.72);
+}
