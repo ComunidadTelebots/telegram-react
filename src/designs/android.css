@@ -242,6 +242,13 @@ body.design-android .dialogs::after {
     text-align: center;
 }
 
+/* FAB encima de la bottom nav (56px) en variantes con barra inferior */
+body.design-android-glass .dialogs::after,
+body.design-android:not(.design-android-holo):not(.design-android-v9):not(.design-android-v11):not(.design-android-classic):not(.design-android-redesign):not(.design-android-glass)
+    .dialogs::after {
+    bottom: 72px;
+}
+
 /* ── Header del chat — blanco con sombra ─────────────────────────────────── */
 body.design-android .header-details {
     min-height: 56px;
