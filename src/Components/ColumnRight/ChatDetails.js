@@ -55,7 +55,7 @@ import {
     isChatSecret,
     getChatUserId,
     isMeChat,
-    isAdminInChat
+    isAdminInChat,
 } from '../../Utils/Chat';
 import { getUserStatusOrder } from '../../Utils/User';
 import { loadUsersContent, loadChatsContent } from '../../Utils/File';
@@ -75,14 +75,14 @@ import './ChatDetails.css';
 
 const styles = theme => ({
     closeIconButton: {
-        margin: '8px -2px 8px 12px'
+        margin: '8px -2px 8px 12px',
     },
     nested: {
         // paddingLeft: theme.spacing(4),
     },
     listItem: {
-        padding: '11px 22px'
-    }
+        padding: '11px 22px',
+    },
 });
 
 class ChatDetails extends React.Component {
@@ -99,14 +99,16 @@ class ChatDetails extends React.Component {
         this.state = {
             prevChatId: chatId,
             editingDescription: false,
-            descriptionDraft: ''
+            descriptionDraft: '',
+            supergroupMembers: [],
         };
     }
 
     static getDerivedStateFromProps(props, state) {
         if (props.chatId !== state.prevChatId) {
             return {
-                prevChatId: props.chatId
+                prevChatId: props.chatId,
+                supergroupMembers: [],
             };
         }
 
@@ -121,7 +123,7 @@ class ChatDetails extends React.Component {
         const snapshot = {
             scrollTop,
             scrollHeight,
-            offsetHeight
+            offsetHeight,
         };
 
         // console.log(
@@ -252,6 +254,34 @@ class ChatDetails extends React.Component {
         loadUsersContent(store, members);
 
         getChatFullInfo(chatId);
+        this.loadSupergroupMembers(chatId);
+    };
+
+    loadSupergroupMembers = async chatId => {
+        const chat = ChatStore.get(chatId);
+        if (!chat || !chat.type || chat.type['@type'] !== 'chatTypeSupergroup') return;
+
+        const supergroupId = chat.type.supergroup_id;
+        try {
+            // Load recent (non-bot) members first
+            const result = await TdLibController.send({
+                '@type': 'getSupergroupMembers',
+                supergroup_id: supergroupId,
+                filter: { '@type': 'supergroupMembersFilterRecent' },
+                offset: 0,
+                limit: 200,
+            });
+            if (result && result.members) {
+                this.setState({ supergroupMembers: result.members });
+                const store = FileStore.getStore();
+                loadUsersContent(
+                    store,
+                    result.members.map(m => m.user_id),
+                );
+            }
+        } catch (e) {
+            console.warn('[ChatDetails] getSupergroupMembers failed', e);
+        }
     };
 
     handleUsernameHint = () => {
@@ -291,8 +321,8 @@ class ChatDetails extends React.Component {
                         className='notification-close-button'
                         onClick={() => ApplicationStore.removeScheduledAction(key)}>
                         <CloseIcon />
-                    </IconButton>
-                ]
+                    </IconButton>,
+                ],
             });
         }
     };
@@ -326,7 +356,7 @@ class ChatDetails extends React.Component {
         if (popup) {
             TdLibController.clientUpdate({
                 '@type': 'clientUpdateDialogChatId',
-                chatId: 0
+                chatId: 0,
             });
         }
     };
@@ -339,7 +369,7 @@ class ChatDetails extends React.Component {
         if (popup) {
             TdLibController.clientUpdate({
                 '@type': 'clientUpdateDialogChatId',
-                chatId: 0
+                chatId: 0,
             });
         }
     };
@@ -351,7 +381,7 @@ class ChatDetails extends React.Component {
         try {
             const secretChat = await TdLibController.send({
                 '@type': 'createNewSecretChat',
-                user_id: chat.type.user_id
+                user_id: chat.type.user_id,
             });
             openChat(secretChat.id);
         } catch (e) {
@@ -428,7 +458,7 @@ class ChatDetails extends React.Component {
             onOpenSharedVideos,
             onOpenSharedVoiceNotes,
             popup,
-            t
+            t,
         } = this.props;
 
         let { counters, migratedCounters } = this.props;
@@ -436,7 +466,7 @@ class ChatDetails extends React.Component {
         migratedCounters = migratedCounters || [0, 0, 0, 0, 0, 0];
 
         const [photoCount, videoCount, documentCount, audioCount, urlCount, voiceAndVideoNoteCount] = counters.map(
-            (el, i) => el + migratedCounters[i]
+            (el, i) => el + migratedCounters[i],
         );
 
         const chat = ChatStore.get(chatId);
@@ -464,11 +494,18 @@ class ChatDetails extends React.Component {
         const isMe = isMeChat(chatId);
         const isSecret = isChatSecret(chatId);
 
-        const members = getGroupChatMembers(chatId);
+        const { supergroupMembers } = this.state;
+        const basicMembers = getGroupChatMembers(chatId);
+        // For supergroups use the async-loaded members; for basicGroups use sync fullInfo
+        const rawMembers = basicMembers.length > 0 ? basicMembers : supergroupMembers;
         const users = [];
+        const seenIds = new Set();
         this.members = new Map();
-        members.forEach(member => {
-            const user = UserStore.get(member.user_id);
+        rawMembers.forEach(member => {
+            const uid = member.user_id || member.member_id?.user_id;
+            if (!uid || seenIds.has(uid)) return;
+            seenIds.add(uid);
+            const user = UserStore.get(uid);
             if (user) {
                 this.members.set(user.id, user.id);
                 users.push(user);
@@ -581,7 +618,7 @@ class ChatDetails extends React.Component {
                                                     style={{
                                                         whiteSpace: 'pre-wrap',
                                                         wordWrap: 'break-word',
-                                                        opacity: bio ? 1 : 0.5
+                                                        opacity: bio ? 1 : 0.5,
                                                     }}
                                                 />
                                                 {isAdmin && isGroup && (
@@ -786,7 +823,7 @@ ChatDetails.propTypes = {
     onOpenSharedLinks: PropTypes.func,
     onOpenSharedPhotos: PropTypes.func,
     onOpenSharedVideos: PropTypes.func,
-    onOpenSharedVoiceNotes: PropTypes.func
+    onOpenSharedVoiceNotes: PropTypes.func,
 };
 
 const enhance = compose(
@@ -794,7 +831,7 @@ const enhance = compose(
     withTranslation(),
     withStyles(styles, { withTheme: true }),
     withSnackbar,
-    withRestoreRef()
+    withRestoreRef(),
 );
 
 export default enhance(ChatDetails);
