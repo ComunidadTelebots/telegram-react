@@ -99,6 +99,20 @@ const DESIGN_MUI = {
     aurora: { radius: 14, accent: '#34D9A8', font: "'Manrope', 'Inter', system-ui, sans-serif", type: 'dark' },
 };
 
+const DEFAULT_PRIMARY = { main: '#5B8AF1' };
+
+function normalizePrimary(primary) {
+    if (!primary || typeof primary !== 'object') {
+        return DEFAULT_PRIMARY;
+    }
+
+    if (typeof primary.main === 'string' || typeof primary[500] === 'string') {
+        return primary;
+    }
+
+    return DEFAULT_PRIMARY;
+}
+
 function createTheme(type, primary) {
     const design = getDesign();
     const dc = DESIGN_MUI[design] || DESIGN_MUI.current;
@@ -106,7 +120,7 @@ function createTheme(type, primary) {
     // Aurora es siempre dark; el resto respeta la elección del usuario
     const effectiveType = dc.type || type;
     // El acento del diseño sobreescribe la elección de color del usuario
-    const effectivePrimary = dc.accent ? { main: dc.accent } : primary;
+    const effectivePrimary = dc.accent ? { main: dc.accent } : normalizePrimary(primary);
 
     const theme = createMuiTheme({
         palette: {

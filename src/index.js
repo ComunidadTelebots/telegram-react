@@ -19,10 +19,10 @@ import { initDesign } from './Design';
 initDesign();
 
 ReactDOM.render(
-    <Router>
-        <Route path='' component={TelegramApp} />
+    <Router basename={process.env.PUBLIC_URL || '/'}>
+        <Route path='/' component={TelegramApp} />
     </Router>,
-    document.getElementById('root')
+    document.getElementById('root'),
 );
 
 if (OPTIMIZATIONS_FIRST_START) {

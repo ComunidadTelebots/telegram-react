@@ -20,6 +20,11 @@
 - **Tokens visuales compartidos en componentes existentes**: mensajes, respuestas, reacciones, web previews, metadatos de día, servicios, tiles de chat, headers, login y layout base usan variables CSS para responder al diseño activo. Archivos: `src/index.css`, `src/TelegramApp.css`, `src/Components/Message/*.css`, `src/Components/Tile/*.css`, `src/Components/ColumnMiddle/Header.css`, `src/Components/Auth/*.css`.
 - **Acentos por diseño**: Android, iOS, macOS, TDesktop, Unigram y Aurora pueden imponer su color de acento para que iconos, enlaces, badges y Material UI acompañen al skin seleccionado. Archivos: `src/Theme.js`, `src/designs/*.css`.
 
+### Fixed
+- **Pantalla blanca en `/telegram-react/`**: `BrowserRouter` ahora usa `basename={process.env.PUBLIC_URL || '/'}` y ruta `/`, por lo que el build de producción montado bajo `/telegram-react/` renderiza correctamente. Archivo: `src/index.js`.
+- **Crash de Material UI por color inválido**: `Theme.js` normaliza el color primario y `ThemePicker` cae a azul por defecto cuando una cookie antigua o un diseño con acento propio deja un color no reconocido. Archivos: `src/Theme.js`, `src/Components/ColumnLeft/ThemePicker.js`.
+- **Servidor local estático para probar builds**: nuevo script Node que sirve `build/` en `localhost:3000` con fallback a `index.html` y soporte para el prefijo `/telegram-react`. Archivo: `scripts/local-static-server.js`.
+
 ### Notes
 - **Build verificada**: `npm run build` compila correctamente con las nuevas apariencias.
 - **Lint pendiente de configuración**: `npm run lint` no llega a analizar el código porque la versión instalada de ESLint no reconoce `env.es2021` en `.eslintrc.json`.

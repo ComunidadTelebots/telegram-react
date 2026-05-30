@@ -138,7 +138,7 @@ class ThemePicker extends React.Component {
                 return 'deepPurple';
         }
 
-        return null;
+        return 'blue';
     };
 
     getColor = value => {
@@ -159,7 +159,7 @@ class ThemePicker extends React.Component {
                 return deepPurple;
         }
 
-        return null;
+        return { main: '#5B8AF1' };
     };
 
     handleClose = () => {
