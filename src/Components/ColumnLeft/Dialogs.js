@@ -14,6 +14,7 @@ import DialogsHeader from './DialogsHeader';
 import DialogsList from './DialogsList';
 import FolderDialogsList from './FolderDialogsList';
 import UpdatePanel from './UpdatePanel';
+import AndroidBottomNav from './AndroidBottomNav';
 import { borderStyle } from '../Theme';
 import { openChat } from '../../Actions/Client';
 import { getArchiveTitle } from '../../Utils/Archive';
@@ -26,7 +27,7 @@ import TdLibController from '../../Controllers/TdLibController';
 import './Dialogs.css';
 
 const styles = theme => ({
-    ...borderStyle(theme)
+    ...borderStyle(theme),
 });
 
 class Dialogs extends Component {
@@ -57,7 +58,7 @@ class Dialogs extends Component {
             query: null,
 
             chatFilters: [],
-            activeFilter: null
+            activeFilter: null,
         };
     }
 
@@ -74,7 +75,7 @@ class Dialogs extends Component {
             searchChatId,
             searchText,
             chatFilters,
-            activeFilter
+            activeFilter,
         } = this.state;
 
         if (nextState.cache !== cache) return true;
@@ -152,13 +153,13 @@ class Dialogs extends Component {
             cache,
 
             showArchive: archiveChats && archiveChats.length > 0,
-            archiveTitle: getArchiveTitle()
+            archiveTitle: getArchiveTitle(),
         });
 
         this.loadChatContents((chats || []).map(x => x.id));
 
         TdLibController.clientUpdate({
-            '@type': 'clientUpdateCacheLoaded'
+            '@type': 'clientUpdateCacheLoaded',
         });
     }
 
@@ -222,7 +223,7 @@ class Dialogs extends Component {
 
         if (prevShowArchive && !showArchive) {
             TdLibController.clientUpdate({
-                '@type': 'clientUpdateCloseArchive'
+                '@type': 'clientUpdateCloseArchive',
             });
         }
     };
@@ -258,13 +259,13 @@ class Dialogs extends Component {
             {
                 openSearch: true,
                 searchChatId: chatId,
-                searchText: null
+                searchText: null,
             },
             () => {
                 if (header) {
                     header.setInitQuery(query);
                 }
-            }
+            },
         );
     };
 
@@ -272,7 +273,7 @@ class Dialogs extends Component {
         const { openArchive } = this.state;
         if (openArchive) {
             TdLibController.clientUpdate({
-                '@type': 'clientUpdateCloseArchive'
+                '@type': 'clientUpdateCloseArchive',
             });
         } else {
             this.dialogListRef.current.scrollToTop();
@@ -283,7 +284,7 @@ class Dialogs extends Component {
         this.setState({
             openSearch: visible,
             searchChatId: 0,
-            searchText: null
+            searchText: null,
         });
     };
 
@@ -296,7 +297,7 @@ class Dialogs extends Component {
         this.setState({
             openSearch: openSearch,
             searchChatId: searchChatId,
-            searchText: searchText
+            searchText: searchText,
         });
     };
 
@@ -304,14 +305,14 @@ class Dialogs extends Component {
         this.setState({
             openSearch: false,
             searchChatId: 0,
-            searchText: null
+            searchText: null,
         });
     };
 
     handleSearchTextChange = text => {
         this.setState({
             searchText: text,
-            query: null
+            query: null,
         });
     };
 
@@ -338,7 +339,7 @@ class Dialogs extends Component {
             searchChatId,
             searchText,
             chatFilters,
-            activeFilter
+            activeFilter,
         } = this.state;
 
         const mainCacheItems = cache ? cache.chats || [] : null;
@@ -347,7 +348,7 @@ class Dialogs extends Component {
         return (
             <div
                 className={classNames(classes.borderColor, 'dialogs', {
-                    'dialogs-third-column': isChatDetailsVisible
+                    'dialogs-third-column': isChatDetailsVisible,
                 })}>
                 <DialogsHeader
                     ref={this.dialogsHeaderRef}
@@ -409,6 +410,7 @@ class Dialogs extends Component {
                     )}
                 </div>
                 <UpdatePanel />
+                <AndroidBottomNav active='chats' />
             </div>
         );
     }

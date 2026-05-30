@@ -38,6 +38,27 @@ const ANDROID_VERSIONS = [
         trigger: 'Classic',
         tag: 'Classic',
     },
+    {
+        value: 'android-v11',
+        label: '8.x',
+        detail: '8.x (2021)',
+        trigger: 'v11',
+        tag: 'v11',
+    },
+    {
+        value: 'android-v9',
+        label: '6.x',
+        detail: '6.x Folders',
+        trigger: 'v9',
+        tag: 'v9',
+    },
+    {
+        value: 'android-holo',
+        label: '4.x',
+        detail: '4.x Holo',
+        trigger: 'Holo',
+        tag: 'Holo',
+    },
 ];
 
 function isAndroidDesign(design) {

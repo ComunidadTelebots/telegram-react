@@ -8,35 +8,32 @@
 import React from 'react';
 import IconButton from '@material-ui/core/IconButton';
 import MenuIcon from '@material-ui/icons/Menu';
-import Menu from '@material-ui/core/Menu';
-import MenuItem from '@material-ui/core/MenuItem';
-import Divider from '@material-ui/core/Divider';
 import withStyles from '@material-ui/core/styles/withStyles';
 import { withTranslation } from 'react-i18next';
 import { compose } from 'recompose';
 import ThemePicker from './ThemePicker';
 import LanguagePicker from './LanguagePicker';
 import ActiveSessions from '../Additional/ActiveSessions';
-import { update } from '../../registerServiceWorker';
+import AndroidDrawer from './AndroidDrawer';
 import { isAuthorizationReady } from '../../Utils/Common';
 import ApplicationStore from '../../Stores/ApplicationStore';
 import UserStore from '../../Stores/UserStore';
 import TdLibController from '../../Controllers/TdLibController';
 import { WASM_FILE_HASH, WASM_FILE_NAME } from '../../Constants';
+import { getDesign } from '../../Design';
+import './MainMenuButton.css';
 
 const styles = {
     menuIconButton: {
-        margin: '8px -2px 8px 12px'
+        margin: '8px -2px 8px 12px',
     },
-    searchIconButton: {
-        margin: '8px 12px 8px 0'
-    }
 };
 
-const menuAnchorOrigin = {
-    vertical: 'bottom',
-    horizontal: 'left'
-};
+const DRAWER_DESIGNS = new Set(['android-holo', 'android-v9', 'android-v11', 'android-classic', 'android-redesign']);
+
+function hasDrawer(d) {
+    return DRAWER_DESIGNS.has(d);
+}
 
 class MainMenuButton extends React.Component {
     constructor(props) {
@@ -44,24 +41,31 @@ class MainMenuButton extends React.Component {
 
         this.state = {
             authorizationState: ApplicationStore.getAuthorizationState(),
-            anchorEl: null,
+            drawerOpen: false,
             accounts: TdLibController.getAccounts ? TdLibController.getAccounts() : [],
-            activeAccountIndex: parseInt(localStorage.getItem('tg_gramjs_active_account') || '0', 10)
+            activeAccountIndex: parseInt(localStorage.getItem('tg_gramjs_active_account') || '0', 10),
+            design: getDesign(),
         };
     }
 
     componentDidMount() {
         ApplicationStore.on('updateAuthorizationState', this.onUpdateAuthorizationState);
+        ApplicationStore.on('clientUpdateThemeChange', this.onDesignChange);
         TdLibController.on('clientUpdate', this.onClientUpdate);
     }
 
     componentWillUnmount() {
         ApplicationStore.off('updateAuthorizationState', this.onUpdateAuthorizationState);
+        ApplicationStore.off('clientUpdateThemeChange', this.onDesignChange);
         TdLibController.off('clientUpdate', this.onClientUpdate);
     }
 
     onUpdateAuthorizationState = update => {
         this.setState({ authorizationState: update.authorization_state });
+    };
+
+    onDesignChange = () => {
+        this.setState({ design: getDesign() });
     };
 
     onClientUpdate = update => {
@@ -70,130 +74,44 @@ class MainMenuButton extends React.Component {
         }
     };
 
-    handleMenuOpen = event => {
+    handleMenuOpen = () => {
         const { authorizationState } = this.state;
         if (!isAuthorizationReady(authorizationState)) return;
-
-        this.setState({ anchorEl: event.currentTarget });
+        this.setState({ drawerOpen: true });
     };
 
-    handleMenuClose = () => {
-        this.setState({ anchorEl: null });
+    handleDrawerClose = () => {
+        this.setState({ drawerOpen: false });
     };
 
     handleLogOut = () => {
-        this.handleMenuClose();
-        this.props.onLogOut();
-    };
-
-    handleNewGroup = () => {
-        this.handleMenuClose();
-        TdLibController.clientUpdate({ '@type': 'clientUpdateNewGroupDialog' });
-    };
-
-    handleNewChannel = () => {
-        this.handleMenuClose();
-        TdLibController.clientUpdate({ '@type': 'clientUpdateNewChannelDialog' });
-    };
-
-    handleAddAccount = () => {
-        this.handleMenuClose();
-        if (TdLibController.addAccount) TdLibController.addAccount();
-    };
-
-    handleSwitchAccount = index => {
-        this.handleMenuClose();
-        if (TdLibController.switchAccount) TdLibController.switchAccount(index);
-    };
-
-    handleCheckUpdates = async () => {
-        this.handleMenuClose();
-
-        const result = await fetch(`${WASM_FILE_NAME}?_sw-precache=${WASM_FILE_HASH}`);
-        console.log('wasm result', result);
-        //await update();
+        this.props.onLogOut && this.props.onLogOut();
     };
 
     handleActiveSessions = () => {
-        this.handleMenuClose();
-        this.activeSessionsRef.open();
+        this.activeSessionsRef && this.activeSessionsRef.open();
     };
 
-    handleSavedMessages = async () => {
-        this.handleMenuClose();
-        const myId = UserStore.getMyId ? UserStore.getMyId() : null;
-        if (!myId) return;
-        const chat = await TdLibController.send({ '@type': 'createPrivateChat', user_id: myId, force: true });
-        if (chat) TdLibController.setChatId(chat.id);
-    };
-
-    handleAppearance = event => {
-        this.handleMenuClose();
-
-        this.themePicker.open();
-    };
-
-    handleLanguage = event => {
-        this.handleMenuClose();
-
-        this.languagePicker.open();
-    };
-
-    setRef = ref => {
-        console.log(this);
-        this.languagePicker = ref;
+    handleAppearance = () => {
+        this.themePicker && this.themePicker.open();
     };
 
     render() {
-        const { classes, t } = this.props;
-        const { anchorEl, authorizationState, accounts, activeAccountIndex } = this.state;
+        const { classes } = this.props;
+        const { authorizationState, drawerOpen, design } = this.state;
 
-        const otherAccounts = accounts.filter(a => a.index !== activeAccountIndex);
-
-        const mainMenuControl = isAuthorizationReady(authorizationState) ? (
-            <>
-                <Menu
-                    id='main-menu'
-                    anchorEl={anchorEl}
-                    open={Boolean(anchorEl)}
-                    onClose={this.handleMenuClose}
-                    getContentAnchorEl={null}
-                    disableAutoFocusItem
-                    disableRestoreFocus={true}
-                    anchorOrigin={menuAnchorOrigin}>
-                    <MenuItem onClick={this.handleSavedMessages}>Saved Messages</MenuItem>
-                    <Divider />
-                    <MenuItem onClick={this.handleNewGroup}>Nuevo grupo</MenuItem>
-                    <MenuItem onClick={this.handleNewChannel}>Nuevo canal / supergrupo</MenuItem>
-                    <Divider />
-                    <MenuItem onClick={this.handleCheckUpdates}>{t('UpdateTelegram')}</MenuItem>
-                    <MenuItem onClick={this.handleAppearance}>{t('Appearance')}</MenuItem>
-                    <MenuItem onClick={this.handleLanguage}>{t('Language')}</MenuItem>
-                    <MenuItem onClick={this.handleActiveSessions}>Active Sessions</MenuItem>
-                    <Divider />
-                    {otherAccounts.map(a => (
-                        <MenuItem key={a.index} onClick={() => this.handleSwitchAccount(a.index)}>
-                            {a.name || a.phone || `Account ${a.index + 1}`}
-                        </MenuItem>
-                    ))}
-                    <MenuItem onClick={this.handleAddAccount}>Add Account</MenuItem>
-                    <Divider />
-                    <MenuItem onClick={this.handleLogOut}>{t('LogOut')}</MenuItem>
-                </Menu>
-            </>
-        ) : null;
+        const showDrawer = isAuthorizationReady(authorizationState) && hasDrawer(design);
 
         return (
             <>
                 <IconButton
-                    aria-owns={anchorEl ? 'simple-menu' : null}
                     aria-haspopup='true'
                     className={classes.menuIconButton}
                     aria-label='Menu'
                     onClick={this.handleMenuOpen}>
                     <MenuIcon />
                 </IconButton>
-                {mainMenuControl}
+                {showDrawer && drawerOpen && <AndroidDrawer onClose={this.handleDrawerClose} />}
                 <ThemePicker innerRef={ref => (this.themePicker = ref)} />
                 <LanguagePicker ref={ref => (this.languagePicker = ref)} />
                 <ActiveSessions ref={ref => (this.activeSessionsRef = ref)} />

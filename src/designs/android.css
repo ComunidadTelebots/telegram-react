@@ -78,6 +78,20 @@ body.design-android {
     --design-message-tail-display: block;
 }
 
+/* ── Inputbox left column: dos iconos apilados → flex-row al fondo ─────── */
+body.design-android .inputbox-left-column {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-end;
+    width: auto;
+    margin-right: 0;
+}
+
+/* Oculta el botón de stickers separado (en Android es un solo icono combinado) */
+body.design-android .inputbox-left-column [aria-label='Stickers'] {
+    display: none;
+}
+
 /* ── Sidebar — blanco, ancho fijo ───────────────────────────────────────── */
 body.design-android .dialogs {
     width: 340px;
@@ -603,7 +617,20 @@ body.design-android-classic .message-bubble-out {
 }
 
 body.design-android-classic .day-meta-wrapper {
+    border-radius: 4px;
     background: rgba(92, 111, 118, 0.54);
+}
+
+/* Badge cuadrado era clásica */
+body.design-android-classic .dialog-badge {
+    border-radius: 2px;
+    background: #527da3;
+}
+
+/* Sin tail en burbujas cortas — era plana */
+body.design-android-classic .message-short .message-bubble,
+body.design-android-classic .message-short .message-bubble-out {
+    border-radius: 4px;
 }
 
 /* Android 12.6 redesign: más aire, radios modernos y mensajes redondeados */
@@ -651,6 +678,35 @@ body.design-android-redesign .header-details {
 body.design-android-redesign .dialog-badge,
 body.design-android-redesign .day-meta-wrapper {
     border-radius: 999px;
+}
+
+/* Redesign: hover suave en dialogs, inputbox más moderno */
+body.design-android-redesign .dialog-wrapper:hover {
+    background: rgba(0, 0, 0, 0.04);
+}
+
+body.design-android-redesign .dialog-active .dialog-wrapper,
+body.design-android-redesign .dialog-active .dialog-wrapper:hover {
+    background: rgba(34, 154, 240, 0.1);
+}
+
+/* Fondo de chat con gradiente sutil (igual que base) */
+body.design-android-redesign .messages-list,
+body.design-android-redesign .messages-list-wrapper {
+    background-color: #d2dcc4;
+    background-image: radial-gradient(circle at 15% 20%, rgba(255, 255, 255, 0.22), transparent 35%),
+        radial-gradient(circle at 85% 75%, rgba(150, 180, 120, 0.22), transparent 40%);
+}
+
+/* Inputbox redesign: pill redondeado con sombra muy sutil */
+body.design-android-redesign .inputbox-bubble {
+    border-radius: 24px;
+    background: #f3f3f3;
+}
+
+/* Iconos del header en accent color */
+body.design-android-redesign .header-master .MuiIconButton-root {
+    color: var(--android-accent) !important;
 }
 
 /* Android Beta 12.6.4 Glass: superficies translúcidas y fondo suave */
@@ -735,6 +791,24 @@ body.design-android-glass .dialogs::after {
     box-shadow: 0 4px 14px rgba(40, 201, 183, 0.4), 0 1px 3px rgba(0, 0, 0, 0.2);
 }
 
+/* Glass: badge y day-pill con radio máximo (estilo moderno fluido) */
+body.design-android-glass .dialog-badge,
+body.design-android-glass .day-meta-wrapper {
+    border-radius: 999px;
+}
+
+/* Glass: iconos del header en accent teal */
+body.design-android-glass .header-master .MuiIconButton-root {
+    color: #28c9b7 !important;
+}
+
+/* Fondo del inputbox glass */
+body.design-android-glass .inputbox-bubble {
+    background: rgba(255, 255, 255, 0.62);
+    border: 1px solid rgba(40, 201, 183, 0.15);
+    border-radius: 22px;
+}
+
 body.theme-dark.design-android-classic {
     --android-accent: #4aa3df;
     --android-chat-background: #0d1720;
@@ -764,4 +838,1121 @@ body.theme-dark.design-android-glass .messages-list,
 body.theme-dark.design-android-glass .messages-list-wrapper {
     background: radial-gradient(circle at 78% 18%, rgba(80, 120, 138, 0.22), transparent 28%),
         linear-gradient(135deg, #0e1822 0%, #172536 52%, #101a25 100%);
+}
+
+/* Android 4.x Holo: sidebar oscuro, acento teal, esquinas cuadradas */
+body.design-android-holo {
+    --android-accent: #00bcd4;
+    --android-accent-dark: #0097a7;
+    --android-ripple: rgba(0, 188, 212, 0.14);
+    --android-sidebar: #1a2633;
+    --android-chat-background: #e5ddd5;
+    --android-separator: rgba(255, 255, 255, 0.06);
+    --android-text-secondary: #8fa4b0;
+    --message-out-background: #dcf8c6;
+    --message-out-meta-color: #5faa52;
+    --message-in-author: #00bcd4;
+    --message-in-reply-title: #00bcd4;
+    --message-in-reply-border: #00bcd4;
+    --day-background: rgba(30, 55, 75, 0.72);
+    --color-accent-main: #00bcd4;
+    --design-page-background: #1a2633;
+    --design-page-color: #e8edf0;
+    --design-sidebar-background: #1a2633;
+    --design-middle-background: #e5ddd5;
+    --design-panel-background: #1a2633;
+    --design-header-background: #1a2633;
+    --design-header-color: #ffffff;
+    --design-header-muted-color: #00bcd4;
+    --design-input-background: #1a2633;
+    --design-input-surface: #22333f;
+    --design-border-color: rgba(255, 255, 255, 0.06);
+    --design-muted-color: #8fa4b0;
+    --design-hover-background: rgba(0, 188, 212, 0.1);
+    --design-active-background: rgba(0, 188, 212, 0.18);
+    --design-control-radius: 2px;
+    --design-message-radius-in: 4px 4px 4px 0;
+    --design-message-radius-out: 4px 4px 0 4px;
+    --design-message-radius-short: 4px;
+    --design-message-padding: 5px 8px;
+}
+
+body.design-android-holo .dialogs {
+    width: 320px;
+    min-width: 320px;
+    max-width: 320px;
+    background: #1a2633;
+    border-right: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+body.design-android-holo .dialog-details {
+    width: calc(100% - 320px);
+}
+
+body.design-android-holo .header-master {
+    background: #1a2633 !important;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
+}
+
+body.design-android-holo .header-master .MuiIconButton-root {
+    color: #00bcd4 !important;
+}
+
+body.design-android-holo .header-details {
+    background: #1a2633;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
+}
+
+body.design-android-holo .header-status-title {
+    color: #00bcd4 !important;
+}
+
+body.design-android-holo .folder-tabs {
+    display: none;
+}
+
+body.design-android-holo .dialog-title {
+    color: #e8edf0;
+}
+
+body.design-android-holo .dialog-wrapper {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+body.design-android-holo .dialog-wrapper:hover {
+    background: rgba(0, 188, 212, 0.08);
+}
+
+body.design-android-holo .dialog-active .dialog-wrapper,
+body.design-android-holo .dialog-active .dialog-wrapper:hover {
+    background: rgba(0, 188, 212, 0.16);
+}
+
+body.design-android-holo .dialog-badge {
+    border-radius: 2px;
+}
+
+body.design-android-holo .messages-list,
+body.design-android-holo .messages-list-wrapper {
+    background-color: #e5ddd5;
+    background-image: none;
+}
+
+body.design-android-holo .tile_color_1 {
+    background: #e06058;
+}
+body.design-android-holo .tile_color_2 {
+    background: #e9a060;
+}
+body.design-android-holo .tile_color_3 {
+    background: #9c84e0;
+}
+body.design-android-holo .tile_color_4 {
+    background: #6ec95a;
+}
+body.design-android-holo .tile_color_5 {
+    background: #38c8cc;
+}
+body.design-android-holo .tile_color_6 {
+    background: #00bcd4;
+}
+body.design-android-holo .tile_color_7 {
+    background: #e06898;
+}
+body.design-android-holo .tile_color_8 {
+    background: #7a8a96;
+}
+
+body.design-android-holo .message-bubble-out {
+    background: #dcf8c6;
+}
+
+body.design-android-holo .day-meta-wrapper {
+    border-radius: 4px;
+    background: rgba(30, 55, 75, 0.65);
+}
+
+body.design-android-holo .inputbox-background {
+    background: #1a2633;
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+body.design-android-holo .inputbox-bubble {
+    border-radius: 2px;
+    background: #22333f;
+    border: 1px solid rgba(0, 188, 212, 0.2);
+}
+
+body.design-android-holo #inputbox-message {
+    color: #e8edf0;
+}
+
+body.design-android-holo .inputbox-send-button {
+    border-radius: 2px;
+    box-shadow: none;
+}
+
+body.design-android-holo .dialogs::after {
+    border-radius: 2px;
+    background: #00bcd4;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.5);
+}
+
+body.design-android-holo ::-webkit-scrollbar-thumb {
+    border-radius: 2px;
+}
+
+body.theme-dark.design-android-holo {
+    --android-chat-background: #0d1218;
+    --message-out-background: #1a3d2e;
+    --design-page-background: #0d1218;
+    --design-sidebar-background: #111a22;
+    --design-header-background: #111a22;
+    --design-panel-background: #111a22;
+    --design-input-background: #111a22;
+    --design-input-surface: #1a2633;
+}
+
+body.theme-dark.design-android-holo .dialogs {
+    background: #111a22;
+}
+body.theme-dark.design-android-holo .header-master {
+    background: #111a22 !important;
+}
+body.theme-dark.design-android-holo .header-details {
+    background: #111a22;
+}
+body.theme-dark.design-android-holo .messages-list,
+body.theme-dark.design-android-holo .messages-list-wrapper {
+    background-color: #0d1218;
+}
+body.theme-dark.design-android-holo .inputbox-background {
+    background: #111a22;
+}
+body.theme-dark.design-android-holo .inputbox-bubble {
+    background: #1a2633;
+}
+
+/* Android 6.x v9 (~2019): era Folders, header azul, tabs con chips */
+body.design-android-v9 {
+    --android-accent: #2ca5e0;
+    --android-accent-dark: #1b8abf;
+    --android-ripple: rgba(44, 165, 224, 0.12);
+    --android-chat-background: #dce6eb;
+    --android-text-secondary: #727c80;
+    --message-in-author: #2ca5e0;
+    --message-in-reply-title: #2ca5e0;
+    --message-in-reply-border: #2ca5e0;
+    --day-background: rgba(70, 110, 130, 0.6);
+    --color-accent-main: #2ca5e0;
+    --design-middle-background: #dce6eb;
+    --design-header-background: #2ca5e0;
+    --design-header-color: #ffffff;
+    --design-header-muted-color: rgba(255, 255, 255, 0.85);
+    --design-input-surface: #f0f0f0;
+    --design-muted-color: #727c80;
+    --design-hover-background: rgba(44, 165, 224, 0.07);
+    --design-active-background: rgba(44, 165, 224, 0.13);
+    --design-message-radius-in: 10px 10px 10px 2px;
+    --design-message-radius-out: 10px 10px 2px 10px;
+    --design-message-radius-short: 10px;
+}
+
+body.design-android-v9 .dialogs {
+    width: 335px;
+    min-width: 335px;
+    max-width: 335px;
+}
+
+body.design-android-v9 .dialog-details {
+    width: calc(100% - 335px);
+}
+
+body.design-android-v9 .header-master {
+    background: #2ca5e0 !important;
+    color: #ffffff !important;
+}
+
+body.design-android-v9 .header-master .MuiIconButton-root,
+body.design-android-v9 .header-left-button,
+body.design-android-v9 .header-right-button {
+    color: #ffffff !important;
+}
+
+body.design-android-v9 .header-details {
+    background: #2ca5e0;
+    color: #ffffff;
+}
+
+body.design-android-v9 .header-status-title {
+    color: rgba(255, 255, 255, 0.85) !important;
+}
+
+body.design-android-v9 .folder-tabs {
+    padding: 6px 10px 4px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+    background: #ffffff;
+}
+
+/* v9: tabs como chips — característico del era Folders 2019 */
+body.design-android-v9 .folder-tab {
+    border-radius: 16px;
+    padding: 4px 12px;
+    font-size: 13px;
+    font-weight: 500;
+}
+
+body.design-android-v9 .folder-tab-active {
+    background: rgba(44, 165, 224, 0.15);
+    color: #2ca5e0;
+}
+
+/* v9: badge y day-pill redondeados (era moderna de chips) */
+body.design-android-v9 .dialog-badge {
+    border-radius: 10px;
+    background: #2ca5e0;
+}
+body.design-android-v9 .day-meta-wrapper {
+    border-radius: 14px;
+    background: rgba(70, 110, 130, 0.6);
+}
+
+/* v9: iconos del inputbox en accent azul */
+body.design-android-v9 .inputbox-icon-button {
+    color: #2ca5e0;
+}
+
+body.design-android-v9 .messages-list,
+body.design-android-v9 .messages-list-wrapper {
+    background-color: #dce6eb;
+    background-image: none;
+}
+
+body.design-android-v9 .dialog-wrapper:hover {
+    background: rgba(0, 0, 0, 0.03);
+}
+
+body.design-android-v9 .dialog-active .dialog-wrapper,
+body.design-android-v9 .dialog-active .dialog-wrapper:hover {
+    background: rgba(44, 165, 224, 0.1);
+}
+
+body.design-android-v9 .inputbox-bubble {
+    background: #f0f0f0;
+}
+
+body.design-android-v9 .inputbox-send-button {
+    background: #2ca5e0;
+    box-shadow: 0 2px 8px rgba(44, 165, 224, 0.4);
+}
+
+body.design-android-v9 .dialogs::after {
+    background: #2ca5e0;
+    box-shadow: 0 3px 10px rgba(44, 165, 224, 0.45);
+}
+
+body.design-android-v9 ::-webkit-scrollbar-thumb {
+    background: rgba(44, 165, 224, 0.28);
+}
+
+body.theme-dark.design-android-v9 {
+    --android-chat-background: #0e1822;
+    --message-in-background: #182533;
+    --message-out-background: #2b5278;
+    --design-page-background: #0e1822;
+    --design-page-color: #f0f4f8;
+    --design-sidebar-background: #17212b;
+    --design-header-background: #1e3d5a;
+    --design-panel-background: #17212b;
+    --design-input-background: #17212b;
+    --design-input-surface: #182533;
+}
+
+body.theme-dark.design-android-v9 .dialogs {
+    background: #17212b;
+}
+body.theme-dark.design-android-v9 .header-master {
+    background: #1e3d5a !important;
+}
+body.theme-dark.design-android-v9 .header-details {
+    background: #1e3d5a;
+}
+body.theme-dark.design-android-v9 .messages-list,
+body.theme-dark.design-android-v9 .messages-list-wrapper {
+    background-color: #0e1822;
+}
+body.theme-dark.design-android-v9 .inputbox-background {
+    background: #17212b;
+}
+body.theme-dark.design-android-v9 .inputbox-bubble {
+    background: #182533;
+}
+
+/* Android 8.x v11 (~2021): pre-redesign, verde-salvia más oscuro, radios 12px */
+body.design-android-v11 {
+    --android-chat-background: #d7e5cc;
+    --android-text-secondary: #6f777d;
+    --design-middle-background: #d7e5cc;
+    --design-muted-color: #6f777d;
+    --design-active-background: rgba(34, 154, 240, 0.1);
+    --design-control-radius: 20px;
+    --design-message-wrapper-padding: 4px 20px 4px 8px;
+    --design-message-content-max-width: 535px;
+    --design-message-radius-in: 12px 12px 12px 4px;
+    --design-message-radius-out: 12px 12px 4px 12px;
+    --design-message-radius-short: 12px;
+    --design-message-padding: 7px 10px;
+    --day-background: rgba(80, 118, 90, 0.6);
+}
+
+body.design-android-v11 .dialogs {
+    width: 344px;
+    min-width: 344px;
+    max-width: 344px;
+}
+
+body.design-android-v11 .dialog-details {
+    width: calc(100% - 344px);
+}
+
+body.design-android-v11 .header-master {
+    min-height: 58px;
+}
+body.design-android-v11 .header-details {
+    min-height: 58px;
+}
+
+/* v11: tabs con radio generoso, badge pill suave */
+body.design-android-v11 .folder-tab {
+    border-radius: 20px;
+}
+body.design-android-v11 .folder-tab-active {
+    background: rgba(34, 154, 240, 0.13);
+    color: #229af0;
+}
+body.design-android-v11 .dialog-badge {
+    border-radius: 12px;
+}
+body.design-android-v11 .day-meta-wrapper {
+    border-radius: 16px;
+}
+
+/* v11: iconos del header en accent */
+body.design-android-v11 .header-master .MuiIconButton-root {
+    color: var(--android-accent) !important;
+}
+
+/* v11: inputbox icons color */
+body.design-android-v11 .inputbox-icon-button {
+    color: var(--android-text-secondary);
+}
+
+body.design-android-v11 .dialog-active .dialog-wrapper,
+body.design-android-v11 .dialog-active .dialog-wrapper:hover {
+    background: rgba(34, 154, 240, 0.09);
+}
+
+body.design-android-v11 .messages-list,
+body.design-android-v11 .messages-list-wrapper {
+    background-color: #d7e5cc;
+    background-image: radial-gradient(circle at 20% 25%, rgba(255, 255, 255, 0.2), transparent 30%);
+}
+
+body.design-android-v11 .day-meta-wrapper {
+    background: rgba(80, 118, 90, 0.55);
+}
+
+body.theme-dark.design-android-v11 {
+    --android-chat-background: #0f1822;
+    --message-in-background: #182533;
+    --message-out-background: #2b5278;
+    --design-page-background: #0f1822;
+    --design-page-color: #f5f7fa;
+    --design-sidebar-background: #17212b;
+    --design-header-background: #17212b;
+    --design-panel-background: #17212b;
+    --design-input-background: #17212b;
+    --design-input-surface: #182533;
+}
+
+body.theme-dark.design-android-v11 .dialogs {
+    background: #17212b;
+}
+body.theme-dark.design-android-v11 .header-master {
+    background: #17212b !important;
+}
+body.theme-dark.design-android-v11 .header-details {
+    background: #17212b;
+}
+body.theme-dark.design-android-v11 .messages-list,
+body.theme-dark.design-android-v11 .messages-list-wrapper {
+    background-color: #0f1822;
+}
+body.theme-dark.design-android-v11 .inputbox-background {
+    background: #17212b;
+}
+body.theme-dark.design-android-v11 .inputbox-bubble {
+    background: #182533;
+}
+
+/* ── Colores de avatar (tile_color) — android-redesign ─────────────────── */
+body.design-android-redesign .tile_color_1 {
+    background: linear-gradient(#ff845e, #d45246);
+}
+body.design-android-redesign .tile_color_2 {
+    background: linear-gradient(#febb5b, #f68136);
+}
+body.design-android-redesign .tile_color_3 {
+    background: linear-gradient(#b694f9, #6c61df);
+}
+body.design-android-redesign .tile_color_4 {
+    background: linear-gradient(#9ad164, #46ba43);
+}
+body.design-android-redesign .tile_color_5 {
+    background: linear-gradient(#5bcbe3, #359ad4);
+}
+body.design-android-redesign .tile_color_6 {
+    background: linear-gradient(#5caffa, #408acf);
+}
+body.design-android-redesign .tile_color_7 {
+    background: linear-gradient(#ff8aac, #d95574);
+}
+body.design-android-redesign .tile_color_8 {
+    background: linear-gradient(#9ca5af, #65717d);
+}
+
+/* ── Scrollbar — android-redesign ──────────────────────────────────────── */
+body.design-android-redesign ::-webkit-scrollbar {
+    width: 4px;
+}
+body.design-android-redesign ::-webkit-scrollbar-track {
+    background: transparent;
+}
+body.design-android-redesign ::-webkit-scrollbar-thumb {
+    background: rgba(34, 154, 240, 0.28);
+    border-radius: 8px;
+}
+
+/* ── FAB — android-redesign ─────────────────────────────────────────────── */
+body.design-android-redesign .dialogs::after {
+    box-shadow: 0 3px 12px rgba(34, 154, 240, 0.45);
+}
+
+/* ── Colores de avatar (tile_color) — android-glass ────────────────────── */
+body.design-android-glass .tile_color_1 {
+    background: linear-gradient(#ff9f8a, #dd5c50);
+}
+body.design-android-glass .tile_color_2 {
+    background: linear-gradient(#fecb72, #f29040);
+}
+body.design-android-glass .tile_color_3 {
+    background: linear-gradient(#c3abfc, #8070e8);
+}
+body.design-android-glass .tile_color_4 {
+    background: linear-gradient(#a8db74, #5cc958);
+}
+body.design-android-glass .tile_color_5 {
+    background: linear-gradient(#6ed8e6, #28c9b7);
+}
+body.design-android-glass .tile_color_6 {
+    background: linear-gradient(#7ec5fd, #4da0e0);
+}
+body.design-android-glass .tile_color_7 {
+    background: linear-gradient(#ffa0c0, #e06088);
+}
+body.design-android-glass .tile_color_8 {
+    background: linear-gradient(#abb4bd, #6e7d88);
+}
+
+/* ── Scrollbar — android-glass ──────────────────────────────────────────── */
+body.design-android-glass ::-webkit-scrollbar {
+    width: 4px;
+}
+body.design-android-glass ::-webkit-scrollbar-track {
+    background: transparent;
+}
+body.design-android-glass ::-webkit-scrollbar-thumb {
+    background: rgba(40, 201, 183, 0.28);
+    border-radius: 8px;
+}
+
+/* ── Colores de avatar (tile_color) — android-v9 ────────────────────────── */
+body.design-android-v9 .tile_color_1 {
+    background: #e06058;
+}
+body.design-android-v9 .tile_color_2 {
+    background: #e0a858;
+}
+body.design-android-v9 .tile_color_3 {
+    background: #9b84e0;
+}
+body.design-android-v9 .tile_color_4 {
+    background: #70c958;
+}
+body.design-android-v9 .tile_color_5 {
+    background: #44c8cb;
+}
+body.design-android-v9 .tile_color_6 {
+    background: #2ca5e0;
+}
+body.design-android-v9 .tile_color_7 {
+    background: #e0689a;
+}
+body.design-android-v9 .tile_color_8 {
+    background: #7a8c96;
+}
+
+/* ── Colores de avatar (tile_color) — android-v11 ───────────────────────── */
+body.design-android-v11 .tile_color_1 {
+    background: linear-gradient(#ff8a72, #d44e42);
+}
+body.design-android-v11 .tile_color_2 {
+    background: linear-gradient(#fec060, #f07a30);
+}
+body.design-android-v11 .tile_color_3 {
+    background: linear-gradient(#b898f8, #6e5edf);
+}
+body.design-android-v11 .tile_color_4 {
+    background: linear-gradient(#96d060, #48ba44);
+}
+body.design-android-v11 .tile_color_5 {
+    background: linear-gradient(#5acce2, #369ad4);
+}
+body.design-android-v11 .tile_color_6 {
+    background: linear-gradient(#5ab2fa, #408acf);
+}
+body.design-android-v11 .tile_color_7 {
+    background: linear-gradient(#ff8ab0, #da5878);
+}
+body.design-android-v11 .tile_color_8 {
+    background: linear-gradient(#9ca8b0, #66737e);
+}
+
+/* ── Scrollbar — android-v11 ────────────────────────────────────────────── */
+body.design-android-v11 ::-webkit-scrollbar {
+    width: 4px;
+}
+body.design-android-v11 ::-webkit-scrollbar-track {
+    background: transparent;
+}
+body.design-android-v11 ::-webkit-scrollbar-thumb {
+    background: rgba(34, 154, 240, 0.26);
+    border-radius: 8px;
+}
+
+/* ── Inputbox — android-v11 ─────────────────────────────────────────────── */
+body.design-android-v11 .inputbox-bubble {
+    border-radius: 20px;
+    background: #f2f2f2;
+}
+body.design-android-v11 .dialog-wrapper:hover {
+    background: rgba(0, 0, 0, 0.04);
+}
+body.design-android-v11 .dialogs::after {
+    box-shadow: 0 3px 10px rgba(34, 154, 240, 0.42);
+}
+
+/* ── Scrollbar — android-classic ────────────────────────────────────────── */
+body.design-android-classic ::-webkit-scrollbar {
+    width: 4px;
+}
+body.design-android-classic ::-webkit-scrollbar-track {
+    background: transparent;
+}
+body.design-android-classic ::-webkit-scrollbar-thumb {
+    background: rgba(82, 125, 163, 0.3);
+    border-radius: 4px;
+}
+
+/* ── FAB — android-classic ──────────────────────────────────────────────── */
+body.design-android-classic .dialogs::after {
+    background: #527da3;
+    box-shadow: 0 3px 10px rgba(82, 125, 163, 0.45);
+}
+
+/* ── Dark mode classic improvements ─────────────────────────────────────── */
+body.theme-dark.design-android-classic .header-master,
+body.theme-dark.design-android-classic .header-details {
+    background: #2a4a6e !important;
+}
+
+body.theme-dark.design-android-classic .dialogs {
+    background: #17212b;
+}
+body.theme-dark.design-android-classic .inputbox-background {
+    background: #17212b;
+}
+body.theme-dark.design-android-classic .inputbox-bubble {
+    background: #182533;
+}
+body.theme-dark.design-android-classic .messages-list,
+body.theme-dark.design-android-classic .messages-list-wrapper {
+    background-color: #0d1720;
+}
+
+/* ════════════════════════════════════════════════════════════════════════════
+   NOVEDADES DE TELEGRAM — adaptadas por variante Android
+   Cubre: reacciones, spoilers, audio/voz, reply, story rings, premium badge
+   ════════════════════════════════════════════════════════════════════════════ */
+
+/* ── BASE android (hereda a todas las variantes) ─────────────────────────── */
+
+/* Reacciones: bubble con color accent */
+body.design-android .reaction-bubble {
+    border-radius: 12px;
+    border-color: var(--android-accent);
+    background: rgba(34, 154, 240, 0.06);
+    font-size: 13px;
+}
+body.design-android .reaction-chosen {
+    background: rgba(34, 154, 240, 0.15);
+    border-color: var(--android-accent);
+    color: var(--android-accent);
+}
+body.design-android .reaction-add-btn {
+    border-color: var(--android-accent);
+    color: var(--android-accent);
+}
+
+/* Reply quote: borde izquierdo en accent */
+body.design-android .reply {
+    border-radius: 4px;
+}
+body.design-android .border {
+    background: var(--android-accent);
+    min-width: 3px;
+    border-radius: 3px;
+}
+
+/* Spoiler texto: fondo difuminado que se revela */
+body.design-android .spoiler-text {
+    background: var(--android-accent);
+    color: transparent;
+    border-radius: 3px;
+    cursor: pointer;
+    filter: blur(4px);
+    transition: filter 0.25s, color 0.25s;
+}
+body.design-android .spoiler-text.spoiler-revealed {
+    filter: none;
+    color: inherit;
+    background: rgba(34, 154, 240, 0.12);
+}
+
+/* Voice note: slider en accent */
+body.design-android .voice-note-slider input[type='range']::-webkit-slider-thumb {
+    background: var(--android-accent);
+}
+body.design-android .voice-note-slider input[type='range']::-webkit-slider-runnable-track {
+    background: var(--android-accent);
+}
+
+/* ── android-holo (4.x): esquinas cuadradas, teal, sin radios ─────────── */
+body.design-android-holo .reaction-bubble {
+    border-radius: 2px;
+    border-color: #00bcd4;
+    background: rgba(0, 188, 212, 0.08);
+}
+body.design-android-holo .reaction-chosen {
+    background: rgba(0, 188, 212, 0.2);
+    border-color: #00bcd4;
+    color: #00bcd4;
+}
+body.design-android-holo .reaction-add-btn {
+    border-color: #00bcd4;
+    color: #00bcd4;
+    border-radius: 2px;
+}
+body.design-android-holo .border {
+    background: #00bcd4;
+}
+body.design-android-holo .reply {
+    background: rgba(0, 188, 212, 0.06);
+    border-radius: 2px;
+}
+body.design-android-holo .spoiler-text {
+    background: #00bcd4;
+    border-radius: 2px;
+}
+body.design-android-holo .spoiler-text.spoiler-revealed {
+    background: rgba(0, 188, 212, 0.15);
+}
+/* Story ring — teal cuadrado (Holo era) */
+body.design-android-holo .tile-photo {
+    outline: 2px solid #00bcd4;
+    outline-offset: 2px;
+}
+
+/* ── android-v9 (6.x Folders): azul clásico, bordes semiround ─────────── */
+body.design-android-v9 .reaction-bubble {
+    border-radius: 10px;
+    border-color: #2ca5e0;
+    background: rgba(44, 165, 224, 0.06);
+}
+body.design-android-v9 .reaction-chosen {
+    background: rgba(44, 165, 224, 0.16);
+    border-color: #2ca5e0;
+    color: #2ca5e0;
+}
+body.design-android-v9 .reaction-add-btn {
+    border-color: #2ca5e0;
+    color: #2ca5e0;
+    border-radius: 10px;
+}
+body.design-android-v9 .border {
+    background: #2ca5e0;
+}
+body.design-android-v9 .spoiler-text {
+    background: #2ca5e0;
+    border-radius: 4px;
+}
+body.design-android-v9 .spoiler-text.spoiler-revealed {
+    background: rgba(44, 165, 224, 0.12);
+}
+/* Story ring — azul, ligeramente redondeado */
+body.design-android-v9 .tile-photo {
+    outline: 2px solid #2ca5e0;
+    outline-offset: 2px;
+    border-radius: 14px;
+}
+
+/* ── android-v11 (8.x): verde-azul, radios medios ─────────────────────── */
+body.design-android-v11 .reaction-bubble {
+    border-radius: 12px;
+    border-color: #229af0;
+    background: rgba(34, 154, 240, 0.07);
+}
+body.design-android-v11 .reaction-chosen {
+    background: rgba(34, 154, 240, 0.16);
+    border-color: #229af0;
+    color: #229af0;
+}
+body.design-android-v11 .reaction-add-btn {
+    border-color: #229af0;
+    color: #229af0;
+    border-radius: 12px;
+}
+body.design-android-v11 .border {
+    background: #229af0;
+}
+body.design-android-v11 .spoiler-text {
+    background: #229af0;
+    border-radius: 6px;
+}
+body.design-android-v11 .spoiler-text.spoiler-revealed {
+    background: rgba(34, 154, 240, 0.12);
+}
+/* Story ring — azul degradado circular */
+body.design-android-v11 .tile-photo {
+    outline: 2.5px solid #229af0;
+    outline-offset: 2px;
+    border-radius: 50%;
+}
+
+/* ── android-classic (7.x): flat, azul acero, todo cuadrado ──────────── */
+body.design-android-classic .reaction-bubble {
+    border-radius: 3px;
+    border-color: #527da3;
+    background: rgba(82, 125, 163, 0.06);
+}
+body.design-android-classic .reaction-chosen {
+    background: rgba(82, 125, 163, 0.15);
+    border-color: #527da3;
+    color: #527da3;
+}
+body.design-android-classic .reaction-add-btn {
+    border-color: #527da3;
+    color: #527da3;
+    border-radius: 3px;
+}
+body.design-android-classic .border {
+    background: #527da3;
+}
+body.design-android-classic .reply {
+    border-radius: 2px;
+}
+body.design-android-classic .spoiler-text {
+    background: #527da3;
+    border-radius: 2px;
+}
+body.design-android-classic .spoiler-text.spoiler-revealed {
+    background: rgba(82, 125, 163, 0.15);
+}
+/* Story ring — azul acero cuadrado */
+body.design-android-classic .tile-photo {
+    outline: 2px solid #527da3;
+    outline-offset: 2px;
+    border-radius: 4px;
+}
+
+/* ── android-redesign (12.5): moderno, pill, verde/azul ──────────────── */
+body.design-android-redesign .reaction-bubble {
+    border-radius: 16px;
+    border-color: #229af0;
+    background: rgba(34, 154, 240, 0.06);
+}
+body.design-android-redesign .reaction-chosen {
+    background: rgba(34, 154, 240, 0.15);
+    border-color: #229af0;
+    color: #229af0;
+}
+body.design-android-redesign .reaction-add-btn {
+    border-color: #229af0;
+    color: #229af0;
+    border-radius: 16px;
+}
+body.design-android-redesign .border {
+    background: #229af0;
+    border-radius: 4px;
+}
+body.design-android-redesign .reply {
+    border-radius: 8px;
+}
+body.design-android-redesign .spoiler-text {
+    background: #229af0;
+    border-radius: 8px;
+}
+body.design-android-redesign .spoiler-text.spoiler-revealed {
+    background: rgba(34, 154, 240, 0.12);
+}
+/* Story ring — degradado azul-verde, circular */
+body.design-android-redesign .tile-photo {
+    outline: none;
+    box-shadow: 0 0 0 2.5px #229af0, 0 0 0 4px rgba(34, 154, 240, 0.25);
+    border-radius: 50%;
+}
+
+/* ── android-glass (12.6.4 beta): teal, glass, pill ─────────────────── */
+body.design-android-glass .reaction-bubble {
+    border-radius: 999px;
+    border-color: #28c9b7;
+    background: rgba(40, 201, 183, 0.08);
+    backdrop-filter: blur(8px);
+}
+body.design-android-glass .reaction-chosen {
+    background: rgba(40, 201, 183, 0.2);
+    border-color: #28c9b7;
+    color: #28c9b7;
+}
+body.design-android-glass .reaction-add-btn {
+    border-color: #28c9b7;
+    color: #28c9b7;
+    border-radius: 999px;
+}
+body.design-android-glass .border {
+    background: linear-gradient(180deg, #28c9b7, #1f9e88);
+    border-radius: 4px;
+}
+body.design-android-glass .reply {
+    border-radius: 12px;
+    backdrop-filter: blur(6px);
+    background: rgba(40, 201, 183, 0.06);
+}
+body.design-android-glass .spoiler-text {
+    background: #28c9b7;
+    border-radius: 10px;
+}
+body.design-android-glass .spoiler-text.spoiler-revealed {
+    background: rgba(40, 201, 183, 0.15);
+}
+/* Story ring — teal degradado con glow glass */
+body.design-android-glass .tile-photo {
+    outline: none;
+    box-shadow: 0 0 0 2px #28c9b7, 0 0 8px rgba(40, 201, 183, 0.5);
+    border-radius: 50%;
+}
+
+/* ── Dark mode: reacciones en modo oscuro ────────────────────────────── */
+body.theme-dark.design-android .reaction-bubble {
+    background: rgba(42, 171, 238, 0.1);
+}
+body.theme-dark.design-android .reaction-chosen {
+    background: rgba(42, 171, 238, 0.22);
+}
+body.theme-dark.design-android-holo .reaction-bubble {
+    background: rgba(0, 188, 212, 0.1);
+}
+body.theme-dark.design-android-v9 .reaction-bubble {
+    background: rgba(44, 165, 224, 0.1);
+}
+body.theme-dark.design-android-glass .reaction-bubble {
+    background: rgba(40, 201, 183, 0.12);
+    backdrop-filter: blur(12px);
+}
+
+/* ════════════════════════════════════════════════════════════════════════════
+   MENÚ DE HAMBURGUESA (≡) — MuiMenu-paper / MuiMenuItem-root por variante
+   ════════════════════════════════════════════════════════════════════════════ */
+
+/* ── BASE android: menú blanco, sombra suave, ítems con ripple accent ─── */
+body.design-android .MuiMenu-paper {
+    border-radius: 8px !important;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.14) !important;
+    background: #ffffff !important;
+    min-width: 200px;
+}
+body.design-android .MuiMenuItem-root {
+    font-family: 'Roboto', 'Noto Sans', sans-serif !important;
+    font-size: 15px !important;
+    padding: 10px 20px !important;
+    color: #202124 !important;
+}
+body.design-android .MuiMenuItem-root:hover {
+    background: rgba(34, 154, 240, 0.08) !important;
+}
+body.design-android .MuiDivider-root {
+    margin: 4px 0 !important;
+    background: rgba(0, 0, 0, 0.08) !important;
+}
+
+/* ── android-holo (4.x): menú oscuro cuadrado ──────────────────────── */
+body.design-android-holo .MuiMenu-paper {
+    border-radius: 2px !important;
+    background: #1e2e3e !important;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.6) !important;
+    border: 1px solid rgba(255, 255, 255, 0.06) !important;
+}
+body.design-android-holo .MuiMenuItem-root {
+    color: #d8e8f0 !important;
+    font-size: 14px !important;
+    padding: 11px 20px !important;
+}
+body.design-android-holo .MuiMenuItem-root:hover {
+    background: rgba(0, 188, 212, 0.14) !important;
+    color: #00bcd4 !important;
+}
+body.design-android-holo .MuiDivider-root {
+    background: rgba(255, 255, 255, 0.07) !important;
+}
+
+/* ── android-v9 (6.x Folders): menú blanco con sombra y acento azul ─ */
+body.design-android-v9 .MuiMenu-paper {
+    border-radius: 4px !important;
+    background: #ffffff !important;
+    box-shadow: 0 3px 14px rgba(0, 0, 0, 0.16) !important;
+}
+body.design-android-v9 .MuiMenuItem-root {
+    color: #202124 !important;
+    font-size: 15px !important;
+    padding: 10px 20px !important;
+}
+body.design-android-v9 .MuiMenuItem-root:hover {
+    background: rgba(44, 165, 224, 0.1) !important;
+}
+body.design-android-v9 .MuiDivider-root {
+    background: rgba(0, 0, 0, 0.08) !important;
+}
+
+/* ── android-v11 (8.x): menú con radio medio, moderno pero no pill ── */
+body.design-android-v11 .MuiMenu-paper {
+    border-radius: 12px !important;
+    background: #ffffff !important;
+    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.13) !important;
+}
+body.design-android-v11 .MuiMenuItem-root {
+    color: #202124 !important;
+    font-size: 15px !important;
+    padding: 11px 20px !important;
+}
+body.design-android-v11 .MuiMenuItem-root:hover {
+    background: rgba(34, 154, 240, 0.08) !important;
+}
+body.design-android-v11 .MuiDivider-root {
+    background: rgba(0, 0, 0, 0.07) !important;
+}
+
+/* ── android-classic (7.x): menú plano, sin radio, fondo blanco puro ─ */
+body.design-android-classic .MuiMenu-paper {
+    border-radius: 0 !important;
+    background: #ffffff !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18) !important;
+    border-top: 2px solid #527da3 !important;
+}
+body.design-android-classic .MuiMenuItem-root {
+    color: #2b3c4e !important;
+    font-size: 14px !important;
+    padding: 10px 18px !important;
+}
+body.design-android-classic .MuiMenuItem-root:hover {
+    background: #e8f1f8 !important;
+}
+body.design-android-classic .MuiDivider-root {
+    background: #e0e0e0 !important;
+}
+
+/* ── android-redesign (12.5): menú flotante con radios grandes, card ─ */
+body.design-android-redesign .MuiMenu-paper {
+    border-radius: 18px !important;
+    background: #ffffff !important;
+    box-shadow: 0 8px 28px rgba(0, 0, 0, 0.13), 0 2px 6px rgba(0, 0, 0, 0.07) !important;
+    overflow: hidden !important;
+}
+body.design-android-redesign .MuiMenuItem-root {
+    color: #202124 !important;
+    font-size: 15px !important;
+    padding: 12px 22px !important;
+    border-radius: 0 !important;
+}
+body.design-android-redesign .MuiMenuItem-root:hover {
+    background: rgba(34, 154, 240, 0.07) !important;
+}
+body.design-android-redesign .MuiDivider-root {
+    background: rgba(0, 0, 0, 0.06) !important;
+    margin: 6px 0 !important;
+}
+
+/* ── android-glass (12.6.4): menú translúcido con blur ──────────────── */
+body.design-android-glass .MuiMenu-paper {
+    border-radius: 20px !important;
+    background: rgba(255, 255, 255, 0.72) !important;
+    backdrop-filter: blur(24px) saturate(160%);
+    -webkit-backdrop-filter: blur(24px) saturate(160%);
+    box-shadow: 0 8px 32px rgba(40, 80, 90, 0.15), 0 1px 4px rgba(0, 0, 0, 0.08) !important;
+    border: 1px solid rgba(40, 201, 183, 0.12) !important;
+}
+body.design-android-glass .MuiMenuItem-root {
+    color: #1a2c30 !important;
+    font-size: 15px !important;
+    padding: 12px 22px !important;
+}
+body.design-android-glass .MuiMenuItem-root:hover {
+    background: rgba(40, 201, 183, 0.12) !important;
+}
+body.design-android-glass .MuiDivider-root {
+    background: rgba(40, 201, 183, 0.15) !important;
+    margin: 6px 0 !important;
+}
+
+/* ── Dark mode: menús en oscuro ──────────────────────────────────────── */
+body.theme-dark.design-android .MuiMenu-paper {
+    background: #17212b !important;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5) !important;
+}
+body.theme-dark.design-android .MuiMenuItem-root {
+    color: #f0f4f8 !important;
+}
+body.theme-dark.design-android .MuiMenuItem-root:hover {
+    background: rgba(42, 171, 238, 0.12) !important;
+}
+body.theme-dark.design-android .MuiDivider-root {
+    background: rgba(255, 255, 255, 0.07) !important;
+}
+
+body.theme-dark.design-android-v9 .MuiMenu-paper {
+    background: #17212b !important;
+}
+body.theme-dark.design-android-v11 .MuiMenu-paper {
+    background: #17212b !important;
+    border-radius: 12px !important;
+}
+body.theme-dark.design-android-redesign .MuiMenu-paper {
+    background: #17212b !important;
+    border-radius: 18px !important;
+}
+body.theme-dark.design-android-glass .MuiMenu-paper {
+    background: rgba(23, 33, 43, 0.78) !important;
+    border-color: rgba(40, 201, 183, 0.18) !important;
+}
+body.theme-dark.design-android-glass .MuiMenuItem-root {
+    color: #d0e8e4 !important;
 }

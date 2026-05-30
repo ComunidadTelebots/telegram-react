@@ -1,0 +1,181 @@
+/* Estilos del menú hamburguesa por diseño Android — clases propias sin conflicto MUI */
+
+/* ── Base android ───────────────────────────────────────────────────────── */
+.android-main-menu {
+    border-radius: 8px !important;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.14) !important;
+    background: #ffffff !important;
+    min-width: 210px !important;
+}
+.android-main-menu .MuiMenuItem-root {
+    font-size: 15px !important;
+    padding: 10px 20px !important;
+    color: #202124 !important;
+}
+.android-main-menu .MuiMenuItem-root:hover {
+    background: rgba(34, 154, 240, 0.08) !important;
+}
+.android-main-menu .MuiDivider-root {
+    background: rgba(0, 0, 0, 0.08) !important;
+    margin: 4px 0 !important;
+}
+
+/* ── android-holo (4.x): oscuro, cuadrado, teal ────────────────────────── */
+.android-main-menu--android-holo {
+    border-radius: 2px !important;
+    background: #1e2e3e !important;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.6) !important;
+    border: 1px solid rgba(255, 255, 255, 0.06) !important;
+}
+.android-main-menu--android-holo .MuiMenuItem-root {
+    color: #d8e8f0 !important;
+    font-size: 14px !important;
+    padding: 11px 20px !important;
+}
+.android-main-menu--android-holo .MuiMenuItem-root:hover {
+    background: rgba(0, 188, 212, 0.14) !important;
+    color: #00bcd4 !important;
+}
+.android-main-menu--android-holo .MuiDivider-root {
+    background: rgba(255, 255, 255, 0.07) !important;
+}
+
+/* ── android-v9 (6.x Folders): blanco, radio 4px, azul ─────────────────── */
+.android-main-menu--android-v9 {
+    border-radius: 4px !important;
+    background: #ffffff !important;
+    box-shadow: 0 3px 14px rgba(0, 0, 0, 0.16) !important;
+}
+.android-main-menu--android-v9 .MuiMenuItem-root {
+    color: #202124 !important;
+    padding: 10px 20px !important;
+}
+.android-main-menu--android-v9 .MuiMenuItem-root:hover {
+    background: rgba(44, 165, 224, 0.1) !important;
+}
+
+/* ── android-v11 (8.x): radio 12px, moderno ────────────────────────────── */
+.android-main-menu--android-v11 {
+    border-radius: 12px !important;
+    background: #ffffff !important;
+    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.13) !important;
+}
+.android-main-menu--android-v11 .MuiMenuItem-root {
+    color: #202124 !important;
+    padding: 11px 20px !important;
+}
+.android-main-menu--android-v11 .MuiMenuItem-root:hover {
+    background: rgba(34, 154, 240, 0.08) !important;
+}
+
+/* ── android-classic (7.x): plano, sin radio, borde azul acero ─────────── */
+.android-main-menu--android-classic {
+    border-radius: 0 !important;
+    background: #ffffff !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2) !important;
+    border-top: 3px solid #527da3 !important;
+}
+.android-main-menu--android-classic .MuiMenuItem-root {
+    color: #2b3c4e !important;
+    font-size: 14px !important;
+    padding: 10px 18px !important;
+}
+.android-main-menu--android-classic .MuiMenuItem-root:hover {
+    background: #e8f1f8 !important;
+}
+.android-main-menu--android-classic .MuiDivider-root {
+    background: #e0e0e0 !important;
+}
+
+/* ── android-redesign (12.5): card flotante, radio 18px ────────────────── */
+.android-main-menu--android-redesign {
+    border-radius: 18px !important;
+    background: #ffffff !important;
+    box-shadow: 0 8px 28px rgba(0, 0, 0, 0.13), 0 2px 6px rgba(0, 0, 0, 0.07) !important;
+    overflow: hidden !important;
+}
+.android-main-menu--android-redesign .MuiMenuItem-root {
+    color: #202124 !important;
+    font-size: 15px !important;
+    padding: 12px 22px !important;
+}
+.android-main-menu--android-redesign .MuiMenuItem-root:hover {
+    background: rgba(34, 154, 240, 0.07) !important;
+}
+.android-main-menu--android-redesign .MuiDivider-root {
+    background: rgba(0, 0, 0, 0.06) !important;
+    margin: 6px 0 !important;
+}
+
+/* ── android-glass (12.6.4 beta): translúcido con blur ─────────────────── */
+.android-main-menu--android-glass {
+    border-radius: 20px !important;
+    background: rgba(255, 255, 255, 0.72) !important;
+    backdrop-filter: blur(24px) saturate(160%) !important;
+    -webkit-backdrop-filter: blur(24px) saturate(160%) !important;
+    box-shadow: 0 8px 32px rgba(40, 80, 90, 0.15), 0 1px 4px rgba(0, 0, 0, 0.08) !important;
+    border: 1px solid rgba(40, 201, 183, 0.15) !important;
+}
+.android-main-menu--android-glass .MuiMenuItem-root {
+    color: #1a2c30 !important;
+    font-size: 15px !important;
+    padding: 12px 22px !important;
+}
+.android-main-menu--android-glass .MuiMenuItem-root:hover {
+    background: rgba(40, 201, 183, 0.12) !important;
+}
+.android-main-menu--android-glass .MuiDivider-root {
+    background: rgba(40, 201, 183, 0.15) !important;
+    margin: 6px 0 !important;
+}
+
+/* ── android base beta 12.6.4 (android = glass era) ───────────────────── */
+.android-main-menu--android {
+    border-radius: 14px !important;
+    background: #ffffff !important;
+    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.12) !important;
+}
+.android-main-menu--android .MuiMenuItem-root {
+    color: #202124 !important;
+    padding: 11px 20px !important;
+}
+.android-main-menu--android .MuiMenuItem-root:hover {
+    background: rgba(34, 154, 240, 0.08) !important;
+}
+
+/* ── Dark mode ──────────────────────────────────────────────────────────── */
+body.theme-dark .android-main-menu {
+    background: #17212b !important;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5) !important;
+}
+body.theme-dark .android-main-menu .MuiMenuItem-root {
+    color: #f0f4f8 !important;
+}
+body.theme-dark .android-main-menu .MuiMenuItem-root:hover {
+    background: rgba(42, 171, 238, 0.12) !important;
+}
+body.theme-dark .android-main-menu .MuiDivider-root {
+    background: rgba(255, 255, 255, 0.07) !important;
+}
+
+body.theme-dark .android-main-menu--android-holo {
+    background: #111a22 !important;
+}
+body.theme-dark .android-main-menu--android-v9 {
+    background: #17212b !important;
+}
+body.theme-dark .android-main-menu--android-v11 {
+    background: #17212b !important;
+    border-radius: 12px !important;
+}
+body.theme-dark .android-main-menu--android-redesign {
+    background: #17212b !important;
+    border-radius: 18px !important;
+}
+body.theme-dark .android-main-menu--android-glass {
+    background: rgba(23, 33, 43, 0.82) !important;
+    border-color: rgba(40, 201, 183, 0.18) !important;
+}
+body.theme-dark .android-main-menu--android-glass .MuiMenuItem-root {
+    color: #cce8e4 !important;
+}

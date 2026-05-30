@@ -11,10 +11,14 @@ import './designs/tdesktop.css';
 import './designs/unigram.css';
 import './designs/aurora.css';
 import './designs/shell.css';
+import './designs/telegramx.css';
 
 const DESIGN_KEY = 'tg_design';
 const DESIGNS = [
     'current',
+    'android-holo',
+    'android-v9',
+    'android-v11',
     'android',
     'android-classic',
     'android-redesign',
@@ -24,11 +28,15 @@ const DESIGNS = [
     'tdesktop',
     'unigram',
     'aurora',
+    'telegramx',
 ];
 const DEFAULT_DESIGN = 'current';
 
 export const DESIGN_LABELS = {
     current: 'Web',
+    'android-holo': 'Android Holo',
+    'android-v9': 'Android v9',
+    'android-v11': 'Android v11',
     android: 'Android',
     'android-glass': 'Android v15',
     'android-redesign': 'Android v14',
@@ -38,10 +46,14 @@ export const DESIGN_LABELS = {
     tdesktop: 'Desktop',
     unigram: 'Unigram',
     aurora: 'Aurora',
+    telegramx: 'Telegram X',
 };
 
 export const DESIGN_ACCENTS = {
     current: '#5b8af1',
+    'android-holo': '#00bcd4',
+    'android-v9': '#2ca5e0',
+    'android-v11': '#229af0',
     android: '#229af0',
     'android-glass': '#28c9b7',
     'android-redesign': '#229af0',
@@ -51,6 +63,7 @@ export const DESIGN_ACCENTS = {
     tdesktop: '#40a7e3',
     unigram: '#2b7fe0',
     aurora: '#34d9a8',
+    telegramx: '#50a8eb',
 };
 
 export function getDesign() {

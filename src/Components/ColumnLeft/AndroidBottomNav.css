@@ -1,0 +1,66 @@
+.android-bottom-nav {
+    display: none;
+}
+
+/* Solo 12.6 (android-glass) y 12.6.4 (android base sin sub-variante) */
+body.design-android-glass .android-bottom-nav,
+body.design-android:not(.design-android-holo):not(.design-android-v9):not(.design-android-v11):not(.design-android-classic):not(.design-android-redesign):not(.design-android-glass)
+    .android-bottom-nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    height: 56px;
+    background: #ffffff;
+    border-top: 1px solid rgba(0, 0, 0, 0.08);
+    flex-shrink: 0;
+    position: relative;
+    z-index: 10;
+}
+
+body.theme-dark.design-android-glass .android-bottom-nav,
+body.theme-dark.design-android:not(.design-android-holo):not(.design-android-v9):not(.design-android-v11):not(.design-android-classic):not(.design-android-redesign):not(.design-android-glass)
+    .android-bottom-nav {
+    background: #17212b;
+    border-top-color: rgba(255, 255, 255, 0.07);
+}
+
+.android-bottom-nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    flex: 1;
+    height: 100%;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    color: #707579;
+    font-size: 11px;
+    font-family: 'Roboto', sans-serif;
+    font-weight: 500;
+    transition: color 0.15s;
+    padding: 0;
+}
+
+.android-bottom-nav-item svg {
+    font-size: 22px;
+}
+
+.android-bottom-nav-item.active {
+    color: #28c9b7;
+}
+
+body.design-android .android-bottom-nav-item.active {
+    color: #229af0;
+}
+
+body.theme-dark .android-bottom-nav-item {
+    color: #8796a1;
+}
+body.theme-dark .android-bottom-nav-item.active {
+    color: #28c9b7;
+}
+body.theme-dark.design-android .android-bottom-nav-item.active {
+    color: #2aabee;
+}

@@ -1,5 +1,30 @@
 # Changelog
 
+## [2026-05-30] (sesión 10)
+
+### Added — Diseños Android: novedades de Telegram adaptadas por variante
+
+- **Telegram X** — nuevo skin independiente (`src/designs/telegramx.css`): cabecera con degradado azul, burbujas salientes azules (no verdes), acento `#50a8eb`, radio 18px, input pill 24px, fondo `#eff3f8`, modo oscuro `#111b25`/`#1c2733`.
+- **Selector de versiones Android** (`AndroidVersionSelector.js`) — ampliado con 3 entradas nuevas: Android Holo (4.x), v9 (6.x Folders), v11 (8.x 2021). El desplegable junto a la lupa muestra ahora 7 eras históricas.
+- **Variantes Android históricas en `android.css`** — tres nuevas variantes `design-android-holo`, `design-android-v9`, `design-android-v11` como extensiones lean sobre la base `design-android` (herencia vía `setDesign()` que aplica las dos clases).
+- **Corrección icono flotante en inputbox** — `.inputbox-left-column` con dos iconos apilados causaba overflow sobre la burbuja; fix: `flex-direction: row; align-items: flex-end` + ocultación del botón separado de stickers, aplicado en la base `body.design-android` para que todas las variantes lo hereden.
+- **Colores de avatar por variante** — `tile_color_1…8` con degradados o planos coherentes con cada era: gradientes modernos para redesign/v11, planos para v9 y holo, con tinte teal para glass.
+- **Scrollbar personalizado por variante** — `width: 4px` con color accent de cada era en redesign, glass, v11 y classic.
+- **Reacciones (`.reaction-bubble`)** — radio, color de borde, fondo hover y estado elegido adaptados por era: cuadrado en holo/classic, chips en v9, pill en glass, intermedios en v11/redesign.
+- **Spoiler de texto (`.spoiler-text`)** — efecto blur que se revela al clic; color de fondo y radio coherentes con cada variante (2px holo, 10px glass, etc.).
+- **Reply quote (`.border`)** — borde izquierdo de cita en el accent de cada variante; degradado teal en glass.
+- **Story rings (`.tile-photo`)** — outline/box-shadow alrededor de avatares, morfología distinta por era: cuadrado teal en holo, redondeado con radio 14px en v9, circular en v11/redesign/glass, glow teal con `box-shadow` en glass.
+- **Folder tabs activos** — `.folder-tab-active` coloreado en accent por variante donde aplica (v9, v11).
+- **Badge de no leídos** — `border-radius` coherente con la era: 2px en holo/classic, 10px en v9, 12px en v11, pill en glass/redesign.
+- **Day-meta pill** — radio ajustado por era: 4px en classic/holo, 14px en v9, 16px en v11, 999px en glass/redesign.
+- **Inputbox bubble por variante** — pill 24px en redesign, 20px en v11, translúcido con borde teal en glass.
+- **Dark mode** — modo oscuro completo para classic (antes parcial); variables de reacciones en dark para android base, holo, v9 y glass.
+- **FAB (`.dialogs::after`)** — `box-shadow` con glow del accent correcto en classic, redesign y v11.
+- **Iconos de header en accent** — `.header-master .MuiIconButton-root` en color accent para glass, redesign, v11.
+- **Telegram X en `QUICK_DESIGNS`** — añadido al selector rápido de diseño (era invisible por estar solo en `Design.js` pero no en `DesignSwitcher.js`).
+
+---
+
 ## [2026-05-30] (sesión 9)
 
 ### Added

@@ -1,0 +1,434 @@
+/*
+ * Telegram X (TGX-Android) — estilo moderno con gradientes azules,
+ * burbujas salientes en degradado, header con gradiente y formas muy redondeadas.
+ */
+
+body.design-telegramx {
+    font: 14px/20px 'Roboto', 'Noto Sans', Arial, sans-serif;
+
+    /* ── Tipografía ─────────────────────────────────────────────────────── */
+    --font-body: 'Roboto', 'Noto Sans', Arial, sans-serif;
+    --font-display: 'Roboto', 'Noto Sans', sans-serif;
+    --font-mono: 'Roboto Mono', monospace;
+    --text-body: 14px;
+    --line-body: 20px;
+
+    /* ── Palette ────────────────────────────────────────────────────────── */
+    --tgx-accent: #50a8eb;
+    --tgx-accent-dark: #3a8fd1;
+    --tgx-gradient-start: #60b8f8;
+    --tgx-gradient-end: #3a8fd1;
+    --tgx-ripple: rgba(80, 168, 235, 0.14);
+    --tgx-sidebar: #ffffff;
+    --tgx-chat-bg: #eff3f8;
+    --tgx-separator: rgba(0, 0, 0, 0.07);
+    --tgx-text-secondary: #6d7883;
+
+    /* ── Burbujas ───────────────────────────────────────────────────────── */
+    --message-in-background: #ffffff;
+    --message-in-color: #1c2229;
+    --message-in-link: #3a8fd1;
+    --message-in-author: #50a8eb;
+    --message-in-meta-color: #9aa4b0;
+    --message-in-reply-title: #50a8eb;
+    --message-in-reply-border: #50a8eb;
+
+    --message-out-background: linear-gradient(135deg, #60b8f8 0%, #3a8fd1 100%);
+    --message-out-color: #ffffff;
+    --message-out-link: #d6edff;
+    --message-out-author: #d6edff;
+    --message-out-meta-color: rgba(255, 255, 255, 0.75);
+    --message-out-reply-title: rgba(255, 255, 255, 0.9);
+    --message-out-reply-border: rgba(255, 255, 255, 0.5);
+
+    /* ── Indicadores ────────────────────────────────────────────────────── */
+    --badge-green: #50a8eb;
+    --indicator-green: #3dcb6c;
+    --day-background: rgba(60, 110, 160, 0.55);
+    --day-color: #ffffff;
+    --color-accent-main: #50a8eb;
+    --shadow-bubble: 0 1px 2px rgba(0, 0, 0, 0.1);
+
+    /* ── Shell tokens ───────────────────────────────────────────────────── */
+    --design-page-background: #ffffff;
+    --design-page-color: #1c2229;
+    --design-sidebar-background: var(--tgx-sidebar);
+    --design-middle-background: var(--tgx-chat-bg);
+    --design-panel-background: #ffffff;
+    --design-header-background: linear-gradient(180deg, #60b8f8 0%, #3a8fd1 100%);
+    --design-header-color: #ffffff;
+    --design-header-muted-color: rgba(255, 255, 255, 0.85);
+    --design-input-background: #ffffff;
+    --design-input-surface: #f4f7fb;
+    --design-border-color: var(--tgx-separator);
+    --design-muted-color: var(--tgx-text-secondary);
+    --design-hover-background: rgba(80, 168, 235, 0.08);
+    --design-active-background: rgba(80, 168, 235, 0.14);
+    --design-dialog-radius: 12px;
+    --design-control-radius: 24px;
+    --design-message-wrapper-max-width: 880px;
+    --design-message-wrapper-padding: 3px 20px 3px 10px;
+    --design-message-content-max-width: 540px;
+    --design-message-radius-in: 18px 18px 18px 6px;
+    --design-message-radius-out: 18px 18px 6px 18px;
+    --design-message-radius-short: 18px;
+    --design-message-padding: 7px 11px;
+    --design-message-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    --design-message-tail-display: block;
+}
+
+/* ── Sidebar ────────────────────────────────────────────────────────────── */
+body.design-telegramx .dialogs {
+    width: 348px;
+    min-width: 348px;
+    max-width: 348px;
+    flex: none;
+    background: #ffffff;
+    border-right: 1px solid var(--tgx-separator);
+}
+
+body.design-telegramx .dialog-details {
+    width: calc(100% - 348px);
+    flex: 1;
+}
+
+/* ── Header izquierdo — gradiente azul ──────────────────────────────────── */
+body.design-telegramx .header-master {
+    min-height: 56px;
+    background: linear-gradient(180deg, #60b8f8 0%, #3a8fd1 100%) !important;
+    color: #ffffff !important;
+    box-shadow: 0 2px 8px rgba(58, 143, 209, 0.35);
+}
+
+body.design-telegramx .header-master .MuiIconButton-root {
+    color: #ffffff !important;
+}
+
+/* ── Header del chat — gradiente azul ───────────────────────────────────── */
+body.design-telegramx .header-details {
+    min-height: 56px;
+    background: linear-gradient(180deg, #60b8f8 0%, #3a8fd1 100%);
+    border-bottom: 0;
+    box-shadow: 0 2px 8px rgba(58, 143, 209, 0.3);
+    color: #ffffff;
+}
+
+body.design-telegramx .header-status {
+    font: 500 16px/20px 'Roboto', Arial, sans-serif;
+    padding: 0 14px;
+    color: #ffffff;
+}
+
+body.design-telegramx .header-status-title {
+    color: rgba(255, 255, 255, 0.85) !important;
+    font-size: 13px;
+}
+
+body.design-telegramx .header-left-button,
+body.design-telegramx .header-right-button {
+    color: #ffffff !important;
+}
+
+/* ── Folder tabs — pills ────────────────────────────────────────────────── */
+body.design-telegramx .folder-tabs {
+    padding: 8px 10px 6px;
+    gap: 6px;
+    background: #ffffff;
+}
+
+body.design-telegramx .folder-tab {
+    border-radius: 24px;
+    padding: 5px 14px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--tgx-text-secondary);
+}
+
+body.design-telegramx .folder-tab-active {
+    background: var(--tgx-ripple);
+    color: var(--tgx-accent);
+}
+
+/* ── Chat list rows ─────────────────────────────────────────────────────── */
+body.design-telegramx .dialog-wrapper {
+    min-height: 72px;
+    padding: 8px 12px 8px 12px;
+    margin: 2px 6px;
+    border-radius: 12px;
+    border-bottom: 0;
+    box-sizing: border-box;
+}
+
+body.design-telegramx .dialog-wrapper:hover {
+    background: rgba(80, 168, 235, 0.07);
+}
+
+body.design-telegramx .dialog-active .dialog-wrapper,
+body.design-telegramx .dialog-active .dialog-wrapper:hover {
+    background: rgba(80, 168, 235, 0.13);
+}
+
+body.design-telegramx .dialog-title {
+    font-size: 15px;
+    font-weight: 500;
+    color: #1c2229;
+}
+
+body.design-telegramx .dialog-content,
+body.design-telegramx .dialog-meta {
+    font-size: 13px;
+    color: var(--tgx-text-secondary);
+}
+
+body.design-telegramx .dialog-badge {
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+    min-width: 20px;
+    height: 20px;
+    padding: 0 5px;
+    background: var(--tgx-accent);
+}
+
+/* ── Chat background ────────────────────────────────────────────────────── */
+body.design-telegramx .messages-list,
+body.design-telegramx .messages-list-wrapper {
+    background-color: #eff3f8;
+    background-image: radial-gradient(circle at 10% 15%, rgba(96, 184, 248, 0.1), transparent 35%),
+        radial-gradient(circle at 90% 80%, rgba(58, 143, 209, 0.08), transparent 40%);
+}
+
+/* ── Avatares de color ──────────────────────────────────────────────────── */
+body.design-telegramx .tile_color_1 {
+    background: linear-gradient(#ff8b6b, #e05b46);
+}
+body.design-telegramx .tile_color_2 {
+    background: linear-gradient(#fec96e, #f08644);
+}
+body.design-telegramx .tile_color_3 {
+    background: linear-gradient(#b79cf5, #7260e0);
+}
+body.design-telegramx .tile_color_4 {
+    background: linear-gradient(#82d96a, #3dba42);
+}
+body.design-telegramx .tile_color_5 {
+    background: linear-gradient(#60d4e8, #3aaed8);
+}
+body.design-telegramx .tile_color_6 {
+    background: linear-gradient(#60b8f8, #3a8fd1);
+}
+body.design-telegramx .tile_color_7 {
+    background: linear-gradient(#ff8db8, #d9547a);
+}
+body.design-telegramx .tile_color_8 {
+    background: linear-gradient(#9daab4, #677785);
+}
+
+/* ── Burbujas ───────────────────────────────────────────────────────────── */
+body.design-telegramx .message-wrapper {
+    max-width: 880px;
+    padding: 3px 20px 3px 10px;
+}
+
+body.design-telegramx .message-content {
+    max-width: 540px;
+    min-height: 32px;
+}
+
+body.design-telegramx .message-bubble {
+    border-radius: 18px 18px 18px 6px;
+    padding: 7px 11px;
+    background: #ffffff;
+    color: #1c2229;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+body.design-telegramx .message-bubble-out {
+    border-radius: 18px 18px 6px 18px;
+    background: linear-gradient(135deg, #60b8f8 0%, #3a8fd1 100%);
+    color: #ffffff;
+    box-shadow: 0 2px 6px rgba(58, 143, 209, 0.35);
+}
+
+body.design-telegramx .message-bubble-out .message-meta {
+    color: rgba(255, 255, 255, 0.78);
+}
+
+body.design-telegramx .message-short .message-bubble {
+    border-radius: 18px;
+}
+
+body.design-telegramx .day-meta-wrapper {
+    border-radius: 16px;
+    padding: 4px 12px;
+    font-size: 12px;
+    font-weight: 500;
+    background: rgba(60, 110, 160, 0.5);
+    color: #ffffff;
+}
+
+/* ── Input área ─────────────────────────────────────────────────────────── */
+body.design-telegramx .inputbox-background {
+    background: #ffffff;
+    border-top: 1px solid var(--tgx-separator);
+}
+
+body.design-telegramx .inputbox {
+    width: calc(100% - 24px);
+    max-width: 800px;
+    padding: 8px 0 10px;
+    border-top: 0;
+}
+
+body.design-telegramx .inputbox-bubble {
+    min-height: 44px;
+    border-radius: 24px;
+    margin-right: 10px;
+    background: #f4f7fb;
+    box-shadow: none;
+    border: 1px solid rgba(80, 168, 235, 0.18);
+}
+
+body.design-telegramx .inputbox-bubble::after {
+    content: none;
+}
+
+body.design-telegramx #inputbox-message {
+    padding: 12px 4px;
+    font-size: 15px;
+    line-height: 20px;
+}
+
+body.design-telegramx .inputbox-icon-button {
+    margin: 5px 6px;
+    padding: 6px;
+    color: var(--tgx-accent);
+}
+
+body.design-telegramx .inputbox-right-column {
+    margin-left: 6px;
+}
+
+body.design-telegramx .inputbox-send-button {
+    min-width: 46px;
+    width: 46px;
+    height: 46px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #60b8f8 0%, #3a8fd1 100%);
+    box-shadow: 0 3px 10px rgba(58, 143, 209, 0.45);
+    color: #ffffff;
+}
+
+body.design-telegramx .inputbox-send-button:hover {
+    background: linear-gradient(135deg, #50a8eb 0%, #2e7dbf 100%);
+}
+
+/* ── FAB ────────────────────────────────────────────────────────────────── */
+body.design-telegramx .dialogs::after {
+    content: '✎';
+    position: absolute;
+    bottom: 20px;
+    right: 14px;
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #60b8f8 0%, #3a8fd1 100%);
+    color: #ffffff;
+    font-size: 22px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 14px rgba(58, 143, 209, 0.5);
+    cursor: pointer;
+    z-index: 10;
+    line-height: 52px;
+    text-align: center;
+}
+
+/* ── Scrollbar ───────────────────────────────────────────────────────────── */
+body.design-telegramx ::-webkit-scrollbar {
+    width: 4px;
+}
+
+body.design-telegramx ::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+body.design-telegramx ::-webkit-scrollbar-thumb {
+    background: rgba(80, 168, 235, 0.3);
+    border-radius: 4px;
+}
+
+/* ── DARK MODE ───────────────────────────────────────────────────────────── */
+body.theme-dark.design-telegramx {
+    --tgx-accent: #50a8eb;
+    --tgx-accent-dark: #3a8fd1;
+    --tgx-ripple: rgba(80, 168, 235, 0.18);
+    --tgx-sidebar: #1c2733;
+    --tgx-chat-bg: #111b25;
+    --tgx-separator: rgba(255, 255, 255, 0.07);
+    --tgx-text-secondary: #8796a5;
+
+    --message-in-background: #1c2e3f;
+    --message-in-color: #eef2f7;
+    --message-in-link: #6ab7ff;
+    --message-in-author: #6ab7ff;
+    --message-in-meta-color: #8796a5;
+    --message-in-reply-title: #6ab7ff;
+    --message-in-reply-border: #6ab7ff;
+
+    --day-background: rgba(40, 100, 155, 0.5);
+    --color-accent-main: #50a8eb;
+
+    --design-page-background: #111b25;
+    --design-page-color: #eef2f7;
+    --design-sidebar-background: var(--tgx-sidebar);
+    --design-middle-background: var(--tgx-chat-bg);
+    --design-panel-background: #1c2733;
+    --design-header-background: linear-gradient(180deg, #2a5a8e 0%, #1e3f66 100%);
+    --design-header-color: #ffffff;
+    --design-header-muted-color: rgba(255, 255, 255, 0.78);
+    --design-input-background: #1c2733;
+    --design-input-surface: #1c2e3f;
+    --design-border-color: var(--tgx-separator);
+    --design-muted-color: var(--tgx-text-secondary);
+    --design-hover-background: rgba(80, 168, 235, 0.09);
+    --design-active-background: rgba(80, 168, 235, 0.18);
+}
+
+body.theme-dark.design-telegramx .dialogs {
+    background: #1c2733;
+}
+
+body.theme-dark.design-telegramx .header-master {
+    background: linear-gradient(180deg, #2a5a8e 0%, #1e3f66 100%) !important;
+}
+
+body.theme-dark.design-telegramx .header-details {
+    background: linear-gradient(180deg, #2a5a8e 0%, #1e3f66 100%);
+}
+
+body.theme-dark.design-telegramx .messages-list,
+body.theme-dark.design-telegramx .messages-list-wrapper {
+    background-color: #111b25;
+    background-image: radial-gradient(circle at 15% 20%, rgba(30, 80, 130, 0.2), transparent 35%);
+}
+
+body.theme-dark.design-telegramx .inputbox-background {
+    background: #1c2733;
+    border-top: 1px solid var(--tgx-separator);
+}
+
+body.theme-dark.design-telegramx .inputbox-bubble {
+    background: #1c2e3f;
+    border-color: rgba(80, 168, 235, 0.15);
+}
+
+body.theme-dark.design-telegramx .message-bubble {
+    background: #1c2e3f;
+    color: #eef2f7;
+}
+
+body.theme-dark.design-telegramx ::-webkit-scrollbar-thumb {
+    background: rgba(80, 168, 235, 0.2);
+}

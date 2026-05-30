@@ -1,0 +1,342 @@
+.android-drawer-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 1300;
+    display: flex;
+}
+
+.android-drawer-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.45);
+    animation: android-drawer-fade-in 0.22s ease;
+}
+
+.android-drawer-panel {
+    position: relative;
+    z-index: 1;
+    width: 280px;
+    max-width: 80vw;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    background: #ffffff;
+    box-shadow: 4px 0 24px rgba(0, 0, 0, 0.18);
+    animation: android-drawer-slide-in 0.22s cubic-bezier(0.2, 0, 0, 1);
+    overflow: hidden;
+}
+
+@keyframes android-drawer-slide-in {
+    from {
+        transform: translateX(-100%);
+    }
+    to {
+        transform: translateX(0);
+    }
+}
+
+@keyframes android-drawer-fade-in {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+/* ── Header del drawer ─────────────────────────────────────────────────── */
+.android-drawer-header {
+    position: relative;
+    padding: 20px 16px 14px;
+    background: #2b3c4e;
+    color: #ffffff;
+    flex-shrink: 0;
+    min-height: 148px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+}
+
+.android-drawer-header-bg {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(160deg, #3a5068 0%, #1e2f3e 100%);
+}
+
+.android-drawer-avatar {
+    position: relative;
+    z-index: 1;
+    width: 54px;
+    height: 54px;
+    border-radius: 50%;
+    overflow: hidden;
+    margin-bottom: 10px;
+    background: var(--android-accent, #229af0);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    font-weight: 500;
+    color: #ffffff;
+    flex-shrink: 0;
+}
+
+.android-drawer-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.android-drawer-name {
+    position: relative;
+    z-index: 1;
+    font-size: 15px;
+    font-weight: 600;
+    line-height: 20px;
+    color: #ffffff;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.android-drawer-phone {
+    position: relative;
+    z-index: 1;
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.7);
+    margin-top: 2px;
+}
+
+.android-drawer-darkmode-btn {
+    position: absolute;
+    z-index: 1;
+    top: 12px;
+    right: 12px;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: none;
+    background: rgba(255, 255, 255, 0.12);
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 18px;
+    transition: background 0.15s;
+}
+
+.android-drawer-darkmode-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+/* ── Lista de items ────────────────────────────────────────────────────── */
+.android-drawer-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 8px 0;
+}
+
+.android-drawer-item {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    padding: 13px 16px;
+    cursor: pointer;
+    color: #202124;
+    font-size: 15px;
+    font-family: 'Roboto', 'Noto Sans', sans-serif;
+    border: none;
+    background: transparent;
+    width: 100%;
+    text-align: left;
+    transition: background 0.12s;
+    line-height: 20px;
+}
+
+.android-drawer-item:hover {
+    background: rgba(0, 0, 0, 0.05);
+}
+
+.android-drawer-item svg,
+.android-drawer-item .android-drawer-icon {
+    color: #707579;
+    flex-shrink: 0;
+    font-size: 22px;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.android-drawer-divider {
+    height: 1px;
+    background: rgba(0, 0, 0, 0.08);
+    margin: 6px 0;
+}
+
+/* ── Cuenta(s) adicionales ────────────────────────────────────────────── */
+.android-drawer-account-item {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 10px 16px;
+    cursor: pointer;
+    font-size: 14px;
+    color: #202124;
+    border: none;
+    background: transparent;
+    width: 100%;
+    text-align: left;
+    transition: background 0.12s;
+}
+.android-drawer-account-item:hover {
+    background: rgba(0, 0, 0, 0.05);
+}
+.android-drawer-account-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: #2ca5e0;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 15px;
+    font-weight: 600;
+    flex-shrink: 0;
+}
+
+/* ════════════ VARIANTES POR DISEÑO ANDROID ════════════ */
+
+/* ── android-holo (4.x): drawer oscuro, teal ───────────────────────────── */
+body.design-android-holo .android-drawer-panel {
+    background: #1a2633;
+}
+body.design-android-holo .android-drawer-header {
+    background: #0f1c28;
+    min-height: 140px;
+}
+body.design-android-holo .android-drawer-header-bg {
+    background: linear-gradient(160deg, #1a3040 0%, #0d1820 100%);
+}
+body.design-android-holo .android-drawer-item {
+    color: #d8e8f0;
+}
+body.design-android-holo .android-drawer-item:hover {
+    background: rgba(0, 188, 212, 0.1);
+}
+body.design-android-holo .android-drawer-item svg,
+body.design-android-holo .android-drawer-item .android-drawer-icon {
+    color: #00bcd4;
+}
+body.design-android-holo .android-drawer-divider {
+    background: rgba(255, 255, 255, 0.07);
+}
+body.design-android-holo .android-drawer-account-item {
+    color: #d8e8f0;
+}
+body.design-android-holo .android-drawer-account-item:hover {
+    background: rgba(0, 188, 212, 0.08);
+}
+
+/* ── android-classic (7.x): header azul acero, ítems planos ──────────── */
+body.design-android-classic .android-drawer-header-bg {
+    background: linear-gradient(160deg, #5e8ab4 0%, #3a5e80 100%);
+}
+body.design-android-classic .android-drawer-item:hover {
+    background: #e8f1f8;
+}
+body.design-android-classic .android-drawer-item svg,
+body.design-android-classic .android-drawer-item .android-drawer-icon {
+    color: #527da3;
+}
+
+/* ── android-v9 (6.x): header azul Telegram ──────────────────────────── */
+body.design-android-v9 .android-drawer-header-bg {
+    background: linear-gradient(160deg, #3ab5f0 0%, #1b8abf 100%);
+}
+body.design-android-v9 .android-drawer-item:hover {
+    background: rgba(44, 165, 224, 0.08);
+}
+body.design-android-v9 .android-drawer-item svg,
+body.design-android-v9 .android-drawer-item .android-drawer-icon {
+    color: #2ca5e0;
+}
+
+/* ── android-v11 (8.x): header azul moderno ──────────────────────────── */
+body.design-android-v11 .android-drawer-header-bg {
+    background: linear-gradient(160deg, #3ba8f8 0%, #1680cc 100%);
+}
+body.design-android-v11 .android-drawer-item:hover {
+    background: rgba(34, 154, 240, 0.07);
+}
+body.design-android-v11 .android-drawer-item svg,
+body.design-android-v11 .android-drawer-item .android-drawer-icon {
+    color: #229af0;
+}
+
+/* ── android-redesign (12.5): header más moderno, drawer con radios ──── */
+body.design-android-redesign .android-drawer-panel {
+    border-radius: 0 16px 16px 0;
+}
+body.design-android-redesign .android-drawer-header-bg {
+    background: linear-gradient(160deg, #3ab0f8 0%, #1480d0 100%);
+}
+body.design-android-redesign .android-drawer-item {
+    border-radius: 8px;
+    margin: 1px 8px;
+    padding: 12px 12px;
+    width: calc(100% - 16px);
+}
+body.design-android-redesign .android-drawer-item:hover {
+    background: rgba(34, 154, 240, 0.08);
+}
+body.design-android-redesign .android-drawer-item svg,
+body.design-android-redesign .android-drawer-item .android-drawer-icon {
+    color: #229af0;
+}
+
+/* ── android-glass (12.6.4): translúcido, teal ───────────────────────── */
+body.design-android-glass .android-drawer-panel {
+    background: rgba(240, 248, 250, 0.88);
+    backdrop-filter: blur(24px) saturate(160%);
+    -webkit-backdrop-filter: blur(24px) saturate(160%);
+    border-radius: 0 20px 20px 0;
+}
+body.design-android-glass .android-drawer-header-bg {
+    background: linear-gradient(160deg, rgba(40, 201, 183, 0.9) 0%, rgba(20, 140, 128, 0.95) 100%);
+    backdrop-filter: blur(12px);
+}
+body.design-android-glass .android-drawer-item:hover {
+    background: rgba(40, 201, 183, 0.1);
+}
+body.design-android-glass .android-drawer-item svg,
+body.design-android-glass .android-drawer-item .android-drawer-icon {
+    color: #1f9e88;
+}
+body.design-android-glass .android-drawer-divider {
+    background: rgba(40, 201, 183, 0.15);
+}
+
+/* ── Dark mode base ───────────────────────────────────────────────────── */
+body.theme-dark.design-android .android-drawer-panel {
+    background: #17212b;
+}
+body.theme-dark.design-android .android-drawer-item {
+    color: #f0f4f8;
+}
+body.theme-dark.design-android .android-drawer-item:hover {
+    background: rgba(42, 171, 238, 0.1);
+}
+body.theme-dark.design-android .android-drawer-item svg,
+body.theme-dark.design-android .android-drawer-item .android-drawer-icon {
+    color: #8796a1;
+}
+body.theme-dark.design-android .android-drawer-divider {
+    background: rgba(255, 255, 255, 0.07);
+}
+body.theme-dark.design-android .android-drawer-account-item {
+    color: #f0f4f8;
+}
