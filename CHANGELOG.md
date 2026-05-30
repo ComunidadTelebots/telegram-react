@@ -1,5 +1,31 @@
 # Changelog
 
+## [2026-05-30] (sesión 9)
+
+### Added
+- **Sistema de diseños visuales independientes del tema claro/oscuro**: nuevo gestor `Design.js` con persistencia en `localStorage` (`tg_design`), inicialización global en `index.js` y clases `body.design-*` para activar skins completas de la interfaz. Archivos: `src/Design.js`, `src/index.js`.
+- **Selector de diseño en Appearance**: `ThemePicker` ahora permite elegir entre Telegram Web, Android, iOS, macOS, TDesktop, Unigram y Aurora con mini previews visuales de sidebar, fondo de chat y burbujas. Archivo: `src/Components/ColumnLeft/ThemePicker.js`.
+- **Capa compartida de tokens CSS para skins**: nuevo `designs/shell.css` centraliza variables de superficie, sidebar, paneles, headers, composer, lista de chats, burbujas, radios, sombras, estados hover/activo y colores secundarios. Archivo: `src/designs/shell.css`.
+- **Skin Telegram Web actual**: `current.css` documenta y fija el diseño base para mantener la apariencia original como opción seleccionable. Archivo: `src/designs/current.css`.
+- **Skin Android**: nueva apariencia inspirada en Telegram Android clásico, con sidebar blanco, fondo de chat verde salvia, burbujas blancas/verde claro, acento azul Telegram, composer redondeado, scrollbar fino y variante dark. Archivo: `src/designs/android.css`.
+- **Skin iOS**: nueva apariencia con burbujas azules iPhone, entrantes grises, tipografía `-apple-system`, headers/composer con efecto frosted, scrollbar oculto y variante dark. Archivo: `src/designs/ios.css`.
+- **Skin macOS**: nueva apariencia de escritorio estilo macOS con sidebar clara, layout compacto, radios amplios, burbujas redondeadas y ajustes propios de header/composer. Archivo: `src/designs/macos.css`.
+- **Skin TDesktop**: nueva apariencia inspirada en Telegram Desktop, con medidas compactas, acento azul, fondos y burbujas similares al cliente nativo. Archivo: `src/designs/tdesktop.css`.
+- **Skin Unigram**: nueva apariencia inspirada en el cliente Unigram/Windows, con tipografía Segoe UI, superficies claras, filas compactas y burbujas con estilo propio. Archivo: `src/designs/unigram.css`.
+- **Skin Aurora**: nuevo diseño oscuro original con acento mint/teal, sidebar oscuro, burbujas sin cola, tipografía Manrope/Inter, scrollbars personalizados y modo dark forzado. Archivo: `src/designs/aurora.css`.
+
+### Changed
+- **Tema MUI adaptado por diseño**: `Theme.js` ahora ajusta radio de bordes, acento, fuente y tipo efectivo según el skin seleccionado; Aurora fuerza dark y varios diseños sobreescriben el color primario. Archivo: `src/Theme.js`.
+- **Clases globales de tema**: al recalcular el tema se aplican `theme-light` o `theme-dark` en `body`, permitiendo combinar reglas por tema y diseño (`body.theme-dark.design-*`). Archivo: `src/Theme.js`.
+- **Tokens visuales compartidos en componentes existentes**: mensajes, respuestas, reacciones, web previews, metadatos de día, servicios, tiles de chat, headers, login y layout base usan variables CSS para responder al diseño activo. Archivos: `src/index.css`, `src/TelegramApp.css`, `src/Components/Message/*.css`, `src/Components/Tile/*.css`, `src/Components/ColumnMiddle/Header.css`, `src/Components/Auth/*.css`.
+- **Acentos por diseño**: Android, iOS, macOS, TDesktop, Unigram y Aurora pueden imponer su color de acento para que iconos, enlaces, badges y Material UI acompañen al skin seleccionado. Archivos: `src/Theme.js`, `src/designs/*.css`.
+
+### Notes
+- **Build verificada**: `npm run build` compila correctamente con las nuevas apariencias.
+- **Lint pendiente de configuración**: `npm run lint` no llega a analizar el código porque la versión instalada de ESLint no reconoce `env.es2021` en `.eslintrc.json`.
+
+---
+
 ## [2026-05-21] (sesión 8)
 
 ### Added
