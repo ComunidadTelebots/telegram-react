@@ -137,10 +137,20 @@ body.design-android .folder-tabs {
 }
 
 body.design-android-classic .android-version-trigger {
-    border-radius: 4px;
-    border-color: rgba(82, 125, 163, 0.36);
-    background: rgba(82, 125, 163, 0.12);
-    color: #527da3;
+    height: 26px;
+    border-radius: 14px;
+    border-color: rgba(255, 255, 255, 0.34);
+    background: rgba(255, 255, 255, 0.12);
+    color: #ffffff;
+}
+
+body.design-android-classic .android-version-trigger:hover {
+    background: rgba(255, 255, 255, 0.18);
+}
+
+body.design-android-classic .android-version-trigger-text {
+    font-size: 11px;
+    font-weight: 800;
 }
 
 body.design-android-classic .android-version-menu {

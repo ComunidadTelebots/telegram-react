@@ -14,24 +14,28 @@ const ANDROID_VERSIONS = [
         value: 'android',
         label: '12.6.4',
         detail: 'Beta 12.6.4',
+        trigger: 'Beta 12.6.4',
         tag: 'Glass',
     },
     {
         value: 'android-glass',
         label: '12.6',
         detail: '12.6 Feb 9',
+        trigger: '12.6',
         tag: 'Redesign',
     },
     {
         value: 'android-redesign',
         label: '12.5',
         detail: '12.5 pre-redesign',
+        trigger: '12.5',
         tag: 'Drawer',
     },
     {
         value: 'android-classic',
         label: '7.x',
         detail: '7.x Classic',
+        trigger: 'Classic',
         tag: 'Classic',
     },
 ];
@@ -101,7 +105,7 @@ class AndroidVersionSelector extends React.PureComponent {
                     onClick={this.handleToggle}
                     aria-haspopup='menu'
                     aria-expanded={open}>
-                    <span className='android-version-trigger-text'>{current.detail}</span>
+                    <span className='android-version-trigger-text'>{current.trigger || current.detail}</span>
                     <KeyboardArrowDownIcon className='android-version-chevron' />
                 </button>
                 {open && (
