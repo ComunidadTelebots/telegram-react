@@ -57,13 +57,13 @@
 
 .folder-tab:hover {
     opacity: 0.85;
-    background: rgba(128, 128, 128, 0.12);
+    background: var(--design-hover-background);
 }
 
 .folder-tab-active {
     opacity: 1;
-    background: rgba(var(--color-primary-rgb, 33, 150, 243), 0.12);
-    color: #2196f3;
+    background: var(--design-active-background);
+    color: var(--color-accent-main);
 }
 
 .folder-dialogs-list {

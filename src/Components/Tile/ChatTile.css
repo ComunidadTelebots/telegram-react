@@ -25,28 +25,28 @@
 }
 
 .tile_color_1 {
-    background: #cc90e2;
+    background: var(--tile-1);
 }
 .tile_color_2 {
-    background: #80d066;
+    background: var(--tile-2);
 }
 .tile_color_3 {
-    background: #ecd074;
+    background: var(--tile-3);
 }
 .tile_color_4 {
-    background: #6fb1e4;
+    background: var(--tile-4);
 }
 .tile_color_5 {
-    background: #e57979;
+    background: var(--tile-5);
 }
 .tile_color_6 {
-    background: #f98bae;
+    background: var(--tile-6);
 }
 .tile_color_7 {
-    background: #73cdd0;
+    background: var(--tile-7);
 }
 .tile_color_8 {
-    background: #fba76f;
+    background: var(--tile-8);
 }
 
 .tile-text {

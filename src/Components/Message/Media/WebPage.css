@@ -49,12 +49,12 @@
 }
 
 .web-page-button-amp {
-    border-color: #005af0 !important;
-    color: #005af0 !important;
+    border-color: var(--color-accent-main) !important;
+    color: var(--color-accent-main) !important;
 }
 
 .web-page-button-amp .MuiSvgIcon-root {
-    fill: #005af0;
+    fill: var(--color-accent-main);
 }
 
 .message-bubble-out .web-page-button-amp {

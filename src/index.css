@@ -6,18 +6,22 @@
  */
 
 :root {
+    /* ── Accent (Theme.js overwrites these at runtime) ────────────────────── */
     --color-accent-main: #5b8af1;
     --color-accent-light: #5b8af1;
     --color-accent-dark: #5b8af1;
+    --color-accent-material: #2196f3;
 
+    /* ── Badges / indicators (Theme.js overwrites) ────────────────────────── */
     --badge-green: #4dcd5e;
     --badge-gray: #c4c9cc;
-
     --indicator-green: #0ac630;
 
+    /* ── Day / service pill (Theme.js overwrites) ─────────────────────────── */
     --day-background: #00000033;
     --day-color: #ffffff;
 
+    /* ── Message bubbles (Theme.js overwrites) ────────────────────────────── */
     --message-in-link: #5b8af1;
     --message-in-author: #5b8af1;
     --message-in-background: #ffffff;
@@ -33,6 +37,62 @@
     --message-out-meta-color: #4fae4e;
     --message-out-reply-title: #4fae4e;
     --message-out-reply-border: #4fae4e;
+
+    /* ── Foreground / text ────────────────────────────────────────────────── */
+    --fg2: #707579;
+    --fg3: #8d969c;
+    --fg-placeholder: #8e9396;
+    --draft-red: #c05f5a;
+
+    /* ── Surface / decoration ─────────────────────────────────────────────── */
+    --mark-bg: #fff8cc;
+    --shadow-bubble: 0 1px 2px 0 rgba(16, 35, 47, 0.15);
+    --highlight-flash: #80d066;
+    --media-overlay: rgba(0, 0, 0, 0.25);
+    --reaction-chosen-bg: rgba(33, 150, 243, 0.1);
+
+    /* ── Shape ────────────────────────────────────────────────────────────── */
+    --radius-badge: 11px;
+
+    /* ── Layout ───────────────────────────────────────────────────────────── */
+    --header-height: 65px;
+    --avatar-size: 48px;
+    --avatar-small: 33px;
+    --avatar-big: 120px;
+    --message-max-width: 560px;
+    --composer-max-width: 695px;
+    --page-max-width: 1680px;
+
+    /* ── Avatar palette (chatId % 8) ──────────────────────────────────────── */
+    --tile-1: #cc90e2;
+    --tile-2: #80d066;
+    --tile-3: #ecd074;
+    --tile-4: #6fb1e4;
+    --tile-5: #e57979;
+    --tile-6: #f98bae;
+    --tile-7: #73cdd0;
+    --tile-8: #fba76f;
+
+    /* ── Author name palette (userId % 8) ────────────────────────────────── */
+    --user-color-1: #8365ab;
+    --user-color-2: #539e4f;
+    --user-color-3: #ae9661;
+    --user-color-4: #4979a3;
+    --user-color-5: #b7635d;
+    --user-color-6: #b3577a;
+    --user-color-7: #5397b4;
+    --user-color-8: #c07844;
+}
+
+/* ── Dark theme overrides ──────────────────────────────────────────────────── */
+body.theme-dark {
+    --fg2: rgba(255, 255, 255, 0.7);
+    --fg3: rgba(255, 255, 255, 0.7);
+    --fg-placeholder: rgba(255, 255, 255, 0.45);
+    --mark-bg: #5a5320;
+    --shadow-bubble: 0 1px 2px 0 rgba(0, 0, 0, 0.45);
+    --media-overlay: rgba(0, 0, 0, 0.4);
+    --reaction-chosen-bg: rgba(91, 138, 241, 0.15);
 }
 
 .notification-close-button {

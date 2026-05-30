@@ -26,5 +26,5 @@
 }
 
 .dialog-content-draft {
-    color: #c05f5a;
+    color: var(--draft-red);
 }

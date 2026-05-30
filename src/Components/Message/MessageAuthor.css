@@ -20,33 +20,33 @@
 
 .user_color_1,
 .user_color_1:hover {
-    color: #8365ab;
+    color: var(--user-color-1);
 }
 .user_color_2,
 .user_color_2:hover {
-    color: #539e4f;
+    color: var(--user-color-2);
 }
 .user_color_3,
 .user_color_3:hover {
-    color: #ae9661;
+    color: var(--user-color-3);
 }
 .user_color_4,
 .user_color_4:hover {
-    color: #4979a3;
+    color: var(--user-color-4);
 }
 .user_color_5,
 .user_color_5:hover {
-    color: #b7635d;
+    color: var(--user-color-5);
 }
 .user_color_6,
 .user_color_6:hover {
-    color: #b3577a;
+    color: var(--user-color-6);
 }
 .user_color_7,
 .user_color_7:hover {
-    color: #5397b4;
+    color: var(--user-color-7);
 }
 .user_color_8,
 .user_color_8:hover {
-    color: #c07844;
+    color: var(--user-color-8);
 }

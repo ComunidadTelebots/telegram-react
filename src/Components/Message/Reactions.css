@@ -26,8 +26,8 @@
 }
 
 .reaction-chosen {
-    border-color: var(--color-primary, #2196f3);
-    background: rgba(33, 150, 243, 0.1);
+    border-color: var(--color-accent-main);
+    background: var(--reaction-chosen-bg);
 }
 
 .reaction-emoji {
@@ -56,8 +56,8 @@
 }
 
 .reaction-add-btn:hover {
-    border-color: var(--color-primary, #2196f3);
-    color: var(--color-primary, #2196f3);
+    border-color: var(--color-accent-main);
+    color: var(--color-accent-main);
     background: rgba(33, 150, 243, 0.05);
 }
 

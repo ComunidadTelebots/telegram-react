@@ -31,7 +31,7 @@ strong {
 }
 
 mark {
-    background-color: #fff8cc;
+    background-color: var(--mark-bg);
     border-radius: 3px;
     padding: 0 3px;
 }
@@ -51,7 +51,7 @@ mark {
 
 .page {
     height: calc(100% - 0px);
-    max-width: 1680px;
+    max-width: var(--page-max-width);
     min-width: 300px;
     margin: 0 auto;
     border-style: solid;
@@ -60,7 +60,7 @@ mark {
 }
 
 .page-third-column {
-    max-width: 1680px;
+    max-width: var(--page-max-width);
 }
 
 .accent-color {

@@ -94,7 +94,7 @@ pre code {
 
 @keyframes message-highlighted-animation {
     0% {
-        background-color: #80d066;
+        background-color: var(--highlight-flash);
     }
     100% {
         background-color: transparent;
@@ -132,7 +132,7 @@ pre code {
     /*flex-grow: 1;*/
     /*flex-shrink: 1;*/
     /*overflow: hidden;*/
-    max-width: 560px;
+    max-width: var(--message-max-width);
     min-height: 33px;
     box-sizing: border-box;
 }
@@ -141,7 +141,7 @@ pre code {
     position: relative;
     border-radius: 10px 10px 10px 0;
     padding: 6px 9px;
-    box-shadow: 0 1px 2px 0 rgba(16, 35, 47, 0.15);
+    box-shadow: var(--shadow-bubble);
     background: var(--message-in-background);
 }
 

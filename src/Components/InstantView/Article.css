@@ -92,7 +92,7 @@ article > details {
     margin: 0 0;
 }
 article mark {
-    background: #fff8cc;
+    background: var(--mark-bg);
     border-radius: 3px;
     padding: 0 3px;
 }

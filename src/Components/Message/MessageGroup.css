@@ -20,7 +20,7 @@
 .group-wrapper {
     display: flex;
     padding: 0 15px;
-    max-width: 560px;
+    max-width: var(--message-max-width);
     margin: 0 auto;
 }
 

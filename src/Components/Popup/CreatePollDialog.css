@@ -26,7 +26,7 @@
 
 #create-poll-dialog-question::before {
     /*content: attr(placeholder);*/
-    color: #8e9396;
+    color: var(--fg-placeholder);
     pointer-events: none;
     transform: translateX(20px);
     will-change: transform;

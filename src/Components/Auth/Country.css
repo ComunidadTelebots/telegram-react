@@ -27,7 +27,7 @@
 }
 
 .country-phone {
-    color: #707579;
+    color: var(--fg2);
     flex-shrink: 0;
     flex-grow: 0;
 }
