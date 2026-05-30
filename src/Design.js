@@ -29,7 +29,7 @@ const DEFAULT_DESIGN = 'current';
 
 export const DESIGN_LABELS = {
     current: 'Web',
-    android: 'Android v16',
+    android: 'Android',
     'android-glass': 'Android v15',
     'android-redesign': 'Android v14',
     'android-classic': 'Android v13',

@@ -9,18 +9,7 @@ import ApplicationStore from '../Stores/ApplicationStore';
 import { DESIGN_ACCENTS, DESIGN_LABELS, getDesign, setDesign } from '../Design';
 import './DesignSwitcher.css';
 
-const QUICK_DESIGNS = [
-    'current',
-    'tdesktop',
-    'android',
-    'android-glass',
-    'android-redesign',
-    'android-classic',
-    'unigram',
-    'ios',
-    'macos',
-    'aurora',
-];
+const QUICK_DESIGNS = ['current', 'tdesktop', 'android', 'unigram', 'ios', 'macos', 'aurora'];
 
 class DesignSwitcher extends React.PureComponent {
     constructor(props) {

@@ -17,12 +17,13 @@ import {
     DialogContentText,
     DialogTitle,
     Button,
-    IconButton
+    IconButton,
 } from '@material-ui/core';
 import ArrowBackIcon from '@material-ui/icons/ArrowBack';
 import SearchIcon from '@material-ui/icons/Search';
 import CloseIcon from '@material-ui/icons/Close';
 import SpeedDialIcon from '@material-ui/lab/SpeedDialIcon';
+import AndroidVersionSelector from './AndroidVersionSelector';
 import MainMenuButton from './MainMenuButton';
 import { isAuthorizationReady } from '../../Utils/Common';
 import { ANIMATION_DURATION_100MS } from '../../Constants';
@@ -38,7 +39,7 @@ class DialogsHeader extends React.Component {
 
         this.state = {
             authorizationState: AppStore.getAuthorizationState(),
-            open: false
+            open: false,
         };
     }
 
@@ -141,7 +142,7 @@ class DialogsHeader extends React.Component {
 
     handleCloseArchive = () => {
         TdLibController.clientUpdate({
-            '@type': 'clientUpdateCloseArchive'
+            '@type': 'clientUpdateCloseArchive',
         });
     };
 
@@ -203,6 +204,7 @@ class DialogsHeader extends React.Component {
                     <div className='header-status grow cursor-pointer' onClick={onClick}>
                         <span className='header-status-content'>{t('AppName')}</span>
                     </div>
+                    <AndroidVersionSelector />
                 </>
             );
         }
@@ -223,13 +225,9 @@ DialogsHeader.propTypes = {
     openArchive: PropTypes.bool.isRequired,
     onClick: PropTypes.func.isRequired,
     onSearch: PropTypes.func.isRequired,
-    onSearchTextChange: PropTypes.func.isRequired
+    onSearchTextChange: PropTypes.func.isRequired,
 };
 
-const enhance = compose(
-    withSaveRef(),
-    withTranslation(),
-    withRestoreRef()
-);
+const enhance = compose(withSaveRef(), withTranslation(), withRestoreRef());
 
 export default enhance(DialogsHeader);
