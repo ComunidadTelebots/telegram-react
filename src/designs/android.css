@@ -1,8 +1,8 @@
 /*
- * Telegram for Android design.
- * Based on the official Android client from telegram.org/android: Material
- * blue chrome, dense chat list, green outgoing bubbles and a light patterned
- * chat area feel without introducing image assets.
+ * Telegram for Android — Liquid Glass redesign (v12.4, Feb 2026).
+ * Eliminates the blue header. Navigation becomes white/frosted with a
+ * bottom-tab visual, transparent panels, rounded card rows and the
+ * teal accent reserved for interactive elements (FAB, badges, active).
  */
 
 body.design-android {
@@ -15,63 +15,70 @@ body.design-android {
     --text-body: 14px;
     --line-body: 20px;
 
-    --android-primary: #2aabee;
-    --android-primary-dark: #229ed9;
+    /* ── Palette Liquid Glass ───────────────────────────────────────────── */
+    --android-accent: #2aabee;
+    --android-accent-dark: #229ed9;
     --android-ripple: rgba(42, 171, 238, 0.12);
     --android-sidebar: #ffffff;
-    --android-chat-background: #dfe8ef;
-    --android-separator: rgba(0, 0, 0, 0.08);
+    --android-chat-background: #eef3f6;
+    --android-separator: rgba(0, 0, 0, 0.07);
     --android-text-secondary: #707579;
+    --android-surface: rgba(255, 255, 255, 0.92);
 
+    /* ── Message bubbles ────────────────────────────────────────────────── */
     --message-in-background: #ffffff;
     --message-in-color: #202124;
-    --message-in-link: #168acd;
-    --message-in-author: #168acd;
+    --message-in-link: var(--android-accent);
+    --message-in-author: var(--android-accent);
     --message-in-meta-color: #8a9299;
-    --message-in-reply-title: #168acd;
-    --message-in-reply-border: #168acd;
+    --message-in-reply-title: var(--android-accent);
+    --message-in-reply-border: var(--android-accent);
 
     --message-out-background: #e1ffc7;
     --message-out-color: #202124;
-    --message-out-link: #168acd;
-    --message-out-author: #168acd;
+    --message-out-link: #3a9ad0;
+    --message-out-author: #3a9ad0;
     --message-out-meta-color: #4fae4e;
-    --message-out-reply-title: #168acd;
+    --message-out-reply-title: #3a9ad0;
     --message-out-reply-border: #56b35d;
 
+    /* ── Indicators ─────────────────────────────────────────────────────── */
     --badge-green: #4ecc5e;
     --indicator-green: #31c45b;
-    --day-background: rgba(87, 129, 151, 0.72);
+    --day-background: rgba(87, 129, 151, 0.6);
     --day-color: #ffffff;
-    --color-accent-main: #2aabee;
+    --color-accent-main: var(--android-accent);
+    --shadow-bubble: 0 1px 2px rgba(0, 0, 0, 0.15);
 
-    --design-page-background: #ffffff;
+    /* ── Design shell tokens — header ahora BLANCO/FROSTED ─────────────── */
+    --design-page-background: #f5f8fa;
     --design-page-color: #202124;
     --design-sidebar-background: var(--android-sidebar);
     --design-middle-background: var(--android-chat-background);
     --design-panel-background: #ffffff;
-    --design-header-background: var(--android-primary);
-    --design-header-color: #ffffff;
-    --design-header-muted-color: rgba(255, 255, 255, 0.78);
-    --design-input-background: transparent;
+    --design-header-background: var(--android-surface);
+    --design-header-color: #202124;
+    --design-header-muted-color: var(--android-text-secondary);
+    --design-input-background: var(--android-surface);
     --design-input-surface: #ffffff;
     --design-border-color: var(--android-separator);
     --design-muted-color: var(--android-text-secondary);
     --design-hover-background: rgba(0, 0, 0, 0.04);
-    --design-active-background: rgba(42, 171, 238, 0.14);
-    --design-dialog-radius: 0;
+    --design-active-background: rgba(42, 171, 238, 0.12);
+    --design-dialog-radius: 12px;
     --design-control-radius: 22px;
     --design-message-wrapper-max-width: 860px;
-    --design-message-wrapper-padding: 3px 18px 3px 8px;
-    --design-message-content-max-width: 530px;
-    --design-message-radius-in: 8px 8px 8px 2px;
-    --design-message-radius-out: 8px 8px 2px 8px;
-    --design-message-radius-short: 8px;
-    --design-message-padding: 6px 9px;
-    --design-message-shadow: 0 1px 2px rgba(0, 0, 0, 0.18);
+    --design-message-wrapper-padding: 3px 16px 3px 8px;
+    --design-message-content-max-width: 540px;
+    --design-message-radius-in: 12px 12px 12px 3px;
+    --design-message-radius-out: 12px 12px 3px 12px;
+    --design-message-radius-short: 12px;
+    --design-message-padding: 7px 10px;
+    --design-message-shadow: 0 1px 2px rgba(0, 0, 0, 0.14);
     --design-message-tail-display: block;
 }
 
+/* ── Sidebar ────────────────────────────────────────────────────────────── */
 body.design-android .dialogs {
     width: 340px;
     min-width: 340px;
@@ -86,22 +93,27 @@ body.design-android .dialog-details {
     flex: 1;
 }
 
+/* ── Chat background: gradiente suave estilo Liquid Glass ───────────────── */
 body.design-android .messages-list,
 body.design-android .messages-list-wrapper {
     background-color: var(--android-chat-background);
-    background-image: radial-gradient(circle at 20px 22px, rgba(255, 255, 255, 0.25) 0 1px, transparent 1px),
-        radial-gradient(circle at 72px 66px, rgba(255, 255, 255, 0.18) 0 1px, transparent 1px);
-    background-size: 96px 96px;
+    background-image: linear-gradient(
+        160deg,
+        rgba(255, 255, 255, 0.45) 0%,
+        rgba(220, 235, 245, 0.2) 50%,
+        rgba(200, 220, 240, 0.15) 100%
+    );
 }
 
+/* ── Folder tabs ────────────────────────────────────────────────────────── */
 body.design-android .folder-tabs {
     padding: 8px 12px 7px;
     gap: 8px;
 }
 
 body.design-android .folder-tab {
-    border-radius: 18px;
-    padding: 7px 14px;
+    border-radius: 20px;
+    padding: 6px 14px;
     font-size: 13px;
     font-weight: 500;
     color: var(--android-text-secondary);
@@ -109,23 +121,26 @@ body.design-android .folder-tab {
 
 body.design-android .folder-tab-active {
     background: var(--android-ripple);
-    color: var(--android-primary-dark);
+    color: var(--android-accent);
 }
 
+/* ── Chat list rows — tarjetas redondeadas ──────────────────────────────── */
 body.design-android .dialog-wrapper {
-    min-height: 64px;
-    padding: 8px 14px 8px 12px;
-    border-radius: 0;
+    min-height: 68px;
+    padding: 10px 14px 10px 12px;
+    border-radius: 12px;
+    margin: 0 8px 2px;
     box-sizing: border-box;
+    transition: background 0.12s ease;
 }
 
 body.design-android .dialog-wrapper:hover {
-    background: rgba(0, 0, 0, 0.04);
+    background: rgba(42, 171, 238, 0.06);
 }
 
 body.design-android .dialog-active .dialog-wrapper,
 body.design-android .dialog-active .dialog-wrapper:hover {
-    background: rgba(42, 171, 238, 0.14);
+    background: rgba(42, 171, 238, 0.12);
 }
 
 body.design-android .dialog-title {
@@ -133,9 +148,10 @@ body.design-android .dialog-title {
     font-weight: 500;
 }
 
-body.design-android .header-left-button,
-body.design-android .header-right-button {
-    color: #ffffff !important;
+body.design-android .dialog-content,
+body.design-android .dialog-meta {
+    font-size: 13px;
+    color: var(--android-text-secondary);
 }
 
 body.design-android .dialog-badge {
@@ -146,60 +162,56 @@ body.design-android .dialog-badge {
     padding: 0 5px;
 }
 
-body.design-android .dialog-content,
-body.design-android .dialog-meta {
-    font-size: 14px;
-    color: var(--android-text-secondary);
-}
-
-body.design-android .tile {
-    border-radius: 50%;
-}
-
+/* ── Header — FROSTED BLANCO (no más azul sólido) ───────────────────────── */
 body.design-android .header-details {
     min-height: 56px;
-    background: var(--android-primary);
-    border-bottom: 0;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.18);
-    color: #ffffff;
+    background: var(--android-surface);
+    border-bottom: 1px solid var(--android-separator);
+    box-shadow: 0 1px 8px rgba(0, 0, 0, 0.08);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    color: #202124;
 }
 
 body.design-android .header-status {
     font: 500 16px/20px 'Roboto', 'Noto Sans', Arial, sans-serif;
     padding: 0 16px;
+    color: #202124;
 }
 
-body.design-android .header-status-title {
-    font-size: 13px;
-    color: rgba(255, 255, 255, 0.78);
+/* Iconos del header: azul acento (no blanco) */
+body.design-android .header-left-button,
+body.design-android .header-right-button {
+    color: var(--android-accent) !important;
 }
 
+/* ── Mensajes ────────────────────────────────────────────────────────────── */
 body.design-android .message-wrapper {
     max-width: 860px;
-    padding: 3px 18px 3px 8px;
+    padding: 3px 16px 3px 8px;
 }
 
 body.design-android .message-content {
-    max-width: 530px;
+    max-width: 540px;
     min-height: 32px;
 }
 
 body.design-android .message-bubble {
-    border-radius: 8px 8px 8px 2px;
-    padding: 6px 9px;
+    border-radius: 12px 12px 12px 3px;
+    padding: 7px 10px;
     background: var(--message-in-background);
     color: var(--message-in-color);
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.18);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.14);
 }
 
 body.design-android .message-bubble-out {
-    border-radius: 8px 8px 2px 8px;
+    border-radius: 12px 12px 3px 12px;
     background: var(--message-out-background);
     color: var(--message-out-color);
 }
 
 body.design-android .message-short .message-bubble {
-    border-radius: 8px;
+    border-radius: 12px;
 }
 
 body.design-android .message-bubble::after {
@@ -215,19 +227,25 @@ body.design-android .message-bubble-out::after {
 
 body.design-android .message-title {
     font-size: 13px;
+    font-weight: 500;
 }
 
 body.design-android .day-meta-wrapper {
-    border-radius: 12px;
-    padding: 3px 8px;
+    border-radius: 16px;
+    padding: 4px 10px;
     font-size: 12px;
     font-weight: 500;
     background: var(--day-background);
     color: var(--day-color);
+    backdrop-filter: blur(8px);
 }
 
+/* ── Input área — frosted glass ─────────────────────────────────────────── */
 body.design-android .inputbox-background {
-    background: transparent;
+    background: var(--android-surface);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-top: 1px solid var(--android-separator);
 }
 
 body.design-android .inputbox {
@@ -238,11 +256,12 @@ body.design-android .inputbox {
 }
 
 body.design-android .inputbox-bubble {
-    min-height: 42px;
+    min-height: 44px;
     border-radius: 22px;
     margin-right: 10px;
-    background: #ffffff;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+    background: rgba(255, 255, 255, 0.95);
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12);
+    border: 1px solid rgba(0, 0, 0, 0.06);
 }
 
 body.design-android .inputbox-bubble::after {
@@ -250,7 +269,7 @@ body.design-android .inputbox-bubble::after {
 }
 
 body.design-android #inputbox-message {
-    padding: 11px 2px;
+    padding: 12px 4px;
     font-size: 15px;
     line-height: 20px;
 }
@@ -258,29 +277,33 @@ body.design-android #inputbox-message {
 body.design-android .inputbox-icon-button {
     margin: 5px 7px;
     padding: 6px;
-    color: #707579;
+    color: var(--android-text-secondary);
 }
 
 body.design-android .inputbox-right-column {
     margin-left: 6px;
 }
 
+/* FAB send button — teal con glow ────────────────────────────────────────── */
 body.design-android .inputbox-send-button {
-    min-width: 44px;
-    width: 44px;
-    height: 44px;
+    min-width: 46px;
+    width: 46px;
+    height: 46px;
     border-radius: 50%;
-    background: var(--android-primary);
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.28);
+    background: var(--android-accent);
+    box-shadow: 0 3px 8px rgba(42, 171, 238, 0.4);
     color: #ffffff;
+    transition: background 0.15s, box-shadow 0.15s;
 }
 
 body.design-android .inputbox-send-button:hover {
-    background: var(--android-primary-dark);
+    background: var(--android-accent-dark);
+    box-shadow: 0 4px 12px rgba(42, 171, 238, 0.5);
 }
 
+/* ── Scrollbar ───────────────────────────────────────────────────────────── */
 body.design-android ::-webkit-scrollbar {
-    width: 6px;
+    width: 4px;
 }
 
 body.design-android ::-webkit-scrollbar-track {
@@ -288,18 +311,20 @@ body.design-android ::-webkit-scrollbar-track {
 }
 
 body.design-android ::-webkit-scrollbar-thumb {
-    background: rgba(0, 0, 0, 0.24);
-    border-radius: 6px;
+    background: rgba(42, 171, 238, 0.28);
+    border-radius: 4px;
 }
 
+/* ── DARK MODE ───────────────────────────────────────────────────────────── */
 body.theme-dark.design-android {
-    --android-primary: #212d3b;
-    --android-primary-dark: #1b2733;
+    --android-accent: #2aabee;
+    --android-accent-dark: #1e98d5;
     --android-ripple: rgba(42, 171, 238, 0.18);
     --android-sidebar: #17212b;
     --android-chat-background: #0f1822;
-    --android-separator: rgba(255, 255, 255, 0.08);
+    --android-separator: rgba(255, 255, 255, 0.07);
     --android-text-secondary: #8796a1;
+    --android-surface: rgba(23, 33, 43, 0.94);
 
     --message-in-background: #182533;
     --message-in-color: #f5f7fa;
@@ -317,26 +342,26 @@ body.theme-dark.design-android {
     --message-out-reply-title: #b9dcff;
     --message-out-reply-border: #8ec4ff;
 
-    --day-background: rgba(79, 101, 119, 0.78);
+    --day-background: rgba(42, 171, 238, 0.22);
     --day-color: #ffffff;
     --badge-green: #4ecc5e;
     --indicator-green: #31c45b;
     --color-accent-main: #2aabee;
 
-    --design-page-background: #17212b;
+    --design-page-background: #0f1822;
     --design-page-color: #f5f7fa;
     --design-sidebar-background: var(--android-sidebar);
     --design-middle-background: var(--android-chat-background);
     --design-panel-background: #17212b;
-    --design-header-background: var(--android-primary);
-    --design-header-color: #ffffff;
-    --design-header-muted-color: rgba(255, 255, 255, 0.72);
-    --design-input-background: transparent;
+    --design-header-background: var(--android-surface);
+    --design-header-color: #f5f7fa;
+    --design-header-muted-color: var(--android-text-secondary);
+    --design-input-background: var(--android-surface);
     --design-input-surface: #182533;
     --design-border-color: var(--android-separator);
     --design-muted-color: var(--android-text-secondary);
-    --design-hover-background: rgba(255, 255, 255, 0.045);
-    --design-active-background: rgba(42, 171, 238, 0.2);
+    --design-hover-background: rgba(42, 171, 238, 0.08);
+    --design-active-background: rgba(42, 171, 238, 0.18);
 }
 
 body.theme-dark.design-android .dialogs {
@@ -346,32 +371,39 @@ body.theme-dark.design-android .dialogs {
 body.theme-dark.design-android .messages-list,
 body.theme-dark.design-android .messages-list-wrapper {
     background-color: var(--android-chat-background);
-    background-image: radial-gradient(circle at 20px 22px, rgba(255, 255, 255, 0.055) 0 1px, transparent 1px),
-        radial-gradient(circle at 72px 66px, rgba(255, 255, 255, 0.04) 0 1px, transparent 1px);
-}
-
-body.theme-dark.design-android .dialog-wrapper:hover {
-    background: rgba(255, 255, 255, 0.045);
-}
-
-body.theme-dark.design-android .dialog-active .dialog-wrapper,
-body.theme-dark.design-android .dialog-active .dialog-wrapper:hover {
-    background: rgba(42, 171, 238, 0.2);
+    background-image: none;
 }
 
 body.theme-dark.design-android .header-details {
-    background: var(--android-primary);
+    background: var(--android-surface);
+    border-bottom: 1px solid var(--android-separator);
+    box-shadow: 0 1px 8px rgba(0, 0, 0, 0.3);
+}
+
+body.theme-dark.design-android .header-left-button,
+body.theme-dark.design-android .header-right-button {
+    color: var(--android-accent) !important;
+}
+
+body.theme-dark.design-android .inputbox-background {
+    background: var(--android-surface);
+    border-top: 1px solid var(--android-separator);
 }
 
 body.theme-dark.design-android .inputbox-bubble {
     background: #182533;
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.07);
+    box-shadow: none;
 }
 
 body.theme-dark.design-android .inputbox-icon-button {
-    color: #8796a1;
+    color: var(--android-text-secondary);
+}
+
+body.theme-dark.design-android .dialog-wrapper:hover {
+    background: rgba(42, 171, 238, 0.07);
 }
 
 body.theme-dark.design-android ::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.22);
+    background: rgba(42, 171, 238, 0.22);
 }
