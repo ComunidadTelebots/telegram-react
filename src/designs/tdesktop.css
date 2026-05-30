@@ -3,6 +3,14 @@
 body.design-tdesktop {
     font: 14px/19px 'Segoe UI', system-ui, -apple-system, sans-serif;
 
+    /* ── Tipografía propia: Segoe UI (Windows) ─────────────────────────── */
+    --font-body: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    --font-display: 'Segoe UI', system-ui, sans-serif;
+    --font-mono: 'Cascadia Code', 'Consolas', 'Courier New', monospace;
+    --text-body: 14px;
+    --text-dialog: 13px;
+    --line-body: 19px;
+
     /* Verde clásico de TDesktop saliente */
     --message-out-background: #effdde;
     --message-out-color: #000000;

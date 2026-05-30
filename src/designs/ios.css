@@ -10,6 +10,13 @@ body.design-ios {
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
 
+    /* ── Tipografía propia: SF Pro / -apple-system (iOS) ───────────────── */
+    --font-body: -apple-system, 'SF Pro Text', 'Helvetica Neue', Arial, sans-serif;
+    --font-display: -apple-system, 'SF Pro Display', 'Helvetica Neue', sans-serif;
+    --font-mono: ui-monospace, 'SF Mono', Menlo, Monaco, 'Courier New', monospace;
+    --text-body: 15px;
+    --line-body: 20px;
+
     --ios-blue: #007aff;
     --ios-blue-active: #0a84ff;
     --ios-sidebar: #f2f2f7;

@@ -7,6 +7,13 @@
 body.design-unigram {
     font: 14px/20px 'Segoe UI', 'Segoe UI Variable Text', system-ui, sans-serif;
 
+    /* ── Tipografía propia: Segoe UI Variable (Windows / WinUI) ────────── */
+    --font-body: 'Segoe UI', 'Segoe UI Variable Text', system-ui, sans-serif;
+    --font-display: 'Segoe UI', 'Segoe UI Variable Display', system-ui, sans-serif;
+    --font-mono: 'Cascadia Code', 'Consolas', 'Courier New', monospace;
+    --text-body: 14px;
+    --line-body: 20px;
+
     --unigram-accent: #0078d4;
     --unigram-accent-hover: #106ebe;
     --unigram-sidebar: #f7f9fb;

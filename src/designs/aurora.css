@@ -10,6 +10,13 @@
 
 body.design-aurora {
     font: 15px/20px 'Manrope', 'Inter', system-ui, -apple-system, sans-serif;
+
+    /* ── Tipografía propia: Manrope (Aurora original) ───────────────────── */
+    --font-body: 'Manrope', 'Inter', system-ui, -apple-system, sans-serif;
+    --font-display: 'Manrope', 'Inter', system-ui, sans-serif;
+    --font-mono: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', Menlo, Monaco, monospace;
+    --text-body: 15px;
+    --line-body: 20px;
     -webkit-font-smoothing: antialiased;
 
     --aurora-accent: #34d9a8;

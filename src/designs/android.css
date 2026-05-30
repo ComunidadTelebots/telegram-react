@@ -8,6 +8,13 @@
 body.design-android {
     font: 14px/20px 'Roboto', 'Noto Sans', Arial, sans-serif;
 
+    /* ── Tipografía propia: Roboto + Noto Sans (Android Material) ──────── */
+    --font-body: 'Roboto', 'Noto Sans', Arial, sans-serif;
+    --font-display: 'Roboto', 'Noto Sans', sans-serif;
+    --font-mono: 'Roboto Mono', 'Droid Sans Mono', monospace;
+    --text-body: 14px;
+    --line-body: 20px;
+
     --android-primary: #2aabee;
     --android-primary-dark: #229ed9;
     --android-ripple: rgba(42, 171, 238, 0.12);
