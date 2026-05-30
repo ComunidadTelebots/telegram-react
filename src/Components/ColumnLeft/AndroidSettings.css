@@ -1,0 +1,434 @@
+.android-settings-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 1200;
+    display: flex;
+    flex-direction: column;
+    background: var(--design-page-background, #f0f2f5);
+    animation: android-settings-slide-in 0.2s cubic-bezier(0.2, 0, 0, 1);
+}
+
+@keyframes android-settings-slide-in {
+    from {
+        transform: translateX(100%);
+    }
+    to {
+        transform: translateX(0);
+    }
+}
+
+/* ── Toolbar ────────────────────────────────────────────────────────────── */
+.android-settings-toolbar {
+    display: flex;
+    align-items: center;
+    height: 56px;
+    padding: 0 4px 0 4px;
+    background: var(--design-header-background, #fff);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+    flex-shrink: 0;
+    color: var(--design-header-color, #202124);
+}
+
+.android-settings-back {
+    width: 44px;
+    height: 44px;
+    border: none;
+    background: transparent;
+    color: inherit;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+.android-settings-back:hover {
+    background: rgba(0, 0, 0, 0.06);
+}
+
+.android-settings-toolbar-title {
+    font-size: 20px;
+    font-weight: 500;
+    flex: 1;
+    padding-left: 8px;
+}
+
+/* ── Profile card ───────────────────────────────────────────────────────── */
+.android-settings-profile {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 16px 20px;
+    background: var(--design-panel-background, #fff);
+    margin-bottom: 8px;
+    cursor: pointer;
+    transition: background 0.12s;
+}
+.android-settings-profile:hover {
+    background: var(--design-hover-background, rgba(0, 0, 0, 0.04));
+}
+
+.android-settings-avatar {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    overflow: hidden;
+    background: var(--android-accent, #229af0);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 26px;
+    font-weight: 500;
+    color: #fff;
+    flex-shrink: 0;
+}
+.android-settings-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.android-settings-profile-info {
+    flex: 1;
+    min-width: 0;
+}
+.android-settings-profile-name {
+    font-size: 17px;
+    font-weight: 600;
+    color: var(--design-header-color, #202124);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.android-settings-profile-phone {
+    font-size: 14px;
+    color: var(--android-accent, #229af0);
+    margin-top: 2px;
+}
+.android-settings-profile-bio {
+    font-size: 13px;
+    color: var(--design-muted-color, #707579);
+    margin-top: 1px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* ── Sections ───────────────────────────────────────────────────────────── */
+.android-settings-section {
+    background: var(--design-panel-background, #fff);
+    margin-bottom: 8px;
+}
+
+.android-settings-section-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--android-accent, #229af0);
+    padding: 14px 20px 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* ── Rows ───────────────────────────────────────────────────────────────── */
+.android-settings-row {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    padding: 14px 20px;
+    cursor: pointer;
+    transition: background 0.12s;
+    border: none;
+    background: transparent;
+    width: 100%;
+    text-align: left;
+    min-height: 56px;
+    box-sizing: border-box;
+}
+.android-settings-row:hover {
+    background: var(--design-hover-background, rgba(0, 0, 0, 0.04));
+}
+
+.android-settings-row-icon {
+    width: 24px;
+    height: 24px;
+    color: var(--android-text-secondary, #707579);
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+}
+.android-settings-row-icon svg {
+    font-size: 22px;
+}
+
+.android-settings-row-content {
+    flex: 1;
+    min-width: 0;
+}
+.android-settings-row-label {
+    font-size: 15px;
+    color: var(--design-page-color, #202124);
+    font-family: 'Roboto', sans-serif;
+}
+.android-settings-row-value {
+    font-size: 13px;
+    color: var(--design-muted-color, #707579);
+    margin-top: 1px;
+}
+
+.android-settings-row-arrow {
+    color: var(--design-muted-color, #c8c8c8);
+    display: flex;
+    align-items: center;
+}
+.android-settings-row-arrow svg {
+    font-size: 18px;
+}
+
+.android-settings-divider {
+    height: 1px;
+    background: var(--design-border-color, rgba(0, 0, 0, 0.08));
+    margin: 0 20px 0 62px;
+}
+
+/* Toggle switch */
+.android-settings-toggle {
+    width: 36px;
+    height: 20px;
+    border-radius: 10px;
+    background: rgba(0, 0, 0, 0.2);
+    position: relative;
+    cursor: pointer;
+    transition: background 0.2s;
+    flex-shrink: 0;
+    border: none;
+    padding: 0;
+}
+.android-settings-toggle.on {
+    background: var(--android-accent, #229af0);
+}
+.android-settings-toggle::after {
+    content: '';
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: #fff;
+    transition: transform 0.2s;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+.android-settings-toggle.on::after {
+    transform: translateX(16px);
+}
+
+/* ── Scroll content ─────────────────────────────────────────────────────── */
+.android-settings-content {
+    flex: 1;
+    overflow-y: auto;
+    padding-bottom: 16px;
+}
+
+/* ════════ VARIANTES ════════ */
+
+/* holo */
+body.design-android-holo .android-settings-overlay {
+    background: #0f1822;
+}
+body.design-android-holo .android-settings-toolbar {
+    background: #1a2633;
+    color: #e8edf0;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
+}
+body.design-android-holo .android-settings-toolbar-title {
+    color: #e8edf0;
+}
+body.design-android-holo .android-settings-back {
+    color: #00bcd4;
+}
+body.design-android-holo .android-settings-profile {
+    background: #1a2633;
+}
+body.design-android-holo .android-settings-profile-name {
+    color: #e8edf0;
+}
+body.design-android-holo .android-settings-profile-phone {
+    color: #00bcd4;
+}
+body.design-android-holo .android-settings-section {
+    background: #1a2633;
+}
+body.design-android-holo .android-settings-section-title {
+    color: #00bcd4;
+}
+body.design-android-holo .android-settings-row-label {
+    color: #d8e8f0;
+}
+body.design-android-holo .android-settings-row-icon {
+    color: #00bcd4;
+}
+body.design-android-holo .android-settings-divider {
+    background: rgba(255, 255, 255, 0.06);
+}
+body.design-android-holo .android-settings-toggle.on {
+    background: #00bcd4;
+}
+body.design-android-holo .android-settings-row {
+    border-radius: 0;
+}
+
+/* classic */
+body.design-android-classic .android-settings-toolbar {
+    background: #527da3;
+    color: #fff;
+}
+body.design-android-classic .android-settings-toolbar-title {
+    color: #fff;
+}
+body.design-android-classic .android-settings-back {
+    color: #fff;
+}
+body.design-android-classic .android-settings-section-title {
+    color: #527da3;
+}
+body.design-android-classic .android-settings-profile-phone {
+    color: #527da3;
+}
+body.design-android-classic .android-settings-row-icon {
+    color: #527da3;
+}
+body.design-android-classic .android-settings-toggle.on {
+    background: #527da3;
+}
+
+/* v9 */
+body.design-android-v9 .android-settings-toolbar {
+    background: #2ca5e0;
+    color: #fff;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+}
+body.design-android-v9 .android-settings-toolbar-title {
+    color: #fff;
+}
+body.design-android-v9 .android-settings-back {
+    color: #fff;
+}
+body.design-android-v9 .android-settings-section-title {
+    color: #2ca5e0;
+}
+body.design-android-v9 .android-settings-profile-phone {
+    color: #2ca5e0;
+}
+body.design-android-v9 .android-settings-row-icon {
+    color: #2ca5e0;
+}
+body.design-android-v9 .android-settings-toggle.on {
+    background: #2ca5e0;
+}
+
+/* v11 */
+body.design-android-v11 .android-settings-section-title {
+    color: #229af0;
+}
+body.design-android-v11 .android-settings-profile-phone {
+    color: #229af0;
+}
+body.design-android-v11 .android-settings-row-icon {
+    color: #229af0;
+}
+body.design-android-v11 .android-settings-toggle.on {
+    background: #229af0;
+}
+
+/* redesign */
+body.design-android-redesign .android-settings-section {
+    border-radius: 12px;
+    margin: 0 8px 8px;
+}
+body.design-android-redesign .android-settings-row {
+    border-radius: 8px;
+}
+body.design-android-redesign .android-settings-divider {
+    margin-left: 62px;
+}
+body.design-android-redesign .android-settings-section-title {
+    color: #229af0;
+}
+
+/* glass */
+body.design-android-glass .android-settings-overlay {
+    background: #e8f4f2;
+}
+body.design-android-glass .android-settings-toolbar {
+    background: rgba(255, 255, 255, 0.72);
+    backdrop-filter: blur(18px) saturate(150%);
+    -webkit-backdrop-filter: blur(18px) saturate(150%);
+    box-shadow: 0 1px 4px rgba(40, 201, 183, 0.1);
+    color: #1a2c30;
+}
+body.design-android-glass .android-settings-profile {
+    background: rgba(255, 255, 255, 0.72);
+    backdrop-filter: blur(12px);
+}
+body.design-android-glass .android-settings-section {
+    background: rgba(255, 255, 255, 0.72);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-radius: 16px;
+    margin: 0 8px 8px;
+}
+body.design-android-glass .android-settings-section-title {
+    color: #28c9b7;
+}
+body.design-android-glass .android-settings-profile-phone {
+    color: #28c9b7;
+}
+body.design-android-glass .android-settings-row-icon {
+    color: #1f9e88;
+}
+body.design-android-glass .android-settings-toggle.on {
+    background: #28c9b7;
+}
+body.design-android-glass .android-settings-divider {
+    background: rgba(40, 201, 183, 0.12);
+}
+
+/* dark mode base */
+body.theme-dark.design-android .android-settings-overlay {
+    background: #0f1822;
+}
+body.theme-dark.design-android .android-settings-toolbar {
+    background: #17212b;
+    color: #f0f4f8;
+}
+body.theme-dark.design-android .android-settings-profile {
+    background: #17212b;
+}
+body.theme-dark.design-android .android-settings-profile-name {
+    color: #f0f4f8;
+}
+body.theme-dark.design-android .android-settings-section {
+    background: #17212b;
+}
+body.theme-dark.design-android .android-settings-row-label {
+    color: #f0f4f8;
+}
+body.theme-dark.design-android .android-settings-row:hover {
+    background: rgba(255, 255, 255, 0.04);
+}
+body.theme-dark.design-android .android-settings-divider {
+    background: rgba(255, 255, 255, 0.07);
+}
+body.theme-dark.design-android-glass .android-settings-overlay {
+    background: #0d1a1e;
+}
+body.theme-dark.design-android-glass .android-settings-toolbar {
+    background: rgba(23, 33, 43, 0.82);
+    color: #d0e8e4;
+}
+body.theme-dark.design-android-glass .android-settings-profile {
+    background: rgba(23, 33, 43, 0.72);
+}
+body.theme-dark.design-android-glass .android-settings-section {
+    background: rgba(23, 33, 43, 0.72);
+}

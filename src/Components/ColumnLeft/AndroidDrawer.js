@@ -16,12 +16,13 @@ import UserStore from '../../Stores/UserStore';
 import OptionStore from '../../Stores/OptionStore';
 import ApplicationStore from '../../Stores/ApplicationStore';
 import TdLibController from '../../Controllers/TdLibController';
+import AndroidSettings from './AndroidSettings';
 import './AndroidDrawer.css';
 
 class AndroidDrawer extends React.PureComponent {
     constructor(props) {
         super(props);
-        this.state = { isDark: document.body.classList.contains('theme-dark') };
+        this.state = { isDark: document.body.classList.contains('theme-dark'), showSettings: false };
     }
 
     getMe() {
@@ -53,8 +54,7 @@ class AndroidDrawer extends React.PureComponent {
     };
 
     handleSettings = () => {
-        this.props.onClose();
-        TdLibController.clientUpdate({ '@type': 'clientUpdateAppearance' });
+        this.setState({ showSettings: true });
     };
 
     handleLogOut = () => {
@@ -64,7 +64,19 @@ class AndroidDrawer extends React.PureComponent {
 
     render() {
         const { onClose } = this.props;
-        const { isDark } = this.state;
+        const { isDark, showSettings } = this.state;
+
+        if (showSettings) {
+            return (
+                <AndroidSettings
+                    onClose={() => this.setState({ showSettings: false })}
+                    onAppearance={() => {
+                        this.setState({ showSettings: false });
+                        TdLibController.clientUpdate({ '@type': 'clientUpdateAppearance' });
+                    }}
+                />
+            );
+        }
         const me = this.getMe();
         const name = me ? getUserFullName(me) : 'Telegram';
         const phone = me ? (me.phone_number ? '+' + me.phone_number : '') : '';
