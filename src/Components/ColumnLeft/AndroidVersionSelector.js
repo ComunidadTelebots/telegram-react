@@ -12,25 +12,25 @@ import './AndroidVersionSelector.css';
 const ANDROID_VERSIONS = [
     {
         value: 'android',
-        label: 'v16',
+        label: '12.6.4',
         detail: 'Beta 12.6.4',
         tag: 'Glass',
     },
     {
         value: 'android-glass',
-        label: 'v15',
+        label: '12.6',
         detail: '12.6 Feb 9',
         tag: 'Redesign',
     },
     {
         value: 'android-redesign',
-        label: 'v14',
+        label: '12.5',
         detail: '12.5 pre-redesign',
         tag: 'Drawer',
     },
     {
         value: 'android-classic',
-        label: 'v13',
+        label: '7.x',
         detail: '7.x Classic',
         tag: 'Classic',
     },
@@ -101,7 +101,7 @@ class AndroidVersionSelector extends React.PureComponent {
                     onClick={this.handleToggle}
                     aria-haspopup='menu'
                     aria-expanded={open}>
-                    <span className='android-version-trigger-text'>Android {current.label}</span>
+                    <span className='android-version-trigger-text'>{current.detail}</span>
                     <KeyboardArrowDownIcon className='android-version-chevron' />
                 </button>
                 {open && (
@@ -117,7 +117,7 @@ class AndroidVersionSelector extends React.PureComponent {
                                     onClick={() => this.handleSelect(option.value)}>
                                     <span className='android-version-copy'>
                                         <span className='android-version-detail'>{option.detail}</span>
-                                        <span className='android-version-label'>Android {option.label}</span>
+                                        <span className='android-version-label'>{option.label}</span>
                                     </span>
                                     <span className='android-version-tag'>{option.tag}</span>
                                     {selected && <CheckIcon className='android-version-check' />}
