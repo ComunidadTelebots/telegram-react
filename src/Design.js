@@ -27,6 +27,32 @@ const DESIGNS = [
 ];
 const DEFAULT_DESIGN = 'current';
 
+export const DESIGN_LABELS = {
+    current: 'Web',
+    android: 'Android v16',
+    'android-glass': 'Android v15',
+    'android-redesign': 'Android v14',
+    'android-classic': 'Android v13',
+    ios: 'iOS',
+    macos: 'macOS',
+    tdesktop: 'Desktop',
+    unigram: 'Unigram',
+    aurora: 'Aurora',
+};
+
+export const DESIGN_ACCENTS = {
+    current: '#5b8af1',
+    android: '#229af0',
+    'android-glass': '#28c9b7',
+    'android-redesign': '#229af0',
+    'android-classic': '#527da3',
+    ios: '#007aff',
+    macos: '#248bf2',
+    tdesktop: '#40a7e3',
+    unigram: '#2b7fe0',
+    aurora: '#34d9a8',
+};
+
 export function getDesign() {
     return localStorage.getItem(DESIGN_KEY) || DEFAULT_DESIGN;
 }

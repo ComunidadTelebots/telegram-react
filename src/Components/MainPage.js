@@ -16,6 +16,7 @@ import ForwardDialog from './Popup/ForwardDialog';
 import NewGroupDialog from './Popup/NewGroupDialog';
 import NewChannelDialog from './Popup/NewChannelDialog';
 import ChatInfo from './ColumnRight/ChatInfo';
+import DesignSwitcher from './DesignSwitcher';
 import Dialogs from './ColumnLeft/Dialogs';
 import DialogDetails from './ColumnMiddle/DialogDetails';
 import Footer from './Footer';
@@ -35,9 +36,9 @@ import '../TelegramApp.css';
 const styles = theme => ({
     page: {
         background: theme.palette.type === 'dark' ? theme.palette.background.default : '#FFFFFF',
-        color: theme.palette.text.primary
+        color: theme.palette.text.primary,
     },
-    ...borderStyle(theme)
+    ...borderStyle(theme),
 });
 
 class MainPage extends React.Component {
@@ -54,7 +55,7 @@ class MainPage extends React.Component {
             instantViewContent: null,
             ampViewerUrl: null,
             newGroupOpen: false,
-            newChannelOpen: false
+            newChannelOpen: false,
         };
 
         /*this.store = localForage.createInstance({
@@ -94,7 +95,7 @@ class MainPage extends React.Component {
         const { content } = update;
 
         this.setState({
-            instantViewContent: content
+            instantViewContent: content,
         });
     };
 
@@ -112,7 +113,7 @@ class MainPage extends React.Component {
 
     onClientUpdateChatDetailsVisibility = update => {
         this.setState({
-            isChatDetailsVisible: ApplicationStore.isChatDetailsVisible
+            isChatDetailsVisible: ApplicationStore.isChatDetailsVisible,
         });
     };
 
@@ -122,7 +123,7 @@ class MainPage extends React.Component {
 
     onClientUpdateProfileMediaViewerContent = update => {
         this.setState({
-            profileMediaViewerContent: ApplicationStore.profileMediaViewerContent
+            profileMediaViewerContent: ApplicationStore.profileMediaViewerContent,
         });
     };
 
@@ -155,7 +156,7 @@ class MainPage extends React.Component {
             if (currentDialogChatId !== chatId) {
                 TdLibController.clientUpdate({
                     '@type': 'clientUpdateDialogChatId',
-                    chatId
+                    chatId,
                 });
             }
 
@@ -180,7 +181,7 @@ class MainPage extends React.Component {
         const chat = await TdLibController.send({
             '@type': 'createPrivateChat',
             user_id: userId,
-            force: true
+            force: true,
         });
 
         this.handleSelectChat(chat.id, null, popup);
@@ -196,14 +197,14 @@ class MainPage extends React.Component {
             profileMediaViewerContent,
             forwardInfo,
             newGroupOpen,
-            newChannelOpen
+            newChannelOpen,
         } = this.state;
 
         return (
             <>
                 <div
                     className={classNames(classes.page, classes.borderColor, 'page', {
-                        'page-third-column': isChatDetailsVisible
+                        'page-third-column': isChatDetailsVisible,
                     })}>
                     <Dialogs />
                     <DialogDetails ref={this.dialogDetailsRef} />
@@ -216,6 +217,7 @@ class MainPage extends React.Component {
                 {forwardInfo && <ForwardDialog {...forwardInfo} />}
                 <NewGroupDialog open={newGroupOpen} onClose={() => this.setState({ newGroupOpen: false })} />
                 <NewChannelDialog open={newChannelOpen} onClose={() => this.setState({ newChannelOpen: false })} />
+                <DesignSwitcher />
             </>
         );
     }
