@@ -1956,3 +1956,367 @@ body.theme-dark.design-android-glass .MuiMenu-paper {
 body.theme-dark.design-android-glass .MuiMenuItem-root {
     color: #d0e8e4 !important;
 }
+
+/* ════════════════════════════════════════════════════════════════════════════
+   NOVEDADES: Encuestas · Pinned · Separador · Servicio · Forward
+              Audio/Voz · Web preview · Documento — por variante Android
+   ════════════════════════════════════════════════════════════════════════════ */
+
+/* ── Pinned message bar ─────────────────────────────────────────────────── */
+body.design-android .pinned-message {
+    background: var(--design-header-background, #fff);
+    border-bottom-color: var(--android-separator);
+    min-height: 46px;
+}
+body.design-android .pinned-message-content-title {
+    color: var(--android-accent);
+    font-size: 13px;
+    font-weight: 600;
+}
+body.design-android .pinned-counter-bar {
+    background: var(--android-accent);
+    border-radius: 2px;
+}
+
+body.design-android-holo .pinned-message {
+    background: #1a2633;
+    border-bottom-color: rgba(255, 255, 255, 0.06);
+}
+body.design-android-holo .pinned-message-content-title {
+    color: #00bcd4;
+}
+body.design-android-holo .pinned-counter-bar {
+    background: #00bcd4;
+    border-radius: 0;
+}
+
+body.design-android-classic .pinned-message {
+    background: #527da3;
+    border-bottom-color: rgba(0, 0, 0, 0.1);
+}
+body.design-android-classic .pinned-message-content-title {
+    color: #ffffff;
+}
+body.design-android-classic .pinned-message-content-subtitle {
+    color: rgba(255, 255, 255, 0.85);
+}
+body.design-android-classic .pinned-counter-bar {
+    background: #ffffff;
+    border-radius: 0;
+}
+
+body.design-android-v9 .pinned-message {
+    background: #2ca5e0;
+    border-bottom-color: rgba(0, 0, 0, 0.08);
+}
+body.design-android-v9 .pinned-message-content-title {
+    color: #ffffff;
+}
+body.design-android-v9 .pinned-message-content-subtitle {
+    color: rgba(255, 255, 255, 0.85);
+}
+body.design-android-v9 .pinned-counter-bar {
+    background: #ffffff;
+}
+
+body.design-android-redesign .pinned-message {
+    border-radius: 0 0 12px 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+body.design-android-glass .pinned-message {
+    background: rgba(255, 255, 255, 0.72);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-bottom-color: rgba(40, 201, 183, 0.15);
+}
+body.design-android-glass .pinned-message-content-title {
+    color: #28c9b7;
+}
+body.design-android-glass .pinned-counter-bar {
+    background: #28c9b7;
+    border-radius: 2px;
+}
+
+/* ── Separador de no leídos ─────────────────────────────────────────────── */
+body.design-android .unread-separator {
+    color: var(--day-color);
+    background: var(--day-background);
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 500;
+    padding: 3px 10px;
+    margin: 6px auto;
+    display: inline-block;
+}
+body.design-android-holo .unread-separator {
+    border-radius: 2px;
+    background: rgba(0, 188, 212, 0.35);
+}
+body.design-android-classic .unread-separator {
+    border-radius: 4px;
+    background: rgba(82, 125, 163, 0.5);
+}
+body.design-android-glass .unread-separator {
+    background: rgba(40, 201, 183, 0.25);
+    backdrop-filter: blur(8px);
+    border-radius: 999px;
+}
+
+/* ── Mensajes de servicio ────────────────────────────────────────────────── */
+body.design-android .service-message-content {
+    border-radius: 14px;
+    font-size: 12px;
+    font-weight: 500;
+    padding: 3px 10px 4px;
+}
+body.design-android-holo .service-message-content {
+    border-radius: 2px;
+}
+body.design-android-classic .service-message-content {
+    border-radius: 4px;
+}
+body.design-android-redesign .service-message-content {
+    border-radius: 999px;
+}
+body.design-android-glass .service-message-content {
+    border-radius: 999px;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    background: rgba(40, 201, 183, 0.25);
+}
+
+/* ── Forward header ─────────────────────────────────────────────────────── */
+body.design-android .forward {
+    color: var(--android-accent);
+    font-size: 13px;
+    font-weight: 500;
+    border-left: 3px solid var(--android-accent);
+    padding-left: 8px;
+    margin-bottom: 4px;
+}
+body.design-android-holo .forward {
+    color: #00bcd4;
+    border-left-color: #00bcd4;
+    border-radius: 0;
+}
+body.design-android-classic .forward {
+    color: #527da3;
+    border-left-color: #527da3;
+    border-left-width: 2px;
+}
+body.design-android-v9 .forward {
+    color: #2ca5e0;
+    border-left-color: #2ca5e0;
+}
+body.design-android-glass .forward {
+    color: #28c9b7;
+    border-left-color: #28c9b7;
+    border-radius: 2px;
+}
+body.design-android-redesign .forward {
+    border-radius: 4px;
+    border-left-width: 4px;
+}
+
+/* ── Encuestas (Poll) ────────────────────────────────────────────────────── */
+body.design-android .poll {
+    min-width: 240px;
+}
+body.design-android .poll-question-title {
+    font-size: 15px;
+    font-weight: 600;
+}
+body.design-android .poll-option {
+    padding: 8px 0;
+}
+body.design-android .poll-option-bottom-border {
+    background: var(--android-separator);
+    height: 1px;
+}
+
+/* Barra de porcentaje de la encuesta */
+body.design-android .poll-percentage-filled {
+    background: var(--android-accent);
+    border-radius: 2px;
+}
+body.design-android-holo .poll-percentage-filled {
+    background: #00bcd4;
+    border-radius: 0;
+}
+body.design-android-classic .poll-percentage-filled {
+    background: #527da3;
+    border-radius: 1px;
+}
+body.design-android-v9 .poll-percentage-filled {
+    background: #2ca5e0;
+    border-radius: 2px;
+}
+body.design-android-redesign .poll-percentage-filled {
+    border-radius: 8px;
+}
+body.design-android-glass .poll-percentage-filled {
+    background: #28c9b7;
+    border-radius: 8px;
+}
+
+/* Radio de encuesta */
+body.design-android .poll-radio-button {
+    border-color: var(--android-accent);
+}
+body.design-android .poll-radio-filled {
+    background: var(--android-accent);
+}
+body.design-android-holo .poll-radio-button {
+    border-color: #00bcd4;
+    border-radius: 0;
+}
+body.design-android-holo .poll-radio-filled {
+    background: #00bcd4;
+    border-radius: 0;
+}
+body.design-android-classic .poll-radio-button {
+    border-color: #527da3;
+    border-radius: 2px;
+}
+body.design-android-classic .poll-radio-filled {
+    background: #527da3;
+    border-radius: 2px;
+}
+body.design-android-glass .poll-radio-button {
+    border-color: #28c9b7;
+}
+body.design-android-glass .poll-radio-filled {
+    background: #28c9b7;
+}
+
+/* ── Audio / Voz ─────────────────────────────────────────────────────────── */
+body.design-android .document {
+    min-width: 220px;
+    padding: 6px 4px;
+}
+body.design-android .document-title {
+    font-weight: 500;
+    font-size: 14px;
+}
+
+/* Barra de progreso de audio */
+body.design-android .voice-note-slider input[type='range'] {
+    accent-color: var(--android-accent);
+}
+body.design-android-holo .voice-note-slider input[type='range'] {
+    accent-color: #00bcd4;
+}
+body.design-android-classic .voice-note-slider input[type='range'] {
+    accent-color: #527da3;
+}
+body.design-android-v9 .voice-note-slider input[type='range'] {
+    accent-color: #2ca5e0;
+}
+body.design-android-glass .voice-note-slider input[type='range'] {
+    accent-color: #28c9b7;
+}
+
+/* ── Web page preview ───────────────────────────────────────────────────── */
+body.design-android .web-page-wrapper {
+    border-left: 3px solid var(--android-accent);
+    padding-left: 8px;
+    margin-top: 4px;
+    border-radius: 0 4px 4px 0;
+}
+body.design-android .web-page-site-name {
+    color: var(--android-accent);
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+}
+body.design-android .web-page-title {
+    font-size: 14px;
+    font-weight: 500;
+}
+body.design-android .web-page-description {
+    font-size: 13px;
+    opacity: 0.8;
+}
+body.design-android .web-page-button {
+    margin-top: 6px;
+    background: var(--android-accent);
+    color: #fff;
+    border-radius: var(--design-control-radius, 22px);
+    padding: 5px 14px;
+    font-size: 13px;
+    font-weight: 500;
+    border: none;
+    cursor: pointer;
+}
+
+body.design-android-holo .web-page-wrapper {
+    border-left-color: #00bcd4;
+    border-radius: 0;
+}
+body.design-android-holo .web-page-site-name {
+    color: #00bcd4;
+}
+body.design-android-holo .web-page-button {
+    background: #00bcd4;
+    border-radius: 2px;
+}
+
+body.design-android-classic .web-page-wrapper {
+    border-left-color: #527da3;
+    border-left-width: 2px;
+}
+body.design-android-classic .web-page-site-name {
+    color: #527da3;
+}
+body.design-android-classic .web-page-button {
+    background: #527da3;
+    border-radius: 2px;
+}
+
+body.design-android-v9 .web-page-wrapper {
+    border-left-color: #2ca5e0;
+}
+body.design-android-v9 .web-page-site-name {
+    color: #2ca5e0;
+}
+body.design-android-v9 .web-page-button {
+    background: #2ca5e0;
+    border-radius: 4px;
+}
+
+body.design-android-redesign .web-page-wrapper {
+    border-left-width: 4px;
+    border-radius: 0 8px 8px 0;
+}
+body.design-android-redesign .web-page-button {
+    border-radius: 16px;
+}
+
+body.design-android-glass .web-page-wrapper {
+    border-left-color: #28c9b7;
+    background: rgba(40, 201, 183, 0.05);
+    border-radius: 0 8px 8px 0;
+    backdrop-filter: blur(4px);
+}
+body.design-android-glass .web-page-site-name {
+    color: #28c9b7;
+}
+body.design-android-glass .web-page-button {
+    background: #28c9b7;
+    border-radius: 999px;
+}
+
+/* ── Dark mode novedades ─────────────────────────────────────────────────── */
+body.theme-dark.design-android .web-page-wrapper {
+    background: rgba(42, 171, 238, 0.05);
+}
+body.theme-dark.design-android .pinned-message {
+    background: #17212b;
+}
+body.theme-dark.design-android-holo .pinned-message {
+    background: #0f1c28;
+}
+body.theme-dark.design-android-glass .pinned-message {
+    background: rgba(23, 33, 43, 0.72);
+}
