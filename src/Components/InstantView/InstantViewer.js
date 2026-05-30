@@ -29,21 +29,21 @@ import './InstantViewer.css';
 const styles = theme => ({
     instantViewer: {
         background: theme.palette.type === 'dark' ? theme.palette.background.default : '#FFFFFF',
-        color: theme.palette.text.primary
+        color: theme.palette.text.primary,
     },
     leftButton: {
         color: theme.palette.text.secondary,
         position: 'fixed',
         top: 0,
         left: 0,
-        bottom: 0
+        bottom: 0,
     },
     closeButton: {
         color: theme.palette.text.secondary,
         position: 'fixed',
         top: 0,
-        right: 0
-    }
+        right: 0,
+    },
 });
 
 class InstantViewer extends React.Component {
@@ -66,7 +66,7 @@ class InstantViewer extends React.Component {
                 hasScroll: false,
                 media: null,
                 caption: null,
-                url: null
+                url: null,
             };
         }
 
@@ -181,7 +181,7 @@ class InstantViewer extends React.Component {
 
             hiddenElement.scrollIntoView({
                 block: 'center',
-                behavior
+                behavior,
             });
 
             return true;
@@ -199,7 +199,7 @@ class InstantViewer extends React.Component {
                 setTimeout(() => {
                     element.scrollTo({
                         top: 0,
-                        behavior: 'smooth'
+                        behavior: 'smooth',
                     });
                 }, 50);
                 break;
@@ -207,7 +207,7 @@ class InstantViewer extends React.Component {
             default: {
                 element.scrollTo({
                     top: 0,
-                    behavior
+                    behavior,
                 });
             }
         }
@@ -270,7 +270,7 @@ class InstantViewer extends React.Component {
 
         if (hasPrev) {
             TdLibController.clientUpdate({
-                '@type': 'clientUpdatePrevInstantView'
+                '@type': 'clientUpdatePrevInstantView',
             });
             return;
         }
@@ -281,7 +281,7 @@ class InstantViewer extends React.Component {
     handleScroll = () => {
         const element = this.instantViewerRef.current;
         this.setState({
-            hasScroll: element.scrollTop > 50
+            hasScroll: element.scrollTop > 50,
         });
 
         this.updateItemsInView();
@@ -294,6 +294,8 @@ class InstantViewer extends React.Component {
         if (!instantView) return;
 
         const { page_blocks } = instantView;
+        if (!page_blocks || !page_blocks.length) return;
+        if (!this.articleRef || !this.articleRef.current) return;
 
         const blocks = new Map();
         const items = itemsInView(this.instantViewerRef, this.articleRef);
@@ -308,7 +310,7 @@ class InstantViewer extends React.Component {
 
         TdLibController.clientUpdate({
             '@type': 'clientUpdateBlocksInView',
-            blocks
+            blocks,
         });
     }
 
@@ -331,7 +333,7 @@ class InstantViewer extends React.Component {
                             <NavigateBeforeIcon
                                 style={{
                                     transition: 'transform 0.25s ease-out',
-                                    transform: hasScroll ? 'rotate(90deg)' : 'rotate(0deg)'
+                                    transform: hasScroll ? 'rotate(90deg)' : 'rotate(0deg)',
                                 }}
                             />
                         </MediaViewerButton>
@@ -354,12 +356,9 @@ class InstantViewer extends React.Component {
 }
 
 InstantViewer.propTypes = {
-    instantView: PropTypes.object.isRequired
+    instantView: PropTypes.object.isRequired,
 };
 
-const enhance = compose(
-    withStyles(styles),
-    withTranslation()
-);
+const enhance = compose(withStyles(styles), withTranslation());
 
 export default enhance(InstantViewer);

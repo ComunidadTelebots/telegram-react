@@ -17,11 +17,15 @@ export async function openInstantView(url) {
         const result = await TdLibController.send({
             '@type': 'getWebPageInstantView',
             url,
-            force_full: true
+            force_full: true,
         });
         if (timestamp !== now) return;
 
         console.log('[IV] open', result);
+        // If result has no page_blocks the server returned no instant view — fall back to browser
+        if (!result || !result['@type'] || !result.page_blocks || !result.page_blocks.length) {
+            throw new Error('no instant view');
+        }
         loadInstantViewContent(result);
         setInstantViewContent({ instantView: result });
     } catch {
