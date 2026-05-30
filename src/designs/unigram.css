@@ -46,6 +46,7 @@ body.design-unigram {
     --design-panel-background: var(--unigram-surface);
     --design-header-background: var(--unigram-surface);
     --design-header-color: #202020;
+    --design-header-muted-color: var(--unigram-text-secondary);
     --design-input-background: var(--unigram-surface);
     --design-input-surface: #ffffff;
     --design-border-color: var(--unigram-border);

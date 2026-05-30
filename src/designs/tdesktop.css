@@ -40,6 +40,7 @@ body.design-tdesktop {
     --design-input-surface: #ffffff;
     --design-border-color: #e7e7e7;
     --design-muted-color: #707579;
+    --design-header-muted-color: #707579;
     --design-hover-background: rgba(0, 0, 0, 0.04);
     --design-active-background: #d4e8f7;
     --design-dialog-radius: 0;

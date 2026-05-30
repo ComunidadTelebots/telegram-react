@@ -53,6 +53,7 @@ body.design-macos {
     --design-input-surface: #ffffff;
     --design-border-color: var(--macos-separator);
     --design-muted-color: var(--macos-text-secondary);
+    --design-header-muted-color: var(--macos-text-secondary);
     --design-hover-background: var(--macos-row-hover);
     --design-active-background: var(--macos-row-active);
     --design-dialog-radius: 8px;
@@ -350,6 +351,7 @@ body.theme-dark.design-macos {
     --design-input-surface: #2c2c2e;
     --design-border-color: var(--macos-separator);
     --design-muted-color: var(--macos-text-secondary);
+    --design-header-muted-color: rgba(235, 235, 245, 0.6);
     --design-hover-background: var(--macos-row-hover);
     --design-active-background: var(--macos-row-active);
 }

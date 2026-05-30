@@ -12,6 +12,7 @@
     --design-panel-background: #ffffff;
     --design-header-background: #ffffff;
     --design-header-color: #111111;
+    --design-header-muted-color: rgba(0, 0, 0, 0.56);
     --design-input-background: #e6ebee;
     --design-input-surface: #ffffff;
     --design-border-color: rgba(0, 0, 0, 0.12);
@@ -77,11 +78,16 @@ body[class*='design-'] .header-status-content {
     color: var(--design-header-color) !important;
 }
 
+/* Subtítulo del header (tipicamente sobre fondo de color en algunos diseños) */
 body[class*='design-'] .header-status-title,
-body[class*='design-'] .dialog-content,
-body[class*='design-'] .dialog-meta,
 body[class*='design-'] .chat-status,
 body[class*='design-'] .user-status-control {
+    color: var(--design-header-muted-color) !important;
+}
+
+/* Texto secundario en la lista de chats */
+body[class*='design-'] .dialog-content,
+body[class*='design-'] .dialog-meta {
     color: var(--design-muted-color) !important;
 }
 

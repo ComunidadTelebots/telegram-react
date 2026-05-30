@@ -62,6 +62,7 @@ body.design-aurora {
     --design-input-surface: var(--aurora-panel);
     --design-border-color: var(--aurora-separator);
     --design-muted-color: var(--aurora-text-secondary);
+    --design-header-muted-color: var(--aurora-text-secondary);
     --design-hover-background: var(--aurora-row-hover);
     --design-active-background: var(--aurora-row-active);
     --design-dialog-radius: 6px;

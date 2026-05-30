@@ -14,6 +14,7 @@ body.design-current {
     --design-input-surface: #ffffff;
     --design-border-color: rgba(0, 0, 0, 0.12);
     --design-muted-color: #707579;
+    --design-header-muted-color: #707579;
     --design-hover-background: rgba(91, 138, 241, 0.08);
     --design-active-background: rgba(91, 138, 241, 0.18);
     --design-dialog-radius: 0;

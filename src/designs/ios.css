@@ -53,6 +53,7 @@ body.design-ios {
     --design-input-surface: #ffffff;
     --design-border-color: var(--ios-separator);
     --design-muted-color: var(--ios-text-secondary);
+    --design-header-muted-color: var(--ios-text-secondary);
     --design-hover-background: var(--ios-row-hover);
     --design-active-background: rgba(0, 122, 255, 0.12);
     --design-dialog-radius: 0;
@@ -147,7 +148,22 @@ body.design-ios .header-status {
 
 body.design-ios .header-status-title {
     font-size: 13px;
-    color: var(--ios-text-secondary);
+    color: var(--ios-text-secondary) !important;
+}
+
+body.design-ios .header-left-button,
+body.design-ios .header-right-button {
+    color: var(--ios-blue) !important;
+}
+
+body.design-ios .dialog-badge {
+    border-radius: 10px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+body.design-ios .dialog-wrapper {
+    border-bottom: 1px solid rgba(60, 60, 67, 0.1);
 }
 
 body.design-ios .message-wrapper {

@@ -45,6 +45,7 @@ body.design-android {
     --design-panel-background: #ffffff;
     --design-header-background: var(--android-primary);
     --design-header-color: #ffffff;
+    --design-header-muted-color: rgba(255, 255, 255, 0.78);
     --design-input-background: transparent;
     --design-input-surface: #ffffff;
     --design-border-color: var(--android-separator);
@@ -123,6 +124,19 @@ body.design-android .dialog-active .dialog-wrapper:hover {
 body.design-android .dialog-title {
     font-size: 15px;
     font-weight: 500;
+}
+
+body.design-android .header-left-button,
+body.design-android .header-right-button {
+    color: #ffffff !important;
+}
+
+body.design-android .dialog-badge {
+    border-radius: 12px;
+    font-size: 12px;
+    min-width: 20px;
+    height: 20px;
+    padding: 0 5px;
 }
 
 body.design-android .dialog-content,
@@ -309,6 +323,7 @@ body.theme-dark.design-android {
     --design-panel-background: #17212b;
     --design-header-background: var(--android-primary);
     --design-header-color: #ffffff;
+    --design-header-muted-color: rgba(255, 255, 255, 0.72);
     --design-input-background: transparent;
     --design-input-surface: #182533;
     --design-border-color: var(--android-separator);
