@@ -1,0 +1,334 @@
+/*
+ * Telegram for iOS design.
+ * Recreated from the official iOS client: iPhone blue bubbles (#007AFF),
+ * iOS gray incoming bubbles, SF Pro typography, pill-shaped composer,
+ * no bubble tails, frosted sidebar.
+ */
+
+body.design-ios {
+    font: 15px/20px -apple-system, 'SF Pro Text', 'Helvetica Neue', Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+
+    --ios-blue: #007aff;
+    --ios-blue-active: #0a84ff;
+    --ios-sidebar: #f2f2f7;
+    --ios-sidebar-border: rgba(60, 60, 67, 0.16);
+    --ios-chat-bg: #ffffff;
+    --ios-separator: rgba(60, 60, 67, 0.18);
+    --ios-text-secondary: rgba(60, 60, 67, 0.6);
+    --ios-row-hover: rgba(0, 0, 0, 0.04);
+
+    --message-out-background: #007aff;
+    --message-out-color: #ffffff;
+    --message-out-link: rgba(255, 255, 255, 0.92);
+    --message-out-author: rgba(255, 255, 255, 0.88);
+    --message-out-meta-color: rgba(255, 255, 255, 0.68);
+    --message-out-reply-title: rgba(255, 255, 255, 0.92);
+    --message-out-reply-border: rgba(255, 255, 255, 0.5);
+
+    --message-in-background: #e9e9eb;
+    --message-in-color: #000000;
+    --message-in-link: #007aff;
+    --message-in-author: #007aff;
+    --message-in-meta-color: rgba(60, 60, 67, 0.56);
+    --message-in-reply-title: #007aff;
+    --message-in-reply-border: #007aff;
+
+    --badge-green: #34c759;
+    --indicator-green: #34c759;
+    --day-background: rgba(120, 120, 128, 0.2);
+    --day-color: rgba(60, 60, 67, 0.72);
+    --color-accent-main: #007aff;
+    --shadow-bubble: none;
+
+    --design-page-background: #ffffff;
+    --design-page-color: #000000;
+    --design-sidebar-background: var(--ios-sidebar);
+    --design-middle-background: var(--ios-chat-bg);
+    --design-panel-background: #ffffff;
+    --design-header-background: rgba(242, 242, 247, 0.92);
+    --design-header-color: #000000;
+    --design-input-background: rgba(242, 242, 247, 0.92);
+    --design-input-surface: #ffffff;
+    --design-border-color: var(--ios-separator);
+    --design-muted-color: var(--ios-text-secondary);
+    --design-hover-background: var(--ios-row-hover);
+    --design-active-background: rgba(0, 122, 255, 0.12);
+    --design-dialog-radius: 0;
+    --design-control-radius: 20px;
+    --design-message-wrapper-max-width: 900px;
+    --design-message-wrapper-padding: 2px 16px;
+    --design-message-content-max-width: 520px;
+    --design-message-radius-in: 18px 18px 18px 4px;
+    --design-message-radius-out: 18px 18px 4px 18px;
+    --design-message-radius-short: 18px;
+    --design-message-padding: 7px 12px;
+    --design-message-shadow: none;
+    --design-message-tail-display: none;
+}
+
+body.design-ios .dialogs {
+    width: 320px;
+    min-width: 320px;
+    max-width: 320px;
+    flex: none;
+    background: var(--ios-sidebar);
+    border-right: 1px solid var(--ios-sidebar-border);
+}
+
+body.design-ios .dialog-details {
+    width: calc(100% - 320px);
+    flex: 1;
+}
+
+body.design-ios .messages-list,
+body.design-ios .messages-list-wrapper {
+    background: var(--ios-chat-bg);
+}
+
+body.design-ios .folder-tabs {
+    padding: 6px 10px 7px;
+    gap: 6px;
+}
+
+body.design-ios .folder-tab {
+    border-radius: 20px;
+    padding: 5px 12px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--ios-text-secondary);
+}
+
+body.design-ios .folder-tab-active {
+    background: rgba(0, 122, 255, 0.12);
+    color: var(--ios-blue);
+}
+
+body.design-ios .dialog-wrapper {
+    min-height: 60px;
+    padding: 8px 12px;
+    border-radius: 0;
+    box-sizing: border-box;
+}
+
+body.design-ios .dialog-wrapper:hover {
+    background: var(--ios-row-hover);
+}
+
+body.design-ios .dialog-active .dialog-wrapper,
+body.design-ios .dialog-active .dialog-wrapper:hover {
+    background: rgba(0, 122, 255, 0.1);
+}
+
+body.design-ios .dialog-title {
+    font-size: 15px;
+    font-weight: 600;
+}
+
+body.design-ios .dialog-content,
+body.design-ios .dialog-meta {
+    font-size: 14px;
+    color: var(--ios-text-secondary);
+}
+
+body.design-ios .header-details {
+    min-height: 52px;
+    background: rgba(242, 242, 247, 0.92);
+    border-bottom: 1px solid var(--ios-separator);
+    box-shadow: none;
+    backdrop-filter: saturate(180%) blur(20px);
+}
+
+body.design-ios .header-status {
+    font: 600 15px/20px -apple-system, 'SF Pro Text', Arial, sans-serif;
+    padding: 0 16px;
+}
+
+body.design-ios .header-status-title {
+    font-size: 13px;
+    color: var(--ios-text-secondary);
+}
+
+body.design-ios .message-wrapper {
+    max-width: 900px;
+    padding: 2px 16px;
+}
+
+body.design-ios .message-content {
+    max-width: 520px;
+    min-height: 30px;
+}
+
+body.design-ios .message-bubble {
+    border-radius: 18px 18px 18px 4px;
+    padding: 7px 12px;
+    background: var(--message-in-background);
+    color: var(--message-in-color);
+    box-shadow: none;
+}
+
+body.design-ios .message-bubble-out {
+    border-radius: 18px 18px 4px 18px;
+    background: var(--message-out-background);
+    color: var(--message-out-color);
+}
+
+body.design-ios .message-bubble::after,
+body.design-ios .message-bubble-out::after {
+    content: none;
+}
+
+body.design-ios .message-short .message-bubble {
+    border-radius: 18px;
+}
+
+body.design-ios .message-bubble-out .message-text,
+body.design-ios .message-bubble-out .message-body,
+body.design-ios .message-bubble-out p,
+body.design-ios .message-bubble-out span,
+body.design-ios .message-bubble-out code {
+    color: #ffffff;
+}
+
+body.design-ios .message-title {
+    font-size: 14px;
+    font-weight: 600;
+}
+
+body.design-ios .day-meta-wrapper {
+    border-radius: 12px;
+    padding: 3px 8px;
+    font-size: 12px;
+    font-weight: 500;
+    background: var(--day-background);
+    color: var(--day-color);
+    box-shadow: none;
+}
+
+body.design-ios .inputbox-background {
+    background: rgba(242, 242, 247, 0.92);
+    border-top: 1px solid var(--ios-separator);
+    backdrop-filter: saturate(180%) blur(20px);
+}
+
+body.design-ios .inputbox {
+    width: calc(100% - 24px);
+    max-width: 760px;
+    padding: 8px 0 12px;
+    border-top: 0;
+}
+
+body.design-ios .inputbox-bubble {
+    min-height: 36px;
+    border-radius: 20px;
+    margin-right: 8px;
+    background: #ffffff;
+    border: 1px solid rgba(60, 60, 67, 0.18);
+    box-shadow: none;
+}
+
+body.design-ios .inputbox-bubble::after {
+    content: none;
+}
+
+body.design-ios #inputbox-message {
+    padding: 8px 2px;
+    font-size: 15px;
+    line-height: 20px;
+}
+
+body.design-ios .inputbox-icon-button {
+    margin: 4px 6px;
+    padding: 6px;
+    color: var(--ios-blue);
+}
+
+body.design-ios .inputbox-right-column {
+    margin-left: 8px;
+}
+
+body.design-ios .inputbox-send-button {
+    min-width: 36px;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: var(--ios-blue);
+    box-shadow: none;
+    color: #ffffff;
+}
+
+body.design-ios .inputbox-send-button:hover {
+    background: var(--ios-blue-active);
+}
+
+body.design-ios ::-webkit-scrollbar {
+    width: 0;
+}
+
+body.design-ios ::selection {
+    background: rgba(0, 122, 255, 0.28);
+}
+
+/* ── Dark mode ──────────────────────────────────────────────────────────── */
+body.theme-dark.design-ios {
+    --ios-blue: #0a84ff;
+    --ios-blue-active: #409cff;
+    --ios-sidebar: #1c1c1e;
+    --ios-sidebar-border: rgba(255, 255, 255, 0.1);
+    --ios-chat-bg: #000000;
+    --ios-separator: rgba(255, 255, 255, 0.14);
+    --ios-text-secondary: rgba(235, 235, 245, 0.6);
+    --ios-row-hover: rgba(255, 255, 255, 0.06);
+
+    --message-out-background: #0a84ff;
+    --message-out-color: #ffffff;
+    --message-out-meta-color: rgba(255, 255, 255, 0.68);
+
+    --message-in-background: #2c2c2e;
+    --message-in-color: #ffffff;
+    --message-in-link: #0a84ff;
+    --message-in-author: #0a84ff;
+    --message-in-meta-color: rgba(235, 235, 245, 0.56);
+    --message-in-reply-title: #0a84ff;
+    --message-in-reply-border: #0a84ff;
+
+    --badge-green: #30d158;
+    --indicator-green: #30d158;
+    --day-background: rgba(120, 120, 128, 0.28);
+    --day-color: rgba(235, 235, 245, 0.72);
+    --color-accent-main: #0a84ff;
+
+    --design-page-background: #000000;
+    --design-page-color: #ffffff;
+    --design-sidebar-background: var(--ios-sidebar);
+    --design-middle-background: var(--ios-chat-bg);
+    --design-panel-background: #1c1c1e;
+    --design-header-background: rgba(28, 28, 30, 0.88);
+    --design-header-color: #ffffff;
+    --design-input-background: rgba(28, 28, 30, 0.88);
+    --design-input-surface: #2c2c2e;
+    --design-border-color: var(--ios-separator);
+    --design-muted-color: var(--ios-text-secondary);
+    --design-hover-background: var(--ios-row-hover);
+    --design-active-background: rgba(10, 132, 255, 0.2);
+}
+
+body.theme-dark.design-ios .dialogs {
+    background: var(--ios-sidebar);
+}
+
+body.theme-dark.design-ios .messages-list,
+body.theme-dark.design-ios .messages-list-wrapper {
+    background: var(--ios-chat-bg);
+}
+
+body.theme-dark.design-ios .header-details,
+body.theme-dark.design-ios .inputbox-background {
+    background: rgba(28, 28, 30, 0.88);
+}
+
+body.theme-dark.design-ios .inputbox-bubble {
+    background: #2c2c2e;
+    border-color: rgba(255, 255, 255, 0.12);
+}

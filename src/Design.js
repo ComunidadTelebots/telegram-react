@@ -5,13 +5,15 @@
 
 import './designs/current.css';
 import './designs/android.css';
+import './designs/ios.css';
 import './designs/macos.css';
 import './designs/tdesktop.css';
 import './designs/unigram.css';
+import './designs/aurora.css';
 import './designs/shell.css';
 
 const DESIGN_KEY = 'tg_design';
-const DESIGNS = ['current', 'android', 'macos', 'tdesktop', 'unigram'];
+const DESIGNS = ['current', 'android', 'ios', 'macos', 'tdesktop', 'unigram', 'aurora'];
 const DEFAULT_DESIGN = 'current';
 
 export function getDesign() {

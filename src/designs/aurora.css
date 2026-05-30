@@ -1,0 +1,298 @@
+/*
+ * Aurora — diseño original oscuro.
+ * Inspirado en el design system de ComunidadTelebots:
+ * dark background, mint-teal accent (#34D9A8), burbujas sin cola,
+ * tipografía Manrope/Inter, sidebar oscuro.
+ * Solo existe en modo oscuro (ignora theme-light).
+ */
+
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&display=swap');
+
+body.design-aurora {
+    font: 15px/20px 'Manrope', 'Inter', system-ui, -apple-system, sans-serif;
+    -webkit-font-smoothing: antialiased;
+
+    --aurora-accent: #34d9a8;
+    --aurora-accent-dark: #28b58d;
+    --aurora-bg: #0d1117;
+    --aurora-sidebar: #161b22;
+    --aurora-panel: #21262d;
+    --aurora-bubble-in: #21262d;
+    --aurora-bubble-out: #1a3a2e;
+    --aurora-separator: rgba(255, 255, 255, 0.08);
+    --aurora-text-primary: #e6edf3;
+    --aurora-text-secondary: #8b949e;
+    --aurora-row-hover: rgba(255, 255, 255, 0.04);
+    --aurora-row-active: rgba(52, 217, 168, 0.14);
+
+    --message-in-background: var(--aurora-bubble-in);
+    --message-in-color: var(--aurora-text-primary);
+    --message-in-link: var(--aurora-accent);
+    --message-in-author: var(--aurora-accent);
+    --message-in-meta-color: var(--aurora-text-secondary);
+    --message-in-reply-title: var(--aurora-accent);
+    --message-in-reply-border: var(--aurora-accent);
+
+    --message-out-background: var(--aurora-bubble-out);
+    --message-out-color: var(--aurora-text-primary);
+    --message-out-link: var(--aurora-accent);
+    --message-out-author: var(--aurora-accent);
+    --message-out-meta-color: rgba(52, 217, 168, 0.72);
+    --message-out-reply-title: var(--aurora-accent);
+    --message-out-reply-border: var(--aurora-accent);
+
+    --badge-green: var(--aurora-accent);
+    --badge-gray: rgba(255, 255, 255, 0.3);
+    --indicator-green: var(--aurora-accent);
+    --day-background: rgba(33, 38, 45, 0.9);
+    --day-color: var(--aurora-text-secondary);
+    --color-accent-main: var(--aurora-accent);
+    --fg-placeholder: rgba(255, 255, 255, 0.35);
+    --shadow-bubble: 0 1px 3px rgba(0, 0, 0, 0.4);
+    --mark-bg: rgba(52, 217, 168, 0.25);
+
+    --design-page-background: var(--aurora-bg);
+    --design-page-color: var(--aurora-text-primary);
+    --design-sidebar-background: var(--aurora-sidebar);
+    --design-middle-background: var(--aurora-bg);
+    --design-panel-background: var(--aurora-sidebar);
+    --design-header-background: var(--aurora-sidebar);
+    --design-header-color: var(--aurora-text-primary);
+    --design-input-background: var(--aurora-bg);
+    --design-input-surface: var(--aurora-panel);
+    --design-border-color: var(--aurora-separator);
+    --design-muted-color: var(--aurora-text-secondary);
+    --design-hover-background: var(--aurora-row-hover);
+    --design-active-background: var(--aurora-row-active);
+    --design-dialog-radius: 6px;
+    --design-control-radius: 16px;
+    --design-message-wrapper-max-width: 880px;
+    --design-message-wrapper-padding: 3px 20px 3px 8px;
+    --design-message-content-max-width: 540px;
+    --design-message-radius-in: 14px 14px 14px 4px;
+    --design-message-radius-out: 14px 14px 4px 14px;
+    --design-message-radius-short: 14px;
+    --design-message-padding: 7px 11px;
+    --design-message-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+    --design-message-tail-display: none;
+}
+
+body.design-aurora .dialogs {
+    width: 330px;
+    min-width: 330px;
+    max-width: 330px;
+    flex: none;
+    background: var(--aurora-sidebar);
+    border-right: 1px solid var(--aurora-separator);
+}
+
+body.design-aurora .dialog-details {
+    width: calc(100% - 330px);
+    flex: 1;
+}
+
+body.design-aurora .messages-list,
+body.design-aurora .messages-list-wrapper {
+    background: var(--aurora-bg);
+}
+
+body.design-aurora .folder-tabs {
+    padding: 8px 10px 7px;
+    gap: 4px;
+}
+
+body.design-aurora .folder-tab {
+    border-radius: 8px;
+    padding: 5px 12px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--aurora-text-secondary);
+    letter-spacing: 0.01em;
+}
+
+body.design-aurora .folder-tab-active {
+    background: var(--aurora-row-active);
+    color: var(--aurora-accent);
+}
+
+body.design-aurora .dialog-wrapper {
+    min-height: 62px;
+    padding: 8px 12px 8px 10px;
+    border-radius: 6px;
+    margin: 0 6px 1px;
+    box-sizing: border-box;
+}
+
+body.design-aurora .dialog-wrapper:hover {
+    background: var(--aurora-row-hover);
+}
+
+body.design-aurora .dialog-active .dialog-wrapper,
+body.design-aurora .dialog-active .dialog-wrapper:hover {
+    background: var(--aurora-row-active);
+}
+
+body.design-aurora .dialog-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--aurora-text-primary);
+}
+
+body.design-aurora .dialog-content,
+body.design-aurora .dialog-meta {
+    font-size: 13px;
+    color: var(--aurora-text-secondary);
+}
+
+body.design-aurora .accent-background .dialog-title,
+body.design-aurora .accent-background .dialog-content,
+body.design-aurora .accent-background .dialog-meta {
+    color: var(--aurora-text-primary);
+}
+
+body.design-aurora .header-details {
+    min-height: 56px;
+    background: var(--aurora-sidebar);
+    border-bottom: 1px solid var(--aurora-separator);
+    box-shadow: none;
+}
+
+body.design-aurora .header-status {
+    font: 600 15px/20px 'Manrope', 'Inter', system-ui, sans-serif;
+    padding: 0 16px;
+    color: var(--aurora-text-primary);
+}
+
+body.design-aurora .header-status-title {
+    font-size: 13px;
+    color: var(--aurora-text-secondary);
+}
+
+body.design-aurora .message-wrapper {
+    max-width: 880px;
+    padding: 3px 20px 3px 8px;
+}
+
+body.design-aurora .message-content {
+    max-width: 540px;
+    min-height: 32px;
+}
+
+body.design-aurora .message-bubble {
+    border-radius: 14px 14px 14px 4px;
+    padding: 7px 11px;
+    background: var(--message-in-background);
+    color: var(--message-in-color);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+}
+
+body.design-aurora .message-bubble-out {
+    border-radius: 14px 14px 4px 14px;
+    background: var(--message-out-background);
+    color: var(--message-out-color);
+}
+
+body.design-aurora .message-bubble::after,
+body.design-aurora .message-bubble-out::after {
+    content: none;
+}
+
+body.design-aurora .message-short .message-bubble {
+    border-radius: 14px;
+}
+
+body.design-aurora .message-title {
+    font-size: 13px;
+    font-weight: 600;
+}
+
+body.design-aurora .day-meta-wrapper {
+    border-radius: 8px;
+    padding: 3px 10px;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    background: var(--day-background);
+    color: var(--day-color);
+}
+
+body.design-aurora .inputbox-background {
+    background: var(--aurora-bg);
+    border-top: 1px solid var(--aurora-separator);
+}
+
+body.design-aurora .inputbox {
+    width: calc(100% - 24px);
+    max-width: 760px;
+    padding: 10px 0 14px;
+    border-top: 0;
+}
+
+body.design-aurora .inputbox-bubble {
+    min-height: 40px;
+    border-radius: 16px;
+    margin-right: 10px;
+    background: var(--aurora-panel);
+    border: 1px solid var(--aurora-separator);
+    box-shadow: none;
+}
+
+body.design-aurora .inputbox-bubble::after {
+    content: none;
+}
+
+body.design-aurora #inputbox-message {
+    padding: 10px 2px;
+    font-size: 15px;
+    line-height: 20px;
+    color: var(--aurora-text-primary);
+}
+
+body.design-aurora .inputbox-icon-button {
+    margin: 6px 7px;
+    padding: 6px;
+    color: var(--aurora-text-secondary);
+}
+
+body.design-aurora .inputbox-icon-button:hover {
+    color: var(--aurora-accent);
+}
+
+body.design-aurora .inputbox-right-column {
+    margin-left: 8px;
+}
+
+body.design-aurora .inputbox-send-button {
+    min-width: 40px;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--aurora-accent);
+    box-shadow: 0 2px 8px rgba(52, 217, 168, 0.35);
+    color: #0d1117;
+}
+
+body.design-aurora .inputbox-send-button:hover {
+    background: var(--aurora-accent-dark);
+}
+
+body.design-aurora ::-webkit-scrollbar {
+    width: 5px;
+}
+
+body.design-aurora ::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+body.design-aurora ::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.16);
+    border-radius: 5px;
+}
+
+body.design-aurora ::-webkit-scrollbar-thumb:hover {
+    background: rgba(52, 217, 168, 0.4);
+}
+
+body.design-aurora ::selection {
+    background: rgba(52, 217, 168, 0.28);
+}

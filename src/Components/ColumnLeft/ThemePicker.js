@@ -29,54 +29,54 @@ import { getDesign, setDesign, DESIGNS } from '../../Design';
 
 const styles = theme => ({
     formControl: {
-        margin: theme.spacing(3)
+        margin: theme.spacing(3),
     },
     group: {
-        margin: `${theme.spacing(1)}px 0`
+        margin: `${theme.spacing(1)}px 0`,
     },
     redRoot: {
         color: red[600],
         '&$checked': {
-            color: red[500]
-        }
+            color: red[500],
+        },
     },
     orangeRoot: {
         color: orange[600],
         '&$checked': {
-            color: orange[500]
-        }
+            color: orange[500],
+        },
     },
     amberRoot: {
         color: amber[600],
         '&$checked': {
-            color: amber[500]
-        }
+            color: amber[500],
+        },
     },
     greenRoot: {
         color: green[600],
         '&$checked': {
-            color: green[500]
-        }
+            color: green[500],
+        },
     },
     blueRoot: {
         color: '#5B8AF1',
         '&$checked': {
-            color: '#5B8AF1'
-        }
+            color: '#5B8AF1',
+        },
     },
     indigoRoot: {
         color: indigo[600],
         '&$checked': {
-            color: indigo[500]
-        }
+            color: indigo[500],
+        },
     },
     deepPurpleRoot: {
         color: deepPurple[600],
         '&$checked': {
-            color: deepPurple[500]
-        }
+            color: deepPurple[500],
+        },
     },
-    checked: {}
+    checked: {},
 });
 
 class ThemePicker extends React.Component {
@@ -87,7 +87,7 @@ class ThemePicker extends React.Component {
             open: false,
             type: this.props.theme.palette.type,
             color: this.getColorString(this.props.theme.palette.primary.main),
-            design: getDesign()
+            design: getDesign(),
         };
     }
 
@@ -96,7 +96,7 @@ class ThemePicker extends React.Component {
 
         ApplicationStore.emit('clientUpdateThemeChanging', {
             type: event.target.value,
-            primary: this.getColor(this.state.color)
+            primary: this.getColor(this.state.color),
         });
     };
 
@@ -105,7 +105,7 @@ class ThemePicker extends React.Component {
 
         ApplicationStore.emit('clientUpdateThemeChanging', {
             type: this.state.type,
-            primary: this.getColor(event.target.value)
+            primary: this.getColor(event.target.value),
         });
     };
 
@@ -181,8 +181,8 @@ class ThemePicker extends React.Component {
                     bubbleIn: '#ffffff',
                     radius: '10px 10px 10px 0',
                     radiusOut: '10px 10px 0 10px',
-                    font: 'Roboto'
-                }
+                    font: 'Roboto',
+                },
             },
             {
                 value: 'android',
@@ -195,8 +195,8 @@ class ThemePicker extends React.Component {
                     bubbleIn: '#ffffff',
                     radius: '8px 8px 8px 2px',
                     radiusOut: '8px 8px 2px 8px',
-                    font: 'Roboto'
-                }
+                    font: 'Roboto',
+                },
             },
             {
                 value: 'macos',
@@ -209,8 +209,8 @@ class ThemePicker extends React.Component {
                     bubbleIn: '#f1f1f3',
                     radius: '17px',
                     radiusOut: '17px',
-                    font: '-apple-system'
-                }
+                    font: '-apple-system',
+                },
             },
             {
                 value: 'tdesktop',
@@ -223,8 +223,8 @@ class ThemePicker extends React.Component {
                     bubbleIn: '#ffffff',
                     radius: '6px 6px 6px 0',
                     radiusOut: '6px 6px 0 6px',
-                    font: 'Segoe UI'
-                }
+                    font: 'Segoe UI',
+                },
             },
             {
                 value: 'unigram',
@@ -237,9 +237,37 @@ class ThemePicker extends React.Component {
                     bubbleIn: '#ffffff',
                     radius: '6px',
                     radiusOut: '6px',
-                    font: 'Segoe UI'
-                }
-            }
+                    font: 'Segoe UI',
+                },
+            },
+            {
+                value: 'ios',
+                label: 'iOS',
+                preview: {
+                    sidebar: '#f2f2f7',
+                    chatBg: '#ffffff',
+                    bubble: '#007aff',
+                    bubbleTextOut: '#ffffff',
+                    bubbleIn: '#e9e9eb',
+                    radius: '18px 18px 18px 4px',
+                    radiusOut: '18px 18px 4px 18px',
+                    font: '-apple-system',
+                },
+            },
+            {
+                value: 'aurora',
+                label: 'Aurora',
+                preview: {
+                    sidebar: '#161b22',
+                    chatBg: '#0d1117',
+                    bubble: '#1a3a2e',
+                    bubbleTextOut: '#e6edf3',
+                    bubbleIn: '#21262d',
+                    radius: '14px 14px 14px 4px',
+                    radiusOut: '14px 14px 4px 14px',
+                    font: 'Manrope',
+                },
+            },
         ];
 
         return (
@@ -282,7 +310,7 @@ class ThemePicker extends React.Component {
                                         color='primary'
                                         classes={{
                                             root: classes.redRoot,
-                                            checked: classes.checked
+                                            checked: classes.checked,
                                         }}
                                     />
                                 }
@@ -295,7 +323,7 @@ class ThemePicker extends React.Component {
                                         color='primary'
                                         classes={{
                                             root: classes.orangeRoot,
-                                            checked: classes.checked
+                                            checked: classes.checked,
                                         }}
                                     />
                                 }
@@ -308,7 +336,7 @@ class ThemePicker extends React.Component {
                                         color='primary'
                                         classes={{
                                             root: classes.amberRoot,
-                                            checked: classes.checked
+                                            checked: classes.checked,
                                         }}
                                     />
                                 }
@@ -321,7 +349,7 @@ class ThemePicker extends React.Component {
                                         color='primary'
                                         classes={{
                                             root: classes.greenRoot,
-                                            checked: classes.checked
+                                            checked: classes.checked,
                                         }}
                                     />
                                 }
@@ -334,7 +362,7 @@ class ThemePicker extends React.Component {
                                         color='primary'
                                         classes={{
                                             root: classes.blueRoot,
-                                            checked: classes.checked
+                                            checked: classes.checked,
                                         }}
                                     />
                                 }
@@ -347,7 +375,7 @@ class ThemePicker extends React.Component {
                                         color='primary'
                                         classes={{
                                             root: classes.indigoRoot,
-                                            checked: classes.checked
+                                            checked: classes.checked,
                                         }}
                                     />
                                 }
@@ -360,7 +388,7 @@ class ThemePicker extends React.Component {
                                         color='primary'
                                         classes={{
                                             root: classes.deepPurpleRoot,
-                                            checked: classes.checked
+                                            checked: classes.checked,
                                         }}
                                     />
                                 }
@@ -386,7 +414,7 @@ class ThemePicker extends React.Component {
                                             overflow: 'hidden',
                                             width: 140,
                                             boxShadow: selected ? '0 0 0 2px rgba(91,138,241,0.25)' : 'none',
-                                            transition: 'border-color 0.15s, box-shadow 0.15s'
+                                            transition: 'border-color 0.15s, box-shadow 0.15s',
                                         }}>
                                         {/* Mini preview */}
                                         <div style={{ display: 'flex', height: 80, fontSize: 0 }}>
@@ -399,7 +427,7 @@ class ThemePicker extends React.Component {
                                                     padding: '6px 4px',
                                                     display: 'flex',
                                                     flexDirection: 'column',
-                                                    gap: 4
+                                                    gap: 4,
                                                 }}>
                                                 {[20, 14, 17].map((w, i) => (
                                                     <div
@@ -408,7 +436,7 @@ class ThemePicker extends React.Component {
                                                             height: 6,
                                                             width: `${w}px`,
                                                             background: '#ccc',
-                                                            borderRadius: 3
+                                                            borderRadius: 3,
                                                         }}
                                                     />
                                                 ))}
@@ -421,7 +449,7 @@ class ThemePicker extends React.Component {
                                                     padding: '6px 5px',
                                                     display: 'flex',
                                                     flexDirection: 'column',
-                                                    gap: 4
+                                                    gap: 4,
                                                 }}>
                                                 <div
                                                     style={{
@@ -431,7 +459,7 @@ class ThemePicker extends React.Component {
                                                         padding: '3px 7px',
                                                         fontSize: 8,
                                                         color: '#555',
-                                                        boxShadow: '0 1px 2px rgba(0,0,0,0.1)'
+                                                        boxShadow: '0 1px 2px rgba(0,0,0,0.1)',
                                                     }}>
                                                     Hola
                                                 </div>
@@ -443,7 +471,7 @@ class ThemePicker extends React.Component {
                                                         padding: '3px 7px',
                                                         fontSize: 8,
                                                         color: opt.preview.bubbleTextOut || '#333',
-                                                        boxShadow: '0 1px 2px rgba(0,0,0,0.1)'
+                                                        boxShadow: '0 1px 2px rgba(0,0,0,0.1)',
                                                     }}>
                                                     Hola!
                                                 </div>
@@ -455,7 +483,7 @@ class ThemePicker extends React.Component {
                                                         padding: '3px 7px',
                                                         fontSize: 8,
                                                         color: '#555',
-                                                        boxShadow: '0 1px 2px rgba(0,0,0,0.1)'
+                                                        boxShadow: '0 1px 2px rgba(0,0,0,0.1)',
                                                     }}>
                                                     😊
                                                 </div>
@@ -469,7 +497,7 @@ class ThemePicker extends React.Component {
                                                 alignItems: 'center',
                                                 gap: 6,
                                                 borderTop: '1px solid #e0e0e0',
-                                                background: '#fafafa'
+                                                background: '#fafafa',
                                             }}>
                                             <div
                                                 style={{
@@ -477,7 +505,7 @@ class ThemePicker extends React.Component {
                                                     height: 14,
                                                     borderRadius: '50%',
                                                     border: selected ? '4px solid #5b8af1' : '2px solid #ccc',
-                                                    flexShrink: 0
+                                                    flexShrink: 0,
                                                 }}
                                             />
                                             <Typography variant='caption' style={{ fontWeight: selected ? 600 : 400 }}>
