@@ -2320,3 +2320,243 @@ body.theme-dark.design-android-holo .pinned-message {
 body.theme-dark.design-android-glass .pinned-message {
     background: rgba(23, 33, 43, 0.72);
 }
+
+/* ════════════════════════════════════════════════════════════════════════════
+   NOVEDADES II: Video redondo · Contacto · Factura · Dados · Ubicación
+                 Sticker · Inputbox avanzado · Emoji picker
+   ════════════════════════════════════════════════════════════════════════════ */
+
+/* ── Video note (mensaje redondo) ───────────────────────────────────────── */
+body.design-android .video-note-progress-circle {
+    color: var(--android-accent);
+}
+body.design-android-holo .video-note-progress-circle {
+    color: #00bcd4;
+}
+body.design-android-classic .video-note-progress-circle {
+    color: #527da3;
+}
+body.design-android-v9 .video-note-progress-circle {
+    color: #2ca5e0;
+}
+body.design-android-glass .video-note-progress-circle {
+    color: #28c9b7;
+}
+
+/* ── Contacto compartido ────────────────────────────────────────────────── */
+body.design-android .contact {
+    gap: 0;
+}
+body.design-android .contact-name {
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--android-accent);
+}
+body.design-android .contact-phone {
+    font-size: 13px;
+    color: var(--android-text-secondary);
+}
+
+body.design-android-holo .contact-name {
+    color: #00bcd4;
+}
+body.design-android-classic .contact-name {
+    color: #527da3;
+}
+body.design-android-v9 .contact-name {
+    color: #2ca5e0;
+}
+body.design-android-glass .contact-name {
+    color: #28c9b7;
+}
+
+/* ── Factura (invoice / pago) ───────────────────────────────────────────── */
+body.design-android .invoice {
+    border-radius: var(--design-message-radius-in);
+    background: rgba(34, 154, 240, 0.06);
+    border: 1px solid rgba(34, 154, 240, 0.15);
+}
+body.design-android .invoice-title {
+    color: var(--android-accent);
+}
+body.design-android .invoice-price {
+    color: var(--android-accent);
+    font-weight: 600;
+}
+body.design-android .invoice-icon {
+    color: var(--android-accent);
+}
+
+body.design-android-holo .invoice {
+    background: rgba(0, 188, 212, 0.08);
+    border-color: rgba(0, 188, 212, 0.2);
+    border-radius: 2px;
+}
+body.design-android-holo .invoice-title {
+    color: #00bcd4;
+}
+body.design-android-holo .invoice-price {
+    color: #00bcd4;
+}
+
+body.design-android-classic .invoice {
+    background: rgba(82, 125, 163, 0.06);
+    border-color: rgba(82, 125, 163, 0.2);
+    border-radius: 2px;
+}
+body.design-android-classic .invoice-title {
+    color: #527da3;
+}
+body.design-android-classic .invoice-price {
+    color: #527da3;
+}
+
+body.design-android-v9 .invoice {
+    background: rgba(44, 165, 224, 0.06);
+    border-color: rgba(44, 165, 224, 0.18);
+}
+body.design-android-v9 .invoice-title {
+    color: #2ca5e0;
+}
+body.design-android-v9 .invoice-price {
+    color: #2ca5e0;
+}
+
+body.design-android-redesign .invoice {
+    border-radius: 14px;
+}
+body.design-android-glass .invoice {
+    background: rgba(40, 201, 183, 0.07);
+    border-color: rgba(40, 201, 183, 0.2);
+    border-radius: 16px;
+    backdrop-filter: blur(6px);
+}
+body.design-android-glass .invoice-title {
+    color: #28c9b7;
+}
+body.design-android-glass .invoice-price {
+    color: #28c9b7;
+}
+
+/* ── Dados (dice) ───────────────────────────────────────────────────────── */
+body.design-android .dice {
+    font-size: 72px;
+    line-height: 1;
+}
+body.design-android .dice-value {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--android-accent);
+    margin-top: 4px;
+    text-align: center;
+}
+body.design-android-holo .dice-value {
+    color: #00bcd4;
+}
+body.design-android-classic .dice-value {
+    color: #527da3;
+}
+body.design-android-v9 .dice-value {
+    color: #2ca5e0;
+}
+body.design-android-glass .dice-value {
+    color: #28c9b7;
+}
+
+/* ── Ubicación ──────────────────────────────────────────────────────────── */
+body.design-android .location-wrapper {
+    border-radius: var(--design-message-radius-in);
+    overflow: hidden;
+}
+body.design-android-holo .location-wrapper {
+    border-radius: 2px;
+}
+body.design-android-classic .location-wrapper {
+    border-radius: 2px;
+}
+body.design-android-redesign .location-wrapper {
+    border-radius: 14px;
+}
+body.design-android-glass .location-wrapper {
+    border-radius: 16px;
+}
+
+body.design-android .location-icon {
+    color: var(--android-accent);
+}
+body.design-android-holo .location-icon {
+    color: #00bcd4;
+}
+body.design-android-classic .location-icon {
+    color: #527da3;
+}
+body.design-android-v9 .location-icon {
+    color: #2ca5e0;
+}
+body.design-android-glass .location-icon {
+    color: #28c9b7;
+}
+
+/* ── Inputbox avanzado: attach button, placeholder ──────────────────────── */
+body.design-android .inputbox-attach-button {
+    color: var(--android-text-secondary);
+}
+body.design-android-holo .inputbox-attach-button {
+    color: #8fa4b0;
+}
+body.design-android-v9 .inputbox-attach-button {
+    color: #2ca5e0;
+}
+body.design-android-glass .inputbox-attach-button {
+    color: #1f9e88;
+}
+
+body.design-android #inputbox-message::placeholder {
+    color: var(--android-text-secondary);
+    opacity: 0.7;
+}
+body.design-android-holo #inputbox-message::placeholder {
+    color: #8fa4b0;
+}
+body.design-android-glass #inputbox-message::placeholder {
+    color: #6a8a84;
+}
+
+/* ── Emoji picker adaptado ──────────────────────────────────────────────── */
+body.design-android .emoji-picker-react,
+body.design-android .emoji-mart {
+    border-radius: 12px;
+}
+body.design-android-holo .emoji-picker-react,
+body.design-android-holo .emoji-mart {
+    border-radius: 2px;
+    background: #1a2633 !important;
+    border-color: rgba(255, 255, 255, 0.06) !important;
+}
+body.design-android-classic .emoji-picker-react,
+body.design-android-classic .emoji-mart {
+    border-radius: 0;
+}
+body.design-android-redesign .emoji-picker-react,
+body.design-android-redesign .emoji-mart {
+    border-radius: 18px;
+}
+body.design-android-glass .emoji-picker-react,
+body.design-android-glass .emoji-mart {
+    border-radius: 20px;
+    background: rgba(240, 250, 248, 0.88) !important;
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+}
+
+/* ── Dark mode II ───────────────────────────────────────────────────────── */
+body.theme-dark.design-android .invoice {
+    background: rgba(42, 171, 238, 0.08);
+    border-color: rgba(42, 171, 238, 0.15);
+}
+body.theme-dark.design-android-glass .invoice {
+    background: rgba(40, 201, 183, 0.1);
+}
+body.theme-dark.design-android-glass .emoji-mart {
+    background: rgba(20, 35, 45, 0.88) !important;
+}
