@@ -17,7 +17,7 @@
 }
 
 .service-message-content {
-    font-size: 15px;
+    font-size: var(--text-body);
     line-height: normal;
     border-radius: 12px;
     text-align: center;

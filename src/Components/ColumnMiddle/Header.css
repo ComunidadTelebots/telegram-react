@@ -27,7 +27,7 @@
 }
 
 .header-status {
-    font: 22px / normal 'Product Sans', 'Roboto', sans-serif;
+    font: var(--text-status) / normal var(--font-display);
     padding: 0 24px;
     user-select: none;
     background: transparent;
@@ -44,7 +44,7 @@
 }
 
 .header-status-title {
-    font-size: 14px;
+    font-size: var(--text-dialog);
     word-wrap: break-word;
     white-space: nowrap;
     text-overflow: ellipsis;

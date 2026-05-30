@@ -25,12 +25,12 @@ em {
 
 code {
     font-size: 90%;
-    font-family: Menlo, Monaco, Consolas, 'Courier New', monospace;
+    font-family: var(--font-mono);
 }
 
 pre {
     font-size: 90%;
-    font-family: Menlo, Monaco, Consolas, 'Courier New', monospace;
+    font-family: var(--font-mono);
 
     margin-top: 6px;
     margin-bottom: 0;
@@ -189,7 +189,7 @@ pre code {
     display: flex;
     flex-direction: row;
     align-items: baseline;
-    font-size: 14px;
+    font-size: var(--text-dialog);
     line-height: normal;
 }
 

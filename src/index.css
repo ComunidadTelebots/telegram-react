@@ -38,7 +38,19 @@
     --message-out-reply-title: #4fae4e;
     --message-out-reply-border: #4fae4e;
 
+    /* ── Typography ──────────────────────────────────────────────────────── */
+    --font-body: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --font-display: 'Product Sans', 'Roboto', sans-serif;
+    --font-mono: Menlo, Monaco, Consolas, 'Roboto Mono', 'Courier New', monospace;
+    --text-tile: 19px;
+    --text-dialog: 14px;
+    --text-body: 15px;
+    --text-status: 22px;
+    --text-auth-title: 32px;
+    --line-body: 20px;
+
     /* ── Foreground / text ────────────────────────────────────────────────── */
+    --fg1: #000000;
     --fg2: #707579;
     --fg3: #8d969c;
     --fg-placeholder: #8e9396;
@@ -50,6 +62,7 @@
     --highlight-flash: #80d066;
     --media-overlay: rgba(0, 0, 0, 0.25);
     --reaction-chosen-bg: rgba(33, 150, 243, 0.1);
+    --divider: rgba(0, 0, 0, 0.12);
 
     /* ── Shape ────────────────────────────────────────────────────────────── */
     --radius-badge: 11px;
@@ -86,6 +99,7 @@
 
 /* ── Dark theme overrides ──────────────────────────────────────────────────── */
 body.theme-dark {
+    --fg1: #ffffff;
     --fg2: rgba(255, 255, 255, 0.7);
     --fg3: rgba(255, 255, 255, 0.7);
     --fg-placeholder: rgba(255, 255, 255, 0.45);
@@ -93,6 +107,7 @@ body.theme-dark {
     --shadow-bubble: 0 1px 2px 0 rgba(0, 0, 0, 0.45);
     --media-overlay: rgba(0, 0, 0, 0.4);
     --reaction-chosen-bg: rgba(91, 138, 241, 0.15);
+    --divider: rgba(255, 255, 255, 0.12);
 }
 
 .notification-close-button {

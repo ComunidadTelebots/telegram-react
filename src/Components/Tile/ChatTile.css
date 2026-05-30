@@ -50,7 +50,7 @@
 }
 
 .tile-text {
-    font-size: 19px;
+    font-size: var(--text-tile);
     /*font-family: 'Nunito', sans-serif;*/
     /*font-weight: 600;*/
     display: block;
@@ -61,7 +61,7 @@
 }
 
 .tile-small .tile-text {
-    font-size: 14px;
+    font-size: var(--text-dialog);
 }
 
 .tile-big .tile-text {

@@ -11,5 +11,5 @@
     overflow: hidden;
     text-overflow: ellipsis;
     flex-grow: 1;
-    font-size: 14px;
+    font-size: var(--text-dialog);
 }

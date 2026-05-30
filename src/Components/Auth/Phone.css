@@ -13,13 +13,13 @@
 }
 
 .auth-title {
-    font-size: 32px;
+    font-size: var(--text-auth-title);
     font-weight: 500;
     margin: 0 auto 7px auto;
 }
 
 .auth-title-typography {
-    font-size: 32px;
+    font-size: var(--text-auth-title);
     font-weight: 500;
 }
 

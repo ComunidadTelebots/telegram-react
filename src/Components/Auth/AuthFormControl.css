@@ -11,8 +11,8 @@
 }
 
 .authorization-header {
-    font-size: 22px;
-    font-family: 'Product Sans', 'Roboto', sans-serif;
+    font-size: var(--text-status);
+    font-family: var(--font-display);
     padding: 22px 0;
     text-overflow: ellipsis;
     overflow: hidden;

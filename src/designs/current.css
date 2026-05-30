@@ -2,7 +2,7 @@
 /* Es el diseño por defecto; este archivo lo documenta explícitamente.        */
 
 body.design-current {
-    font: 15px/20px 'Roboto', sans-serif;
+    font: var(--text-body) / var(--line-body) var(--font-body);
     --design-page-background: #ffffff;
     --design-page-color: #111111;
     --design-sidebar-background: #ffffff;
