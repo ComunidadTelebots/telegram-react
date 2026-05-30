@@ -1,10 +1,11 @@
 import React from 'react';
 import ArrowBackIcon from '@material-ui/icons/ArrowBack';
 import ChevronRightIcon from '@material-ui/icons/ChevronRight';
+import EditIcon from '@material-ui/icons/Edit';
 import NotificationsIcon from '@material-ui/icons/Notifications';
 import LockIcon from '@material-ui/icons/Lock';
 import DataUsageIcon from '@material-ui/icons/DataUsage';
-import ChatIcon from '@material-ui/icons/Chat';
+import ChatBubbleIcon from '@material-ui/icons/ChatBubble';
 import PaletteIcon from '@material-ui/icons/Palette';
 import LanguageIcon from '@material-ui/icons/Language';
 import HelpIcon from '@material-ui/icons/Help';
@@ -12,20 +13,58 @@ import InfoIcon from '@material-ui/icons/Info';
 import Brightness2Icon from '@material-ui/icons/Brightness2';
 import WbSunnyIcon from '@material-ui/icons/WbSunny';
 import StorageIcon from '@material-ui/icons/Storage';
+import FolderIcon from '@material-ui/icons/Folder';
+import PhoneAndroidIcon from '@material-ui/icons/PhoneAndroid';
+import StarIcon from '@material-ui/icons/Star';
+import EmojiEmotionsIcon from '@material-ui/icons/EmojiEmotions';
+import GroupIcon from '@material-ui/icons/Group';
+import PersonAddIcon from '@material-ui/icons/PersonAdd';
+import ExitToAppIcon from '@material-ui/icons/ExitToApp';
+import CropFreeIcon from '@material-ui/icons/CropFree';
 import { getSrc } from '../../Utils/File';
 import { getUserFullName } from '../../Utils/User';
 import UserStore from '../../Stores/UserStore';
 import OptionStore from '../../Stores/OptionStore';
 import ApplicationStore from '../../Stores/ApplicationStore';
+import TdLibController from '../../Controllers/TdLibController';
+import { getDesign } from '../../Design';
 import './AndroidSettings.css';
+
+function isHoloOrClassic(d) {
+    return d === 'android-holo' || d === 'android-classic';
+}
+function isNewEra(d) {
+    return d === 'android-glass' || d === 'android';
+}
 
 class AndroidSettings extends React.PureComponent {
     constructor(props) {
         super(props);
         this.state = {
             isDark: document.body.classList.contains('theme-dark'),
-            notifications: true,
+            design: getDesign(),
+            bio: '',
         };
+    }
+
+    componentDidMount() {
+        this.loadBio();
+        ApplicationStore.on('clientUpdateThemeChange', this.onDesignChange);
+    }
+
+    componentWillUnmount() {
+        ApplicationStore.off('clientUpdateThemeChange', this.onDesignChange);
+    }
+
+    onDesignChange = () => this.setState({ design: getDesign() });
+
+    async loadBio() {
+        const myId = OptionStore.get('my_id');
+        if (!myId || !myId.value) return;
+        try {
+            const full = await TdLibController.send({ '@type': 'getUserFullInfo', user_id: myId.value });
+            if (full && full.bio) this.setState({ bio: full.bio.text || full.bio || '' });
+        } catch {}
     }
 
     getMe() {
@@ -43,13 +82,14 @@ class AndroidSettings extends React.PureComponent {
         });
     };
 
-    handleAppearance = () => {
-        this.props.onAppearance && this.props.onAppearance();
+    handleLogOut = () => {
+        this.props.onClose();
+        TdLibController.send({ '@type': 'logOut' });
     };
 
     render() {
         const { onClose } = this.props;
-        const { isDark, notifications } = this.state;
+        const { isDark, design, bio } = this.state;
         const me = this.getMe();
         const name = me ? getUserFullName(me) : 'Telegram User';
         const phone = me && me.phone_number ? '+' + me.phone_number : '';
@@ -61,30 +101,64 @@ class AndroidSettings extends React.PureComponent {
             .slice(0, 2)
             .toUpperCase();
         const avatarSrc = me ? getSrc(me.profile_photo ? me.profile_photo.small : null) : null;
+        const isOld = isHoloOrClassic(design);
+        const isNew = isNewEra(design);
 
+        // Secciones que varían por era
         const sections = [
+            // Cuenta — siempre presente
             {
-                title: 'Account',
+                key: 'account',
                 rows: [
-                    {
-                        icon: <NotificationsIcon />,
-                        label: 'Notifications and Sounds',
-                        value: '',
-                        arrow: true,
-                        action: null,
-                    },
-                    { icon: <LockIcon />, label: 'Privacy and Security', value: '', arrow: true, action: null },
-                    { icon: <DataUsageIcon />, label: 'Data and Storage', value: '', arrow: true, action: null },
-                    { icon: <ChatIcon />, label: 'Chat Settings', value: '', arrow: true, action: null },
+                    { icon: <NotificationsIcon />, label: 'Notifications and Sounds', sub: '', arrow: true },
+                    { icon: <LockIcon />, label: 'Privacy and Security', sub: '', arrow: true },
+                    { icon: <DataUsageIcon />, label: 'Data and Storage', sub: '', arrow: true },
+                    { icon: <ChatBubbleIcon />, label: 'Chat Settings', sub: '', arrow: true },
+                    ...(isOld ? [] : [{ icon: <FolderIcon />, label: 'Chat Folders', sub: '', arrow: true }]),
                 ],
             },
+            // Dispositivos — desde v9 en adelante
+            ...(!isHoloOrClassic(design)
+                ? [
+                      {
+                          key: 'devices',
+                          rows: [
+                              {
+                                  icon: <PhoneAndroidIcon />,
+                                  label: 'Devices',
+                                  sub: 'Active sessions',
+                                  arrow: true,
+                                  action: () => {},
+                              },
+                          ],
+                      },
+                  ]
+                : []),
+            // Premium — solo en eras modernas
+            ...(isNew
+                ? [
+                      {
+                          key: 'premium',
+                          rows: [
+                              {
+                                  icon: <StarIcon />,
+                                  label: 'Telegram Premium',
+                                  sub: 'Exclusive features',
+                                  arrow: true,
+                                  accent: true,
+                              },
+                              { icon: <EmojiEmotionsIcon />, label: 'Stickers & Emoji', sub: '', arrow: true },
+                          ],
+                      },
+                  ]
+                : []),
+            // Display
             {
-                title: 'Display',
+                key: 'display',
                 rows: [
                     {
                         icon: isDark ? <WbSunnyIcon /> : <Brightness2Icon />,
                         label: 'Night Mode',
-                        value: '',
                         toggle: true,
                         toggleOn: isDark,
                         action: this.handleToggleDark,
@@ -92,78 +166,121 @@ class AndroidSettings extends React.PureComponent {
                     {
                         icon: <PaletteIcon />,
                         label: 'Appearance',
-                        value: 'Design & Theme',
+                        sub: 'Design & Theme',
                         arrow: true,
-                        action: this.handleAppearance,
+                        action: this.props.onAppearance,
                     },
-                    { icon: <LanguageIcon />, label: 'Language', value: 'English', arrow: true, action: null },
+                    { icon: <LanguageIcon />, label: 'Language', sub: 'English', arrow: true },
                 ],
             },
+            // Invitar amigos — vieja era lo tenía aquí
+            ...(isOld
+                ? [
+                      {
+                          key: 'invite',
+                          rows: [
+                              { icon: <PersonAddIcon />, label: 'Invite Friends', sub: '', arrow: true },
+                              { icon: <GroupIcon />, label: 'Telegram Features', sub: '', arrow: true },
+                          ],
+                      },
+                  ]
+                : []),
+            // Almacenamiento
             {
-                title: 'Storage',
-                rows: [{ icon: <StorageIcon />, label: 'Cache & Storage', value: '', arrow: true, action: null }],
+                key: 'storage',
+                rows: [{ icon: <StorageIcon />, label: 'Storage and Data', sub: '', arrow: true }],
             },
+            // Soporte
             {
-                title: 'Support',
+                key: 'help',
                 rows: [
-                    { icon: <HelpIcon />, label: 'Ask a Question', value: '', arrow: true, action: null },
-                    { icon: <InfoIcon />, label: 'Telegram Features', value: '', arrow: true, action: null },
+                    { icon: <HelpIcon />, label: 'Ask a Question', sub: '', arrow: true },
+                    { icon: <InfoIcon />, label: 'Telegram Features', sub: '', arrow: true },
                 ],
             },
         ];
 
         return (
             <div className='android-settings-overlay'>
+                {/* Toolbar */}
                 <div className='android-settings-toolbar'>
-                    <button className='android-settings-back' onClick={onClose}>
+                    <button className='android-settings-back' onClick={onClose} aria-label='Back'>
                         <ArrowBackIcon />
                     </button>
                     <span className='android-settings-toolbar-title'>Settings</span>
+                    <button className='android-settings-toolbar-action' aria-label='Edit'>
+                        <EditIcon style={{ fontSize: 20 }} />
+                    </button>
+                    {!isOld && (
+                        <button className='android-settings-toolbar-action' aria-label='QR'>
+                            <CropFreeIcon style={{ fontSize: 20 }} />
+                        </button>
+                    )}
                 </div>
 
                 <div className='android-settings-content'>
-                    {/* Profile card */}
+                    {/* Profile hero */}
                     <div className='android-settings-profile'>
                         <div className='android-settings-avatar'>
                             {avatarSrc ? <img src={avatarSrc} alt='' /> : initials}
                         </div>
                         <div className='android-settings-profile-info'>
                             <div className='android-settings-profile-name'>{name}</div>
+                            {bio ? (
+                                <div className='android-settings-profile-bio'>{bio}</div>
+                            ) : username ? (
+                                <div className='android-settings-profile-bio'>{username}</div>
+                            ) : null}
                             {phone && <div className='android-settings-profile-phone'>{phone}</div>}
-                            {username && <div className='android-settings-profile-bio'>{username}</div>}
-                        </div>
-                        <div className='android-settings-row-arrow'>
-                            <ChevronRightIcon />
                         </div>
                     </div>
 
+                    {/* Sections */}
                     {sections.map(section => (
-                        <div key={section.title} className='android-settings-section'>
-                            <div className='android-settings-section-title'>{section.title}</div>
+                        <div key={section.key} className='android-settings-section'>
                             {section.rows.map((row, i) => (
                                 <React.Fragment key={row.label}>
-                                    <button className='android-settings-row' onClick={row.action || undefined}>
-                                        <span className='android-settings-row-icon'>{row.icon}</span>
+                                    <button
+                                        className={`android-settings-row${
+                                            row.accent ? ' android-settings-row--accent' : ''
+                                        }`}
+                                        onClick={row.action || undefined}>
+                                        <span className={`android-settings-row-icon${row.accent ? ' accent' : ''}`}>
+                                            {row.icon}
+                                        </span>
                                         <span className='android-settings-row-content'>
                                             <span className='android-settings-row-label'>{row.label}</span>
-                                            {row.value && (
-                                                <span className='android-settings-row-value'>{row.value}</span>
-                                            )}
+                                            {row.sub && <span className='android-settings-row-value'>{row.sub}</span>}
                                         </span>
-                                        {row.toggle && (
+                                        {row.toggle !== undefined ? (
                                             <span className={`android-settings-toggle${row.toggleOn ? ' on' : ''}`} />
-                                        )}
-                                        {row.arrow && (
+                                        ) : row.arrow ? (
                                             <span className='android-settings-row-arrow'>
                                                 <ChevronRightIcon />
                                             </span>
-                                        )}
+                                        ) : null}
                                     </button>
                                     {i < section.rows.length - 1 && <div className='android-settings-divider' />}
                                 </React.Fragment>
                             ))}
                         </div>
                     ))}
+
+                    {/* Log out */}
+                    <div className='android-settings-section android-settings-section--danger'>
+                        <button
+                            className='android-settings-row android-settings-row--danger'
+                            onClick={this.handleLogOut}>
+                            <span className='android-settings-row-icon android-settings-row-icon--danger'>
+                                <ExitToAppIcon />
+                            </span>
+                            <span className='android-settings-row-content'>
+                                <span className='android-settings-row-label android-settings-row-label--danger'>
+                                    Log Out
+                                </span>
+                            </span>
+                        </button>
+                    </div>
                 </div>
             </div>
         );
