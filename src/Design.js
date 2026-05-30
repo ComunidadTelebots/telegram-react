@@ -13,7 +13,18 @@ import './designs/aurora.css';
 import './designs/shell.css';
 
 const DESIGN_KEY = 'tg_design';
-const DESIGNS = ['current', 'android', 'ios', 'macos', 'tdesktop', 'unigram', 'aurora'];
+const DESIGNS = [
+    'current',
+    'android',
+    'android-classic',
+    'android-redesign',
+    'android-glass',
+    'ios',
+    'macos',
+    'tdesktop',
+    'unigram',
+    'aurora',
+];
 const DEFAULT_DESIGN = 'current';
 
 export function getDesign() {
@@ -24,6 +35,12 @@ export function setDesign(name) {
     if (!DESIGNS.includes(name)) return;
 
     DESIGNS.forEach(d => document.body.classList.remove(`design-${d}`));
+    document.body.classList.remove('design-android');
+
+    if (name.startsWith('android-')) {
+        document.body.classList.add('design-android');
+    }
+
     document.body.classList.add(`design-${name}`);
     localStorage.setItem(DESIGN_KEY, name);
 }

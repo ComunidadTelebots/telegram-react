@@ -92,6 +92,9 @@ function updateThemeClass(type) {
 const DESIGN_MUI = {
     current: { radius: 8, accent: null, font: "'Roboto', sans-serif", type: null },
     android: { radius: 12, accent: '#2AABEE', font: "'Roboto', 'Noto Sans', sans-serif", type: null },
+    'android-classic': { radius: 4, accent: '#168ACD', font: "'Roboto', 'Noto Sans', sans-serif", type: null },
+    'android-redesign': { radius: 16, accent: '#2AABEE', font: "'Roboto', 'Noto Sans', sans-serif", type: null },
+    'android-glass': { radius: 18, accent: '#279FE5', font: "'Roboto', 'Noto Sans', sans-serif", type: null },
     ios: { radius: 16, accent: '#007AFF', font: "-apple-system, 'Helvetica Neue', sans-serif", type: null },
     macos: { radius: 10, accent: '#248BF2', font: "-apple-system, 'Helvetica Neue', sans-serif", type: null },
     tdesktop: { radius: 4, accent: '#40A7E3', font: "'Segoe UI', system-ui, sans-serif", type: null },

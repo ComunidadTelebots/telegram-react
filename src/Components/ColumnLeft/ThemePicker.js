@@ -25,7 +25,7 @@ import blue from '@material-ui/core/colors/blue';
 import indigo from '@material-ui/core/colors/indigo';
 import deepPurple from '@material-ui/core/colors/deepPurple';
 import ApplicationStore from '../../Stores/ApplicationStore';
-import { getDesign, setDesign, DESIGNS } from '../../Design';
+import { getDesign, setDesign } from '../../Design';
 
 const styles = theme => ({
     formControl: {
@@ -191,7 +191,7 @@ class ThemePicker extends React.Component {
             },
             {
                 value: 'android',
-                label: 'Android',
+                label: 'Android 12.5',
                 preview: {
                     sidebar: '#ffffff',
                     chatBg: '#dfe8ef',
@@ -200,6 +200,48 @@ class ThemePicker extends React.Component {
                     bubbleIn: '#ffffff',
                     radius: '8px 8px 8px 2px',
                     radiusOut: '8px 8px 2px 8px',
+                    font: 'Roboto',
+                },
+            },
+            {
+                value: 'android-glass',
+                label: 'Android Beta 12.6.4',
+                preview: {
+                    sidebar: '#f8fbfc',
+                    chatBg: 'linear-gradient(135deg, #d7e1c4, #edf5df)',
+                    bubble: 'rgba(224, 255, 199, 0.72)',
+                    bubbleTextOut: '#162018',
+                    bubbleIn: 'rgba(255,255,255,0.78)',
+                    radius: '16px',
+                    radiusOut: '16px',
+                    font: 'Roboto',
+                },
+            },
+            {
+                value: 'android-redesign',
+                label: 'Android 12.6',
+                preview: {
+                    sidebar: '#ffffff',
+                    chatBg: '#dce8cd',
+                    bubble: '#e7ffd6',
+                    bubbleTextOut: '#202124',
+                    bubbleIn: '#ffffff',
+                    radius: '14px 14px 14px 4px',
+                    radiusOut: '14px 14px 4px 14px',
+                    font: 'Roboto',
+                },
+            },
+            {
+                value: 'android-classic',
+                label: 'Android 7.x',
+                preview: {
+                    sidebar: '#ffffff',
+                    chatBg: '#c8d9b6',
+                    bubble: '#dcf8c6',
+                    bubbleTextOut: '#202124',
+                    bubbleIn: '#ffffff',
+                    radius: '4px 4px 4px 0',
+                    radiusOut: '4px 4px 0 4px',
                     font: 'Roboto',
                 },
             },

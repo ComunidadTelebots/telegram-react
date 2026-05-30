@@ -432,3 +432,213 @@ body.theme-dark.design-android .dialogs::after {
 body.theme-dark.design-android ::-webkit-scrollbar-thumb {
     background: rgba(42, 171, 238, 0.22);
 }
+
+/* Android 7.x Classic: compacto, plano y con burbujas clásicas */
+body.design-android-classic {
+    --android-accent: #168acd;
+    --android-accent-dark: #0f76b5;
+    --android-ripple: rgba(22, 138, 205, 0.1);
+    --android-chat-background: #c8d9b6;
+    --android-text-secondary: #6d7478;
+    --message-out-background: #dcf8c6;
+    --message-out-link: #168acd;
+    --message-out-author: #168acd;
+    --message-out-meta-color: #4fae4e;
+    --design-active-background: rgba(22, 138, 205, 0.1);
+    --design-control-radius: 4px;
+    --design-message-wrapper-padding: 2px 14px 2px 6px;
+    --design-message-content-max-width: 520px;
+    --design-message-radius-in: 4px 4px 4px 0;
+    --design-message-radius-out: 4px 4px 0 4px;
+    --design-message-radius-short: 4px;
+    --design-message-padding: 5px 8px;
+    --design-message-shadow: 0 1px 1px rgba(0, 0, 0, 0.18);
+}
+
+body.design-android-classic .header-master,
+body.design-android-classic .header-details {
+    min-height: 50px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.16);
+}
+
+body.design-android-classic .dialogs {
+    width: 312px;
+    min-width: 312px;
+    max-width: 312px;
+}
+
+body.design-android-classic .dialog-details {
+    width: calc(100% - 312px);
+}
+
+body.design-android-classic .dialog-wrapper {
+    min-height: 64px;
+    padding: 8px 12px 8px 10px;
+}
+
+body.design-android-classic .inputbox-bubble {
+    border-radius: 4px;
+}
+
+body.design-android-classic .inputbox-send-button {
+    border-radius: 4px;
+}
+
+/* Android 12.6 redesign: más aire, radios modernos y mensajes redondeados */
+body.design-android-redesign {
+    --android-accent: #2aabee;
+    --android-accent-dark: #229ed9;
+    --android-chat-background: #dce8cd;
+    --android-ripple: rgba(42, 171, 238, 0.14);
+    --message-in-background: #ffffff;
+    --message-out-background: #e7ffd6;
+    --message-out-meta-color: #5aa45c;
+    --design-dialog-radius: 12px;
+    --design-control-radius: 18px;
+    --design-message-wrapper-padding: 4px 24px 4px 10px;
+    --design-message-content-max-width: 560px;
+    --design-message-radius-in: 14px 14px 14px 4px;
+    --design-message-radius-out: 14px 14px 4px 14px;
+    --design-message-radius-short: 14px;
+    --design-message-padding: 7px 11px;
+    --design-message-shadow: 0 1px 2px rgba(0, 0, 0, 0.14);
+}
+
+body.design-android-redesign .dialogs {
+    width: 352px;
+    min-width: 352px;
+    max-width: 352px;
+}
+
+body.design-android-redesign .dialog-details {
+    width: calc(100% - 352px);
+}
+
+body.design-android-redesign .dialog-wrapper {
+    min-height: 74px;
+    margin: 2px 8px;
+    border-bottom: 0;
+    border-radius: 12px;
+}
+
+body.design-android-redesign .header-master,
+body.design-android-redesign .header-details {
+    min-height: 58px;
+}
+
+body.design-android-redesign .dialog-badge,
+body.design-android-redesign .day-meta-wrapper {
+    border-radius: 999px;
+}
+
+/* Android Beta 12.6.4 Glass: superficies translúcidas y fondo suave */
+body.design-android-glass {
+    --android-accent: #279fe5;
+    --android-accent-dark: #168acd;
+    --android-ripple: rgba(39, 159, 229, 0.14);
+    --android-sidebar: rgba(255, 255, 255, 0.82);
+    --android-chat-background: #d6e2c8;
+    --android-separator: rgba(74, 92, 99, 0.12);
+    --android-text-secondary: #69777e;
+    --message-in-background: rgba(255, 255, 255, 0.78);
+    --message-out-background: rgba(226, 255, 204, 0.74);
+    --message-out-meta-color: #5ba35c;
+    --design-sidebar-background: rgba(255, 255, 255, 0.78);
+    --design-panel-background: rgba(255, 255, 255, 0.78);
+    --design-header-background: rgba(255, 255, 255, 0.72);
+    --design-input-background: rgba(255, 255, 255, 0.58);
+    --design-input-surface: rgba(255, 255, 255, 0.74);
+    --design-dialog-radius: 16px;
+    --design-control-radius: 22px;
+    --design-message-wrapper-padding: 4px 24px 4px 10px;
+    --design-message-content-max-width: 560px;
+    --design-message-radius-in: 16px 16px 16px 6px;
+    --design-message-radius-out: 16px 16px 6px 16px;
+    --design-message-radius-short: 16px;
+    --design-message-padding: 8px 12px;
+    --design-message-shadow: 0 8px 22px rgba(67, 87, 72, 0.12), 0 1px 2px rgba(0, 0, 0, 0.08);
+}
+
+body.design-android-glass .messages-list,
+body.design-android-glass .messages-list-wrapper {
+    background: radial-gradient(circle at 78% 18%, rgba(255, 255, 255, 0.62), transparent 28%),
+        linear-gradient(135deg, #d2dec2 0%, #e8f0dc 52%, #cfdbc1 100%);
+}
+
+body.design-android-glass .dialogs,
+body.design-android-glass .header-master,
+body.design-android-glass .header-details,
+body.design-android-glass .inputbox-background {
+    backdrop-filter: blur(18px) saturate(150%);
+    -webkit-backdrop-filter: blur(18px) saturate(150%);
+}
+
+body.design-android-glass .dialogs {
+    width: 352px;
+    min-width: 352px;
+    max-width: 352px;
+    box-shadow: 8px 0 24px rgba(54, 74, 82, 0.08);
+}
+
+body.design-android-glass .dialog-details {
+    width: calc(100% - 352px);
+}
+
+body.design-android-glass .dialog-wrapper {
+    min-height: 74px;
+    margin: 3px 9px;
+    border-bottom: 0;
+    border-radius: 16px;
+}
+
+body.design-android-glass .dialog-wrapper:hover,
+body.design-android-glass .dialog-active .dialog-wrapper {
+    background: rgba(39, 159, 229, 0.12) !important;
+}
+
+body.design-android-glass .message-bubble,
+body.design-android-glass .inputbox-bubble {
+    backdrop-filter: blur(16px) saturate(160%);
+    -webkit-backdrop-filter: blur(16px) saturate(160%);
+}
+
+body.design-android-glass .message-bubble::after,
+body.design-android-glass .message-bubble-out::after {
+    opacity: 0.78;
+}
+
+body.design-android-glass .inputbox-send-button,
+body.design-android-glass .dialogs::after {
+    box-shadow: 0 8px 24px rgba(39, 159, 229, 0.28);
+}
+
+body.theme-dark.design-android-classic {
+    --android-accent: #4aa3df;
+    --android-chat-background: #0d1720;
+    --message-out-background: #244f73;
+    --design-control-radius: 4px;
+}
+
+body.theme-dark.design-android-redesign {
+    --android-chat-background: #101b25;
+    --message-in-background: #1b2b39;
+    --message-out-background: #2f5f86;
+}
+
+body.theme-dark.design-android-glass {
+    --android-sidebar: rgba(23, 33, 43, 0.76);
+    --android-chat-background: #0f1822;
+    --message-in-background: rgba(27, 43, 57, 0.76);
+    --message-out-background: rgba(47, 95, 134, 0.72);
+    --design-sidebar-background: rgba(23, 33, 43, 0.76);
+    --design-panel-background: rgba(23, 33, 43, 0.76);
+    --design-header-background: rgba(23, 33, 43, 0.7);
+    --design-input-background: rgba(23, 33, 43, 0.58);
+    --design-input-surface: rgba(24, 37, 51, 0.78);
+}
+
+body.theme-dark.design-android-glass .messages-list,
+body.theme-dark.design-android-glass .messages-list-wrapper {
+    background: radial-gradient(circle at 78% 18%, rgba(80, 120, 138, 0.22), transparent 28%),
+        linear-gradient(135deg, #0e1822 0%, #172536 52%, #101a25 100%);
+}
