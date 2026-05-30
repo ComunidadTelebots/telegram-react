@@ -180,6 +180,13 @@ body.design-android .folder-tab-active {
     color: var(--android-accent);
 }
 
+/* Padding inferior en folder list para que bottom nav no tape el último item */
+body.design-android-glass .folder-dialogs-list,
+body.design-android:not(.design-android-holo):not(.design-android-v9):not(.design-android-v11):not(.design-android-classic):not(.design-android-redesign):not(.design-android-glass)
+    .folder-dialogs-list {
+    padding-bottom: 72px;
+}
+
 /* ── Chat list rows — PLANAS (sin tarjetas) ─────────────────────────────── */
 body.design-android .dialog-wrapper {
     min-height: 72px;
@@ -716,6 +723,30 @@ body.design-android-redesign .header-master .MuiIconButton-root {
     color: var(--android-accent) !important;
 }
 
+/* Redesign: folder tabs con pills redondeadas y accent azul */
+body.design-android-redesign .folder-tabs {
+    padding: 6px 10px 8px;
+    gap: 6px;
+    background: transparent;
+}
+
+body.design-android-redesign .folder-tab {
+    border-radius: 20px;
+    padding: 5px 14px;
+    font-size: 13px;
+    font-weight: 500;
+}
+
+body.design-android-redesign .folder-tab-active {
+    background: rgba(34, 154, 240, 0.12);
+    color: #229af0;
+    font-weight: 600;
+}
+
+body.design-android-redesign .folder-tab:hover {
+    background: rgba(34, 154, 240, 0.07);
+}
+
 /* Android Beta 12.6.4 Glass: superficies translúcidas y fondo suave */
 body.design-android-glass {
     --android-accent: #28c9b7;
@@ -814,6 +845,48 @@ body.design-android-glass .inputbox-bubble {
     background: rgba(255, 255, 255, 0.62);
     border: 1px solid rgba(40, 201, 183, 0.15);
     border-radius: 22px;
+}
+
+/* Glass: folder tabs con blur y teal accent */
+body.design-android-glass .folder-tabs {
+    background: rgba(255, 255, 255, 0.6);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    padding: 6px 10px 8px;
+    gap: 6px;
+    border-bottom: 1px solid rgba(40, 201, 183, 0.12);
+}
+
+body.design-android-glass .folder-tab {
+    border-radius: 20px;
+    padding: 5px 14px;
+    font-size: 13px;
+    font-weight: 500;
+    color: #4a6068;
+    transition: background 0.15s, color 0.15s;
+}
+
+body.design-android-glass .folder-tab:hover {
+    background: rgba(40, 201, 183, 0.1);
+}
+
+body.design-android-glass .folder-tab-active {
+    background: rgba(40, 201, 183, 0.16);
+    color: #28c9b7;
+    font-weight: 600;
+}
+
+body.theme-dark.design-android-glass .folder-tabs {
+    background: rgba(23, 33, 43, 0.6);
+    border-bottom-color: rgba(40, 201, 183, 0.1);
+}
+
+body.theme-dark.design-android-glass .folder-tab {
+    color: #8eb0bc;
+}
+
+body.theme-dark.design-android-glass .folder-tab-active {
+    color: #28c9b7;
 }
 
 body.theme-dark.design-android-classic {
