@@ -3,6 +3,7 @@
     flex: 0 0 auto;
     margin-left: 6px;
     margin-right: 8px;
+    z-index: 3200;
 }
 
 .android-version-trigger,
@@ -47,7 +48,7 @@
     position: absolute;
     top: calc(100% + 10px);
     left: 50%;
-    z-index: 1300;
+    z-index: 3200;
     width: 164px;
     padding: 7px 0 8px;
     border: 1px solid rgba(0, 0, 0, 0.08);
@@ -56,6 +57,17 @@
     color: var(--design-page-color);
     box-shadow: 0 10px 26px rgba(15, 23, 42, 0.14), 0 1px 4px rgba(15, 23, 42, 0.12);
     transform: translateX(-50%);
+}
+
+body.design-android .header-master {
+    position: relative;
+    z-index: 3100;
+    overflow: visible;
+}
+
+body.design-android .folder-tabs {
+    position: relative;
+    z-index: 1;
 }
 
 .android-version-option {
