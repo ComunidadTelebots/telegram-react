@@ -87,6 +87,7 @@ class GramJsController extends EventEmitter {
         this._customEmojiFetchQueue = new Set(); // IDs pending batch fetch
         this._customEmojiFetchTimer = null;
         this._downloadReconnects = new Map();
+        this._downloadReconnectAt = new Map();
 
         // Auth state internos
         this._phone = null;
@@ -261,6 +262,7 @@ class GramJsController extends EventEmitter {
         const session = new StringSession(savedSession);
 
         this.client = new TelegramClient(session, apiId, apiHash, this._buildClientOptions());
+        if (this.client.setLogLevel) this.client.setLogLevel('error');
 
         try {
             await this.client.connect();
@@ -960,6 +962,7 @@ class GramJsController extends EventEmitter {
                 } catch (_) {}
 
                 this.client = new TelegramClient(new StringSession(''), apiId, apiHash, this._buildClientOptions(dcId));
+                if (this.client.setLogLevel) this.client.setLogLevel('error');
                 this._setupUpdateHandler();
 
                 let connected = false;
@@ -2448,8 +2451,15 @@ class GramJsController extends EventEmitter {
             return this._downloadReconnects.get(key);
         }
 
+        const now = Date.now();
+        const lastReconnectAt = this._downloadReconnectAt.get(key) || 0;
+        if (now - lastReconnectAt < 5000) {
+            return Promise.resolve();
+        }
+
         const reconnect = (async () => {
             try {
+                this._downloadReconnectAt.set(key, Date.now());
                 if (dcId && this.client?._cleanupExportedSender) {
                     await this.client._cleanupExportedSender(dcId);
                     return;

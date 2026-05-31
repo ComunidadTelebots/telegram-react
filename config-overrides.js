@@ -12,6 +12,7 @@ const {
 } = require('customize-cra');
 const { BundleAnalyzerPlugin } = require('webpack-bundle-analyzer');
 const webpack = require('webpack');
+const processBrowser = require.resolve('process/browser');
 
 function addWebpackBundleAnalyzer(config, options = {}) {
     if (process.env.NODE_ENV === 'production'
@@ -32,9 +33,16 @@ module.exports = override(
             ...config.output,
             globalObject: 'this',
         },
+        resolve: {
+            ...config.resolve,
+            alias: {
+                ...(config.resolve ? config.resolve.alias : {}),
+                process: processBrowser,
+            },
+        },
         plugins: [
             ...config.plugins,
-            new webpack.ProvidePlugin({ process: 'process/browser' }),
+            new webpack.ProvidePlugin({ process: processBrowser }),
         ],
     }),
     config => addWebpackBundleAnalyzer(config,{

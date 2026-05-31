@@ -23,24 +23,28 @@
 <div id="root"></div>
 <script>
   // Full process polyfill for GramJS eval/dynamic contexts that escape webpack's ProvidePlugin
-  if (typeof process === 'undefined' || !process.nextTick) {
-    var _proc = {
-      env: { NODE_ENV: 'production', BROWSER: 'true' },
-      version: 'v16.0.0',
-      versions: {},
-      browser: true,
-      nextTick: function(cb) { Promise.resolve().then(cb); },
-      cwd: function() { return '/'; },
-      exit: function() {},
-      on: function() {},
-      off: function() {},
-      emit: function() {},
-      argv: [],
-      platform: 'browser'
-    };
-    if (typeof window !== 'undefined') window.process = _proc;
-    if (typeof globalThis !== 'undefined') globalThis.process = _proc;
-  }
+  (function() {
+    var root = typeof globalThis !== 'undefined' ? globalThis : window;
+    var current = root.process || {};
+    if (!current.nextTick) {
+      current = {
+        env: current.env || { NODE_ENV: 'production', BROWSER: 'true' },
+        version: current.version || 'v16.0.0',
+        versions: current.versions || {},
+        browser: true,
+        nextTick: function(cb) { Promise.resolve().then(cb); },
+        cwd: function() { return '/'; },
+        exit: function() {},
+        on: function() {},
+        off: function() {},
+        emit: function() {},
+        argv: [],
+        platform: 'browser'
+      };
+    }
+    root.process = current;
+  })();
+  var process = window.process;
 </script>
 </body>
 </html>

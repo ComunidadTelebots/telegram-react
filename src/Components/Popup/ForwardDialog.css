@@ -25,7 +25,7 @@
     display: flex;
     flex-wrap: wrap;
     flex: 1 1 auto;
-    align-content: start;
+    align-content: flex-start;
     padding: 12px 24px;
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
