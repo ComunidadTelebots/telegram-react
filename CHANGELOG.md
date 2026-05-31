@@ -1,5 +1,36 @@
 # Changelog
 
+## [2026-05-31] (sesión 11)
+
+### Added
+- **Emoji personalizado/animado inline** (`6473b65`) — render de custom emoji en el texto con carga perezosa (`IntersectionObserver`): `.tgs`→Lottie, `.webm`→vídeo, estático→img, con fallback Unicode. Nuevo `CustomEmoji.{js,css}`; `getCustomEmojiDocuments` (lotes de 200) en `GramJsController`; detección de `DocumentAttributeCustomEmoji` y `textEntityTypeCustomEmoji`. Archivos: `src/Components/Message/CustomEmoji.{js,css}`, `src/Controllers/GramJsController.js`, `src/Utils/GramJs/EntityTranslator.js`, `src/Utils/Message.js`.
+- **Historias (Stories)** (`29ec513`) — lectura completa: tray horizontal con anillos (no leídas en degradado, leídas en gris) y visor a pantalla completa con progreso segmentado, navegación tap/hold, cierre por swipe/Esc, auto-avance y marcado de leído. Nuevo `StoryStore`/`StoriesTray`/`StoryViewer`; handlers `updateStory`/`updateReadStories` y casos `getActiveStories`/`getStory`/`readStories`. Archivos: `src/Stores/StoryStore.js`, `src/Components/Stories/*`, `src/Utils/GramJs/{EntityTranslator,UpdateTranslator}.js`, `src/Controllers/GramJsController.js`.
+- **Botones AMP e Instant View independientes** (`203252e`) — en la preview de web, IV y AMP dejan de ser excluyentes; si hay ambos, salen los dos botones. Archivos: `src/Components/Message/Media/WebPage.{js,css}`.
+- **Visor AMP** (`ff77663`) — lector en modal con caché de Google y fallback a Cloudflare; arreglos móvil: dark mode, altura `dvh`, scroll iOS, `allow-modals`, bloqueo de scroll de fondo, i18n. Archivos: `src/Components/AmpViewer/AmpViewer.{js,css}`.
+- **Estilo base del reproductor de audio** (`a4cd68f`) — `Audio.css` (antes vacío) con estilo autosuficiente y variables de tema; el audio se ve bien en todos los skins, no solo Android. Archivos: `src/Components/Message/Media/Audio.{js,css}`.
+
+### Changed
+- **Fuente única de diseños** (`651670b`) — `DesignSwitcher` deja su lista `QUICK_DESIGNS` hardcodeada y usa `DESIGNS` de `Design.js`; menú "Switch design" reducido a 8 desde una única fuente. Archivos: `src/Components/DesignSwitcher.js`, `src/Design.js`.
+- **Variantes Android válidas-pero-ocultas** (`397b0b5`) — `getDesign`/`setDesign` validan contra `ALL_DESIGNS`; las eras (Holo, v9, v11, v13–v15) salen del menú principal pero siguen aplicables desde `AndroidVersionSelector`. Archivo: `src/Design.js`.
+
+### Fixed
+- **Congelación al responder a mensajes borrados** (`8c45626`) — `Reply.onGetMessageResult` accedía a `result.chat_id` sin comprobar null; guarda `if (!result) return` + filtrado en `loadReplies`. Archivos: `src/Components/Message/Reply.js`, `src/Utils/File.js`.
+- **Congelación al buscar con muchos resultados** (`4806d77`) — render progresivo de 20 en 20 (antes montaba 108+ de golpe). Archivo: `src/Components/ColumnLeft/Search/Search.js`.
+- **Etiqueta "AMP" invisible** (`203252e`) — un `!important` pintaba el texto del color del fondo; eliminados los overrides para que MUI gestione el color. Archivos: `src/Components/Message/Media/WebPage.{js,css}`.
+- **Tokens del tray de historias en dark Android** (`250f86a`) — usaba variables inexistentes (`--background-color`); cambiadas a `--design-sidebar-background`/`--design-border-color`/`--design-muted-color` con fallback. Incluye limpieza de mock/logs de debug. Archivo: `src/Components/Stories/StoriesTray.css`.
+- **Reintento de descarga en `CONNECTION_NOT_INITED`** (`daf76a9`) — `_downloadFile` reintenta 2 veces (300/600 ms); arregla avatares que no cargaban al primer intento. Archivo: `src/Controllers/GramJsController.js`.
+- **"Emoji doble" en el input** (`3061881`) — `inputbox-left-column` tenía dos botones con icono de carita (emoji + stickers); generalizado el ocultado del botón de stickers a todos los skins. Archivo: `src/Components/ColumnMiddle/InputBoxControl.css`.
+- **Reply, reacciones y avatares sin color** (`7a8e3f1`) — `current` y `tdesktop` no definían `--color-accent-main` (reply/reacciones invisibles) y `--tile-1..8` no estaba definido (avatares sin color); definidos el acento propio de cada skin y la paleta de tiles en `shell.css :root`. Archivos: `src/designs/{current,tdesktop,shell}.css`.
+
+### Reverted
+- **Tandas "estilo Android para todos"** (`5766fb5`, `2045a62` → revertidos en `055ef8f`, `9002a0a`) — llevar FAB, gradientes de avatar, header master y spoiler azul al resto de skins vía reglas base `body[class*='design-']` homogeneizaba e imponía la estética de Android, rompiendo la identidad de cada diseño (un FAB no pertenece a macOS/iOS/Desktop). Revertido por completo; los arreglos legítimos que arrastró (acentos, avatares) se re-aplicaron de forma neutra en `7a8e3f1`.
+
+### Notes
+- Los 9 `src/designs/*.css` quedan verificados byte-idénticos al estado pre-sesión salvo `shell.css` (solo la paleta `--tile-N`). Ningún skin perdió su identidad.
+- Análisis estático: CSS válido en los 9 skins, sin null-derefs/JSON sin proteger/fugas de listeners, y tokens `--design-*` cubiertos.
+
+---
+
 ## [2026-05-30] (sesión 10)
 
 ### Added — Diseños Android: novedades de Telegram adaptadas por variante
