@@ -31,7 +31,7 @@ class Audio extends React.Component {
             active: active,
             playing: active ? playing : false,
             currentTime: active && time ? time.currentTime : 0,
-            duration: active && time ? time.duration : 0
+            duration: active && time ? time.duration : 0,
         };
     }
 
@@ -78,7 +78,7 @@ class Audio extends React.Component {
             this.setState({
                 active: false,
                 playing: false,
-                currentTime: 0
+                currentTime: 0,
             });
         }
     };
@@ -109,14 +109,14 @@ class Audio extends React.Component {
                 this.setState({
                     active: true,
                     currentTime: 0,
-                    playing: true
+                    playing: true,
                 });
             }
         } else if (this.state.active) {
             this.setState({
                 active: false,
                 currentTime: 0,
-                playing: false
+                playing: false,
             });
         }
     };
@@ -131,7 +131,7 @@ class Audio extends React.Component {
         const title = getAudioTitle(audio);
 
         return (
-            <div className='document'>
+            <div className='document document-audio'>
                 <DocumentTile
                     thumbnail={album_cover_thumbnail}
                     file={file}
@@ -156,7 +156,7 @@ Audio.propTypes = {
     chatId: PropTypes.number,
     messageId: PropTypes.number,
     audio: PropTypes.object,
-    openMedia: PropTypes.func
+    openMedia: PropTypes.func,
 };
 
 export default Audio;

@@ -4,3 +4,42 @@
  * This source code is licensed under the GPL v.3.0 license found in the
  * LICENSE file in the root directory of this source tree.
  */
+
+/* ── Contenedor del reproductor de audio ───────────────────────────────── */
+.document-audio {
+    min-width: 220px;
+    padding: 4px 0;
+}
+
+/* ── Nombre de la pista: usa el color de acento del skin ────────────────── */
+.document-audio .document-name {
+    color: var(--color-accent-main, inherit);
+    cursor: pointer;
+}
+
+.document-audio .document-name:hover {
+    text-decoration: underline;
+}
+
+/* ── Metadatos (tamaño y tiempo) ────────────────────────────────────────── */
+.audio-action {
+    font-size: 13px;
+    user-select: none;
+    color: var(--design-muted-color, rgba(0, 0, 0, 0.54));
+    margin-top: 2px;
+}
+
+/* ── Círculo del tile cuando no hay carátula ────────────────────────────── */
+.document-audio .document-tile-background {
+    background: var(--color-accent-main, #229af0);
+    opacity: 0.75;
+}
+
+/* ── Dark mode ──────────────────────────────────────────────────────────── */
+body.theme-dark .audio-action {
+    color: var(--design-muted-color, rgba(255, 255, 255, 0.54));
+}
+
+body.theme-dark .document-audio .document-tile-background {
+    opacity: 0.55;
+}
