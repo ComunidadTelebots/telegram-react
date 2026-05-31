@@ -13,6 +13,8 @@ import Search from './Search/Search';
 import DialogsHeader from './DialogsHeader';
 import DialogsList from './DialogsList';
 import FolderDialogsList from './FolderDialogsList';
+import StoriesTray from '../Stories/StoriesTray';
+import StoryViewer from '../Stories/StoryViewer';
 import UpdatePanel from './UpdatePanel';
 import AndroidBottomNav from './AndroidBottomNav';
 import { borderStyle } from '../Theme';
@@ -59,6 +61,8 @@ class Dialogs extends Component {
 
             chatFilters: [],
             activeFilter: null,
+
+            storyViewerChatId: null,
         };
     }
 
@@ -90,6 +94,7 @@ class Dialogs extends Component {
         if (nextState.searchText !== searchText) return true;
         if (nextState.chatFilters !== chatFilters) return true;
         if (nextState.activeFilter !== activeFilter) return true;
+        if (nextState.storyViewerChatId !== this.state.storyViewerChatId) return true;
 
         return false;
     }
@@ -137,6 +142,9 @@ class Dialogs extends Component {
     onTdlibClientUpdate = update => {
         if (update['@type'] === 'clientUpdateChatFilters') {
             this.setState({ chatFilters: update.filters });
+        }
+        if (update['@type'] === 'clientUpdateOpenStoryViewer') {
+            this.setState({ storyViewerChatId: update.chatId });
         }
     };
 
@@ -340,6 +348,7 @@ class Dialogs extends Component {
             searchText,
             chatFilters,
             activeFilter,
+            storyViewerChatId,
         } = this.state;
 
         const mainCacheItems = cache ? cache.chats || [] : null;
@@ -358,6 +367,7 @@ class Dialogs extends Component {
                     onSearch={this.handleSearch}
                     onSearchTextChange={this.handleSearchTextChange}
                 />
+                {!openSearch && <StoriesTray />}
                 {chatFilters.length > 0 && !openSearch && !openArchive && (
                     <div className='folder-tabs'>
                         <button
@@ -411,6 +421,12 @@ class Dialogs extends Component {
                 </div>
                 <UpdatePanel />
                 <AndroidBottomNav active='chats' />
+                {storyViewerChatId != null && (
+                    <StoryViewer
+                        chatId={storyViewerChatId}
+                        onClose={() => this.setState({ storyViewerChatId: null })}
+                    />
+                )}
             </div>
         );
     }

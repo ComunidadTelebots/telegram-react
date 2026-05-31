@@ -31,6 +31,7 @@ import ChatStore from './Stores/ChatStore';
 import UserStore from './Stores/UserStore';
 import ApplicationStore from './Stores/ApplicationStore';
 import AuthorizationStore from './Stores/AuthorizationStore';
+import './Stores/StoryStore'; // instancia el store y registra listeners de updates
 import TdLibController from './Controllers/TdLibController';
 import './TelegramApp.css';
 
@@ -40,10 +41,10 @@ import MainPage from './Components/MainPage';
 const styles = theme => ({
     '@global': {
         a: {
-            color: theme.palette.primary.main
+            color: theme.palette.primary.main,
         },
         code: {
-            color: theme.palette.primary.dark
+            color: theme.palette.primary.dark,
         },
         pre: {
             borderColor: theme.palette.divider,
@@ -51,14 +52,14 @@ const styles = theme => ({
             // background: theme.palette.primary.main + '11'
             '&::selection': {
                 color: theme.palette.text.primary,
-                backgroundColor: 'highlight'
-            }
+                backgroundColor: 'highlight',
+            },
         },
         body: {
             background: theme.palette.type === 'dark' ? theme.palette.grey[900] : '#ffffff',
-            color: theme.palette.text.primary
-        }
-    }
+            color: theme.palette.text.primary,
+        },
+    },
 });
 
 class TelegramApp extends Component {
@@ -73,7 +74,7 @@ class TelegramApp extends Component {
             tdlibDatabaseExists: false,
             inactive: false,
             fatalError: false,
-            nativeMobile: isMobile()
+            nativeMobile: isMobile(),
         };
     }
 
@@ -117,9 +118,9 @@ class TelegramApp extends Component {
         if (!exists) {
             this.setState({
                 authorizationState: {
-                    '@type': 'authorizationStateWaitTdlib'
+                    '@type': 'authorizationStateWaitTdlib',
                 },
-                tdlibDatabaseExists: exists
+                tdlibDatabaseExists: exists,
             });
         }
     };
@@ -156,7 +157,7 @@ class TelegramApp extends Component {
         TdLibController.send({
             '@type': 'setOption',
             name: 'online',
-            value: { '@type': 'optionValueBoolean', value: true }
+            value: { '@type': 'optionValueBoolean', value: true },
         });
     };
 
@@ -166,7 +167,7 @@ class TelegramApp extends Component {
 
     handleChangePhone = () => {
         this.setState({
-            authorizationState: { '@type': 'authorizationStateWaitPhoneNumber' }
+            authorizationState: { '@type': 'authorizationStateWaitPhoneNumber' },
         });
     };
 
@@ -214,7 +215,7 @@ class TelegramApp extends Component {
             // }
             else {
                 authorizationState = {
-                    '@type': 'authorizationStateWaitPhoneNumber'
+                    '@type': 'authorizationStateWaitPhoneNumber',
                 };
             }
         }
@@ -314,7 +315,7 @@ async function openPinnedChat(index) {
         '@type': 'getChats',
         offset_order: '9223372036854775807',
         offset_chat_id: 0,
-        limit: 10
+        limit: 10,
     });
 
     if (chats) {
@@ -363,7 +364,7 @@ document.addEventListener('keydown', async event => {
                 const chat = await TdLibController.send({
                     '@type': 'createPrivateChat',
                     user_id: UserStore.getMyId(),
-                    force: true
+                    force: true,
                 });
 
                 if (chat) {
@@ -421,7 +422,7 @@ window.onblur = function() {
 
     TdLibController.clientUpdate({
         '@type': 'clientUpdateFocusWindow',
-        focused: false
+        focused: false,
     });
 };
 
@@ -434,7 +435,7 @@ window.onfocus = function() {
 
     TdLibController.clientUpdate({
         '@type': 'clientUpdateFocusWindow',
-        focused: true
+        focused: true,
     });
 };
 

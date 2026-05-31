@@ -27,6 +27,7 @@ import {
     translateInstantView,
     mediaCache,
 } from '../Utils/GramJs/EntityTranslator';
+import { translateStoryItem } from '../Utils/GramJs/UpdateTranslator';
 import { loadMessages, saveMessages } from '../Utils/MessageCache';
 
 const ACCOUNTS_KEY = 'tg_gramjs_accounts';
@@ -861,6 +862,16 @@ class GramJsController extends EventEmitter {
                 return this._getRecentStickers(req);
             case 'getCustomEmojiDocuments':
                 return this._getCustomEmojiDocuments(req);
+
+            // ── Stories ──────────────────────────────────────────────────────
+            case 'getActiveStories':
+                return this._getActiveStories(req);
+            case 'getChatActiveStories':
+                return this._getChatActiveStories(req);
+            case 'getStory':
+                return this._getStory(req);
+            case 'readStories':
+                return this._readStories(req);
 
             // ── Notificaciones ────────────────────────────────────────────────
             case 'setNotificationGroup':
@@ -2199,6 +2210,72 @@ class GramJsController extends EventEmitter {
         } catch (e) {
             console.warn('[GramJs] getCustomEmojiDocuments error', e);
             return { '@type': 'stickers', stickers: cached };
+        }
+    };
+
+    // ── Stories ───────────────────────────────────────────────────────────────
+
+    _getActiveStories = async () => {
+        try {
+            const result = await this.client.invoke(new Api.stories.GetAllStories({ next: false, hidden: false }));
+            const peers = (result.peerStories || []).map(ps => {
+                const peerId = peerToTdlibChatId(ps.peer);
+                const stories = (ps.stories || []).map(s => translateStoryItem(s, peerId)).filter(Boolean);
+                return {
+                    sender_chat_id: peerId,
+                    max_read_id: ps.maxReadId || 0,
+                    stories,
+                    order: ps.order || 0,
+                };
+            });
+            return { '@type': 'activeStories', peers };
+        } catch (e) {
+            console.warn('[GramJs] getActiveStories error', e);
+            return { '@type': 'activeStories', peers: [] };
+        }
+    };
+
+    _getChatActiveStories = async req => {
+        try {
+            const { chat_id } = req;
+            const peer = tdlibChatIdToInputPeer(chat_id, this._entityCache);
+            const result = await this.client.invoke(new Api.stories.GetPeerStories({ peer }));
+            const peerId = chat_id;
+            const stories = (result.stories?.stories || []).map(s => translateStoryItem(s, peerId)).filter(Boolean);
+            return {
+                '@type': 'chatActiveStories',
+                sender_chat_id: peerId,
+                max_read_id: result.stories?.maxReadId || 0,
+                stories,
+            };
+        } catch (e) {
+            console.warn('[GramJs] getChatActiveStories error', e);
+            return { '@type': 'chatActiveStories', sender_chat_id: req.chat_id || 0, stories: [] };
+        }
+    };
+
+    _getStory = async req => {
+        try {
+            const { chat_id, story_id } = req;
+            const peer = tdlibChatIdToInputPeer(chat_id, this._entityCache);
+            const result = await this.client.invoke(new Api.stories.GetStoriesByID({ peer, id: [story_id] }));
+            const stories = (result.stories || []).map(s => translateStoryItem(s, chat_id)).filter(Boolean);
+            return stories[0] || null;
+        } catch (e) {
+            console.warn('[GramJs] getStory error', e);
+            return null;
+        }
+    };
+
+    _readStories = async req => {
+        try {
+            const { chat_id, max_story_id } = req;
+            const peer = tdlibChatIdToInputPeer(chat_id, this._entityCache);
+            await this.client.invoke(new Api.stories.ReadStories({ peer, maxId: max_story_id }));
+            return {};
+        } catch (e) {
+            console.warn('[GramJs] readStories error', e);
+            return {};
         }
     };
 

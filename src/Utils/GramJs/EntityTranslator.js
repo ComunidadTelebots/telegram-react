@@ -243,6 +243,27 @@ export function translateAudio(gDoc) {
     };
 }
 
+export function translateStoryContent(media) {
+    if (!media) return null;
+    const cls = media.className || media._;
+    if (cls === 'MessageMediaPhoto' || cls === 'messageMediaPhoto') {
+        const photo = translatePhoto(media.photo);
+        if (!photo) return null;
+        return { '@type': 'storyContentPhoto', photo };
+    }
+    if (cls === 'MessageMediaDocument' || cls === 'messageMediaDocument') {
+        const doc = media.document;
+        if (!doc) return null;
+        const mimeType = doc.mimeType || '';
+        if (mimeType.startsWith('video/')) {
+            const video = translateVideo(doc);
+            if (!video) return null;
+            return { '@type': 'storyContentVideo', video, alternative_video: null };
+        }
+    }
+    return { '@type': 'storyContentUnsupported' };
+}
+
 export function translateSticker(gDoc) {
     if (!gDoc) return null;
     if (gDoc.id) {

@@ -1,0 +1,190 @@
+.story-viewer-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 1400;
+    background: rgba(0, 0, 0, 0.85);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.story-viewer {
+    position: relative;
+    width: 100%;
+    max-width: 400px;
+    height: 100%;
+    max-height: 760px;
+    background: #000;
+    border-radius: 12px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    user-select: none;
+}
+
+/* ── Progress bar ── */
+.story-progress-bar {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    right: 10px;
+    z-index: 10;
+    display: flex;
+    gap: 4px;
+}
+
+.story-progress-segment {
+    flex: 1;
+    height: 3px;
+    background: rgba(255, 255, 255, 0.35);
+    border-radius: 2px;
+    overflow: hidden;
+}
+
+.story-progress-fill {
+    height: 100%;
+    width: 0;
+    background: #fff;
+    border-radius: 2px;
+}
+
+.story-progress-fill--done {
+    width: 100%;
+}
+
+.story-progress-fill--active {
+    animation: story-fill linear forwards;
+    animation-play-state: running;
+}
+
+@keyframes story-fill {
+    from {
+        width: 0;
+    }
+    to {
+        width: 100%;
+    }
+}
+
+/* ── Header ── */
+.story-header {
+    position: absolute;
+    top: 22px;
+    left: 10px;
+    right: 10px;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.story-header-left {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+}
+
+.story-header-avatar {
+    width: 36px;
+    height: 36px;
+    flex-shrink: 0;
+}
+
+.story-header-avatar .chat-tile {
+    width: 36px;
+    height: 36px;
+}
+
+.story-header-info {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.story-header-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: #fff;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.story-header-time {
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.75);
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+.story-close-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #fff;
+    padding: 4px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    opacity: 0.85;
+    transition: opacity 0.15s;
+}
+
+.story-close-btn:hover {
+    opacity: 1;
+}
+
+/* ── Media ── */
+.story-media-area {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    cursor: pointer;
+    touch-action: none;
+}
+
+.story-media-img,
+.story-media-video {
+    max-width: 100%;
+    max-height: 100%;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    display: block;
+    pointer-events: none;
+}
+
+.story-media-loading {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 3px solid rgba(255, 255, 255, 0.2);
+    border-top-color: #fff;
+    animation: story-spin 0.7s linear infinite;
+}
+
+@keyframes story-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* ── Caption ── */
+.story-caption {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 48px 16px 16px;
+    background: linear-gradient(transparent, rgba(0, 0, 0, 0.65));
+    color: #fff;
+    font-size: 14px;
+    line-height: 1.4;
+    word-break: break-word;
+    pointer-events: none;
+}

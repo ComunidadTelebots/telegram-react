@@ -9,6 +9,7 @@ import {
     translateUserStatus,
     translateReactions,
     translateUserProfilePhoto,
+    translateStoryContent,
 } from './EntityTranslator';
 
 export function translateUpdate(update) {
@@ -90,6 +91,14 @@ export function translateUpdate(update) {
             return chatMember(update, false);
         case 'UpdateChannelParticipant':
             return chatMember(update, true);
+
+        // ── Stories ──────────────────────────────────────────────────────────
+        case 'UpdateStory':
+            return updateStory(update);
+        case 'UpdateReadStories':
+            return updateReadStories(update);
+        case 'UpdateStoriesStealthMode':
+            return updateStoriesStealthMode(update);
 
         default:
             return null;
@@ -461,5 +470,73 @@ function chatMember(update, isChannel) {
             joined_chat_date: update.date || 0,
             status: translateParticipantStatus(update.newParticipant),
         },
+    };
+}
+
+// ─── Stories ─────────────────────────────────────────────────────────────────
+
+function updateStory(update) {
+    const peerId = peerToTdlibChatId(update.peer);
+    if (!peerId) return null;
+    const story = update.story;
+    if (!story) return null;
+    const cls = story.className || story._;
+    // StoryItemDeleted — la historia fue eliminada
+    if (cls === 'StoryItemDeleted') {
+        return {
+            '@type': 'updateStoryDeleted',
+            sender_chat_id: peerId,
+            story_id: story.id,
+        };
+    }
+    // StoryItemSkipped o StoryItem
+    return {
+        '@type': 'updateStory',
+        story: translateStoryItem(story, peerId),
+    };
+}
+
+function updateReadStories(update) {
+    const peerId = peerToTdlibChatId(update.peer);
+    if (!peerId) return null;
+    return {
+        '@type': 'updateReadStories',
+        sender_chat_id: peerId,
+        max_story_id: update.maxId || 0,
+    };
+}
+
+function updateStoriesStealthMode(update) {
+    return {
+        '@type': 'updateStoriesStealthMode',
+        active_until_date: update.stealthMode?.activeUntilDate || 0,
+        cooldown_until_date: update.stealthMode?.cooldownUntilDate || 0,
+    };
+}
+
+export function translateStoryItem(story, senderChatId) {
+    if (!story) return null;
+    const cls = story.className || story._;
+    if (cls === 'StoryItemDeleted' || cls === 'StoryItemSkipped') return null;
+
+    const content = translateStoryContent(story.media);
+    const caption = story.caption
+        ? {
+              '@type': 'formattedText',
+              text: story.caption,
+              entities: [],
+          }
+        : null;
+
+    return {
+        '@type': 'story',
+        id: story.id,
+        sender_chat_id: senderChatId,
+        date: story.date || 0,
+        expire_date: story.expireDate || 0,
+        content,
+        caption,
+        is_read: !!story.seen,
+        privacy_settings: null,
     };
 }
