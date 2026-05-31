@@ -61,3 +61,7 @@
     font-size: 0.75rem;
     text-transform: none;
 }
+
+.search .MuiListItem-button:hover {
+    background-color: var(--design-hover-background, rgba(0, 0, 0, 0.04));
+}

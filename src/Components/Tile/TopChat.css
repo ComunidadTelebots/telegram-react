@@ -22,4 +22,5 @@
     font-size: 12px;
     line-height: normal;
     user-select: none;
+    color: var(--design-muted-color, inherit);
 }

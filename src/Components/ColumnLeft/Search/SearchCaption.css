@@ -9,10 +9,18 @@
     padding: 4px 22px;
     display: flex;
     flex-direction: row;
+    background: var(--design-hover-background, #f0f4f7);
 }
 
 .search-caption-title {
     flex-grow: 1;
     flex-shrink: 1;
+    user-select: none;
+    color: var(--design-muted-color, #8096a8);
+}
+
+.search-caption-command {
+    color: var(--color-accent-main, #5b8af1);
+    cursor: pointer;
     user-select: none;
 }
