@@ -374,3 +374,40 @@ body.theme-dark.design-ios .day-meta-wrapper {
     color: rgba(235, 235, 245, 0.68);
     backdrop-filter: blur(12px);
 }
+
+/* ===== Search vacío (ios — listas agrupadas estilo iOS) ===== */
+body.design-ios .search-caption {
+    background: transparent;
+    padding: 12px 16px 4px;
+}
+
+body.design-ios .search-caption-title {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    color: var(--design-muted-color, #8e8e93);
+}
+
+body.design-ios .search-caption-command {
+    text-transform: none;
+    font-size: 15px;
+    color: var(--color-accent-main, #007aff);
+}
+
+body.design-ios .top-chat-title {
+    font-size: 11px;
+    color: var(--design-muted-color, #8e8e93);
+}
+
+body.design-ios .search-recently-found-chats,
+body.design-ios .search-local-chats {
+    margin: 2px 12px 16px;
+    border: 1px solid var(--design-border-color, rgba(60, 60, 67, 0.12));
+    border-radius: 14px;
+    overflow: hidden;
+}
+
+body.design-ios .search-recently-found-chats .MuiListItem-root + .MuiListItem-root,
+body.design-ios .search-local-chats .MuiListItem-root + .MuiListItem-root {
+    border-top: 1px solid var(--design-border-color, rgba(60, 60, 67, 0.12));
+}
