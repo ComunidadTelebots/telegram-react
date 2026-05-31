@@ -86,6 +86,7 @@ class GramJsController extends EventEmitter {
         this._customEmojiCache = new Map(); // String(document_id) → translated sticker object
         this._customEmojiFetchQueue = new Set(); // IDs pending batch fetch
         this._customEmojiFetchTimer = null;
+        this._downloadReconnects = new Map();
 
         // Auth state internos
         this._phone = null;
@@ -2433,6 +2434,46 @@ class GramJsController extends EventEmitter {
         }
     };
 
+    _getMediaDcId = gMedia => {
+        if (!gMedia) return undefined;
+        if (gMedia['@type'] === 'profilePhoto') {
+            return gMedia.entity?.photo?.dcId;
+        }
+        return gMedia.dcId;
+    };
+
+    _recoverDownloadConnection = async dcId => {
+        const key = dcId || this.client?.session?.dcId || 'main';
+        if (this._downloadReconnects.has(key)) {
+            return this._downloadReconnects.get(key);
+        }
+
+        const reconnect = (async () => {
+            try {
+                if (dcId && this.client?._cleanupExportedSender) {
+                    await this.client._cleanupExportedSender(dcId);
+                    return;
+                }
+
+                if (!this.client?.connected) {
+                    await this.client.connect();
+                    return;
+                }
+
+                await this.client.disconnect();
+                await new Promise(resolve => setTimeout(resolve, 500));
+                await this.client.connect();
+            } catch (err) {
+                console.warn('[GramJs] download reconnect failed', dcId, err);
+            } finally {
+                this._downloadReconnects.delete(key);
+            }
+        })();
+
+        this._downloadReconnects.set(key, reconnect);
+        return reconnect;
+    };
+
     _emitUpdateFile = (fileId, blob, isComplete = false, isActive = false) => {
         const size = blob ? blob.size : 0;
         this._emitUpdate({
@@ -2485,12 +2526,13 @@ class GramJsController extends EventEmitter {
         this._downloadingFiles.add(fileId);
         this._emitUpdateFile(fileId, null, false, true);
 
-        const MAX_RETRIES = 2;
-        const RETRY_DELAYS_MS = [300, 600];
+        const MAX_RETRIES = 4;
+        const RETRY_DELAYS_MS = [250, 600, 1200, 2000];
+        const mediaDcId = this._getMediaDcId(gMedia);
 
         const attemptDownload = async () => {
             const cls = gMedia.className || gMedia._;
-            const dcId = gMedia.dcId;
+            const dcId = mediaDcId;
 
             if (gMedia['@type'] === 'profilePhoto') {
                 const buffer = await this.client.downloadProfilePhoto(gMedia.entity, {
@@ -2545,6 +2587,7 @@ class GramJsController extends EventEmitter {
             } catch (err) {
                 if (isConnectionNotInited(err) && attempt < MAX_RETRIES) {
                     lastErr = err;
+                    await this._recoverDownloadConnection(mediaDcId);
                     continue;
                 }
                 console.error('[GramJs] downloadFile error', fileId, err);
