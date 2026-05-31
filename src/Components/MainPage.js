@@ -13,6 +13,7 @@ import withLanguage from '../Language';
 import withTheme from '../Theme';
 import withSnackbarNotifications from '../Notifications';
 import ForwardDialog from './Popup/ForwardDialog';
+import TutorialDialog from './Popup/TutorialDialog';
 import NewGroupDialog from './Popup/NewGroupDialog';
 import NewChannelDialog from './Popup/NewChannelDialog';
 import ChatInfo from './ColumnRight/ChatInfo';
@@ -218,6 +219,7 @@ class MainPage extends React.Component {
                 <NewGroupDialog open={newGroupOpen} onClose={() => this.setState({ newGroupOpen: false })} />
                 <NewChannelDialog open={newChannelOpen} onClose={() => this.setState({ newChannelOpen: false })} />
                 <DesignSwitcher />
+                <TutorialDialog />
             </>
         );
     }
