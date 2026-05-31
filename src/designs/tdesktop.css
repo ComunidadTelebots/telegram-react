@@ -275,3 +275,37 @@ body.theme-dark.design-tdesktop ::-webkit-scrollbar-track {
 body.theme-dark.design-tdesktop ::-webkit-scrollbar-thumb {
     background: rgba(255, 255, 255, 0.22);
 }
+
+/* ===== Search vacío (tdesktop — clásico Desktop, acento teal) ===== */
+body.design-tdesktop .search-caption {
+    padding: 7px 20px 3px;
+    background: transparent;
+}
+
+body.design-tdesktop .search-caption-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--color-accent-main, #3a9ad0);
+}
+
+body.design-tdesktop .search-caption-command {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--color-accent-main, #3a9ad0);
+}
+
+body.design-tdesktop .top-chat-title {
+    font-size: 12px;
+    color: var(--design-muted-color);
+}
+
+/* Divisor clásico bajo la fila de contactos frecuentes */
+body.design-tdesktop .search-top-chats {
+    border-bottom: 1px solid var(--design-border-color);
+}
+
+/* Filas clásicas a sangre, algo más densas */
+body.design-tdesktop .search-recently-found-chats .recently-found-chat,
+body.design-tdesktop .search-local-chats .recently-found-chat {
+    padding: 8px 20px;
+}
