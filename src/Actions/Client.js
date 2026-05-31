@@ -11,7 +11,7 @@ export function editMessage(chatId, messageId) {
     TdLibController.clientUpdate({
         '@type': 'clientUpdateEditMessage',
         chatId,
-        messageId
+        messageId,
     });
 }
 
@@ -19,7 +19,7 @@ export function deleteMessages(chatId, messageIds) {
     TdLibController.clientUpdate({
         '@type': 'clientUpdateDeleteMessages',
         chatId,
-        messageIds
+        messageIds,
     });
 }
 
@@ -27,7 +27,7 @@ export function replyMessage(chatId, messageId) {
     TdLibController.clientUpdate({
         '@type': 'clientUpdateReply',
         chatId,
-        messageId
+        messageId,
     });
 }
 
@@ -36,8 +36,8 @@ export function forwardMessages(chatId, messageIds) {
         '@type': 'clientUpdateForward',
         info: {
             chatId,
-            messageIds
-        }
+            messageIds,
+        },
     });
 }
 
@@ -45,7 +45,7 @@ export function openUser(userId, popup = false) {
     TdLibController.clientUpdate({
         '@type': 'clientUpdateOpenUser',
         userId,
-        popup
+        popup,
     });
 }
 
@@ -54,7 +54,7 @@ export function openChat(chatId, messageId = null, popup = false) {
         '@type': 'clientUpdateOpenChat',
         chatId,
         messageId,
-        popup
+        popup,
     });
 }
 
@@ -63,7 +63,7 @@ export function closeChat() {
         '@type': 'clientUpdateOpenChat',
         chatId: 0,
         messageId: null,
-        popup: false
+        popup: false,
     });
 }
 
@@ -71,7 +71,7 @@ export function openReply(chatId, messageId) {
     TdLibController.clientUpdate({
         '@type': 'clientUpdateOpenReply',
         chatId,
-        messageId
+        messageId,
     });
 }
 
@@ -79,7 +79,7 @@ export function highlightMessage(chatId, messageId) {
     TdLibController.clientUpdate({
         '@type': 'clientUpdateMessageHighlighted',
         chatId,
-        messageId
+        messageId,
     });
 }
 
@@ -88,7 +88,7 @@ export function selectMessage(chatId, messageId, selected) {
         '@type': 'clientUpdateMessageSelected',
         chatId,
         messageId,
-        selected
+        selected,
     });
 }
 
@@ -99,28 +99,28 @@ export function clearSelection() {
 export function setInstantViewViewerContent(content) {
     TdLibController.clientUpdate({
         '@type': 'clientUpdateInstantViewViewerContent',
-        content
+        content,
     });
 }
 
 export function setMediaViewerContent(content) {
     TdLibController.clientUpdate({
         '@type': 'clientUpdateMediaViewerContent',
-        content
+        content,
     });
 }
 
 export function setProfileMediaViewerContent(content) {
     TdLibController.clientUpdate({
         '@type': 'clientUpdateProfileMediaViewerContent',
-        content
+        content,
     });
 }
 
 export function setInstantViewContent(content) {
     TdLibController.clientUpdate({
         '@type': 'clientUpdateInstantViewContent',
-        content
+        content,
     });
 }
 
@@ -132,10 +132,14 @@ export function closeAmpViewer() {
     TdLibController.clientUpdate({ '@type': 'clientUpdateAmpViewerContent', url: null });
 }
 
+export function openTutorial() {
+    TdLibController.clientUpdate({ '@type': 'clientUpdateOpenTutorial' });
+}
+
 export function searchChat(chatId, query = null) {
     TdLibController.clientUpdate({
         '@type': 'clientUpdateSearchChat',
         chatId,
-        query
+        query,
     });
 }

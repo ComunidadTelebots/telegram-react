@@ -103,7 +103,7 @@ class ApplicationStore extends EventEmitter {
                             document.title += ': Zzz…';
 
                             TdLibController.clientUpdate({
-                                '@type': 'clientUpdateAppInactive'
+                                '@type': 'clientUpdateAppInactive',
                             });
                         } else {
                             TdLibController.init();
@@ -182,7 +182,7 @@ class ApplicationStore extends EventEmitter {
                     nextChatId: update.chatId,
                     nextMessageId: update.messageId,
                     previousChatId: this.chatId,
-                    previousMessageId: this.messageId
+                    previousMessageId: this.messageId,
                 };
 
                 this.chatId = update.chatId;
@@ -226,6 +226,10 @@ class ApplicationStore extends EventEmitter {
                 this.emit('clientUpdateSearchChat', update);
                 break;
             }
+            case 'clientUpdateOpenTutorial': {
+                this.emit('clientUpdateOpenTutorial', update);
+                break;
+            }
             case 'clientUpdateSetPhone': {
                 const { phone } = update;
 
@@ -234,7 +238,7 @@ class ApplicationStore extends EventEmitter {
                 if (!phone) {
                     this.setPhoneNumberRequest = null;
                     TdLibController.clientUpdate({
-                        '@type': 'clientUpdateSetPhoneCanceled'
+                        '@type': 'clientUpdateSetPhoneCanceled',
                     });
                 } else {
                     if (
@@ -273,7 +277,7 @@ class ApplicationStore extends EventEmitter {
                 TdLibController.send({
                     '@type': 'setOption',
                     name: 'online',
-                    value: { '@type': 'optionValueBoolean', value: update.focused }
+                    value: { '@type': 'optionValueBoolean', value: update.focused },
                 });
 
                 this.emit('clientUpdateFocusWindow', update);
@@ -296,18 +300,18 @@ class ApplicationStore extends EventEmitter {
     setPhoneNumber = phone => {
         TdLibController.send({
             '@type': 'setAuthenticationPhoneNumber',
-            phone_number: phone
+            phone_number: phone,
         })
             .then(result => {
                 TdLibController.clientUpdate({
                     '@type': 'clientUpdateSetPhoneResult',
-                    result
+                    result,
                 });
             })
             .catch(error => {
                 TdLibController.clientUpdate({
                     '@type': 'clientUpdateSetPhoneError',
-                    error
+                    error,
                 });
             });
     };
@@ -344,7 +348,7 @@ class ApplicationStore extends EventEmitter {
             nextChatId: chatId,
             nextMessageId: messageId,
             previousChatId: this.chatId,
-            previousMessageId: this.messageId
+            previousMessageId: this.messageId,
         };
 
         this.chatId = chatId;

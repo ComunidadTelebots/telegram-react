@@ -103,60 +103,52 @@ class TutorialDialog extends React.Component {
 
     handleNext = () => {
         const { step } = this.state;
-        if (step < STEPS.length - 1) {
-            this.setState({ step: step + 1 });
-        } else {
+        if (step >= STEPS.length - 1) {
             this.handleClose();
+            return;
         }
+        this.setState({ step: step + 1 });
     };
 
     render() {
         const { open, step } = this.state;
-        const { Icon, title, text } = STEPS[step];
+        const current = STEPS[step];
+        const Icon = current.Icon;
         const isLast = step === STEPS.length - 1;
-
         return (
-            <Dialog
-                open={open}
-                onClose={this.handleClose}
-                classes={{ paper: 'tutorial-dialog-paper' }}
-                maxWidth='xs'
-                fullWidth>
+            <Dialog open={open} onClose={this.handleClose} classes={{ paper: 'tutorial-paper' }}>
                 <div className='tutorial-dialog'>
-                    <div className='tutorial-dialog-header'>
-                        {step > 0 ? (
-                            <IconButton size='small' onClick={this.handleBack} className='tutorial-back-btn'>
-                                <ChevronLeftIcon />
-                            </IconButton>
-                        ) : (
-                            <div className='tutorial-back-placeholder' />
-                        )}
-                        <IconButton size='small' onClick={this.handleClose} className='tutorial-close-btn'>
-                            <CloseIcon />
-                        </IconButton>
+                    <IconButton className='tutorial-close' aria-label='Close' onClick={this.handleClose}>
+                        <CloseIcon />
+                    </IconButton>
+                    <div className='tutorial-icon'>
+                        <Icon style={{ fontSize: 56 }} />
                     </div>
-
-                    <div className='tutorial-dialog-body'>
-                        <div className='tutorial-icon-wrap'>
-                            <Icon className='tutorial-icon' />
-                        </div>
-                        <h2 className='tutorial-title'>{title}</h2>
-                        <p className='tutorial-text'>{text}</p>
+                    <div className='tutorial-title'>{current.title}</div>
+                    <div className='tutorial-text'>{current.text}</div>
+                    <div className='tutorial-dots'>
+                        {STEPS.map((s, i) => (
+                            <span
+                                key={i}
+                                className={i === step ? 'tutorial-dot tutorial-dot--active' : 'tutorial-dot'}
+                                onClick={() => this.setState({ step: i })}
+                            />
+                        ))}
                     </div>
-
-                    <div className='tutorial-dialog-footer'>
-                        <div className='tutorial-dots'>
-                            {STEPS.map((_, i) => (
-                                <span key={i} className={`tutorial-dot${i === step ? ' tutorial-dot--active' : ''}`} />
-                            ))}
-                        </div>
-                        <Button
-                            variant='contained'
-                            color='primary'
-                            className='tutorial-next-btn'
-                            onClick={this.handleNext}>
-                            {isLast ? 'Empezar' : 'Siguiente'}
+                    <div className='tutorial-actions'>
+                        <Button className='tutorial-skip' onClick={this.handleClose}>
+                            Saltar
                         </Button>
+                        <div className='tutorial-nav'>
+                            {step > 0 && (
+                                <IconButton className='tutorial-prev' aria-label='Back' onClick={this.handleBack}>
+                                    <ChevronLeftIcon />
+                                </IconButton>
+                            )}
+                            <Button className='tutorial-next' variant='contained' onClick={this.handleNext}>
+                                {isLast ? 'Empezar' : 'Siguiente'}
+                            </Button>
+                        </div>
                     </div>
                 </div>
             </Dialog>

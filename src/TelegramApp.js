@@ -36,6 +36,7 @@ import TdLibController from './Controllers/TdLibController';
 import './TelegramApp.css';
 
 import MainPage from './Components/MainPage';
+import TutorialDialog from './Components/Popup/TutorialDialog';
 // const MainPage = React.lazy(() => import('./Components/MainPage'));
 
 const styles = theme => ({
@@ -281,6 +282,7 @@ class TelegramApp extends Component {
         return (
             <div id='app' onDragOver={this.handleDragOver} onDrop={this.handleDrop} onKeyDown={this.handleKeyDown}>
                 {page}
+                <TutorialDialog />
                 <Dialog
                     transitionDuration={0}
                     open={fatalError}

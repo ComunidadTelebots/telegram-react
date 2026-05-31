@@ -196,18 +196,6 @@ class AndroidSettings extends React.PureComponent {
                 rows: [
                     { icon: <HelpIcon />, label: 'Ask a Question', sub: '', arrow: true },
                     { icon: <InfoIcon />, label: 'Telegram Features', sub: '', arrow: true },
-                    {
-                        icon: <InfoIcon />,
-                        label: 'Tutorial',
-                        sub: 'Ver la guía rápida',
-                        arrow: true,
-                        action: () => {
-                            ApplicationStore.emit('clientUpdateOpenTutorial', {
-                                '@type': 'clientUpdateOpenTutorial',
-                            });
-                            onClose();
-                        },
-                    },
                 ],
             },
         ];
