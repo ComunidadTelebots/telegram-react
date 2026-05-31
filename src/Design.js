@@ -15,8 +15,9 @@ import './designs/telegramx.css';
 
 const DESIGN_KEY = 'tg_design';
 
-// Variantes de Android eliminadas del menú — se redirigen a 'android' al cargar
-const REMOVED_ANDROID_VARIANTS = [
+// Variantes de Android: válidas y funcionales, pero ocultas del menú principal.
+// AndroidVersionSelector las aplica directamente; DesignSwitcher solo expone DESIGNS.
+const ANDROID_SUB_VARIANTS = [
     'android-holo',
     'android-v9',
     'android-v11',
@@ -25,7 +26,12 @@ const REMOVED_ANDROID_VARIANTS = [
     'android-glass',
 ];
 
+// Entradas visibles en el selector principal (DesignSwitcher)
 const DESIGNS = ['current', 'android', 'unigram', 'ios', 'macos', 'tdesktop', 'aurora', 'telegramx'];
+
+// Conjunto completo de nombres válidos (menú + sub-variantes Android)
+const ALL_DESIGNS = [...DESIGNS, ...ANDROID_SUB_VARIANTS];
+
 const DEFAULT_DESIGN = 'current';
 
 export const DESIGN_LABELS = {
@@ -52,19 +58,14 @@ export const DESIGN_ACCENTS = {
 
 export function getDesign() {
     const saved = localStorage.getItem(DESIGN_KEY) || DEFAULT_DESIGN;
-    // Si el diseño guardado es una variante de Android eliminada del menú, cae a 'android'
-    if (REMOVED_ANDROID_VARIANTS.includes(saved)) {
-        localStorage.setItem(DESIGN_KEY, 'android');
-        return 'android';
-    }
-    return DESIGNS.includes(saved) ? saved : DEFAULT_DESIGN;
+    // Acepta tanto las entradas del menú como las sub-variantes Android
+    return ALL_DESIGNS.includes(saved) ? saved : DEFAULT_DESIGN;
 }
 
 export function setDesign(name) {
-    if (!DESIGNS.includes(name)) return;
+    if (!ALL_DESIGNS.includes(name)) return;
 
-    DESIGNS.forEach(d => document.body.classList.remove(`design-${d}`));
-    REMOVED_ANDROID_VARIANTS.forEach(d => document.body.classList.remove(`design-${d}`));
+    ALL_DESIGNS.forEach(d => document.body.classList.remove(`design-${d}`));
     document.body.classList.remove('design-android');
 
     if (name.startsWith('android-')) {
