@@ -81,6 +81,11 @@ class GramJsController extends EventEmitter {
         // Sticker set access hashes for getStickerSet lookups
         this._stickerSetAccessHashes = new Map(); // String(id) → BigInt accessHash
 
+        // Custom emoji document cache
+        this._customEmojiCache = new Map(); // String(document_id) → translated sticker object
+        this._customEmojiFetchQueue = new Set(); // IDs pending batch fetch
+        this._customEmojiFetchTimer = null;
+
         // Auth state internos
         this._phone = null;
         this._phoneHash = null;
@@ -854,6 +859,8 @@ class GramJsController extends EventEmitter {
                 return this._getStickerSet(req);
             case 'getRecentStickers':
                 return this._getRecentStickers(req);
+            case 'getCustomEmojiDocuments':
+                return this._getCustomEmojiDocuments(req);
 
             // ── Notificaciones ────────────────────────────────────────────────
             case 'setNotificationGroup':
@@ -2153,6 +2160,45 @@ class GramJsController extends EventEmitter {
                 stickers: [],
                 emojis: [],
             };
+        }
+    };
+
+    _getCustomEmojiDocuments = async req => {
+        const { document_ids = [] } = req;
+        const missing = [];
+        const cached = [];
+        for (const rawId of document_ids) {
+            const key = String(rawId);
+            if (this._customEmojiCache.has(key)) {
+                cached.push(this._customEmojiCache.get(key));
+            } else {
+                missing.push(key);
+            }
+        }
+        if (missing.length === 0) {
+            return { '@type': 'stickers', stickers: cached };
+        }
+        try {
+            // API limit is 200 IDs per call
+            const BATCH = 200;
+            const fetched = [];
+            for (let i = 0; i < missing.length; i += BATCH) {
+                const chunk = missing.slice(i, i + BATCH).map(id => BigInt(id));
+                const result = await this.client.invoke(
+                    new Api.messages.GetCustomEmojiDocuments({ documentId: chunk }),
+                );
+                for (const doc of result || []) {
+                    const sticker = translateSticker(doc);
+                    if (sticker) {
+                        this._customEmojiCache.set(String(doc.id), sticker);
+                        fetched.push(sticker);
+                    }
+                }
+            }
+            return { '@type': 'stickers', stickers: [...cached, ...fetched] };
+        } catch (e) {
+            console.warn('[GramJs] getCustomEmojiDocuments error', e);
+            return { '@type': 'stickers', stickers: cached };
         }
     };
 

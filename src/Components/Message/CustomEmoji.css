@@ -1,0 +1,24 @@
+.custom-emoji {
+    display: inline-block;
+    width: 1.15em;
+    height: 1.15em;
+    vertical-align: -0.2em;
+    position: relative;
+    overflow: hidden;
+    flex-shrink: 0;
+}
+
+.custom-emoji-fallback {
+    width: auto;
+    height: auto;
+    vertical-align: baseline;
+}
+
+.custom-emoji-lottie,
+.custom-emoji-video,
+.custom-emoji-img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    display: block;
+}

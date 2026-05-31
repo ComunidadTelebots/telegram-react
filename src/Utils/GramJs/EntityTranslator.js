@@ -254,8 +254,10 @@ export function translateSticker(gDoc) {
     const isVideo = mimeType === 'video/webm';
 
     const stickerAttr = (gDoc.attributes || []).find(a => (a.className || a._) === 'DocumentAttributeSticker');
-    const alt = stickerAttr?.alt || '';
+    const customEmojiAttr = (gDoc.attributes || []).find(a => (a.className || a._) === 'DocumentAttributeCustomEmoji');
+    const alt = stickerAttr?.alt || customEmojiAttr?.alt || '';
     const setId = stickerAttr?.stickerset?.id ? String(stickerAttr.stickerset.id) : '0';
+    const isCustomEmoji = Boolean(customEmojiAttr);
 
     const imgAttr = (gDoc.attributes || []).find(a => (a.className || a._) === 'DocumentAttributeImageSize');
     const videoAttrS = (gDoc.attributes || []).find(a => (a.className || a._) === 'DocumentAttributeVideo');
@@ -284,6 +286,7 @@ export function translateSticker(gDoc) {
         emoji: alt,
         is_animated: isAnimated,
         is_video: isVideo,
+        is_custom_emoji: isCustomEmoji,
         thumbnail,
         sticker: translateFile(gDoc.id, size, gDoc.id ? String(gDoc.id) : ''),
     };
@@ -1166,6 +1169,7 @@ function translateTextEntity(entity) {
         MessageEntitySpoiler: 'textEntityTypeSpoiler',
         MessageEntityPhone: 'textEntityTypePhoneNumber',
         MessageEntityEmail: 'textEntityTypeEmailAddress',
+        MessageEntityCustomEmoji: 'textEntityTypeCustomEmoji',
     };
     const tdType = MAP[cls];
     if (!tdType) return null;
@@ -1177,6 +1181,9 @@ function translateTextEntity(entity) {
     };
     if (tdType === 'textEntityTypeTextUrl' && entity.url) result.type.url = entity.url;
     if (tdType === 'textEntityTypeMentionUser' && entity.userId) result.type.user_id = Number(entity.userId);
+    if (tdType === 'textEntityTypeCustomEmoji' && entity.documentId != null) {
+        result.type.custom_emoji_id = String(entity.documentId);
+    }
     return result;
 }
 

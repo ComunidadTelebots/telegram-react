@@ -14,6 +14,7 @@ import Contact from '../Components/Message/Media/Contact';
 import Document from '../Components/Message/Media/Document';
 import Game from '../Components/Message/Media/Game';
 import Location from '../Components/Message/Media/Location';
+import CustomEmoji from '../Components/Message/CustomEmoji';
 import MentionLink from '../Components/Additional/MentionLink';
 import Photo from '../Components/Message/Media/Photo';
 import Poll from '../Components/Message/Media/Poll';
@@ -28,7 +29,7 @@ import {
     getChatDisableMentionNotifications,
     getChatDisablePinnedMessageNotifications,
     getChatTitle,
-    isChatMuted
+    isChatMuted,
 } from './Chat';
 import { openUser } from './../Actions/Client';
 import { getPhotoSize } from './Common';
@@ -170,7 +171,7 @@ function getFormattedText(formattedText) {
                 result.push(
                     <a key={entityKey} onClick={stopPropagation} href={`tg://bot_command?command=${command}&bot=`}>
                         {entityText}
-                    </a>
+                    </a>,
                 );
                 break;
             }
@@ -178,7 +179,7 @@ function getFormattedText(formattedText) {
                 result.push(
                     <a key={entityKey} onClick={event => searchCurrentChat(event, entityText)}>
                         {entityText}
-                    </a>
+                    </a>,
                 );
                 break;
             }
@@ -195,7 +196,7 @@ function getFormattedText(formattedText) {
                         target='_blank'
                         rel='noopener noreferrer'>
                         {entityText}
-                    </a>
+                    </a>,
                 );
                 break;
             }
@@ -203,7 +204,7 @@ function getFormattedText(formattedText) {
                 result.push(
                     <a key={entityKey} onClick={event => searchCurrentChat(event, entityText)}>
                         {entityText}
-                    </a>
+                    </a>,
                 );
                 break;
             }
@@ -215,7 +216,7 @@ function getFormattedText(formattedText) {
                 result.push(
                     <span key={entityKey} style={{ textDecoration: 'underline' }}>
                         {entityText}
-                    </span>
+                    </span>,
                 );
                 break;
             }
@@ -233,7 +234,7 @@ function getFormattedText(formattedText) {
                             e.currentTarget.classList.add('spoiler-revealed');
                         }}>
                         {entityText}
-                    </span>
+                    </span>,
                 );
                 break;
             }
@@ -242,7 +243,7 @@ function getFormattedText(formattedText) {
                 result.push(
                     <MentionLink key={entityKey} userId={type.user_id} title={getUserFullName(user)}>
                         {entityText}
-                    </MentionLink>
+                    </MentionLink>,
                 );
                 break;
             }
@@ -250,7 +251,7 @@ function getFormattedText(formattedText) {
                 result.push(
                     <MentionLink key={entityKey} username={entityText}>
                         {entityText}
-                    </MentionLink>
+                    </MentionLink>,
                 );
                 break;
             }
@@ -258,7 +259,7 @@ function getFormattedText(formattedText) {
                 result.push(
                     <a key={entityKey} href={`tel:${entityText}`} onClick={stopPropagation}>
                         {entityText}
-                    </a>
+                    </a>,
                 );
                 break;
             }
@@ -271,7 +272,7 @@ function getFormattedText(formattedText) {
                 result.push(
                     <pre key={entityKey}>
                         <code>{entityText}</code>
-                    </pre>
+                    </pre>,
                 );
                 deleteLineBreakAfterPre = true;
                 break;
@@ -282,7 +283,7 @@ function getFormattedText(formattedText) {
                 result.push(
                     <SafeLink key={entityKey} url={url}>
                         {entityText}
-                    </SafeLink>
+                    </SafeLink>,
                 );
                 break;
             }
@@ -290,8 +291,18 @@ function getFormattedText(formattedText) {
                 result.push(
                     <SafeLink key={entityKey} url={entityText}>
                         {entityText}
-                    </SafeLink>
+                    </SafeLink>,
                 );
+                break;
+            }
+            case 'textEntityTypeCustomEmoji': {
+                const emojiId = type && type.custom_emoji_id;
+                const safeText = entityText || '';
+                if (emojiId && safeText) {
+                    result.push(<CustomEmoji key={entityKey} emojiId={emojiId} fallback={safeText} />);
+                } else {
+                    result.push(safeText);
+                }
                 break;
             }
             default:
@@ -792,7 +803,7 @@ function getLocationId(
     width = LOCATION_WIDTH,
     height = LOCATION_HEIGHT,
     zoom = LOCATION_ZOOM,
-    scale = LOCATION_SCALE
+    scale = LOCATION_SCALE,
 ) {
     if (!location) return null;
 
@@ -1000,7 +1011,7 @@ function getSearchMessagesFilter(chatId, messageId) {
             const { audio } = content;
             if (audio) {
                 return {
-                    '@type': 'searchMessagesFilterAudio'
+                    '@type': 'searchMessagesFilterAudio',
                 };
             }
             break;
@@ -1009,7 +1020,7 @@ function getSearchMessagesFilter(chatId, messageId) {
             const { voice_note } = content;
             if (voice_note) {
                 return {
-                    '@type': 'searchMessagesFilterVoiceNote'
+                    '@type': 'searchMessagesFilterVoiceNote',
                 };
             }
             break;
@@ -1020,7 +1031,7 @@ function getSearchMessagesFilter(chatId, messageId) {
                 return null;
 
                 return {
-                    '@type': 'searchMessagesFilterVideoNote'
+                    '@type': 'searchMessagesFilterVideoNote',
                 };
             }
             break;
@@ -1033,7 +1044,7 @@ function getSearchMessagesFilter(chatId, messageId) {
                     return null;
 
                     return {
-                        '@type': 'searchMessagesFilterAudio'
+                        '@type': 'searchMessagesFilterAudio',
                     };
                 }
 
@@ -1041,7 +1052,7 @@ function getSearchMessagesFilter(chatId, messageId) {
                     return null;
 
                     return {
-                        '@type': 'searchMessagesFilterVoiceNote'
+                        '@type': 'searchMessagesFilterVoiceNote',
                     };
                 }
 
@@ -1049,7 +1060,7 @@ function getSearchMessagesFilter(chatId, messageId) {
                     return null;
 
                     return {
-                        '@type': 'searchMessagesFilterVideoNote'
+                        '@type': 'searchMessagesFilterVideoNote',
                     };
                 }
                 break;
@@ -1084,18 +1095,18 @@ function openAnimation(animation, message, fileCancel) {
     TdLibController.clientUpdate({
         '@type': 'clientUpdateActiveAnimation',
         chatId: chat_id,
-        messageId: id
+        messageId: id,
     });
 
     TdLibController.send({
         '@type': 'openMessageContent',
         chat_id: chat_id,
-        message_id: id
+        message_id: id,
     });
 
     setMediaViewerContent({
         chatId: chat_id,
-        messageId: id
+        messageId: id,
     });
 }
 
@@ -1122,13 +1133,13 @@ function openAudio(audio, message, fileCancel) {
     TdLibController.send({
         '@type': 'openMessageContent',
         chat_id: chat_id,
-        message_id: id
+        message_id: id,
     });
 
     TdLibController.clientUpdate({
         '@type': 'clientUpdateMediaActive',
         chatId: chat_id,
-        messageId: id
+        messageId: id,
     });
 }
 
@@ -1158,12 +1169,12 @@ function openChatPhoto(photo, message, fileCancel) {
     TdLibController.send({
         '@type': 'openMessageContent',
         chat_id: chat_id,
-        message_id: id
+        message_id: id,
     });
 
     setMediaViewerContent({
         chatId: chat_id,
-        messageId: id
+        messageId: id,
     });
 }
 
@@ -1176,7 +1187,7 @@ function openContact(contact, message, fileCancel) {
     TdLibController.send({
         '@type': 'openMessageContent',
         chat_id: chat_id,
-        message_id: id
+        message_id: id,
     });
 
     openUser(contact.userId);
@@ -1203,19 +1214,19 @@ function openDocument(document, message, fileCancel) {
     TdLibController.send({
         '@type': 'openMessageContent',
         chat_id: chat_id,
-        message_id: id
+        message_id: id,
     });
 
     if (isLottieMessage(chat_id, id)) {
         TdLibController.send({
             '@type': 'openMessageContent',
             chat_id: chat_id,
-            message_id: id
+            message_id: id,
         });
 
         setMediaViewerContent({
             chatId: chat_id,
-            messageId: id
+            messageId: id,
         });
     } else {
         saveOrDownload(file, document.file_name, message);
@@ -1248,13 +1259,13 @@ function openGame(game, message, fileCancel) {
     TdLibController.send({
         '@type': 'openMessageContent',
         chat_id: chat_id,
-        message_id: id
+        message_id: id,
     });
 
     TdLibController.clientUpdate({
         '@type': 'clientUpdateActiveAnimation',
         chatId: chat_id,
-        messageId: id
+        messageId: id,
     });
 }
 
@@ -1284,12 +1295,12 @@ function openPhoto(photo, message, fileCancel) {
     TdLibController.send({
         '@type': 'openMessageContent',
         chat_id: chat_id,
-        message_id: id
+        message_id: id,
     });
 
     setMediaViewerContent({
         chatId: chat_id,
-        messageId: id
+        messageId: id,
     });
 }
 
@@ -1302,7 +1313,7 @@ async function openSticker(sticker, message, fileCancel) {
     TdLibController.send({
         '@type': 'openMessageContent',
         chat_id: chat_id,
-        message_id: id
+        message_id: id,
     });
 
     const { set_id } = sticker;
@@ -1310,14 +1321,14 @@ async function openSticker(sticker, message, fileCancel) {
 
     const stickerSet = await TdLibController.send({
         '@type': 'getStickerSet',
-        set_id
+        set_id,
     });
 
     if (!stickerSet) return;
 
     TdLibController.clientUpdate({
         '@type': 'clientUpdateStickerSet',
-        stickerSet
+        stickerSet,
     });
 }
 
@@ -1342,12 +1353,12 @@ function openVideo(video, message, fileCancel) {
     TdLibController.send({
         '@type': 'openMessageContent',
         chat_id: chat_id,
-        message_id: id
+        message_id: id,
     });
 
     setMediaViewerContent({
         chatId: chat_id,
-        messageId: id
+        messageId: id,
     });
 }
 
@@ -1374,13 +1385,13 @@ function openVideoNote(videoNote, message, fileCancel) {
     TdLibController.send({
         '@type': 'openMessageContent',
         chat_id: chat_id,
-        message_id: id
+        message_id: id,
     });
 
     TdLibController.clientUpdate({
         '@type': 'clientUpdateMediaActive',
         chatId: chat_id,
-        messageId: id
+        messageId: id,
     });
 }
 
@@ -1407,13 +1418,13 @@ function openVoiceNote(voiceNote, message, fileCancel) {
     TdLibController.send({
         '@type': 'openMessageContent',
         chat_id: chat_id,
-        message_id: id
+        message_id: id,
     });
 
     TdLibController.clientUpdate({
         '@type': 'clientUpdateMediaActive',
         chatId: chat_id,
-        messageId: id
+        messageId: id,
     });
 }
 
@@ -2120,7 +2131,7 @@ export function getEntities(text) {
                         offset,
                         length,
                         type: { '@type': 'textEntityTypeMentionName', user_id: node.dataset.userId },
-                        textContent: finalText.substring(offset, offset + length)
+                        textContent: finalText.substring(offset, offset + length),
                     });
                 } else if (node.href) {
                     entities.push({
@@ -2128,7 +2139,7 @@ export function getEntities(text) {
                         offset,
                         length,
                         type: { '@type': 'textEntityTypeTextUrl', url: node.href },
-                        textContent: finalText.substring(offset, offset + length)
+                        textContent: finalText.substring(offset, offset + length),
                     });
                 }
                 offset += length;
@@ -2141,7 +2152,7 @@ export function getEntities(text) {
                     offset,
                     length,
                     type: { '@type': 'textEntityTypeBold' },
-                    textContent: finalText.substring(offset, offset + length)
+                    textContent: finalText.substring(offset, offset + length),
                 });
                 offset += length;
                 break;
@@ -2155,7 +2166,7 @@ export function getEntities(text) {
                     offset,
                     length,
                     type: { '@type': 'textEntityTypeCode' },
-                    textContent: finalText.substring(offset, offset + length)
+                    textContent: finalText.substring(offset, offset + length),
                 });
                 offset += length;
                 break;
@@ -2167,7 +2178,7 @@ export function getEntities(text) {
                     offset,
                     length,
                     type: { '@type': 'textEntityTypeItalic' },
-                    textContent: finalText.substring(offset, offset + length)
+                    textContent: finalText.substring(offset, offset + length),
                 });
                 offset += length;
                 break;
@@ -2178,7 +2189,7 @@ export function getEntities(text) {
                     offset,
                     length,
                     type: { '@type': 'textEntityTypePre' },
-                    textContent: finalText.substring(offset, offset + length)
+                    textContent: finalText.substring(offset, offset + length),
                 });
                 offset += length;
                 break;
@@ -2229,7 +2240,7 @@ export function getEntities(text) {
                         length,
                         language: '',
                         type: { '@type': 'textEntityTypePre' },
-                        textContent: text.substring(offset, offset + length)
+                        textContent: text.substring(offset, offset + length),
                     };
                     removeEntities(offset, offset + length - 1 + 6);
                     removeOffsetAfter(offset + length, 6, entities);
@@ -2307,7 +2318,7 @@ export function getEntities(text) {
                         offset,
                         length,
                         type: { '@type': 'textEntityTypeCode' },
-                        textContent: text.substring(offset, offset + length)
+                        textContent: text.substring(offset, offset + length),
                     };
                     removeEntities(offset, offset + length - 1 + 2);
                     removeOffsetAfter(offset + length, 2, entities);
@@ -2334,7 +2345,7 @@ export function getEntities(text) {
                 offset,
                 length,
                 type: { '@type': 'textEntityTypeCode' },
-                textContent: text.substring(offset, offset + length)
+                textContent: text.substring(offset, offset + length),
             };
             removeEntities(offset, offset + length - 1 + 2);
             removeOffsetAfter(offset + length, 2, entities);
@@ -2386,7 +2397,7 @@ export function getEntities(text) {
                         length,
                         language: '',
                         type: { '@type': c === 0 ? 'textEntityTypeBold' : 'textEntityTypeItalic' },
-                        textContent: text.substring(offset, offset + length)
+                        textContent: text.substring(offset, offset + length),
                     };
                     removeOffsetAfter(offset + length, 4, entities);
                     entities.push(entity);
@@ -2467,5 +2478,5 @@ export {
     getEmojiMatches,
     messageComparatorDesc,
     substring,
-    stopPropagation
+    stopPropagation,
 };
