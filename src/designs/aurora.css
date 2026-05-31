@@ -304,3 +304,41 @@ body.design-aurora ::-webkit-scrollbar-thumb:hover {
 body.design-aurora ::selection {
     background: rgba(52, 217, 168, 0.28);
 }
+
+/* ===== Search vacío (aurora — dark sleek, mint, filas redondeadas) ===== */
+body.design-aurora .search-caption {
+    padding: 10px 20px 4px;
+    background: transparent;
+}
+
+body.design-aurora .search-caption-title {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--design-muted-color);
+}
+
+body.design-aurora .search-caption-command {
+    font-size: 13px;
+    font-weight: 600;
+    text-transform: none;
+    color: var(--color-accent-main, #34d9a8);
+}
+
+body.design-aurora .top-chat-title {
+    font-size: 11px;
+    color: var(--design-muted-color);
+}
+
+/* Filas inset redondeadas con tinte mint en hover (esencia aurora) */
+body.design-aurora .search-recently-found-chats .MuiListItem-root,
+body.design-aurora .search-local-chats .MuiListItem-root {
+    width: auto;
+    margin: 2px 8px;
+    border-radius: 12px;
+}
+
+body.design-aurora .search .MuiListItem-button:hover {
+    background-color: rgba(52, 217, 168, 0.12);
+}
