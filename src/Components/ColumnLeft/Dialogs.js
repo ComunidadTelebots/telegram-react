@@ -118,6 +118,8 @@ class Dialogs extends Component {
 
         ChatStore.on('clientUpdateOpenArchive', this.onClientUpdateOpenArchive);
         ChatStore.on('clientUpdateCloseArchive', this.onClientUpdateCloseArchive);
+
+        document.addEventListener('keydown', this.handleEscapeKey);
     }
 
     componentWillUnmount() {
@@ -137,6 +139,8 @@ class Dialogs extends Component {
 
         ChatStore.off('clientUpdateOpenArchive', this.onClientUpdateOpenArchive);
         ChatStore.off('clientUpdateCloseArchive', this.onClientUpdateCloseArchive);
+
+        document.removeEventListener('keydown', this.handleEscapeKey);
     }
 
     onTdlibClientUpdate = update => {
@@ -307,6 +311,29 @@ class Dialogs extends Component {
             searchChatId: searchChatId,
             searchText: searchText,
         });
+    };
+
+    handleEscapeKey = event => {
+        if (event.key !== 'Escape' || event.altKey || event.ctrlKey || event.metaKey) return;
+        // No interferir si hay un visor o diálogo abierto: gestionan su propio Escape
+        if (
+            document.querySelector(
+                '.media-viewer, .amp-viewer, .instant-viewer, .story-viewer-backdrop, .MuiDialog-root, .MuiPopover-root',
+            )
+        ) {
+            return;
+        }
+        // 1) Si la búsqueda está abierta, cerrarla
+        if (this.state.openSearch) {
+            event.preventDefault();
+            this.handleClose();
+            return;
+        }
+        // 2) Si hay un chat abierto, cerrarlo (volver a la lista)
+        if (AppStore.getChatId()) {
+            event.preventDefault();
+            TdLibController.setChatId(0);
+        }
     };
 
     handleClose = () => {
