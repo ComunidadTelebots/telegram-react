@@ -74,3 +74,25 @@ body.design-current .message-bubble-out {
 body.design-current .message-bubble::after {
     display: block;
 }
+
+/* ===== Search vacío (current — Telegram Web limpio) ===== */
+body.design-current .search-caption {
+    padding: 8px 22px 2px;
+    background: transparent;
+}
+
+body.design-current .search-caption-title {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--color-accent-main, #5b8af1);
+}
+
+body.design-current .search-caption-command {
+    font-size: 14px;
+    font-weight: 500;
+}
+
+body.design-current .top-chat-title {
+    font-size: 12px;
+    color: var(--design-muted-color, #8096a8);
+}
