@@ -112,6 +112,11 @@
     width: 48px;
 }
 
+/* Ocultar botón de stickers duplicado (evita el "emoji doble" en todos los skins) */
+.inputbox-left-column [aria-label='Stickers'] {
+    display: none;
+}
+
 .inputbox-middle-column {
     flex-grow: 1;
     flex-shrink: 1;
