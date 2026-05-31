@@ -16,6 +16,7 @@ import UserStore from '../../Stores/UserStore';
 import OptionStore from '../../Stores/OptionStore';
 import ApplicationStore from '../../Stores/ApplicationStore';
 import TdLibController from '../../Controllers/TdLibController';
+import { openTutorial } from '../../Actions/Client';
 import AndroidSettings from './AndroidSettings';
 import './AndroidDrawer.css';
 
@@ -98,7 +99,14 @@ class AndroidDrawer extends React.PureComponent {
             { icon: <BookmarkIcon />, label: 'Saved Messages', action: this.handleSavedMessages },
             { icon: <SettingsIcon />, label: 'Settings', action: this.handleSettings },
             { icon: <PersonAddIcon />, label: 'Invite Friends', action: onClose },
-            { icon: <HelpOutlineIcon />, label: 'Telegram Features', action: onClose },
+            {
+                icon: <HelpOutlineIcon />,
+                label: 'Tutorial',
+                action: () => {
+                    openTutorial();
+                    onClose();
+                },
+            },
         ];
 
         return (

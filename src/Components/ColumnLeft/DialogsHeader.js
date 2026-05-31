@@ -22,9 +22,11 @@ import {
 import ArrowBackIcon from '@material-ui/icons/ArrowBack';
 import SearchIcon from '@material-ui/icons/Search';
 import CloseIcon from '@material-ui/icons/Close';
+import HelpOutlineIcon from '@material-ui/icons/HelpOutline';
 import SpeedDialIcon from '@material-ui/lab/SpeedDialIcon';
 import AndroidVersionSelector from './AndroidVersionSelector';
 import MainMenuButton from './MainMenuButton';
+import { openTutorial } from '../../Actions/Client';
 import { isAuthorizationReady } from '../../Utils/Common';
 import { ANIMATION_DURATION_100MS } from '../../Constants';
 import AppStore from '../../Stores/ApplicationStore';
@@ -200,6 +202,9 @@ class DialogsHeader extends React.Component {
             content = (
                 <>
                     <MainMenuButton onLogOut={this.handleLogOut} />
+                    <IconButton className='header-left-button' aria-label='Tutorial' onClick={() => openTutorial()}>
+                        <HelpOutlineIcon />
+                    </IconButton>
                     {confirmLogoutDialog}
                     <div className='header-status grow cursor-pointer' onClick={onClick}>
                         <span className='header-status-content'>{t('AppName')}</span>

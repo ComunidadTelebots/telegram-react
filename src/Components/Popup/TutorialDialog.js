@@ -14,6 +14,7 @@ import CameraAltIcon from '@material-ui/icons/CameraAlt';
 import PaletteIcon from '@material-ui/icons/Palette';
 import FlashOnIcon from '@material-ui/icons/FlashOn';
 import KeyboardIcon from '@material-ui/icons/Keyboard';
+import PlayCircleFilledIcon from '@material-ui/icons/PlayCircleFilled';
 import CheckCircleIcon from '@material-ui/icons/CheckCircle';
 import ApplicationStore from '../../Stores/ApplicationStore';
 import { isAuthorizationReady } from '../../Utils/Common';
@@ -71,6 +72,14 @@ const STEPS = [
     },
 ];
 
+STEPS.splice(STEPS.length - 1, 0, {
+    Icon: PlayCircleFilledIcon,
+    title: 'Demostracion',
+    text:
+        'Asi se organiza la app: chats a la izquierda, conversacion en el centro y acciones rapidas para buscar, enviar y cambiar de diseno.',
+    demo: true,
+});
+
 class TutorialDialog extends React.Component {
     state = { open: false, step: 0 };
 
@@ -110,11 +119,99 @@ class TutorialDialog extends React.Component {
         this.setState({ step: step + 1 });
     };
 
+    renderStepVisual(step) {
+        switch (step) {
+            case 0:
+                return (
+                    <div className='tutorial-mini tutorial-mini--welcome'>
+                        <div className='tutorial-mini-logo'>TG</div>
+                        <div className='tutorial-mini-stack'>
+                            <span />
+                            <span />
+                            <span />
+                        </div>
+                    </div>
+                );
+            case 1:
+                return (
+                    <div className='tutorial-mini tutorial-mini--search'>
+                        <div className='tutorial-mini-searchbar'>Buscar chats</div>
+                        <div className='tutorial-mini-row tutorial-mini-row--active'>Comunidad</div>
+                        <div className='tutorial-mini-row'>Contactos frecuentes</div>
+                        <div className='tutorial-mini-row'>Busquedas recientes</div>
+                    </div>
+                );
+            case 2:
+                return (
+                    <div className='tutorial-mini tutorial-mini--messages'>
+                        <div className='tutorial-mini-bubble tutorial-mini-bubble--in'>
+                            Hola, tienes stickers y emojis.
+                        </div>
+                        <div className='tutorial-mini-bubble tutorial-mini-bubble--out'>Listo para enviar.</div>
+                        <div className='tutorial-mini-composer'>Emoji · Sticker · Mensaje</div>
+                    </div>
+                );
+            case 3:
+                return (
+                    <div className='tutorial-mini tutorial-mini--stories'>
+                        <div className='tutorial-mini-story tutorial-mini-story--active' />
+                        <div className='tutorial-mini-story' />
+                        <div className='tutorial-mini-story' />
+                        <div className='tutorial-mini-phone'>
+                            <span />
+                        </div>
+                    </div>
+                );
+            case 4:
+                return (
+                    <div className='tutorial-mini tutorial-mini--designs'>
+                        <span>iOS</span>
+                        <span>Android</span>
+                        <span>Aurora</span>
+                        <span>Desktop</span>
+                    </div>
+                );
+            case 5:
+                return (
+                    <div className='tutorial-mini tutorial-mini--articles'>
+                        <div className='tutorial-mini-article'>
+                            <b>Articulo destacado</b>
+                            <span />
+                            <span />
+                        </div>
+                        <div className='tutorial-mini-pills'>
+                            <em>Instant View</em>
+                            <em>AMP</em>
+                        </div>
+                    </div>
+                );
+            case 6:
+                return (
+                    <div className='tutorial-mini tutorial-mini--shortcuts'>
+                        <kbd>Ctrl</kbd>
+                        <kbd>K</kbd>
+                        <kbd>Esc</kbd>
+                        <kbd>Alt</kbd>
+                        <kbd>1</kbd>
+                    </div>
+                );
+            default:
+                return (
+                    <div className='tutorial-mini tutorial-mini--ready'>
+                        <CheckCircleIcon />
+                        <span>Tutorial siempre disponible desde el menu</span>
+                    </div>
+                );
+        }
+    }
+
     render() {
         const { open, step } = this.state;
         const current = STEPS[step];
         const Icon = current.Icon;
         const isLast = step === STEPS.length - 1;
+        const demoStep = STEPS.findIndex(item => item.demo);
+        const showDemoButton = demoStep !== -1 && step !== demoStep;
         return (
             <Dialog open={open} onClose={this.handleClose} classes={{ paper: 'tutorial-paper' }}>
                 <div className='tutorial-dialog'>
@@ -126,6 +223,47 @@ class TutorialDialog extends React.Component {
                     </div>
                     <div className='tutorial-title'>{current.title}</div>
                     <div className='tutorial-text'>{current.text}</div>
+                    {!current.demo && this.renderStepVisual(step)}
+                    {current.demo && (
+                        <div className='tutorial-demo' aria-label='Vista de demostracion'>
+                            <div className='tutorial-demo-sidebar'>
+                                <div className='tutorial-demo-search' />
+                                <div className='tutorial-demo-chat tutorial-demo-chat--active'>
+                                    <span />
+                                    <div>
+                                        <b>Comunidad</b>
+                                        <em>Nuevo mensaje</em>
+                                    </div>
+                                </div>
+                                <div className='tutorial-demo-chat'>
+                                    <span />
+                                    <div>
+                                        <b>Soporte</b>
+                                        <em>En linea</em>
+                                    </div>
+                                </div>
+                                <div className='tutorial-demo-chat'>
+                                    <span />
+                                    <div>
+                                        <b>Ideas</b>
+                                        <em>3 sin leer</em>
+                                    </div>
+                                </div>
+                            </div>
+                            <div className='tutorial-demo-main'>
+                                <div className='tutorial-demo-topbar'>Comunidad</div>
+                                <div className='tutorial-demo-messages'>
+                                    <span className='tutorial-demo-bubble tutorial-demo-bubble--in'>
+                                        Hola, aqui ves una demo rapida.
+                                    </span>
+                                    <span className='tutorial-demo-bubble tutorial-demo-bubble--out'>
+                                        Perfecto, ya se como usarlo.
+                                    </span>
+                                </div>
+                                <div className='tutorial-demo-composer'>Mensaje</div>
+                            </div>
+                        </div>
+                    )}
                     <div className='tutorial-dots'>
                         {STEPS.map((s, i) => (
                             <span
@@ -136,9 +274,18 @@ class TutorialDialog extends React.Component {
                         ))}
                     </div>
                     <div className='tutorial-actions'>
-                        <Button className='tutorial-skip' onClick={this.handleClose}>
-                            Saltar
-                        </Button>
+                        <div className='tutorial-actions-left'>
+                            <Button className='tutorial-skip' onClick={this.handleClose}>
+                                Saltar
+                            </Button>
+                            {showDemoButton && (
+                                <Button
+                                    className='tutorial-demo-button'
+                                    onClick={() => this.setState({ step: demoStep })}>
+                                    Ver demo
+                                </Button>
+                            )}
+                        </div>
                         <div className='tutorial-nav'>
                             {step > 0 && (
                                 <IconButton className='tutorial-prev' aria-label='Back' onClick={this.handleBack}>
