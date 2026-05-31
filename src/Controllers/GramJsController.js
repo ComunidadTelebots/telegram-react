@@ -2343,7 +2343,10 @@ class GramJsController extends EventEmitter {
         this._downloadingFiles.add(fileId);
         this._emitUpdateFile(fileId, null, false, true);
 
-        try {
+        const MAX_RETRIES = 2;
+        const RETRY_DELAYS_MS = [300, 600];
+
+        const attemptDownload = async () => {
             const cls = gMedia.className || gMedia._;
             const dcId = gMedia.dcId;
 
@@ -2352,17 +2355,11 @@ class GramJsController extends EventEmitter {
                     isBig: !!gMedia.isBig,
                     workers: 1,
                 });
-                const blob = new Blob([buffer || new Uint8Array()]);
-                this._downloadedFiles.set(fileId, blob);
-                this._downloadingFiles.delete(fileId);
-                this._emitUpdateFile(fileId, blob, true);
-                return { '@type': 'file', id: fileId };
+                return new Blob([buffer || new Uint8Array()]);
             }
 
             let inputLocation;
-
             if (cls === 'Photo') {
-                // Filter out non-downloadable size types (stripped/empty/path)
                 const downloadableSizes = (gMedia.sizes || []).filter(s => {
                     const sc = s.className || s._;
                     return sc !== 'PhotoStrippedSize' && sc !== 'PhotoSizeEmpty' && sc !== 'PhotoPathSize';
@@ -2382,18 +2379,42 @@ class GramJsController extends EventEmitter {
                     thumbSize: '',
                 });
             }
-
             const fileSize = gMedia.size ? BigInt(Math.round(Number(gMedia.size))) : BigInt(0);
             const buffer = await this.client.downloadFile(inputLocation, { dcId, fileSize, workers: 1 });
-            const blob = new Blob([buffer]);
-            this._downloadedFiles.set(fileId, blob);
-            this._downloadingFiles.delete(fileId);
-            this._emitUpdateFile(fileId, blob, true);
-        } catch (err) {
-            console.error('[GramJs] downloadFile error', fileId, err);
-            this._downloadingFiles.delete(fileId);
-            this._emitUpdateFile(fileId, null, false);
+            return new Blob([buffer]);
+        };
+
+        const isConnectionNotInited = err =>
+            err?.message?.includes('CONNECTION_NOT_INITED') ||
+            err?.errorMessage === 'CONNECTION_NOT_INITED' ||
+            (err?.code === 400 && String(err?.message).includes('CONNECTION_NOT_INITED'));
+
+        let lastErr;
+        for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
+            try {
+                if (attempt > 0) {
+                    await new Promise(res => setTimeout(res, RETRY_DELAYS_MS[attempt - 1]));
+                }
+                const blob = await attemptDownload();
+                this._downloadedFiles.set(fileId, blob);
+                this._downloadingFiles.delete(fileId);
+                this._emitUpdateFile(fileId, blob, true);
+                return { '@type': 'file', id: fileId };
+            } catch (err) {
+                if (isConnectionNotInited(err) && attempt < MAX_RETRIES) {
+                    lastErr = err;
+                    continue;
+                }
+                console.error('[GramJs] downloadFile error', fileId, err);
+                this._downloadingFiles.delete(fileId);
+                this._emitUpdateFile(fileId, null, false);
+                return { '@type': 'file', id: fileId };
+            }
         }
+        // Llegamos aquí solo si todos los reintentos de CONNECTION_NOT_INITED fallaron
+        console.error('[GramJs] downloadFile error after retries', fileId, lastErr);
+        this._downloadingFiles.delete(fileId);
+        this._emitUpdateFile(fileId, null, false);
 
         return { '@type': 'file', id: fileId };
     };
