@@ -1,5 +1,21 @@
 # Changelog
 
+## [2026-05-31] (sesion 12)
+
+### Added
+- **Accesos para reabrir el tutorial** (`cad0c279`) - boton de ayuda en la cabecera de escritorio y entrada "Tutorial" en el drawer Android.
+- **Tutorial con demostraciones visuales** (`cad0c279`) - cada paso muestra una mini demo contextual: busqueda, mensajes, historias, disenos, articulos rapidos, atajos y una vista general accesible con "Ver demo".
+- **Numero de version visible** - el selector inferior de diseno muestra la version actual de la app desde `package.json`.
+
+### Fixed
+- **Congelacion al hacer scroll en la lista de chats** (`015cbb76`) - `getChats` ahora respeta `limit`/`offset` y `DialogsList` evita concatenar chats duplicados.
+- **Solape visual en busqueda** (`015cbb76`) - la fila horizontal "People" ya no usa posicionamiento absoluto que pisaba los resultados de chats.
+
+### Notes
+- **Build verificada**: `npm run build` compila correctamente tras los cambios.
+
+---
+
 ## [2026-05-31] (sesión 11)
 
 ### Added

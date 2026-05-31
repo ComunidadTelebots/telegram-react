@@ -5,6 +5,7 @@
 import React from 'react';
 import AppsIcon from '@material-ui/icons/Apps';
 import CheckIcon from '@material-ui/icons/Check';
+import packageJson from '../../package.json';
 import ApplicationStore from '../Stores/ApplicationStore';
 import { DESIGN_ACCENTS, DESIGN_LABELS, DESIGNS, getDesign, setDesign } from '../Design';
 import './DesignSwitcher.css';
@@ -89,6 +90,7 @@ class DesignSwitcher extends React.PureComponent {
                     <AppsIcon className='design-switcher-trigger-icon' />
                     <span className='design-switcher-dot' style={{ background: accent }} />
                     <span className='design-switcher-trigger-label'>{label}</span>
+                    <span className='design-switcher-version'>v{packageJson.version}</span>
                 </button>
             </div>
         );
