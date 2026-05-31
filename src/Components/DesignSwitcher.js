@@ -6,25 +6,8 @@ import React from 'react';
 import AppsIcon from '@material-ui/icons/Apps';
 import CheckIcon from '@material-ui/icons/Check';
 import ApplicationStore from '../Stores/ApplicationStore';
-import { DESIGN_ACCENTS, DESIGN_LABELS, getDesign, setDesign } from '../Design';
+import { DESIGN_ACCENTS, DESIGN_LABELS, DESIGNS, getDesign, setDesign } from '../Design';
 import './DesignSwitcher.css';
-
-const QUICK_DESIGNS = [
-    'current',
-    'android-holo',
-    'android-v9',
-    'android-v11',
-    'android',
-    'android-classic',
-    'android-redesign',
-    'android-glass',
-    'unigram',
-    'ios',
-    'macos',
-    'tdesktop',
-    'aurora',
-    'telegramx',
-];
 
 class DesignSwitcher extends React.PureComponent {
     constructor(props) {
@@ -94,7 +77,7 @@ class DesignSwitcher extends React.PureComponent {
                 {open && (
                     <div className='design-switcher-menu' role='menu' aria-label='Switch design'>
                         <div className='design-switcher-title'>Switch design</div>
-                        <div className='design-switcher-options'>{QUICK_DESIGNS.map(this.renderOption)}</div>
+                        <div className='design-switcher-options'>{DESIGNS.map(this.renderOption)}</div>
                     </div>
                 )}
                 <button

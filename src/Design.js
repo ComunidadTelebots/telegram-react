@@ -14,66 +14,57 @@ import './designs/shell.css';
 import './designs/telegramx.css';
 
 const DESIGN_KEY = 'tg_design';
-const DESIGNS = [
-    'current',
+
+// Variantes de Android eliminadas del menú — se redirigen a 'android' al cargar
+const REMOVED_ANDROID_VARIANTS = [
     'android-holo',
     'android-v9',
     'android-v11',
-    'android',
     'android-classic',
     'android-redesign',
     'android-glass',
-    'ios',
-    'macos',
-    'tdesktop',
-    'unigram',
-    'aurora',
-    'telegramx',
 ];
+
+const DESIGNS = ['current', 'android', 'unigram', 'ios', 'macos', 'tdesktop', 'aurora', 'telegramx'];
 const DEFAULT_DESIGN = 'current';
 
 export const DESIGN_LABELS = {
-    current: 'Web',
-    'android-holo': 'Android Holo',
-    'android-v9': 'Android v9',
-    'android-v11': 'Android v11',
+    current: 'Web (react)',
     android: 'Android',
-    'android-glass': 'Android v15',
-    'android-redesign': 'Android v14',
-    'android-classic': 'Android v13',
+    unigram: 'Unigram',
     ios: 'iOS',
     macos: 'macOS',
     tdesktop: 'Desktop',
-    unigram: 'Unigram',
     aurora: 'Aurora',
     telegramx: 'Telegram X',
 };
 
 export const DESIGN_ACCENTS = {
     current: '#5b8af1',
-    'android-holo': '#00bcd4',
-    'android-v9': '#2ca5e0',
-    'android-v11': '#229af0',
     android: '#229af0',
-    'android-glass': '#28c9b7',
-    'android-redesign': '#229af0',
-    'android-classic': '#527da3',
+    unigram: '#2b7fe0',
     ios: '#007aff',
     macos: '#248bf2',
     tdesktop: '#40a7e3',
-    unigram: '#2b7fe0',
     aurora: '#34d9a8',
     telegramx: '#50a8eb',
 };
 
 export function getDesign() {
-    return localStorage.getItem(DESIGN_KEY) || DEFAULT_DESIGN;
+    const saved = localStorage.getItem(DESIGN_KEY) || DEFAULT_DESIGN;
+    // Si el diseño guardado es una variante de Android eliminada del menú, cae a 'android'
+    if (REMOVED_ANDROID_VARIANTS.includes(saved)) {
+        localStorage.setItem(DESIGN_KEY, 'android');
+        return 'android';
+    }
+    return DESIGNS.includes(saved) ? saved : DEFAULT_DESIGN;
 }
 
 export function setDesign(name) {
     if (!DESIGNS.includes(name)) return;
 
     DESIGNS.forEach(d => document.body.classList.remove(`design-${d}`));
+    REMOVED_ANDROID_VARIANTS.forEach(d => document.body.classList.remove(`design-${d}`));
     document.body.classList.remove('design-android');
 
     if (name.startsWith('android-')) {
