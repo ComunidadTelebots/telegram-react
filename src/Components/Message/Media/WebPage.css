@@ -48,23 +48,7 @@
 .web-page-description {
 }
 
-.web-page-button-amp {
-    border-color: var(--color-accent-main) !important;
-    color: var(--color-accent-main) !important;
-}
-
-.web-page-button-amp .MuiSvgIcon-root {
-    fill: var(--color-accent-main);
-}
-
-.message-bubble-out .web-page-button-amp {
-    border-color: rgba(255, 255, 255, 0.7) !important;
-    color: rgba(255, 255, 255, 0.9) !important;
-}
-
-.message-bubble-out .web-page-button-amp .MuiSvgIcon-root {
-    fill: rgba(255, 255, 255, 0.9);
-}
+/* .web-page-button-amp — color gestionado por color='primary' de MUI, sin overrides */
 
 .web-page-photo {
     margin-top: 6px;

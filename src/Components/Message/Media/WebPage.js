@@ -26,7 +26,7 @@ import {
     PHOTO_DISPLAY_EXTRA_SMALL_SIZE,
     PHOTO_DISPLAY_SIZE,
     PHOTO_DISPLAY_SMALL_SIZE,
-    PHOTO_SIZE
+    PHOTO_SIZE,
 } from '../../../Constants';
 import MessageStore from '../../../Stores/MessageStore';
 import './WebPage.css';
@@ -57,7 +57,7 @@ class WebPage extends React.Component {
             voice_note,
             video_note,
             sticker,
-            type
+            type,
         } = web_page;
 
         if (sticker) {
@@ -69,21 +69,21 @@ class WebPage extends React.Component {
                     sticker={sticker}
                     openMedia={openMedia}
                     source={StickerSourceEnum.MESSAGE}
-                />
+                />,
             ];
         }
 
         if (voice_note) {
             return [
                 null,
-                <VoiceNote chatId={chatId} messageId={messageId} voiceNote={voice_note} openMedia={openMedia} />
+                <VoiceNote chatId={chatId} messageId={messageId} voiceNote={voice_note} openMedia={openMedia} />,
             ];
         }
 
         if (video_note) {
             return [
                 null,
-                <VideoNote chatId={chatId} messageId={messageId} videoNote={video_note} openMedia={openMedia} />
+                <VideoNote chatId={chatId} messageId={messageId} videoNote={video_note} openMedia={openMedia} />,
             ];
         }
 
@@ -100,7 +100,7 @@ class WebPage extends React.Component {
             if (animationSrc || animation.thumbnail) {
                 return [
                     null,
-                    <Animation chatId={chatId} messageId={messageId} animation={animation} openMedia={openMedia} />
+                    <Animation chatId={chatId} messageId={messageId} animation={animation} openMedia={openMedia} />,
                 ];
             }
         }
@@ -124,7 +124,7 @@ class WebPage extends React.Component {
                 smallPhoto || extraSmallPhoto
                     ? {
                           float: 'right',
-                          marginLeft: 6
+                          marginLeft: 6,
                       }
                     : {};
 
@@ -139,7 +139,9 @@ class WebPage extends React.Component {
                         openMedia={openMedia}
                     />
                 ) : null,
-                !smallPhoto ? <Photo chatId={chatId} messageId={messageId} photo={photo} openMedia={openMedia} /> : null
+                !smallPhoto ? (
+                    <Photo chatId={chatId} messageId={messageId} photo={photo} openMedia={openMedia} />
+                ) : null,
             ];
         }
 
@@ -193,7 +195,9 @@ class WebPage extends React.Component {
 
         const { description, instant_view_version, site_name, title, url, type } = web_page;
 
-        const hasAmp = instant_view_version === 0 && type === 'article' && url && url.startsWith('https://');
+        // Evaluados de forma independiente: una página puede tener ambos, ninguno, o solo uno
+        const hasInstantView = instant_view_version > 0;
+        const hasAmp = type === 'article' && url && url.startsWith('https://');
 
         const webPageContent = (
             <>
@@ -203,7 +207,7 @@ class WebPage extends React.Component {
             </>
         );
         const [webPageMediaTop, webPageMediaBottom] = this.getMedia() || [null, null];
-        const webPageInstantView = instant_view_version > 0 && (
+        const webPageInstantView = hasInstantView && (
             <Button
                 variant='outlined'
                 color='primary'
@@ -219,13 +223,15 @@ class WebPage extends React.Component {
         const webPageAmp = hasAmp && (
             <Button
                 variant='outlined'
-                color='default'
+                color='primary'
                 fullWidth
                 onClick={this.handleAmpClick}
-                className='web-page-button web-page-button-amp'>
-                <SvgIcon viewBox='0 0 24 24'>
-                    <path d='M11.08 5.16l-4.47 8.36h3.92l-.76 5.52 4.76-8.88H10.5l.58-5z' />
-                </SvgIcon>
+                className='web-page-button'
+                startIcon={
+                    <SvgIcon viewBox='0 0 24 24'>
+                        <path d='M11.08 5.16l-4.47 8.36h3.92l-.76 5.52 4.76-8.88H10.5l.58-5z' />
+                    </SvgIcon>
+                }>
                 AMP
             </Button>
         );
@@ -258,14 +264,14 @@ WebPage.propTypes = {
     displaySize: PropTypes.number,
     displaySmallSize: PropTypes.number,
     displayExtraSmallSize: PropTypes.number,
-    openMedia: PropTypes.func
+    openMedia: PropTypes.func,
 };
 
 WebPage.defaultProps = {
     size: PHOTO_SIZE,
     displaySize: PHOTO_DISPLAY_SIZE,
     displaySmallSize: PHOTO_DISPLAY_SMALL_SIZE,
-    displayExtraSmallSize: PHOTO_DISPLAY_EXTRA_SMALL_SIZE
+    displayExtraSmallSize: PHOTO_DISPLAY_EXTRA_SMALL_SIZE,
 };
 
 export default withTranslation()(WebPage);
