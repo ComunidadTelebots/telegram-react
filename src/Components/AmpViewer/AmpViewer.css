@@ -1,15 +1,14 @@
 .amp-viewer {
     position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
+    inset: 0;
     z-index: 2000;
     background: rgba(0, 0, 0, 0.7);
     display: flex;
     align-items: center;
     justify-content: center;
     animation: amp-viewer-fade-in 0.15s ease;
+    /* Evita que el scroll del body se propague al fondo */
+    overscroll-behavior: contain;
 }
 
 @keyframes amp-viewer-fade-in {
@@ -25,7 +24,11 @@
     display: flex;
     flex-direction: column;
     width: min(800px, 96vw);
+    /* dvh respeta las barras del navegador móvil (iOS Safari, Chrome Android) */
+    height: min(90dvh, 900px);
+    /* Fallback para navegadores sin dvh */
     height: min(90vh, 900px);
+    height: min(90dvh, 900px);
     background: #fff;
     border-radius: 8px;
     overflow: hidden;
@@ -49,7 +52,7 @@
     align-items: center;
     justify-content: space-between;
     padding: 8px 12px;
-    background: var(--color-accent-main);
+    background: var(--color-accent-main, var(--design-header-background, #229af0));
     color: #fff;
     min-height: 48px;
     flex-shrink: 0;
@@ -100,6 +103,8 @@
     flex: 1;
     position: relative;
     overflow: hidden;
+    /* Contiene el scroll del iframe en móvil */
+    overscroll-behavior: contain;
 }
 
 .amp-viewer-iframe {
@@ -107,6 +112,9 @@
     height: 100%;
     border: none;
     display: block;
+    /* Scroll inercial en iOS Safari */
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
 }
 
 .amp-viewer-loading {
@@ -140,7 +148,7 @@
 .amp-viewer-open-btn {
     margin-top: 8px;
     padding: 8px 20px;
-    background: var(--color-accent-main);
+    background: var(--color-accent-main, var(--design-header-background, #229af0));
     color: #fff;
     border: none;
     border-radius: 6px;
@@ -149,16 +157,19 @@
 }
 
 .amp-viewer-open-btn:hover {
-    background: #004acc;
+    opacity: 0.85;
 }
 
-/* Dark theme */
-.night-mode .amp-viewer-container,
-.dark-mode .amp-viewer-container {
+/* ── Dark theme — usa la clase correcta del proyecto ─────────────────────── */
+body.theme-dark .amp-viewer-container {
     background: #212121;
 }
 
-.night-mode .amp-viewer-loading,
-.dark-mode .amp-viewer-loading {
+body.theme-dark .amp-viewer-loading {
     background: #212121;
+}
+
+body.theme-dark .amp-viewer-error {
+    background: #212121;
+    color: #aaa;
 }
