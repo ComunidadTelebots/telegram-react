@@ -1125,19 +1125,55 @@ class GramJsController extends EventEmitter {
     // ─── Chat handlers ───────────────────────────────────────────────────────
 
     _getChats = async req => {
-        const { chat_list } = req || {};
+        const { chat_list, offset_order = '9223372036854775807', offset_chat_id = 0, limit = 100 } = req || {};
 
         if (chat_list && chat_list['@type'] === 'chatListFilter') {
             const folderSet = this._folderChats.get(chat_list.filter_id);
-            const chatIds = folderSet ? Array.from(folderSet) : [];
-            return { '@type': 'chats', total_count: chatIds.length, chat_ids: chatIds };
+            const chatIds = folderSet
+                ? this._paginateChatIds(Array.from(folderSet), offset_order, offset_chat_id, limit)
+                : [];
+            return { '@type': 'chats', total_count: folderSet ? folderSet.size : 0, chat_ids: chatIds };
         }
 
         if (!this._initialDialogsLoaded && this._initialDialogsPromise) {
             await this._initialDialogsPromise;
         }
-        const chatIds = Array.from(this._chatCache.keys());
-        return { '@type': 'chats', total_count: chatIds.length, chat_ids: chatIds };
+        const chatIds = this._paginateChatIds(Array.from(this._chatCache.keys()), offset_order, offset_chat_id, limit);
+        return { '@type': 'chats', total_count: this._chatCache.size, chat_ids: chatIds };
+    };
+
+    _paginateChatIds = (chatIds, offsetOrder, offsetChatId, limit) => {
+        const sortedIds = chatIds
+            .filter(id => {
+                const chat = this._chatCache.get(id);
+                return chat && chat.order !== '0';
+            })
+            .sort((a, b) => {
+                const chatA = this._chatCache.get(a);
+                const chatB = this._chatCache.get(b);
+                const orderA = chatA?.order || '0';
+                const orderB = chatB?.order || '0';
+                if (orderA.length !== orderB.length) return orderB.length - orderA.length;
+                if (orderA !== orderB) return orderB > orderA ? 1 : -1;
+                return b - a;
+            });
+
+        let startIndex = 0;
+        if (offsetChatId) {
+            const exactIndex = sortedIds.indexOf(offsetChatId);
+            if (exactIndex !== -1) {
+                startIndex = exactIndex + 1;
+            } else {
+                startIndex = sortedIds.findIndex(id => {
+                    const order = this._chatCache.get(id)?.order || '0';
+                    if (order.length !== offsetOrder.length) return order.length < offsetOrder.length;
+                    return order < offsetOrder;
+                });
+                if (startIndex === -1) startIndex = sortedIds.length;
+            }
+        }
+
+        return sortedIds.slice(startIndex, startIndex + Math.max(0, limit));
     };
 
     _getChat = async req => {

@@ -28,9 +28,8 @@
 }
 
 .search-top-chats {
-    min-height: 110px;
+    min-height: 0;
     overflow: hidden;
-    position: relative;
 }
 
 .search-top-chats-list {
@@ -38,11 +37,7 @@
     flex-direction: row;
     overflow-x: auto;
     transform: translateZ(0);
-    position: absolute;
-    left: 0;
-    top: 28px;
-    right: 0;
-    bottom: -17px;
+    padding: 6px 0 10px;
 }
 
 .search-top-chats-placeholder {

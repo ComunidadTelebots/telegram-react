@@ -25,8 +25,8 @@ import './DialogsList.css';
 
 const styles = theme => ({
     dialogsList: {
-        background: theme.palette.type === 'dark' ? theme.palette.background.default : '#FFFFFF'
-    }
+        background: theme.palette.type === 'dark' ? theme.palette.background.default : '#FFFFFF',
+    },
 });
 
 class DialogsList extends React.Component {
@@ -42,7 +42,7 @@ class DialogsList extends React.Component {
         this.state = {
             authorizationState,
             chats: null,
-            fistSliceLoaded: false
+            fistSliceLoaded: false,
         };
     }
 
@@ -305,7 +305,7 @@ class DialogsList extends React.Component {
             chat_list: { '@type': type },
             offset_chat_id: offsetChatId,
             offset_order: offsetOrder,
-            limit: CHAT_SLICE_LIMIT
+            limit: CHAT_SLICE_LIMIT,
         }).finally(() => {
             this.loading = false;
             if (type === 'chatListMain') console.log('[update] GETCHATS stop');
@@ -350,8 +350,15 @@ class DialogsList extends React.Component {
         }
 
         const { chats } = this.state;
+        const existing = new Set(chats || []);
+        const nextChatIds = chatIds.filter(chatId => !existing.has(chatId));
 
-        if (this._isMounted) this.setState({ chats: (chats || []).concat(chatIds) }, callback);
+        if (nextChatIds.length === 0) {
+            if (callback) callback();
+            return;
+        }
+
+        if (this._isMounted) this.setState({ chats: (chats || []).concat(nextChatIds) }, callback);
     }
 
     replaceChats(chats, callback) {
@@ -398,7 +405,7 @@ DialogsList.propTypes = {
     showArchive: PropTypes.bool,
     archiveTitle: PropTypes.string,
     cacheItems: PropTypes.array,
-    items: PropTypes.array
+    items: PropTypes.array,
 };
 
 export default withStyles(styles, { withTheme: true })(DialogsList);
