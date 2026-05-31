@@ -88,6 +88,7 @@ class GramJsController extends EventEmitter {
         this._customEmojiFetchTimer = null;
         this._downloadReconnects = new Map();
         this._downloadReconnectAt = new Map();
+        this._downloadDeferUntil = new Map();
 
         // Auth state internos
         this._phone = null;
@@ -2445,8 +2446,37 @@ class GramJsController extends EventEmitter {
         return gMedia.dcId;
     };
 
+    _getDownloadDcKey = dcId => String(dcId || this.client?.session?.dcId || 'main');
+
+    _getFloodWaitSeconds = err => {
+        if (!err) return 0;
+        if (Number.isFinite(err.seconds)) return Number(err.seconds);
+        const message = String(err.message || err.errorMessage || '');
+        const match = message.match(/(?:FLOOD_WAIT_?|wait of )(\d+)/i);
+        return match ? Number(match[1]) : 0;
+    };
+
+    _deferDownloads = (dcId, seconds) => {
+        const key = this._getDownloadDcKey(dcId);
+        const waitMs = Math.max(1, seconds) * 1000;
+        const until = Date.now() + waitMs;
+        const currentUntil = this._downloadDeferUntil.get(key) || 0;
+        if (until > currentUntil) {
+            this._downloadDeferUntil.set(key, until);
+        }
+    };
+
+    _isDownloadDeferred = dcId => {
+        const until = this._downloadDeferUntil.get(this._getDownloadDcKey(dcId)) || 0;
+        if (Date.now() < until) return true;
+        if (until) {
+            this._downloadDeferUntil.delete(this._getDownloadDcKey(dcId));
+        }
+        return false;
+    };
+
     _recoverDownloadConnection = async dcId => {
-        const key = dcId || this.client?.session?.dcId || 'main';
+        const key = this._getDownloadDcKey(dcId);
         if (this._downloadReconnects.has(key)) {
             return this._downloadReconnects.get(key);
         }
@@ -2460,8 +2490,11 @@ class GramJsController extends EventEmitter {
         const reconnect = (async () => {
             try {
                 this._downloadReconnectAt.set(key, Date.now());
-                if (dcId && this.client?._cleanupExportedSender) {
-                    await this.client._cleanupExportedSender(dcId);
+                const mainDcId = this.client?.session?.dcId;
+                if (dcId && mainDcId && Number(dcId) !== Number(mainDcId)) {
+                    // Exported senders are rate-limited by Telegram. Do not force
+                    // auth.ExportAuthorization here; pause this DC and try later.
+                    this._deferDownloads(dcId, 30);
                     return;
                 }
 
@@ -2469,10 +2502,6 @@ class GramJsController extends EventEmitter {
                     await this.client.connect();
                     return;
                 }
-
-                await this.client.disconnect();
-                await new Promise(resolve => setTimeout(resolve, 500));
-                await this.client.connect();
             } catch (err) {
                 console.warn('[GramJs] download reconnect failed', dcId, err);
             } finally {
@@ -2540,6 +2569,12 @@ class GramJsController extends EventEmitter {
         const RETRY_DELAYS_MS = [250, 600, 1200, 2000];
         const mediaDcId = this._getMediaDcId(gMedia);
 
+        if (this._isDownloadDeferred(mediaDcId)) {
+            this._downloadingFiles.delete(fileId);
+            this._emitUpdateFile(fileId, null, false);
+            return { '@type': 'file', id: fileId };
+        }
+
         const attemptDownload = async () => {
             const cls = gMedia.className || gMedia._;
             const dcId = mediaDcId;
@@ -2595,8 +2630,25 @@ class GramJsController extends EventEmitter {
                 this._emitUpdateFile(fileId, blob, true);
                 return { '@type': 'file', id: fileId };
             } catch (err) {
+                const floodWaitSeconds = this._getFloodWaitSeconds(err);
+                if (floodWaitSeconds > 0) {
+                    this._deferDownloads(mediaDcId, floodWaitSeconds);
+                    console.warn('[GramJs] downloadFile deferred by flood wait', fileId, `${floodWaitSeconds}s`);
+                    this._downloadingFiles.delete(fileId);
+                    this._emitUpdateFile(fileId, null, false);
+                    return { '@type': 'file', id: fileId };
+                }
+
                 if (isConnectionNotInited(err) && attempt < MAX_RETRIES) {
                     lastErr = err;
+                    const mainDcId = this.client?.session?.dcId;
+                    if (mediaDcId && mainDcId && Number(mediaDcId) !== Number(mainDcId)) {
+                        this._deferDownloads(mediaDcId, 30);
+                        console.warn('[GramJs] downloadFile deferred: exported sender not ready', fileId, mediaDcId);
+                        this._downloadingFiles.delete(fileId);
+                        this._emitUpdateFile(fileId, null, false);
+                        return { '@type': 'file', id: fileId };
+                    }
                     await this._recoverDownloadConnection(mediaDcId);
                     continue;
                 }
