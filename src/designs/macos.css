@@ -398,3 +398,41 @@ body.theme-dark.design-macos ::-webkit-scrollbar-thumb:hover {
 body.theme-dark.design-macos ::selection {
     background: rgba(10, 132, 255, 0.34);
 }
+
+/* ===== Search vacío (macos — compacto, separadores finos) ===== */
+body.design-macos .search-caption {
+    padding: 6px 16px 2px;
+    background: transparent;
+}
+
+body.design-macos .search-caption-title {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--design-muted-color);
+}
+
+body.design-macos .search-caption-command {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--color-accent-main, #248bf2);
+}
+
+body.design-macos .top-chat {
+    padding: 4px 8px;
+}
+
+body.design-macos .top-chat-title {
+    font-size: 11px;
+    color: var(--design-muted-color);
+}
+
+/* Filas compactas a sangre con separador hairline entre ellas (esencia macOS) */
+body.design-macos .search-recently-found-chats .recently-found-chat,
+body.design-macos .search-local-chats .recently-found-chat {
+    padding: 6px 16px;
+}
+
+body.design-macos .search-recently-found-chats .MuiListItem-root + .MuiListItem-root,
+body.design-macos .search-local-chats .MuiListItem-root + .MuiListItem-root {
+    border-top: 1px solid var(--design-border-color);
+}
