@@ -163,12 +163,35 @@ body[class*='design-'] .MuiPopover-paper {
     color: var(--design-page-color) !important;
 }
 
+/* ── Menú contextual (hamburguesa / clic derecho) ─────────────────────── */
+body[class*='design-'] .MuiMenu-paper {
+    border-radius: var(--design-control-radius, 8px) !important;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.14) !important;
+    min-width: 180px;
+}
+
+body[class*='design-'] .MuiMenuItem-root {
+    font-size: 14px !important;
+    padding: 10px 20px !important;
+}
+
+body[class*='design-'] .MuiMenuItem-root:hover {
+    background: var(--design-hover-background, rgba(0, 0, 0, 0.04)) !important;
+}
+
 body[class*='design-'] .MuiDivider-root {
     background-color: var(--design-border-color) !important;
 }
 
 body[class*='design-'] .MuiIconButton-root {
     color: inherit;
+}
+
+/* ── Input left column: centrado vertical del icono de adjunto ──────────── */
+body[class*='design-'] .inputbox-left-column {
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 body[class*='design-'] .auth-root,
