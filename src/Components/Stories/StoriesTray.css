@@ -1,7 +1,7 @@
 .stories-tray {
     flex-shrink: 0;
-    border-bottom: 1px solid var(--border-color, rgba(0, 0, 0, 0.12));
-    background: var(--background-color, #fff);
+    border-bottom: 1px solid var(--design-border-color, var(--border-color, rgba(0, 0, 0, 0.08)));
+    background: var(--design-sidebar-background, var(--background-color, #fff));
 }
 
 .stories-tray-inner {
@@ -55,12 +55,12 @@
     background: rgba(128, 128, 128, 0.4);
 }
 
-/* Fondo blanco interior que separa el anillo del avatar */
+/* Fondo interior que separa el anillo del avatar — usa el color del sidebar del skin activo */
 .stories-tray-avatar-wrap {
     width: 100%;
     height: 100%;
     border-radius: 50%;
-    background: var(--background-color, #fff);
+    background: var(--design-sidebar-background, var(--background-color, #fff));
     padding: 2px;
     box-sizing: border-box;
     display: flex;
@@ -83,6 +83,6 @@
     text-overflow: ellipsis;
     white-space: nowrap;
     text-align: center;
-    color: var(--text-secondary-color, rgba(0, 0, 0, 0.6));
+    color: var(--design-muted-color, rgba(0, 0, 0, 0.6));
     user-select: none;
 }

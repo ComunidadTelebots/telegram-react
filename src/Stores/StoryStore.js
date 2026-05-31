@@ -160,14 +160,6 @@ TdLibController.addListener('update', update => {
                 for (const peer of result.peers) {
                     store._setPeerData(peer);
                 }
-                const unread = store.getUnreadPeers();
-                console.log(
-                    '[StoryStore] peers con historias activas:',
-                    result.peers.length,
-                    '— sin leer:',
-                    unread.length,
-                    unread.map(p => p.sender_chat_id),
-                );
                 store.emit('updateActiveStories', { '@type': 'updateActiveStories', peers: result.peers });
             })
             .catch(e => console.warn('[StoryStore] getActiveStories failed', e));
