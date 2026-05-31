@@ -794,6 +794,14 @@ class GramJsController extends EventEmitter {
                 return this._searchMessages(req);
             case 'searchChatMessages':
                 return this._searchChatMessages(req);
+            case 'getTopChats':
+                return this._getTopChats(req);
+            case 'searchChats':
+                return this._searchChats(req);
+            case 'addRecentlyFoundChat':
+                return this._addRecentlyFoundChat(req);
+            case 'clearRecentlyFoundChats':
+                return this._clearRecentlyFoundChats(req);
 
             // ── Opciones de idioma ────────────────────────────────────────────
             case 'getLocalizationTargetInfo':
@@ -1210,6 +1218,104 @@ class GramJsController extends EventEmitter {
             console.error('[GramJs] getContacts error:', e);
             return [];
         }
+    };
+
+    // ---- Contactos frecuentes (top peers) ----
+    _getTopChats = async req => {
+        const limit = (req && req.limit) || 30;
+        try {
+            const result = await this.client.invoke(
+                new Api.contacts.GetTopPeers({ correspondents: true, offset: 0, limit, hash: BigInt(0) }),
+            );
+            if (!result || !result.categories) return { '@type': 'chats', total_count: 0, chat_ids: [] };
+            const userMap = new Map();
+            (result.users || []).forEach(u => {
+                this._cacheEntity(u);
+                userMap.set(String(u.id), u);
+            });
+            const chatIds = [];
+            for (const cat of result.categories) {
+                for (const tp of cat.peers || []) {
+                    const chatId = peerToTdlibChatId(tp.peer);
+                    if (!chatId) continue;
+                    const entity = userMap.get(String(tp.peer.userId));
+                    if (entity) {
+                        const tdUser = translateUser(entity);
+                        if (tdUser) this._emitUpdate({ '@type': 'updateUser', user: tdUser });
+                        const tdChat = translateChat(entity, null);
+                        if (tdChat) {
+                            this._chatCache.set(tdChat.id, tdChat);
+                            this._emitUpdate({ '@type': 'updateNewChat', chat: tdChat });
+                        }
+                    }
+                    chatIds.push(chatId);
+                    if (chatIds.length >= limit) break;
+                }
+                if (chatIds.length >= limit) break;
+            }
+            return { '@type': 'chats', total_count: chatIds.length, chat_ids: chatIds };
+        } catch (e) {
+            console.error('[GramJs] getTopChats error:', e);
+            return { '@type': 'chats', total_count: 0, chat_ids: [] };
+        }
+    };
+
+    // ---- Búsquedas recientes (lado cliente, localStorage) ----
+    _recentlyFoundKey = () => `recently_found_chats_${this._activeAccountIndex}`;
+
+    _readRecentlyFound = () => {
+        try {
+            return JSON.parse(localStorage.getItem(this._recentlyFoundKey()) || '[]');
+        } catch (e) {
+            return [];
+        }
+    };
+
+    _getRecentlyFoundChats = async (limit = 50) => {
+        const ids = this._readRecentlyFound().slice(0, limit);
+        const hydrated = [];
+        for (const id of ids) {
+            let chat = this._chatCache.get(id);
+            if (!chat) {
+                try {
+                    chat = await this._getChat({ chat_id: id });
+                } catch (e) {
+                    /* no-op */
+                }
+            }
+            if (chat) {
+                this._emitUpdate({ '@type': 'updateNewChat', chat });
+                hydrated.push(id);
+            }
+        }
+        return { '@type': 'chats', total_count: hydrated.length, chat_ids: hydrated };
+    };
+
+    _searchChats = async req => {
+        const { query, limit } = req;
+        const q = (query || '').trim().toLowerCase();
+        if (!q) return this._getRecentlyFoundChats(limit || 50);
+        const ids = [];
+        const max = limit || 50;
+        for (const [id, chat] of this._chatCache) {
+            const title = chat && chat.title ? String(chat.title).toLowerCase() : '';
+            if (title.includes(q)) ids.push(id);
+            if (ids.length >= max) break;
+        }
+        return { '@type': 'chats', total_count: ids.length, chat_ids: ids };
+    };
+
+    _addRecentlyFoundChat = async req => {
+        const { chat_id } = req;
+        if (!chat_id) return {};
+        const ids = [chat_id, ...this._readRecentlyFound().filter(x => x !== chat_id)].slice(0, 50);
+        localStorage.setItem(this._recentlyFoundKey(), JSON.stringify(ids));
+        return {};
+    };
+
+    _clearRecentlyFoundChats = async () => {
+        localStorage.removeItem(this._recentlyFoundKey());
+        return {};
     };
 
     _createGroupChat = async req => {
