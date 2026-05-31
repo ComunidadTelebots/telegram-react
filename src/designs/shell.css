@@ -30,6 +30,16 @@
     --design-message-padding: 6px 9px;
     --design-message-shadow: 0 1px 2px 0 rgba(16, 35, 47, 0.15);
     --design-message-tail-display: block;
+
+    /* Paleta estándar de Telegram para avatares sin foto */
+    --tile-1: #e17076;
+    --tile-2: #f0a752;
+    --tile-3: #a695e7;
+    --tile-4: #7bc862;
+    --tile-5: #65aadd;
+    --tile-6: #6ec9cb;
+    --tile-7: #ee7aae;
+    --tile-8: #8bafbd;
 }
 
 body[class*='design-'] .page {

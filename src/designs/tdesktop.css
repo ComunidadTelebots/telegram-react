@@ -14,6 +14,7 @@ body.design-tdesktop {
     /* Verde clásico de TDesktop saliente */
     --message-out-background: #effdde;
     --message-out-color: #000000;
+    --color-accent-main: #3a9ad0;
     --message-out-link: #3a9ad0;
     --message-out-author: #3a9ad0;
     --message-out-meta-color: #6cc264;
