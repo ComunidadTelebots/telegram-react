@@ -240,17 +240,13 @@ pre code {
     border-radius: 3px;
     padding: 0 1px;
     cursor: pointer;
-    background: var(--color-accent-main, #229af0);
-    color: transparent;
     filter: blur(4px);
-    transition: filter 0.25s ease, color 0.25s ease;
+    transition: filter 0.25s ease;
     user-select: none;
 }
 
 .spoiler-text.spoiler-revealed {
     filter: none;
-    color: inherit;
-    background: var(--spoiler-revealed-bg, rgba(34, 154, 240, 0.12));
     cursor: text;
     user-select: text;
 }

@@ -22,11 +22,11 @@
 .border {
     border-radius: 1px;
     min-width: 2px;
-    background: var(--color-accent-main, #229af0);
+    background: var(--color-accent-main);
 }
 
 .message-bubble-out .border {
-    background: var(--message-out-reply-border, var(--color-accent-main, #229af0));
+    background: var(--message-out-reply-border);
 }
 
 .reply-border {
@@ -50,11 +50,11 @@
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
-    color: var(--color-accent-main, #229af0);
+    color: var(--color-accent-main);
 }
 
 .message-bubble-out .reply-content-title {
-    color: var(--message-out-reply-title, var(--color-accent-main, #229af0));
+    color: var(--message-out-reply-title);
 }
 
 .reply-content-subtitle {

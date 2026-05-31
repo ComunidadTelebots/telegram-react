@@ -13,7 +13,7 @@
     gap: 3px;
     padding: 2px 7px;
     border-radius: 12px;
-    border: 1px solid var(--divider, var(--design-border-color, rgba(0, 0, 0, 0.12)));
+    border: 1px solid var(--divider);
     background: rgba(0, 0, 0, 0.04);
     cursor: pointer;
     font-size: var(--text-dialog);
@@ -26,8 +26,8 @@
 }
 
 .reaction-chosen {
-    border-color: var(--color-accent-main, #229af0);
-    background: var(--reaction-chosen-bg, rgba(34, 154, 240, 0.12));
+    border-color: var(--color-accent-main);
+    background: var(--reaction-chosen-bg);
 }
 
 .reaction-emoji {
@@ -56,9 +56,9 @@
 }
 
 .reaction-add-btn:hover {
-    border-color: var(--color-accent-main, #229af0);
-    color: var(--color-accent-main, #229af0);
-    background: var(--design-active-background, rgba(33, 150, 243, 0.05));
+    border-color: var(--color-accent-main);
+    color: var(--color-accent-main);
+    background: rgba(33, 150, 243, 0.05);
 }
 
 .reaction-picker {
@@ -69,13 +69,9 @@
     gap: 4px;
     padding: 6px 8px;
     border-radius: 20px;
-    background: var(--design-panel-background, #fff);
+    background: #fff;
     box-shadow: 0 2px 12px rgba(0, 0, 0, 0.18);
     z-index: 100;
-}
-
-body.theme-dark .reaction-picker {
-    box-shadow: 0 2px 16px rgba(0, 0, 0, 0.45);
 }
 
 .reaction-picker-item {
