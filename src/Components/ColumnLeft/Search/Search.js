@@ -35,14 +35,14 @@ import './Search.css';
 
 const styles = theme => ({
     closeSearchIconButton: {
-        margin: '8px 12px 8px 0'
+        margin: '8px 12px 8px 0',
     },
     listItem: {
-        padding: 0
+        padding: 0,
     },
     search: {
-        background: theme.palette.type === 'dark' ? theme.palette.background.default : '#FFFFFF'
-    }
+        background: theme.palette.type === 'dark' ? theme.palette.background.default : '#FFFFFF',
+    },
 });
 
 class Search extends React.Component {
@@ -50,7 +50,7 @@ class Search extends React.Component {
         super(props);
 
         this.listRef = React.createRef();
-        this.state = { searchFilter: null };
+        this.state = { searchFilter: null, renderedCount: 20 };
     }
 
     componentDidMount() {
@@ -140,7 +140,7 @@ class Search extends React.Component {
             const localPromise = TdLibController.send({
                 '@type': 'searchChats',
                 query: text,
-                limit: 100
+                limit: 100,
             });
             promises.push(localPromise);
 
@@ -149,7 +149,7 @@ class Search extends React.Component {
                 const latinLocalPromise = TdLibController.send({
                     '@type': 'searchChats',
                     query: latinText,
-                    limit: 100
+                    limit: 100,
                 });
                 promises.push(latinLocalPromise);
             }
@@ -159,7 +159,7 @@ class Search extends React.Component {
                 const cyrillicLocalPromise = TdLibController.send({
                     '@type': 'searchChats',
                     query: cyrillicText,
-                    limit: 100
+                    limit: 100,
                 });
                 promises.push(cyrillicLocalPromise);
             }
@@ -188,7 +188,7 @@ class Search extends React.Component {
             this.setState({
                 top: null,
                 recentlyFound: null,
-                local: local
+                local: local,
             });
 
             store = FileStore.getStore();
@@ -201,7 +201,7 @@ class Search extends React.Component {
 
                 const globalPromise = TdLibController.send({
                     '@type': 'searchPublicChats',
-                    query: trimmedText
+                    query: trimmedText,
                 });
                 globalPromises.push(globalPromise);
 
@@ -211,7 +211,7 @@ class Search extends React.Component {
                     if (latinTrimmedText.length >= USERNAME_LENGTH_MIN && latinTrimmedText !== trimmedText) {
                         const globalLatinPromise = TdLibController.send({
                             '@type': 'searchPublicChats',
-                            query: latinTrimmedText
+                            query: latinTrimmedText,
                         });
                         globalPromises.push(globalLatinPromise);
                     }
@@ -225,14 +225,14 @@ class Search extends React.Component {
                 }
 
                 this.setState({
-                    global
+                    global,
                 });
 
                 store = FileStore.getStore();
                 loadChatsContent(store, global);
             } else {
                 this.setState({
-                    global: null
+                    global: null,
                 });
             }
         }
@@ -247,7 +247,7 @@ class Search extends React.Component {
                 from_message_id: 0,
                 offset: 0,
                 limit: 50,
-                filter: searchFilter ? { '@type': searchFilter } : null
+                filter: searchFilter ? { '@type': searchFilter } : null,
             });
         } else {
             messages = await TdLibController.send({
@@ -256,7 +256,7 @@ class Search extends React.Component {
                 offset_date: 0,
                 offset_chat_id: 0,
                 offset_message_id: 0,
-                limit: 50
+                limit: 50,
             });
         }
 
@@ -267,7 +267,8 @@ class Search extends React.Component {
         }
 
         this.setState({
-            messages
+            messages,
+            renderedCount: 20, // reset al recibir resultados frescos
         });
 
         const chats = new Map();
@@ -292,7 +293,7 @@ class Search extends React.Component {
                 recentlyFound: null,
                 local: null,
                 global: null,
-                messages: null
+                messages: null,
             });
 
             return;
@@ -301,7 +302,7 @@ class Search extends React.Component {
         const topPromise = TdLibController.send({
             '@type': 'getTopChats',
             category: { '@type': 'topChatCategoryUsers' },
-            limit: 30
+            limit: 30,
         }).catch(() => {
             return { '@type': 'chats', chat_ids: [] };
         });
@@ -309,7 +310,7 @@ class Search extends React.Component {
         const recentlyFoundPromise = TdLibController.send({
             '@type': 'searchChats',
             query: '',
-            limit: 100
+            limit: 100,
         }).catch(() => {
             return { '@type': 'chats', chat_ids: [] };
         });
@@ -317,13 +318,13 @@ class Search extends React.Component {
         const savedMessagesPromise = TdLibController.send({
             '@type': 'createPrivateChat',
             user_id: UserStore.getMyId(),
-            force: true
+            force: true,
         }).catch(error => {});
 
         const [top, recentlyFound, savedMessages] = await Promise.all([
             topPromise,
             recentlyFoundPromise,
-            savedMessagesPromise
+            savedMessagesPromise,
         ]);
 
         this.setState({
@@ -332,7 +333,7 @@ class Search extends React.Component {
             savedMessages,
             local: null,
             global: null,
-            messages: null
+            messages: null,
         });
 
         const store = FileStore.getStore();
@@ -345,13 +346,13 @@ class Search extends React.Component {
             '@type': 'getChats',
             offset_order: '9223372036854775807',
             offset_chat_id: 0,
-            limit: 20
+            limit: 20,
         });
 
         for (let i = chats.chat_ids.length - 1; i >= 0; i--) {
             TdLibController.send({
                 '@type': 'addRecentlyFoundChat',
-                chat_id: chats.chat_ids[i]
+                chat_id: chats.chat_ids[i],
             });
         }
     };
@@ -360,7 +361,7 @@ class Search extends React.Component {
         event.stopPropagation();
 
         TdLibController.send({
-            '@type': 'clearRecentlyFoundChats'
+            '@type': 'clearRecentlyFoundChats',
         });
 
         this.setState({ recentlyFound: null });
@@ -372,7 +373,7 @@ class Search extends React.Component {
         if (addToRecent) {
             TdLibController.send({
                 '@type': 'addRecentlyFoundChat',
-                chat_id: chatId
+                chat_id: chatId,
             });
         }
 
@@ -383,7 +384,14 @@ class Search extends React.Component {
         const list = this.listRef.current;
 
         if (list.scrollTop + list.offsetHeight >= list.scrollHeight - SCROLL_PRECISION) {
-            this.onLoadPrevious();
+            const { messages, renderedCount } = this.state;
+            const total = messages ? messages.messages.length : 0;
+            if (renderedCount < total) {
+                // Renderizar el siguiente lote antes de pedir más al servidor
+                this.setState({ renderedCount: renderedCount + 20 });
+            } else {
+                this.onLoadPrevious();
+            }
         }
     };
 
@@ -397,7 +405,7 @@ class Search extends React.Component {
         return {
             offset_date: offsetDate,
             offset_chat_id: offsetChatId,
-            offset_message_id: offsetMessageId
+            offset_message_id: offsetMessageId,
         };
     };
 
@@ -410,7 +418,7 @@ class Search extends React.Component {
 
         return {
             total_count: result.total_count,
-            messages: messages.messages.concat(result.messages)
+            messages: messages.messages.concat(result.messages),
         };
     };
 
@@ -435,14 +443,14 @@ class Search extends React.Component {
                 sender_user_id: 0,
                 from_message_id: offset.offset_message_id,
                 limit: 50,
-                filter: searchFilter ? { '@type': searchFilter } : null
+                filter: searchFilter ? { '@type': searchFilter } : null,
             });
         } else {
             result = await TdLibController.send({
                 '@type': 'searchMessages',
                 query: this.text,
                 ...offset,
-                limit: 50
+                limit: 50,
             });
         }
         this.loading = false;
@@ -454,9 +462,12 @@ class Search extends React.Component {
             return;
         }
 
-        this.setState({
-            messages: this.concatMessages(messages, result)
-        });
+        const merged = this.concatMessages(messages, result);
+        this.setState(prev => ({
+            messages: merged,
+            // Muestra los primeros 20 del nuevo lote del servidor sin renderizar todo de golpe
+            renderedCount: prev.renderedCount + 20,
+        }));
 
         const chats = new Map();
         const users = new Map();
@@ -489,7 +500,7 @@ class Search extends React.Component {
             'searchMessagesFilterVideo',
             'searchMessagesFilterDocument',
             'searchMessagesFilterUrl',
-            'searchMessagesFilterVoiceNote'
+            'searchMessagesFilterVoiceNote',
         ];
         const searchFilter = filters[value] || null;
         this.setState({ searchFilter }, () => {
@@ -499,7 +510,7 @@ class Search extends React.Component {
 
     render() {
         const { classes, chatId } = this.props;
-        const { top, recentlyFound, local, global, messages, searchFilter } = this.state;
+        const { top, recentlyFound, local, global, messages, searchFilter, renderedCount } = this.state;
 
         const filterIndex = [
             null,
@@ -507,7 +518,7 @@ class Search extends React.Component {
             'searchMessagesFilterVideo',
             'searchMessagesFilterDocument',
             'searchMessagesFilterUrl',
-            'searchMessagesFilterVoiceNote'
+            'searchMessagesFilterVoiceNote',
         ].indexOf(searchFilter);
 
         const chat = ChatStore.get(chatId);
@@ -548,15 +559,17 @@ class Search extends React.Component {
 
         const globalMessages =
             messages && messages.messages
-                ? messages.messages.map(x => (
-                      <FoundMessage
-                          key={`${x.chat_id}_${x.id}`}
-                          chatId={x.chat_id}
-                          messageId={x.id}
-                          chatSearch={Boolean(chatId)}
-                          onClick={() => this.handleSelectMessage(x.chat_id, x.id, false, true)}
-                      />
-                  ))
+                ? messages.messages
+                      .slice(0, renderedCount)
+                      .map(x => (
+                          <FoundMessage
+                              key={`${x.chat_id}_${x.id}`}
+                              chatId={x.chat_id}
+                              messageId={x.id}
+                              chatSearch={Boolean(chatId)}
+                              onClick={() => this.handleSelectMessage(x.chat_id, x.id, false, true)}
+                          />
+                      ))
                 : [];
 
         let messagesCaption = 'No messages found';
@@ -640,7 +653,7 @@ Search.propTypes = {
     chatId: PropTypes.number,
     text: PropTypes.string,
     onSelectMessage: PropTypes.func.isRequired,
-    onClose: PropTypes.func.isRequired
+    onClose: PropTypes.func.isRequired,
 };
 
 const enhance = compose(withStyles(styles, { withTheme: true }), withTranslation());
