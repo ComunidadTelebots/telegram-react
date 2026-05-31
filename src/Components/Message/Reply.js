@@ -25,6 +25,8 @@ class Reply extends React.Component {
     }
 
     onGetMessageResult = result => {
+        if (!result) return;
+
         const { chatId, messageId } = this.props;
 
         if (chatId === result.chat_id && messageId === result.id) {
@@ -93,7 +95,7 @@ Reply.propTypes = {
     chatId: PropTypes.number.isRequired,
     messageId: PropTypes.number.isRequired,
     title: PropTypes.string,
-    onClick: PropTypes.func
+    onClick: PropTypes.func,
 };
 
 export default withTranslation()(Reply);
