@@ -29,6 +29,7 @@ import {
 } from '../Utils/GramJs/EntityTranslator';
 import { translateStoryItem } from '../Utils/GramJs/UpdateTranslator';
 import { loadMessages, saveMessages } from '../Utils/MessageCache';
+import * as InstantViewCache from '../Stores/InstantViewCache';
 
 const ACCOUNTS_KEY = 'tg_gramjs_accounts';
 const ACTIVE_ACCOUNT_KEY = 'tg_gramjs_active_account';
@@ -2214,6 +2215,11 @@ class GramJsController extends EventEmitter {
 
     _getWebPageInstantView = async req => {
         const { url } = req;
+
+        // Cache hit — return instantly without a network round-trip.
+        const cached = InstantViewCache.get(url);
+        if (cached) return cached;
+
         try {
             const result = await this.client.invoke(new Api.messages.GetWebPage({ url, hash: 0 }));
             const wp = result.webpage || result;
@@ -2223,6 +2229,7 @@ class GramJsController extends EventEmitter {
             if (!iv) return {};
             // Attach the canonical URL so InstantViewer.componentDidUpdate can use it
             iv.url = wp.url || url;
+            InstantViewCache.set(iv.url, iv);
             return iv;
         } catch (e) {
             console.warn('[GramJs] getWebPageInstantView error:', e);

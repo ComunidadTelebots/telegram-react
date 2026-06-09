@@ -3,6 +3,8 @@
  * Traduce entidades GramJS/MTProto al formato que esperan los stores de TDLib.
  */
 
+import * as InstantViewCache from '../../Stores/InstantViewCache';
+
 // ─── ID helpers ─────────────────────────────────────────────────────────────
 
 export function peerToTdlibChatId(peer) {
@@ -977,6 +979,22 @@ function translateMessageContent(msg) {
     if (mediaClass === 'MessageMediaWebPage' || mediaClass === 'messageMediaWebPage') {
         const wp = media.webpage;
         const wpCls = wp?.className || wp?._;
+
+        // Pre-populate IV cache while we have the cachedPage in hand, so the
+        // user gets "really instant" IV without a network round-trip on open.
+        // translateInstantView walks the full block tree synchronously; on very
+        // large pages this could take a few ms — TODO: defer via queueMicrotask
+        // if profiling shows jank during heavy message rendering.
+        if (wpCls === 'WebPage' && wp.cachedPage && wp.url) {
+            if (!InstantViewCache.get(wp.url)) {
+                const iv = translateInstantView(wp.cachedPage);
+                if (iv) {
+                    iv.url = wp.url;
+                    InstantViewCache.set(wp.url, iv);
+                }
+            }
+        }
+
         const webPage =
             wpCls === 'WebPage'
                 ? {
@@ -1029,9 +1047,14 @@ function translateMessageContent(msg) {
                         const key = a.option ? Buffer.from(a.option).toString('hex') : '';
                         const rv = voterMap.get(key) || { voters: 0, chosen: false };
                         const pct = totalVoters > 0 ? Math.round((rv.voters / totalVoters) * 100) : 0;
+                        const answerText = typeof a.text === 'string' ? a.text : a.text?.text || '';
+                        const answerEntities = Array.isArray(a.text?.entities)
+                            ? a.text.entities.map(translateTextEntity).filter(Boolean)
+                            : [];
                         return {
                             '@type': 'pollOption',
-                            text: typeof a.text === 'string' ? a.text : a.text?.text || '',
+                            text: answerText,
+                            text_entities: answerEntities,
                             voter_count: rv.voters,
                             vote_percentage: pct,
                             is_chosen: rv.chosen,
@@ -1191,6 +1214,7 @@ function translateTextEntity(entity) {
         MessageEntityPhone: 'textEntityTypePhoneNumber',
         MessageEntityEmail: 'textEntityTypeEmailAddress',
         MessageEntityCustomEmoji: 'textEntityTypeCustomEmoji',
+        MessageEntityBlockquote: 'textEntityTypeBlockQuote',
     };
     const tdType = MAP[cls];
     if (!tdType) return null;
@@ -1204,6 +1228,10 @@ function translateTextEntity(entity) {
     if (tdType === 'textEntityTypeMentionUser' && entity.userId) result.type.user_id = Number(entity.userId);
     if (tdType === 'textEntityTypeCustomEmoji' && entity.documentId != null) {
         result.type.custom_emoji_id = String(entity.documentId);
+    }
+    if (tdType === 'textEntityTypeBlockQuote') {
+        // TODO collapsed: propagate when TDLib-like shape supports it
+        result.type.is_collapsed = !!entity.collapsed;
     }
     return result;
 }

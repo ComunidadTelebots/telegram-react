@@ -305,6 +305,16 @@ function getFormattedText(formattedText) {
                 }
                 break;
             }
+            case 'textEntityTypeBlockQuote': {
+                const bqClass = type.is_collapsed ? 'message-blockquote collapsed' : 'message-blockquote';
+                result.push(
+                    <blockquote key={entityKey} className={bqClass}>
+                        {entityText}
+                    </blockquote>,
+                );
+                // TODO: implement expand/collapse toggle for collapsed blockquotes
+                break;
+            }
             default:
                 result.push(entityText);
                 break;

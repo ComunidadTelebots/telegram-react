@@ -251,6 +251,16 @@ pre code {
     user-select: text;
 }
 
+/* Blockquote entity */
+.message-blockquote {
+    display: block;
+    margin: 4px 0;
+    padding: 2px 0 2px 10px;
+    border-left: 3px solid var(--message-in-reply-title, #4a9fd5);
+    color: var(--secondary-color, rgba(var(--color-text-primary-raw, 0, 0, 0), 0.6));
+    font-style: normal;
+}
+
 /* Message translation */
 .message-translation {
     margin-top: 6px;
