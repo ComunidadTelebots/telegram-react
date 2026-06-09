@@ -1,5 +1,30 @@
 # Changelog
 
+## [2026-06-09] (sesión 13)
+
+### Added
+- **Modo lectura en AmpViewer** (`695e7c99`) — botón de toggle en la cabecera del visor AMP (icono `Subject`/`Web`) que extrae el artículo del HTML AMP y lo renderiza de forma nativa sin iframe. Pipeline de fetch con 3 fuentes: Google AMP Cache → Cloudflare AMP Cache → URL original directa. Si todas fallan por CORS o falta de AMP, usa los datos del mensaje de Telegram (`title`, `description`, `site_name`) como fallback "lite". Badge cambia a `LEER` (texto completo) o `VISTA` (modo lite). Preferencia guardada en `localStorage`. Dark theme completo. Archivos: `src/Components/AmpViewer/AmpViewer.{js,css}`.
+- **Caché LRU de contenido AMP** (`695e7c99`) — nuevo `src/Stores/AmpCache.js` (mismo patrón LRU de 30 entradas que `InstantViewCache`). El contenido extraído se guarda por URL; reabriendo el mismo artículo es instantáneo sin ninguna petición de red. Archivo: `src/Stores/AmpCache.js`.
+- **Sanitizador HTML sin dependencias externas** (`695e7c99`) — DOM walker con whitelist estricta de tags (`p`, `h1-h6`, `img`, `a`, `blockquote`, `ul/ol/li`, tablas, etc.) y atributos seguros. Convierte `<amp-img>` a `<img>`, bloquea `javascript:` y `data:` URIs, elimina scripts/ads/navs del contenido extraído. Sin DOMPurify.
+- **`webPage` propagado a AmpViewer** (`695e7c99`) — `openAmpViewer(url, webPage)` y `closeAmpViewer()` incluyen el objeto `web_page` del mensaje en el `clientUpdate`; `MainPage` lo pasa como prop a `<AmpViewer>` para que el fallback lite siempre tenga datos.
+- **Caché LRU de Instant View** (`bd6a0e97`) — nuevo `src/Stores/InstantViewCache.js` (50 entradas). Al recibir un mensaje con `webPage.cachedPage`, el IV traducido se guarda automáticamente; `_getWebPageInstantView` lo sirve sin llamar a `GetWebPage` si ya está en caché. Archivos: `src/Stores/InstantViewCache.js`, `src/Utils/GramJs/EntityTranslator.js`, `src/Controllers/GramJsController.js`.
+- **Entidades en opciones de encuesta** (`bd6a0e97`) — `translatePoll` ahora preserva `text_entities` en cada opción de `PollAnswer` (campo additive, backward-compatible con `PollOption.js`). Archivos: `src/Utils/GramJs/EntityTranslator.js`.
+- **Render de `textEntityTypeBlockQuote`** (`bd6a0e97`) — nueva entidad de layer 198 renderizada como `<blockquote class="message-blockquote">` (o `collapsed` si `is_collapsed === true`). Borde izquierdo con `--message-in-reply-title` coherente con todos los skins. Archivos: `src/Utils/Message.js`, `src/Components/Message/Message.css`.
+- **`messageEntityBlockquote` en el mapa de traducción** (`bd6a0e97`) — añadido al mapa de `EntityTranslator.js` con propagación del flag `collapsed` de layer 198. Archivo: `src/Utils/GramJs/EntityTranslator.js`.
+
+### Fixed
+- **Memory leaks y race conditions en AmpViewer** (`210f491f`) — añadido flag `_mounted` para proteger todos los `setState` en código asíncrono (`_loadReaderContent` y el callback del timer). `componentDidMount` ya no llama a `_loadReaderContent` cuando el contenido ya está en el estado desde el constructor (doble lectura de caché). `closeAmpViewer` ahora envía `webPage: null` explícitamente. Archivo: `src/Components/AmpViewer/AmpViewer.js`, `src/Actions/Client.js`.
+- **Pantalla en blanco al activar modo lectura** — `setState({ readerMode: true, readerLoading: true })` en un solo dispatch elimina el render intermedio con `readerMode=true` y sin contenido. `renderReaderBody` muestra spinner mientras `readerLoading || !readerContent` (no hay pantalla blanca). Archivo: `src/Components/AmpViewer/AmpViewer.js`.
+- **`ReferenceError: readerContent` en render()** — `readerContent` no estaba desestructurado del estado pero se usaba en el JSX del badge (`readerContent?.lite`), causando crash completo del app. Archivo: `src/Components/AmpViewer/AmpViewer.js`.
+- **Filtros de búsqueda inalcanzables** (`7ecf67ed`) — `getSearchMessagesFilter()` tenía `return null` literal antes de los returns de filtro en los casos `messageVideoNote`, `audio`, `voiceNote` y `videoNote` dentro de `messageText`. Los cuatro filtros nunca se devolvían. Archivo: `src/Utils/Message.js`.
+
+### Notes
+- El botón de modo lectura se oculta silenciosamente (sin mostrar error) cuando ninguna fuente devuelve contenido útil y tampoco hay datos del mensaje disponibles.
+- Los tres fetch (Google AMP Cache, Cloudflare, URL original) se intentan secuencialmente; si el contenido extraído tiene menos de 100 caracteres visibles se descarta como página de error del CDN.
+- `textEntityTypeBlockQuote` con `collapsed` está renderizado visualmente pero el toggle expand/collapse queda pendiente (`// TODO`).
+
+---
+
 ## [2026-05-31] (sesion 12)
 
 ### Added
