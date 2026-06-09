@@ -129,7 +129,7 @@ export function openAmpViewer(url, webPage) {
 }
 
 export function closeAmpViewer() {
-    TdLibController.clientUpdate({ '@type': 'clientUpdateAmpViewerContent', url: null });
+    TdLibController.clientUpdate({ '@type': 'clientUpdateAmpViewerContent', url: null, webPage: null });
 }
 
 export function openTutorial() {

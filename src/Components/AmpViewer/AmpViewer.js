@@ -287,14 +287,17 @@ class AmpViewer extends React.Component {
         };
         this.iframeRef = React.createRef();
         this._errorTimer = null;
+        this._mounted = false;
     }
 
     componentDidMount() {
+        this._mounted = true;
         document.body.style.overflow = 'hidden';
         document.addEventListener('keydown', this.onKeyDown);
 
         if (this.state.readerMode) {
-            this._loadReaderContent();
+            // El contenido ya está en el estado desde el constructor (caché).
+            // No llamar a _loadReaderContent para evitar doble lectura del caché.
         } else {
             this._startTimer();
             window.addEventListener('message', this.onMessage);
@@ -302,6 +305,7 @@ class AmpViewer extends React.Component {
     }
 
     componentWillUnmount() {
+        this._mounted = false;
         document.body.style.overflow = '';
         clearTimeout(this._errorTimer);
         window.removeEventListener('message', this.onMessage);
@@ -313,8 +317,11 @@ class AmpViewer extends React.Component {
     _startTimer() {
         clearTimeout(this._errorTimer);
         this._errorTimer = setTimeout(() => {
+            if (!this._mounted) return;
             if (this.state.loading && !this.state.useFallback) {
-                this.setState({ loading: true, useFallback: true }, () => this._startTimer());
+                this.setState({ loading: true, useFallback: true }, () => {
+                    if (this._mounted) this._startTimer();
+                });
             } else if (this.state.loading) {
                 this.setState({ loading: false, error: true });
             }
@@ -340,14 +347,19 @@ class AmpViewer extends React.Component {
 
         const cached = AmpCache.get(url);
         if (cached) {
-            this.setState({ readerContent: cached, readerLoading: false, readerSupported: true });
+            if (this._mounted) {
+                this.setState({ readerContent: cached, readerLoading: false, readerSupported: true });
+            }
             return;
         }
         try {
             const content = await fetchAmpContent(url);
             AmpCache.set(url, content);
-            this.setState({ readerContent: content, readerLoading: false, readerSupported: true });
+            if (this._mounted) {
+                this.setState({ readerContent: content, readerLoading: false, readerSupported: true });
+            }
         } catch {
+            if (!this._mounted) return;
             // Fetch fallido — intentar modo lite con datos del mensaje de Telegram
             const { webPage } = this.props;
             if (webPage && (webPage.title || webPage.description)) {
@@ -367,6 +379,7 @@ class AmpViewer extends React.Component {
                         useFallback: false,
                     },
                     () => {
+                        if (!this._mounted) return;
                         this._startTimer();
                         window.addEventListener('message', this.onMessage);
                     },
