@@ -1038,8 +1038,6 @@ function getSearchMessagesFilter(chatId, messageId) {
         case 'messageVideoNote': {
             const { video_note } = content;
             if (video_note) {
-                return null;
-
                 return {
                     '@type': 'searchMessagesFilterVideoNote',
                 };
@@ -1051,24 +1049,18 @@ function getSearchMessagesFilter(chatId, messageId) {
             if (web_page) {
                 const { audio, voice_note, video_note } = web_page;
                 if (audio) {
-                    return null;
-
                     return {
                         '@type': 'searchMessagesFilterAudio',
                     };
                 }
 
                 if (voice_note) {
-                    return null;
-
                     return {
                         '@type': 'searchMessagesFilterVoiceNote',
                     };
                 }
 
                 if (video_note) {
-                    return null;
-
                     return {
                         '@type': 'searchMessagesFilterVideoNote',
                     };
