@@ -124,8 +124,8 @@ export function setInstantViewContent(content) {
     });
 }
 
-export function openAmpViewer(url) {
-    TdLibController.clientUpdate({ '@type': 'clientUpdateAmpViewerContent', url });
+export function openAmpViewer(url, webPage) {
+    TdLibController.clientUpdate({ '@type': 'clientUpdateAmpViewerContent', url, webPage: webPage || null });
 }
 
 export function closeAmpViewer() {

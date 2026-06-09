@@ -54,6 +54,7 @@ class MainPage extends React.Component {
             forwardInfo: null,
             instantViewContent: null,
             ampViewerUrl: null,
+            ampViewerWebPage: null,
             newGroupOpen: false,
             newChannelOpen: false,
         };
@@ -135,7 +136,7 @@ class MainPage extends React.Component {
 
     onClientUpdateAmpViewer = update => {
         if (update['@type'] === 'clientUpdateAmpViewerContent') {
-            this.setState({ ampViewerUrl: update.url || null });
+            this.setState({ ampViewerUrl: update.url || null, ampViewerWebPage: update.webPage || null });
         }
     };
 
@@ -192,6 +193,7 @@ class MainPage extends React.Component {
         const {
             instantViewContent,
             ampViewerUrl,
+            ampViewerWebPage,
             isChatDetailsVisible,
             mediaViewerContent,
             profileMediaViewerContent,
@@ -211,7 +213,7 @@ class MainPage extends React.Component {
                     {isChatDetailsVisible && <ChatInfo />}
                 </div>
                 {instantViewContent && <InstantViewer {...instantViewContent} />}
-                {ampViewerUrl && <AmpViewer url={ampViewerUrl} onClose={closeAmpViewer} />}
+                {ampViewerUrl && <AmpViewer url={ampViewerUrl} webPage={ampViewerWebPage} onClose={closeAmpViewer} />}
                 {mediaViewerContent && <MediaViewer {...mediaViewerContent} />}
                 {profileMediaViewerContent && <ProfileMediaViewer {...profileMediaViewerContent} />}
                 {forwardInfo && <ForwardDialog {...forwardInfo} />}

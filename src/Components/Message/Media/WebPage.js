@@ -178,7 +178,7 @@ class WebPage extends React.Component {
         const { web_page } = message.content || {};
         if (!web_page) return;
 
-        openAmpViewer(web_page.url);
+        openAmpViewer(web_page.url, web_page);
     };
 
     getWebPage = () => {

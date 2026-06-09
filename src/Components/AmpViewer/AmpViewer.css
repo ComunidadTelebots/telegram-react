@@ -99,6 +99,11 @@
     background: rgba(255, 255, 255, 0.15);
 }
 
+/* Botón modo lectura activo — fondo sólido para indicar el estado */
+.amp-viewer-actions .amp-reader-btn-active {
+    background: rgba(255, 255, 255, 0.25);
+}
+
 .amp-viewer-body {
     flex: 1;
     position: relative;
@@ -160,7 +165,176 @@
     opacity: 0.85;
 }
 
-/* ── Dark theme — usa la clase correcta del proyecto ─────────────────────── */
+/* ── Modo lectura ──────────────────────────────────────────────────────────── */
+
+.amp-reader-content {
+    height: 100%;
+    overflow-y: auto;
+    padding: 24px 32px;
+    box-sizing: border-box;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+}
+
+.amp-reader-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    line-height: 1.3;
+    margin: 0 0 20px;
+    color: var(--color-text-primary, #222);
+}
+
+.amp-reader-body {
+    font-size: 1rem;
+    line-height: 1.7;
+    color: var(--color-text-primary, #333);
+    word-wrap: break-word;
+    word-break: break-word;
+}
+
+.amp-reader-body p {
+    margin: 0 0 1em;
+}
+
+.amp-reader-body h1,
+.amp-reader-body h2,
+.amp-reader-body h3,
+.amp-reader-body h4,
+.amp-reader-body h5,
+.amp-reader-body h6 {
+    margin: 1.4em 0 0.5em;
+    font-weight: 700;
+    line-height: 1.25;
+    color: var(--color-text-primary, #111);
+}
+
+.amp-reader-body h1 {
+    font-size: 1.4rem;
+}
+.amp-reader-body h2 {
+    font-size: 1.25rem;
+}
+.amp-reader-body h3 {
+    font-size: 1.1rem;
+}
+
+.amp-reader-body img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+    margin: 12px auto;
+    border-radius: 4px;
+}
+
+.amp-reader-body figure {
+    margin: 16px 0;
+    text-align: center;
+}
+
+.amp-reader-body figcaption {
+    font-size: 0.8rem;
+    color: var(--color-text-secondary, #888);
+    margin-top: 4px;
+}
+
+.amp-reader-body blockquote {
+    margin: 12px 0;
+    padding: 4px 0 4px 14px;
+    border-left: 3px solid var(--color-accent-main, #229af0);
+    color: var(--color-text-secondary, #555);
+    font-style: italic;
+}
+
+.amp-reader-body a {
+    color: var(--color-accent-main, #229af0);
+    text-decoration: none;
+}
+
+.amp-reader-body a:hover {
+    text-decoration: underline;
+}
+
+.amp-reader-body ul,
+.amp-reader-body ol {
+    padding-left: 1.5em;
+    margin: 0 0 1em;
+}
+
+.amp-reader-body li {
+    margin-bottom: 0.3em;
+}
+
+.amp-reader-body pre {
+    background: rgba(0, 0, 0, 0.05);
+    border-radius: 4px;
+    padding: 12px 14px;
+    overflow-x: auto;
+    font-size: 0.875rem;
+    line-height: 1.5;
+    margin: 12px 0;
+}
+
+.amp-reader-body code {
+    font-family: var(--font-mono, monospace);
+    font-size: 0.875em;
+    background: rgba(0, 0, 0, 0.06);
+    padding: 1px 4px;
+    border-radius: 3px;
+}
+
+.amp-reader-body pre code {
+    background: none;
+    padding: 0;
+    font-size: inherit;
+}
+
+.amp-reader-body hr {
+    border: none;
+    border-top: 1px solid rgba(0, 0, 0, 0.12);
+    margin: 20px 0;
+}
+
+.amp-reader-body table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+    margin: 12px 0;
+}
+
+.amp-reader-body th,
+.amp-reader-body td {
+    border: 1px solid rgba(0, 0, 0, 0.12);
+    padding: 6px 10px;
+    text-align: left;
+}
+
+.amp-reader-body th {
+    background: rgba(0, 0, 0, 0.04);
+    font-weight: 600;
+}
+
+/* Modo lite (fallback desde datos del mensaje) */
+.amp-reader-body .amp-lite-site {
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--color-accent-main, #229af0);
+    margin-bottom: 0.5em;
+}
+
+.amp-reader-body .amp-lite-readmore {
+    margin-top: 1.5em;
+    padding-top: 1em;
+    border-top: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+body.theme-dark .amp-reader-body .amp-lite-readmore {
+    border-top-color: rgba(255, 255, 255, 0.1);
+}
+
+/* ── Dark theme ───────────────────────────────────────────────────────────── */
+
 body.theme-dark .amp-viewer-container {
     background: #212121;
 }
@@ -172,4 +346,50 @@ body.theme-dark .amp-viewer-loading {
 body.theme-dark .amp-viewer-error {
     background: #212121;
     color: #aaa;
+}
+
+body.theme-dark .amp-reader-content {
+    background: #212121;
+}
+
+body.theme-dark .amp-reader-title {
+    color: #e0e0e0;
+}
+
+body.theme-dark .amp-reader-body {
+    color: #ccc;
+}
+
+body.theme-dark .amp-reader-body h1,
+body.theme-dark .amp-reader-body h2,
+body.theme-dark .amp-reader-body h3,
+body.theme-dark .amp-reader-body h4,
+body.theme-dark .amp-reader-body h5,
+body.theme-dark .amp-reader-body h6 {
+    color: #e8e8e8;
+}
+
+body.theme-dark .amp-reader-body pre {
+    background: rgba(255, 255, 255, 0.07);
+}
+
+body.theme-dark .amp-reader-body code {
+    background: rgba(255, 255, 255, 0.08);
+}
+
+body.theme-dark .amp-reader-body th {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+body.theme-dark .amp-reader-body th,
+body.theme-dark .amp-reader-body td {
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+body.theme-dark .amp-reader-body hr {
+    border-top-color: rgba(255, 255, 255, 0.1);
+}
+
+body.theme-dark .amp-reader-body blockquote {
+    color: #999;
 }
