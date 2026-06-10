@@ -1070,6 +1070,7 @@ function translateMessageContent(msg) {
                             vote_percentage: pct,
                             is_chosen: rv.chosen,
                             is_being_chosen: false,
+                            _option_data: a.option ? Array.from(a.option) : [],
                         };
                     });
                 })(),

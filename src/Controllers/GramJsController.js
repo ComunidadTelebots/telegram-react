@@ -932,6 +932,20 @@ class GramJsController extends EventEmitter {
             case 'setSupergroupSlowModeDelay':
                 return this._setSupergroupSlowModeDelay(req);
 
+            // ── Polls ────────────────────────────────────────────────────────
+            case 'setPollAnswer':
+                return this._setPollAnswer(req);
+            case 'stopPoll':
+                return this._stopPoll(req);
+
+            // ── Sessions ─────────────────────────────────────────────────────
+            case 'getActiveSessions':
+                return this._getActiveSessions(req);
+            case 'terminateSession':
+                return this._terminateSession(req);
+            case 'terminateAllOtherSessions':
+                return this._terminateAllOtherSessions(req);
+
             default:
                 if (!this.disableLog) console.warn('[GramJs] send no implementado:', type);
                 return {};
@@ -987,6 +1001,106 @@ class GramJsController extends EventEmitter {
             supergroup_id,
             supergroup_full_info: { slow_mode_delay: seconds },
         });
+        return {};
+    };
+
+    _setPollAnswer = async ({ chat_id, message_id, option_ids }) => {
+        const inputPeer = await this._getInputPeer(chat_id);
+        const MessageStore = (await import('../Stores/MessageStore')).default;
+        const msg = MessageStore.get(chat_id, message_id);
+        const options = [];
+        if (option_ids && option_ids.length > 0 && msg && msg.content && msg.content.poll) {
+            for (const idx of option_ids) {
+                const opt = msg.content.poll.options[idx];
+                if (opt && opt._option_data) {
+                    options.push(Buffer.from(opt._option_data));
+                }
+            }
+        }
+        const voteResult = await this.client.invoke(
+            new Api.messages.SendVote({
+                peer: inputPeer,
+                msgId: message_id,
+                options,
+            }),
+        );
+        // Refrescar el mensaje en el store para que el UI muestre el resultado
+        try {
+            if (voteResult && voteResult.updates) {
+                for (const upd of voteResult.updates) {
+                    const updClass = upd.className || upd._;
+                    if (updClass === 'UpdateMessagePoll' && upd.poll) {
+                        const { translateMessage } = await import('../Utils/GramJs/EntityTranslator');
+                        const refreshed = await this.client.invoke(
+                            new Api.channels.GetMessages({
+                                channel: inputPeer,
+                                id: [new Api.InputMessageID({ id: message_id })],
+                            }),
+                        );
+                        if (refreshed && refreshed.messages && refreshed.messages[0]) {
+                            const tdMsg = translateMessage(refreshed.messages[0], chat_id);
+                            this._emitUpdate({
+                                '@type': 'updateMessageContent',
+                                chat_id,
+                                message_id,
+                                new_content: tdMsg.content,
+                            });
+                        }
+                        break;
+                    }
+                }
+            }
+        } catch {}
+        return {};
+    };
+
+    _stopPoll = async ({ chat_id, message_id }) => {
+        const inputPeer = await this._getInputPeer(chat_id);
+        await this.client.invoke(
+            new Api.messages.EditMessage({
+                peer: inputPeer,
+                id: message_id,
+                media: new Api.InputMediaPoll({
+                    poll: new Api.Poll({
+                        id: BigInt(0),
+                        closed: true,
+                        question: new Api.TextWithEntities({ text: '', entities: [] }),
+                    }),
+                }),
+            }),
+        );
+        return {};
+    };
+
+    _getActiveSessions = async () => {
+        const result = await this.client.invoke(new Api.account.GetAuthorizations());
+        const sessions = (result.authorizations || []).map(a => ({
+            '@type': 'session',
+            id: String(a.hash),
+            is_current: !!a.current,
+            is_password_pending: false,
+            api_id: a.apiId || 0,
+            application_name: a.appName || '',
+            application_version: a.appVersion || '',
+            device_model: a.deviceModel || '',
+            platform: a.platform || '',
+            system_version: a.systemVersion || '',
+            log_in_date: a.dateCreated || 0,
+            last_active_date: a.dateActive || 0,
+            ip: a.ip || '',
+            country: a.country || '',
+            region: a.region || '',
+        }));
+        return { '@type': 'sessions', sessions };
+    };
+
+    _terminateSession = async ({ session_id }) => {
+        await this.client.invoke(new Api.account.ResetAuthorization({ hash: BigInt(session_id) }));
+        return {};
+    };
+
+    _terminateAllOtherSessions = async () => {
+        await this.client.invoke(new Api.auth.ResetAuthorizations());
         return {};
     };
 
