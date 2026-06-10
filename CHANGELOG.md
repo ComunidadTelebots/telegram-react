@@ -1,5 +1,21 @@
 # Changelog
 
+## [2026-06-10] (sesión 19)
+
+### Fixed
+- **ICE candidates perdidos en llamadas** — `_tryBuildRemoteSdp` limpiaba `_pendingCandidates` sin añadirlos al `RTCPeerConnection`. Ahora se hace `addIceCandidate` individual con `try/catch` por candidato antes de vaciar el array. Archivo: `src/Controllers/CallController.js`.
+- **Verificación g_a_hash anti-MITM** — el callee ahora verifica `SHA-256(g_a) == g_a_hash` antes de completar el DH. Si no coincide aborta con `discardCall`. Archivo: `src/Controllers/CallController.js`.
+- **Timeout de signaling queue** — si `_authKey` no llega en 10 segundos, la cola de señalización se vacía y el timer se cancela en `_cleanup()`. Archivo: `src/Controllers/CallController.js`.
+- **`gb` undefined en `phone.AcceptCall`** — `Buffer.from(Uint8Array)` no produce un Buffer válido en el polyfill del navegador. Se corrigió usando `Buffer.from(uint8.buffer, byteOffset, byteLength)`. Archivo: `src/Controllers/GramJsController.js`.
+- **Derivación de msgKey incorrecta en tgcalls** — `encodeSignalingMessage` usaba offset `128+x` (incorrecto) y tomaba 32 bytes del authKey en lugar de 36. Corregido a `x = isOutgoing ? 0 : 8` y 36 bytes, según la spec MTProto2 P2P. Archivo: `src/lib/TgCallsSignaling.js`.
+- **AES-CTR counter width 64→128 bits** — tgcalls usa `CRYPTO_ctr128_encrypt` de OpenSSL (contador de 128 bits completo). Web Crypto con `length:64` diverge a partir del segundo bloque. Corregido a `length:128`. Archivo: `src/lib/TgCallsSignaling.js`.
+- **`contextMenu`, `left`, `top` sin valor inicial en Message** — causaban `prop open=undefined` y `anchorPosition.left=undefined` en el `Popover` de Material-UI. Inicializados a `false`/`0` en el constructor. Archivo: `src/Components/Message/Message.js`.
+- **`base64url` no soportado en polyfill de Buffer** — `Buffer.toString('base64url')` falla en el navegador. Convertido manualmente desde base64 estándar (`+`→`-`, `/`→`_`, sin `=`). Archivo: `src/Controllers/GramJsController.js`.
+- **`options=null` en Autocomplete del login** — `data` llega como `null` mientras se cargan los países. Cambiado a `options={data || []}`. Archivo: `src/Components/Auth/Phone.js`.
+- **HTTPS en servidor de desarrollo** — añadido `HTTPS=true` al `.env` para que el dev server corra en `https://localhost:3000` y Firefox/Chrome no bloqueen las conexiones `wss://` a los servidores de Telegram.
+
+---
+
 ## [2026-06-10] (sesión 18)
 
 ### Fixed
