@@ -40,13 +40,13 @@ const ScrollBehaviorEnum = Object.freeze({
     SCROLL_TO_UNREAD: 'SCROLL_TO_UNREAD',
     SCROLL_TO_MESSAGE: 'SCROLL_TO_MESSAGE',
     KEEP_SCROLL_POSITION: 'KEEP_SCROLL_POSITION',
-    NONE: 'NONE'
+    NONE: 'NONE',
 });
 
 const styles = theme => ({
     background: {
-        background: theme.palette.type === 'dark' ? theme.palette.grey[900] : '#e6ebee'
-    }
+        background: theme.palette.type === 'dark' ? theme.palette.grey[900] : '#e6ebee',
+    },
 });
 
 class MessagesList extends React.Component {
@@ -66,7 +66,7 @@ class MessagesList extends React.Component {
             selectionActive: false,
             separatorMessageId: 0,
             scrollDownVisible: false,
-            replyHistory: []
+            replyHistory: [],
         };
 
         this.listRef = React.createRef();
@@ -88,7 +88,7 @@ class MessagesList extends React.Component {
                 separatorMessageId: props.chatId !== state.prevChatId ? 0 : state.separatorMessageId,
                 scrollDownVisible:
                     props.chatId === state.prevChatId && (state.scrollDownVisible || state.replyHistory.length > 0),
-                replyHistory: props.chatId !== state.prevChatId ? [] : state.replyHistory
+                replyHistory: props.chatId !== state.prevChatId ? [] : state.replyHistory,
             };
         }
 
@@ -102,7 +102,7 @@ class MessagesList extends React.Component {
         const snapshot = {
             scrollTop,
             scrollHeight,
-            offsetHeight
+            offsetHeight,
         };
 
         // console.log('[ml] getSnapshotBeforeUpdate', snapshot);
@@ -248,7 +248,7 @@ class MessagesList extends React.Component {
                     TdLibController.clientUpdate({
                         '@type': 'clientUpdateEditMessage',
                         chatId: message.chat_id,
-                        messageId: message.id
+                        messageId: message.id,
                     });
 
                     return;
@@ -264,7 +264,7 @@ class MessagesList extends React.Component {
             from_message_id: 0,
             offset: 0,
             limit: 100,
-            filter: { '@type': 'searchMessagesFilterEmpty' }
+            filter: { '@type': 'searchMessagesFilterEmpty' },
         });
 
         for (let i = 0; i < result.messages.length; i++) {
@@ -273,7 +273,7 @@ class MessagesList extends React.Component {
                 TdLibController.clientUpdate({
                     '@type': 'clientUpdateEditMessage',
                     chatId: message.chat_id,
-                    messageId: message.id
+                    messageId: message.id,
                 });
 
                 return;
@@ -294,7 +294,7 @@ class MessagesList extends React.Component {
                             await TdLibController.send({
                                 '@type': 'createPrivateChat',
                                 user_id: type.user_id,
-                                force: false
+                                force: false,
                             });
                             break;
                         }
@@ -302,7 +302,7 @@ class MessagesList extends React.Component {
                             await TdLibController.send({
                                 '@type': 'createBasicGroupChat',
                                 basic_group_id: type.basic_group_id,
-                                force: false
+                                force: false,
                             });
                             break;
                         }
@@ -310,7 +310,7 @@ class MessagesList extends React.Component {
                             await TdLibController.send({
                                 '@type': 'createSupergroupChat',
                                 supergroup_id: type.supergroup_id,
-                                force: false
+                                force: false,
                             });
                             break;
                         }
@@ -379,7 +379,7 @@ class MessagesList extends React.Component {
 
     onClientUpdateSelection = update => {
         this.setState({
-            selectionActive: MessageStore.selectedItems.size > 0
+            selectionActive: MessageStore.selectedItems.size > 0,
         });
     };
 
@@ -500,7 +500,7 @@ class MessagesList extends React.Component {
 
         TdLibController.clientUpdate({
             '@type': 'clientUpdateMessagesInView',
-            messages: messages
+            messages: messages,
         });
         return;
 
@@ -542,7 +542,7 @@ class MessagesList extends React.Component {
         if (chat) {
             TdLibController.send({
                 '@type': 'openChat',
-                chat_id: chat.id
+                chat_id: chat.id,
             });
 
             const unread = !messageId && chat.unread_count > 0;
@@ -559,7 +559,7 @@ class MessagesList extends React.Component {
                 chat_id: chat.id,
                 from_message_id: fromMessageId,
                 offset: offset,
-                limit: limit
+                limit: limit,
             }).finally(() => {
                 this.loading = false;
             });
@@ -633,7 +633,7 @@ class MessagesList extends React.Component {
         if (previousChat && previousChatId !== chatId) {
             TdLibController.send({
                 '@type': 'closeChat',
-                chat_id: previousChatId
+                chat_id: previousChatId,
             });
         }
     }
@@ -647,7 +647,7 @@ class MessagesList extends React.Component {
             TdLibController.send({
                 '@type': 'viewMessages',
                 chat_id: messages[0].chat_id,
-                message_ids: messages.map(x => x.id)
+                message_ids: messages.map(x => x.id),
             });
         };
 
@@ -722,7 +722,7 @@ class MessagesList extends React.Component {
             chat_id: chatId,
             from_message_id: fromMessageId,
             offset: 0,
-            limit: MESSAGE_SLICE_LIMIT
+            limit: MESSAGE_SLICE_LIMIT,
         }).finally(() => {
             this.loading = false;
         });
@@ -768,7 +768,7 @@ class MessagesList extends React.Component {
 
         const basicGroupChat = await TdLibController.send({
             '@type': 'createBasicGroupChat',
-            basic_group_id: fullInfo.upgraded_from_basic_group_id
+            basic_group_id: fullInfo.upgraded_from_basic_group_id,
         });
 
         if (!basicGroupChat) return;
@@ -782,7 +782,7 @@ class MessagesList extends React.Component {
             chat_id: basicGroupChat.id,
             from_message_id: fromMessageId,
             offset: 0,
-            limit: MESSAGE_SLICE_LIMIT
+            limit: MESSAGE_SLICE_LIMIT,
         }).finally(() => {
             this.loading = false;
         });
@@ -823,7 +823,7 @@ class MessagesList extends React.Component {
             chat_id: chatId,
             from_message_id: fromMessageId,
             offset: -MESSAGE_SLICE_LIMIT - 1,
-            limit: MESSAGE_SLICE_LIMIT + 1
+            limit: MESSAGE_SLICE_LIMIT + 1,
         }).finally(() => {
             this.loading = false;
         });
@@ -870,9 +870,9 @@ class MessagesList extends React.Component {
 
         this.setState(
             {
-                history: this.state.history.filter(x => x.id !== oldMessageId).concat([message])
+                history: this.state.history.filter(x => x.id !== oldMessageId).concat([message]),
             },
-            callback
+            callback,
         );
     }
 
@@ -929,11 +929,11 @@ class MessagesList extends React.Component {
                 if (this.prevScrollTop !== list.scrollTop && this.prevScrollTop && this.prevHistory === history) {
                     this.setState({
                         scrollDownVisible: false,
-                        replyHistory: []
+                        replyHistory: [],
                     });
                 } else if (!replyHistory.length) {
                     this.setState({
-                        scrollDownVisible: false
+                        scrollDownVisible: false,
                     });
                 }
             }
@@ -952,7 +952,7 @@ class MessagesList extends React.Component {
         const { scrollTop, scrollHeight, offsetHeight } = snapshot || {
             scrollTop: 0,
             scrollHeight: 0,
-            offsetHeight: 0
+            offsetHeight: 0,
         };
 
         // console.log(
@@ -1144,7 +1144,7 @@ class MessagesList extends React.Component {
             chat_id: chat.id,
             from_message_id: fromMessageId,
             offset: offset,
-            limit: limit
+            limit: limit,
         }).finally(() => {
             this.loading = false;
         });
@@ -1287,11 +1287,14 @@ class MessagesList extends React.Component {
         // const isChannel = isChannelChat(chatId);
 
         this.itemsMap.clear();
+        const uniqueHistory = history.filter(
+            (x, i, arr) => arr.findIndex(m => m.id === x.id && m.chat_id === x.chat_id) === i,
+        );
         this.messages = clearHistory
             ? null
-            : history.map((x, i) => {
-                  const prevMessage = i > 0 ? history[i - 1] : null;
-                  const nextMessage = i < history.length - 1 ? history[i + 1] : null;
+            : uniqueHistory.map((x, i) => {
+                  const prevMessage = i > 0 ? uniqueHistory[i - 1] : null;
+                  const nextMessage = i < uniqueHistory.length - 1 ? uniqueHistory[i + 1] : null;
 
                   const showDate = this.showMessageDate(x, prevMessage, i === 0);
 
@@ -1339,7 +1342,7 @@ class MessagesList extends React.Component {
         return (
             <div
                 className={classNames(classes.background, 'messages-list', {
-                    'messages-list-selection-active': selectionActive
+                    'messages-list-selection-active': selectionActive,
                 })}
                 onDragEnter={this.handleListDragEnter}>
                 <div ref={this.listRef} className='messages-list-wrapper' onScroll={this.handleScroll}>

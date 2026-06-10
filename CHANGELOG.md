@@ -1,5 +1,13 @@
 # Changelog
 
+## [2026-06-10] (sesión 18)
+
+### Fixed
+- **Claves React duplicadas en MessagesList** — `history` podía contener el mismo mensaje dos veces (por ejemplo tras recibir la notificación de una llamada terminada), causando el warning "Encountered two children with the same key". El render ahora deduplica por `(chat_id, id)` antes de renderizar, usando `uniqueHistory` también para calcular `prevMessage` / `nextMessage`. Archivo: `src/Components/ColumnMiddle/MessagesList.js`.
+- **Protocolo tgcalls (llamadas con cliente oficial Android)** — los mensajes de señalización P2P ahora se encriptan con AES-CTR + gzip tal como especifica el protocolo tgcalls, en lugar de enviarse como JSON plano. Se corrigió el flag `isOutgoing` (antes invertido en ambos extremos) y una race condition en el callee que llamaba `_startWebRTC` antes de que el DH key exchange terminara (`_onCallConfirmed` ahora es `async` y hace `await _finishCalleeDH`). Archivos: `src/Controllers/CallController.js`, `src/lib/TgCallsSignaling.js`.
+
+---
+
 ## [2026-06-10] (sesión 17)
 
 ### Added
