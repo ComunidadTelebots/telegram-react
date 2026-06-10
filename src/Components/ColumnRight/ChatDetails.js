@@ -18,6 +18,7 @@ import Select from '@material-ui/core/Select';
 import AlternateEmailIcon from '@material-ui/icons/AlternateEmail';
 import BlockIcon from '@material-ui/icons/Block';
 import TimerIcon from '@material-ui/icons/Timer';
+import HourglassEmptyIcon from '@material-ui/icons/HourglassEmpty';
 import ExitToAppIcon from '@material-ui/icons/ExitToApp';
 import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
 import TextField from '@material-ui/core/TextField';
@@ -431,6 +432,15 @@ class ChatDetails extends React.Component {
         this.setState({ editingDescription: false });
     };
 
+    handleSetSlowMode = async event => {
+        const { chatId } = this.props;
+        const seconds = Number(event.target.value);
+        const chat = ChatStore.get(chatId);
+        const supergroupId = chat && chat.type && chat.type.supergroup_id;
+        if (!supergroupId) return;
+        await TdLibController.send({ '@type': 'setSupergroupSlowModeDelay', supergroup_id: supergroupId, seconds });
+    };
+
     handleSetMessageTtl = async event => {
         const { chatId } = this.props;
         const ttl = Number(event.target.value);
@@ -700,6 +710,43 @@ class ChatDetails extends React.Component {
                                         />
                                     </ListItem>
                                 )}
+                                {isAdmin &&
+                                    isGroup &&
+                                    (() => {
+                                        const chat = ChatStore.get(chatId);
+                                        const supergroupId = chat && chat.type && chat.type.supergroup_id;
+                                        if (!supergroupId) return null;
+                                        const full = SupergroupStore.getFullInfo(supergroupId);
+                                        const currentDelay = full ? full.slow_mode_delay || 0 : 0;
+                                        const slowOptions = [
+                                            { value: 0, label: 'Desactivado' },
+                                            { value: 10, label: '10 s' },
+                                            { value: 30, label: '30 s' },
+                                            { value: 60, label: '1 min' },
+                                            { value: 300, label: '5 min' },
+                                            { value: 900, label: '15 min' },
+                                            { value: 3600, label: '1 hora' },
+                                        ];
+                                        return (
+                                            <ListItem className={classes.listItem}>
+                                                <ListItemIcon>
+                                                    <HourglassEmptyIcon />
+                                                </ListItemIcon>
+                                                <ListItemText primary='Slow Mode' />
+                                                <Select
+                                                    value={currentDelay}
+                                                    onChange={this.handleSetSlowMode}
+                                                    disableUnderline
+                                                    style={{ fontSize: '0.875rem' }}>
+                                                    {slowOptions.map(o => (
+                                                        <MenuItem key={o.value} value={o.value}>
+                                                            {o.label}
+                                                        </MenuItem>
+                                                    ))}
+                                                </Select>
+                                            </ListItem>
+                                        );
+                                    })()}
                                 {isPrivateChat(chatId) && !isSecret && !isMe && (
                                     <ListItem button className={classes.listItem} onClick={this.handleCreateSecretChat}>
                                         <ListItemIcon>

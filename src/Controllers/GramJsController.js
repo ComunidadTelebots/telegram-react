@@ -928,6 +928,10 @@ class GramJsController extends EventEmitter {
             case 'getMessageThreadHistory':
                 return this._getMessageThreadHistory(req);
 
+            // ── Group management ─────────────────────────────────────────────
+            case 'setSupergroupSlowModeDelay':
+                return this._setSupergroupSlowModeDelay(req);
+
             default:
                 if (!this.disableLog) console.warn('[GramJs] send no implementado:', type);
                 return {};
@@ -973,6 +977,17 @@ class GramJsController extends EventEmitter {
         const { translateMessage } = await import('../Utils/GramJs/EntityTranslator');
         const messages = (result.messages || []).map(m => translateMessage(m, chat_id));
         return { '@type': 'messages', messages, total_count: result.count || messages.length };
+    };
+
+    _setSupergroupSlowModeDelay = async ({ supergroup_id, seconds }) => {
+        const inputPeer = await this._getInputPeer(-supergroup_id);
+        await this.client.invoke(new Api.channels.ToggleSlowMode({ channel: inputPeer, seconds }));
+        this._emitUpdate({
+            '@type': 'updateSupergroupFullInfo',
+            supergroup_id,
+            supergroup_full_info: { slow_mode_delay: seconds },
+        });
+        return {};
     };
 
     // ─── Auth handlers ───────────────────────────────────────────────────────
@@ -2050,6 +2065,10 @@ class GramJsController extends EventEmitter {
                 sticker_set_id: full.stickerset ? String(full.stickerset.id) : '0',
                 invite_link: full.exportedInvite?.link || '',
                 upgraded_from_basic_group_id: 0,
+                slow_mode_delay: full.slowmodeSeconds || 0,
+                slow_mode_delay_expires_in: full.slowmodeNextSendDate
+                    ? full.slowmodeNextSendDate - Math.floor(Date.now() / 1000)
+                    : 0,
             };
             this._emitUpdate({
                 '@type': 'updateSupergroupFullInfo',

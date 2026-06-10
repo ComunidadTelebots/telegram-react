@@ -22,7 +22,13 @@ function InlineKeyboard({ chatId, messageId, replyMarkup }) {
     const handleClick = async (e, btn) => {
         e.stopPropagation();
         const type = btn['@type'];
-        if (type === 'inlineKeyboardButtonTypeUrl' || type === 'inlineKeyboardButtonTypeWebApp') {
+        if (type === 'inlineKeyboardButtonTypeWebApp') {
+            if (window._botWebAppRef) {
+                window._botWebAppRef.open(btn.url, btn.text || 'Bot');
+            } else {
+                window.open(btn.url, '_blank', 'noopener,noreferrer');
+            }
+        } else if (type === 'inlineKeyboardButtonTypeUrl') {
             window.open(btn.url, '_blank', 'noopener,noreferrer');
         } else if (type === 'inlineKeyboardButtonTypeCallback') {
             try {
