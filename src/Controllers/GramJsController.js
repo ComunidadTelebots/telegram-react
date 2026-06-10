@@ -357,6 +357,35 @@ class GramJsController extends EventEmitter {
                     }
                 }
 
+                // When a poll result changes (others voted), find all messages with that poll
+                // and emit updateMessageContent so Poll.js re-renders with new vote counts
+                if (updateType === 'updatePoll') {
+                    const pollId = tdUpdate.poll && tdUpdate.poll.id;
+                    if (pollId) {
+                        import('../Stores/MessageStore')
+                            .then(({ default: MessageStore }) => {
+                                MessageStore.items.forEach((chatMessages, chatId) => {
+                                    chatMessages.forEach((msg, msgId) => {
+                                        if (
+                                            msg.content &&
+                                            msg.content['@type'] === 'messagePoll' &&
+                                            msg.content.poll &&
+                                            String(msg.content.poll.id) === String(pollId)
+                                        ) {
+                                            this._emitUpdate({
+                                                '@type': 'updateMessageContent',
+                                                chat_id: chatId,
+                                                message_id: msgId,
+                                                new_content: { ...msg.content, poll: tdUpdate.poll },
+                                            });
+                                        }
+                                    });
+                                });
+                            })
+                            .catch(() => {});
+                    }
+                }
+
                 // When a message is edited remotely, also emit updateMessageEdited so the
                 // "edited" label and edit_date get refreshed in the UI
                 if (updateType === 'updateMessageContent') {
@@ -938,6 +967,18 @@ class GramJsController extends EventEmitter {
             case 'stopPoll':
                 return this._stopPoll(req);
 
+            // ── Jump to date ─────────────────────────────────────────────────
+            case 'getChatMessageByDate':
+                return this._getChatMessageByDate(req);
+
+            // ── Profile editing ──────────────────────────────────────────────
+            case 'setName':
+                return this._setName(req);
+            case 'setBio':
+                return this._setBio(req);
+            case 'setUsername':
+                return this._setUsername(req);
+
             // ── Sessions ─────────────────────────────────────────────────────
             case 'getActiveSessions':
                 return this._getActiveSessions(req);
@@ -1101,6 +1142,67 @@ class GramJsController extends EventEmitter {
 
     _terminateAllOtherSessions = async () => {
         await this.client.invoke(new Api.auth.ResetAuthorizations());
+        return {};
+    };
+
+    _getChatMessageByDate = async ({ chat_id, date }) => {
+        const inputPeer = await this._getInputPeer(chat_id);
+        const result = await this.client.invoke(
+            new Api.messages.GetHistory({
+                peer: inputPeer,
+                offsetId: 0,
+                offsetDate: date,
+                addOffset: -1,
+                limit: 1,
+                maxId: 0,
+                minId: 0,
+                hash: BigInt(0),
+            }),
+        );
+        const msgs = result && result.messages;
+        if (msgs && msgs.length > 0) {
+            const { translateMessage } = await import('../Utils/GramJs/EntityTranslator');
+            const tdMsg = translateMessage(msgs[0], chat_id);
+            return tdMsg || { id: msgs[0].id };
+        }
+        return {};
+    };
+
+    _setName = async ({ first_name, last_name }) => {
+        await this.client.invoke(
+            new Api.account.UpdateProfile({ firstName: first_name || '', lastName: last_name || '' }),
+        );
+        const OptionStore = (await import('../Stores/OptionStore')).default;
+        const myIdOpt = OptionStore.get('my_id');
+        const myId = myIdOpt && myIdOpt.value;
+        if (myId) {
+            const user = this._userCache.get(myId);
+            if (user) {
+                user.first_name = first_name || '';
+                user.last_name = last_name || '';
+                this._emitUpdate({ '@type': 'updateUser', user });
+            }
+        }
+        return {};
+    };
+
+    _setBio = async ({ bio }) => {
+        await this.client.invoke(new Api.account.UpdateProfile({ about: bio || '' }));
+        return {};
+    };
+
+    _setUsername = async ({ username }) => {
+        await this.client.invoke(new Api.account.UpdateUsername({ username: username || '' }));
+        const OptionStore = (await import('../Stores/OptionStore')).default;
+        const myIdOpt = OptionStore.get('my_id');
+        const myId = myIdOpt && myIdOpt.value;
+        if (myId) {
+            const user = this._userCache.get(myId);
+            if (user) {
+                user.username = username || '';
+                this._emitUpdate({ '@type': 'updateUser', user });
+            }
+        }
         return {};
     };
 

@@ -18,6 +18,7 @@ import FormControlLabel from '@material-ui/core/FormControlLabel';
 import IconButton from '@material-ui/core/IconButton';
 import ArrowBackIcon from '@material-ui/icons/ArrowBack';
 import SearchIcon from '@material-ui/icons/Search';
+import DateRangeIcon from '@material-ui/icons/DateRange';
 import withStyles from '@material-ui/core/styles/withStyles';
 import { withTranslation } from 'react-i18next';
 import { compose } from 'recompose';
@@ -77,6 +78,7 @@ class Header extends Component {
             authorizationState: AppStore.getAuthorizationState(),
             connectionState: AppStore.getConnectionState(),
             openDeleteDialog: false,
+            openJumpToDate: false,
         };
     }
 
@@ -169,6 +171,39 @@ class Header extends Component {
 
     handleCloseDelete = () => {
         this.setState({ openDeleteDialog: false });
+    };
+
+    handleJumpToDate = () => {
+        this.setState({ openJumpToDate: true });
+    };
+
+    handleCloseJumpToDate = () => {
+        this.setState({ openJumpToDate: false });
+    };
+
+    handleConfirmJumpToDate = async e => {
+        e.preventDefault();
+        const date = this.jumpToDateInput && this.jumpToDateInput.value;
+        if (!date) return;
+        const ts = Math.floor(new Date(date).getTime() / 1000);
+        this.handleCloseJumpToDate();
+        const { chatId } = this.props;
+        try {
+            const result = await TdLibController.send({
+                '@type': 'getChatMessageByDate',
+                chat_id: chatId,
+                date: ts,
+            });
+            if (result && result.id) {
+                TdLibController.clientUpdate({
+                    '@type': 'clientUpdateMessageSelected',
+                    chatId,
+                    messageId: result.id,
+                    selected: false,
+                });
+                import('../../Actions/Client').then(({ highlightMessage }) => highlightMessage(chatId, result.id));
+            }
+        } catch {}
     };
 
     handleDeleteContinue = () => {
@@ -484,6 +519,13 @@ class Header extends Component {
                             onClick={this.handleSearchChat}>
                             <SearchIcon />
                         </IconButton>
+                        <IconButton
+                            className={classes.messageSearchIconButton}
+                            aria-label='Jump to date'
+                            title='Jump to date'
+                            onClick={this.handleJumpToDate}>
+                            <DateRangeIcon />
+                        </IconButton>
                         <MainMenuButton openChatDetails={this.openChatDetails} />
                     </>
                 )}
@@ -522,6 +564,35 @@ class Header extends Component {
                         </Button>
                         <Button onClick={this.handleDeleteContinue} color='primary'>
                             {t('Ok')}
+                        </Button>
+                    </DialogActions>
+                </Dialog>
+                <Dialog
+                    transitionDuration={0}
+                    open={this.state.openJumpToDate}
+                    onClose={this.handleCloseJumpToDate}
+                    aria-labelledby='jump-to-date-title'>
+                    <DialogTitle id='jump-to-date-title'>Jump to date</DialogTitle>
+                    <DialogContent>
+                        <input
+                            type='date'
+                            ref={el => (this.jumpToDateInput = el)}
+                            defaultValue={new Date().toISOString().slice(0, 10)}
+                            style={{
+                                fontSize: 16,
+                                padding: '8px 12px',
+                                borderRadius: 6,
+                                border: '1px solid #ccc',
+                                width: '100%',
+                            }}
+                        />
+                    </DialogContent>
+                    <DialogActions>
+                        <Button onClick={this.handleCloseJumpToDate} color='primary'>
+                            Cancel
+                        </Button>
+                        <Button onClick={this.handleConfirmJumpToDate} color='primary'>
+                            Go
                         </Button>
                     </DialogActions>
                 </Dialog>

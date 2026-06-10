@@ -92,6 +92,10 @@ export function translateUpdate(update) {
         case 'UpdateChannelParticipant':
             return chatMember(update, true);
 
+        // ── Encuestas ────────────────────────────────────────────────────────
+        case 'UpdateMessagePoll':
+            return messagePoll(update);
+
         // ── Stories ──────────────────────────────────────────────────────────
         case 'UpdateStory':
             return updateStory(update);
@@ -538,5 +542,49 @@ export function translateStoryItem(story, senderChatId) {
         caption,
         is_read: !!story.seen,
         privacy_settings: null,
+    };
+}
+
+function messagePoll(update) {
+    if (!update.poll) return null;
+    const poll = update.poll;
+    const totalVoters = update.results?.totalVoters || 0;
+    const voterMap = new Map();
+    for (const r of update.results?.results || []) {
+        const key = r.option ? Buffer.from(r.option).toString('hex') : '';
+        voterMap.set(key, { voters: r.voters || 0, chosen: !!r.chosen });
+    }
+    const options = (poll.answers || []).map(a => {
+        const key = a.option ? Buffer.from(a.option).toString('hex') : '';
+        const rv = voterMap.get(key) || { voters: 0, chosen: false };
+        const pct = totalVoters > 0 ? Math.round((rv.voters / totalVoters) * 100) : 0;
+        const answerText = typeof a.text === 'string' ? a.text : a.text?.text || '';
+        return {
+            '@type': 'pollOption',
+            text: answerText,
+            text_entities: [],
+            voter_count: rv.voters,
+            vote_percentage: pct,
+            is_chosen: rv.chosen,
+            is_being_chosen: false,
+            _option_data: a.option ? Array.from(a.option) : [],
+        };
+    });
+    return {
+        '@type': 'updatePoll',
+        poll: {
+            '@type': 'poll',
+            id: String(poll.id),
+            question: typeof poll.question === 'string' ? poll.question : poll.question?.text || '',
+            options,
+            total_voter_count: totalVoters,
+            is_anonymous: poll.publicVoters === false,
+            type: poll.quiz
+                ? { '@type': 'pollTypeQuiz', correct_option_id: update.results?.correct || 0 }
+                : { '@type': 'pollTypeRegular', allow_multiple_answers: !!poll.multipleChoice },
+            open_period: poll.closePeriod || 0,
+            close_date: poll.closeDate || 0,
+            is_closed: !!poll.closed,
+        },
     };
 }

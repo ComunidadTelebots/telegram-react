@@ -23,6 +23,7 @@ import ExitToAppIcon from '@material-ui/icons/ExitToApp';
 import CropFreeIcon from '@material-ui/icons/CropFree';
 import TwoStepVerification from '../Additional/TwoStepVerification';
 import ActiveSessions from '../Additional/ActiveSessions';
+import EditProfile from '../Additional/EditProfile';
 import { getSrc } from '../../Utils/File';
 import { getUserFullName } from '../../Utils/User';
 import UserStore from '../../Stores/UserStore';
@@ -95,6 +96,10 @@ class AndroidSettings extends React.PureComponent {
 
     handleDevices = () => {
         if (this.activeSessionsRef) this.activeSessionsRef.open();
+    };
+
+    handleEditProfile = () => {
+        if (this.editProfileRef) this.editProfileRef.open();
     };
 
     render() {
@@ -237,7 +242,10 @@ class AndroidSettings extends React.PureComponent {
 
                     <div className='android-settings-content'>
                         {/* Profile hero */}
-                        <div className='android-settings-profile'>
+                        <div
+                            className='android-settings-profile'
+                            onClick={this.handleEditProfile}
+                            style={{ cursor: 'pointer' }}>
                             <div className='android-settings-avatar'>
                                 {avatarSrc ? <img src={avatarSrc} alt='' /> : initials}
                             </div>
@@ -306,6 +314,7 @@ class AndroidSettings extends React.PureComponent {
                 </div>
                 <TwoStepVerification ref={ref => (this.twoStepRef = ref)} />
                 <ActiveSessions ref={ref => (this.activeSessionsRef = ref)} />
+                <EditProfile ref={ref => (this.editProfileRef = ref)} />
             </>
         );
     }
