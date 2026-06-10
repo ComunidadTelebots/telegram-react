@@ -193,7 +193,7 @@ class Phone extends React.Component {
 
             phone,
             country,
-            countryCode
+            countryCode,
         };
 
         this.phoneInputRef = React.createRef();
@@ -326,7 +326,7 @@ class Phone extends React.Component {
         this.setState({ error: null, loading: true });
         TdLibController.clientUpdate({
             '@type': 'clientUpdateSetPhone',
-            phone
+            phone,
         });
     };
 
@@ -448,7 +448,7 @@ class Phone extends React.Component {
                     debug={false}
                     id='country-select'
                     noOptionsText={t('NoResult')}
-                    options={data}
+                    options={data || []}
                     disabled={loading}
                     autoHighlight
                     getOptionLabel={option => option.name}
@@ -460,7 +460,7 @@ class Phone extends React.Component {
                             label={t('Country')}
                             variant='outlined'
                             inputProps={{
-                                ...params.inputProps
+                                ...params.inputProps,
                             }}
                             fullWidth
                             autoComplete='off'
@@ -523,7 +523,7 @@ class Phone extends React.Component {
 }
 
 Phone.propTypes = {
-    defaultPhone: PropTypes.string
+    defaultPhone: PropTypes.string,
 };
 
 export default withTranslation()(Phone);
