@@ -1,5 +1,16 @@
 # Changelog
 
+## [2026-06-10] (sesión 14)
+
+### Added
+- **Blockquote collapse toggle** (`08f02254`) — los blockquotes con `is_collapsed=true` muestran botón `···` para expandir y `▲` para colapsar. Nuevo `CollapsibleBlockquote.js` con estado local React. Archivos: `src/Components/Message/CollapsibleBlockquote.js`, `src/Components/Message/Message.css`, `src/Utils/Message.js`.
+- **Ver y eliminar mensajes programados** (`914b0e04`) — nuevo botón "Mensajes programados" en el menú ⋮ del chat. Muestra la lista con fecha de envío y permite borrar entradas individuales. Nuevo `ScheduledMessages.js`; handlers `getChatScheduledMessages` y `deleteChatScheduledMessages` en `GramJsController` usando `messages.GetScheduledHistory` / `messages.DeleteScheduledMessages`. Archivos: `src/Components/Additional/ScheduledMessages.js`, `src/Components/ColumnMiddle/MainMenuButton.js`, `src/Controllers/GramJsController.js`.
+- **Auto-delete timer (TTL de mensajes)** (`0e6d2400`) — selector "Borrado automático" en la info del chat (off/1 día/1 semana/1 mes). `translateChat` propaga `message_ttl` desde `dialog.ttlPeriod`; `setChatMessageTtl` en `GramJsController` vía `messages.SetHistoryTTL`; `updateChatMessageTtl` manejado en `ChatStore`; `ChatDetails` escucha el evento y re-renderiza. Archivos: `src/Utils/GramJs/EntityTranslator.js`, `src/Controllers/GramJsController.js`, `src/Stores/ChatStore.js`, `src/Components/ColumnRight/ChatDetails.js`.
+- **Layout responsive para móvil** (`03bf7ae2`) — en pantallas ≤600px: columna de diálogos o columna de chat visibles según si hay chat activo (atributo `data-chat-active`). Botón `ArrowBack` en el header del chat (oculto en desktop) para volver a la lista. `MainPage` rastrea `activeChatId` y escucha `clientUpdateChatId`. Archivos: `src/TelegramApp.css`, `src/Components/ColumnLeft/Dialogs.css`, `src/Components/ColumnMiddle/DialogDetails.css`, `src/Components/ColumnMiddle/Header.js`, `src/Components/ColumnMiddle/Header.css`, `src/Components/MainPage.js`.
+- **Verificación en dos pasos (2FA)** (`3b0373c8`) — pantalla completa accesible desde Settings → Privacy and Security. Flujos: ver estado, activar con nueva contraseña+pista, cambiar y desactivar. Nuevo `TwoStepVerification.js`; handlers `getTwoStepVerificationStatus` (`account.GetPassword`) y `setTwoStepVerificationPassword` (`client.updateTwoFaSettings`) en `GramJsController`. Archivos: `src/Components/Additional/TwoStepVerification.js`, `src/Components/ColumnLeft/AndroidSettings.js`, `src/Controllers/GramJsController.js`.
+
+---
+
 ## [2026-06-09] (sesión 13)
 
 ### Added
