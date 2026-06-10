@@ -260,20 +260,23 @@ class CallController extends EventEmitter {
         }
     }
 
-    // ─── WebRTC ───────────────────────────────────────────────────────────────────
+    // ─── WebRTC (protocolo tgcalls — compatible con clientes oficiales) ───────────
 
     async _startWebRTC(callObj) {
         this._setState(CallState.ACTIVE);
         this._startDurationTimer();
+        this._signalingSeq = 0;
 
-        // Obtener lista de servidores STUN/TURN del callObj o config por defecto
-        const iceServers = this._extractIceServers(callObj) || [
-            { urls: 'stun:stun.telegram.org:443' },
-            { urls: 'stun:stun.l.google.com:19302' },
-        ];
+        // Determinar si somos el iniciador (admin_id es el que llamó)
+        this._isOutgoing = String(callObj.admin_id) === String(this.callInfo.userId);
 
-        this.pc = new RTCPeerConnection({ iceServers });
+        const iceServers = this._extractIceServers(callObj) || [{ urls: 'stun:stun.l.google.com:19302' }];
+
+        this.pc = new RTCPeerConnection({ iceServers, bundlePolicy: 'max-bundle' });
         this._remoteStream = new MediaStream();
+        this._pendingCandidates = [];
+        this._remoteSetup = null;
+        this._remoteChannels = null;
 
         this.pc.ontrack = event => {
             event.streams[0].getTracks().forEach(track => this._remoteStream.addTrack(track));
@@ -282,16 +285,17 @@ class CallController extends EventEmitter {
 
         this.pc.onicecandidate = event => {
             if (event.candidate) {
-                this._sendSignaling({ type: 'candidate', candidate: event.candidate.toJSON() });
+                this._sendTgCallsMessage({
+                    '@type': 'Candidates',
+                    candidates: [{ sdpString: event.candidate.candidate, sdpMid: event.candidate.sdpMid }],
+                });
             }
         };
 
         this.pc.onconnectionstatechange = () => {
             const cs = this.pc && this.pc.connectionState;
             console.log('[CallController] connectionState', cs);
-            if (cs === 'failed' || cs === 'disconnected') {
-                this.discardCall('disconnect');
-            }
+            if (cs === 'failed') this.discardCall('disconnect');
         };
 
         // Obtener stream local
@@ -306,55 +310,136 @@ class CallController extends EventEmitter {
             return;
         }
 
-        // El caller crea la oferta, el callee espera
-        const isCaller = this.callInfo.userId !== Number(callObj.admin_id ?? callObj.adminId ?? 0);
-        if (isCaller) {
+        if (this._isOutgoing) {
+            // Caller: crear oferta, extraer setup y channels, enviar
             const offer = await this.pc.createOffer();
             await this.pc.setLocalDescription(offer);
-            this._sendSignaling({ type: 'offer', sdp: offer.sdp });
+            await this._sendLocalSetup(offer.sdp);
         }
+        // Callee espera los mensajes del caller
 
-        // Procesar mensajes de señalización que llegaron antes
+        // Procesar mensajes que llegaron antes de que WebRTC estuviera listo
         for (const item of this._signalingQueue) {
-            await this._handleSignalingData(item);
+            await this._handleTgCallsData(item);
         }
         this._signalingQueue = [];
     }
 
-    async _handleSignalingData(data) {
-        if (!this.pc) return;
-        try {
-            let msg;
-            if (typeof data === 'string') {
-                msg = JSON.parse(data);
-            } else if (data instanceof Uint8Array || Buffer.isBuffer(data)) {
-                msg = JSON.parse(new TextDecoder().decode(data));
-            } else {
-                msg = data;
-            }
+    async _sendLocalSetup(sdp) {
+        const { parseInitialSetup, parseMediaContents } = await import('../lib/TgCallsSignaling');
 
-            if (msg.type === 'offer') {
-                await this.pc.setRemoteDescription({ type: 'offer', sdp: msg.sdp });
-                const answer = await this.pc.createAnswer();
-                await this.pc.setLocalDescription(answer);
-                this._sendSignaling({ type: 'answer', sdp: answer.sdp });
-            } else if (msg.type === 'answer') {
-                await this.pc.setRemoteDescription({ type: 'answer', sdp: msg.sdp });
-            } else if (msg.type === 'candidate') {
-                await this.pc.addIceCandidate(new RTCIceCandidate(msg.candidate));
-            }
-        } catch (e) {
-            console.warn('[CallController] signaling error', e);
+        const setup = parseInitialSetup(sdp);
+        await this._sendTgCallsMessage(setup);
+
+        const contents = parseMediaContents(sdp);
+        if (contents.length > 0) {
+            await this._sendTgCallsMessage({
+                '@type': 'NegotiateChannels',
+                exchangeId: String(Date.now()),
+                contents,
+            });
         }
     }
 
-    _sendSignaling(msg) {
-        const data = new TextEncoder().encode(JSON.stringify(msg));
+    async _handleSignalingData(data) {
+        await this._handleTgCallsData(data);
+    }
+
+    async _handleTgCallsData(rawData) {
+        if (!this._authKey) {
+            this._signalingQueue.push(rawData);
+            return;
+        }
+        const { decodeSignalingMessage, buildRemoteSdp } = await import('../lib/TgCallsSignaling');
+
+        const bytes =
+            rawData instanceof Uint8Array
+                ? rawData
+                : Array.isArray(rawData)
+                ? new Uint8Array(rawData)
+                : new Uint8Array(rawData);
+
+        const msg = await decodeSignalingMessage(bytes, this._authKey, this._isOutgoing);
+        if (!msg) {
+            console.warn('[CallController] no se pudo decodificar mensaje de señalización');
+            return;
+        }
+
+        console.log('[CallController] tgcalls msg', msg['@type'], msg);
+
+        switch (msg['@type']) {
+            case 'InitialSetup':
+                this._remoteSetup = msg;
+                await this._tryBuildRemoteSdp(buildRemoteSdp);
+                break;
+
+            case 'NegotiateChannels':
+                this._remoteChannels = msg;
+                await this._tryBuildRemoteSdp(buildRemoteSdp);
+                break;
+
+            case 'Candidates':
+                if (this.pc && this.pc.remoteDescription) {
+                    for (const c of msg.candidates) {
+                        try {
+                            await this.pc.addIceCandidate(
+                                new RTCIceCandidate({ candidate: c.sdpString, sdpMid: c.sdpMid || '0' }),
+                            );
+                        } catch (e) {
+                            console.warn('[CallController] addIceCandidate error', e);
+                        }
+                    }
+                } else {
+                    this._pendingCandidates.push(...msg.candidates);
+                }
+                break;
+
+            case 'MediaState':
+                this.emit('remoteMediaState', msg);
+                break;
+
+            default:
+                break;
+        }
+    }
+
+    async _tryBuildRemoteSdp(buildRemoteSdp) {
+        if (!this._remoteSetup || !this._remoteChannels || !this.pc) return;
+
+        const remoteSdp = buildRemoteSdp(
+            this._remoteSetup,
+            this._remoteChannels,
+            this._pendingCandidates,
+            this._isOutgoing,
+        );
+
+        try {
+            if (this._isOutgoing) {
+                // Caller recibe answer
+                await this.pc.setRemoteDescription({ type: 'answer', sdp: remoteSdp });
+            } else {
+                // Callee recibe offer, crea answer
+                await this.pc.setRemoteDescription({ type: 'offer', sdp: remoteSdp });
+                const answer = await this.pc.createAnswer();
+                await this.pc.setLocalDescription(answer);
+                await this._sendLocalSetup(answer.sdp);
+            }
+            this._pendingCandidates = [];
+        } catch (e) {
+            console.error('[CallController] setRemoteDescription error', e);
+        }
+    }
+
+    async _sendTgCallsMessage(msg) {
+        if (!this._authKey) return;
+        const { encodeSignalingMessage } = await import('../lib/TgCallsSignaling');
+        this._signalingSeq = (this._signalingSeq || 0) + 1;
+        const data = await encodeSignalingMessage(msg, this._authKey, this._signalingSeq, this._isOutgoing);
         import('../Controllers/TdLibController').then(({ default: TdLib }) => {
             TdLib.send({
                 '@type': 'sendCallSignalingData',
                 call_id: this.callInfo && this.callInfo.callId,
-                data: Array.from(data),
+                data,
             }).catch(() => {});
         });
     }
