@@ -22,6 +22,7 @@ class ActiveCall extends Component {
         super(props);
         this.state = {
             visible: false,
+            callState: CallState.IDLE,
             muted: false,
             videoEnabled: false,
             isVideo: false,
@@ -50,10 +51,11 @@ class ActiveCall extends Component {
     }
 
     _onStateChanged = state => {
-        if (state === CallState.ACTIVE) {
+        if (state === CallState.ACTIVE || state === CallState.REQUESTING || state === CallState.WAITING) {
             const info = callController.callInfo;
-            const user = info && UserStore.get(info.userId);
-            const name = user ? getUserFullName(user) : 'Unknown';
+            const userId = info && info.userId;
+            const user = userId ? UserStore.get(userId) : null;
+            const name = user ? getUserFullName(user) : 'Calling...';
             const initials = name
                 .split(' ')
                 .map(w => w[0])
@@ -62,6 +64,7 @@ class ActiveCall extends Component {
                 .toUpperCase();
             this.setState({
                 visible: true,
+                callState: state,
                 isVideo: info && info.isVideo,
                 videoEnabled: info && info.isVideo,
                 callerName: name,
@@ -70,7 +73,7 @@ class ActiveCall extends Component {
                 muted: false,
             });
         } else if (state === CallState.IDLE || state === CallState.ENDED) {
-            this.setState({ visible: false });
+            this.setState({ visible: false, callState: state });
             if (this.localVideoRef.current) this.localVideoRef.current.srcObject = null;
             if (this.remoteVideoRef.current) this.remoteVideoRef.current.srcObject = null;
         }
@@ -107,13 +110,16 @@ class ActiveCall extends Component {
     };
 
     render() {
-        const { visible, muted, videoEnabled, isVideo, duration, callerName, callerInitials } = this.state;
+        const { visible, muted, videoEnabled, isVideo, duration, callerName, callerInitials, callState } = this.state;
         if (!visible) return null;
+
+        const isRinging = callState === CallState.REQUESTING || callState === CallState.WAITING;
+        const statusLabel = isRinging ? 'Calling...' : formatDuration(duration);
 
         return (
             <div className='active-call-overlay'>
-                <div className={`active-call-panel${isVideo ? ' active-call-panel--video' : ''}`}>
-                    {isVideo && (
+                <div className={`active-call-panel${isVideo && !isRinging ? ' active-call-panel--video' : ''}`}>
+                    {isVideo && !isRinging && (
                         <>
                             <video
                                 ref={this.remoteVideoRef}
@@ -130,17 +136,23 @@ class ActiveCall extends Component {
                             />
                         </>
                     )}
-                    {!isVideo && <div className='active-call-avatar'>{callerInitials}</div>}
+                    {(isRinging || !isVideo) && (
+                        <div className={`active-call-avatar${isRinging ? ' active-call-avatar--ringing' : ''}`}>
+                            {callerInitials}
+                        </div>
+                    )}
                     <div className='active-call-name'>{callerName}</div>
-                    <div className='active-call-duration'>{formatDuration(duration)}</div>
+                    <div className='active-call-duration'>{statusLabel}</div>
                     <div className='active-call-actions'>
-                        <button
-                            className={`active-call-btn${muted ? ' active-call-btn--off' : ''}`}
-                            onClick={this.handleMute}
-                            title={muted ? 'Unmute' : 'Mute'}>
-                            {muted ? <MicOffIcon /> : <MicIcon />}
-                        </button>
-                        {isVideo && (
+                        {!isRinging && (
+                            <button
+                                className={`active-call-btn${muted ? ' active-call-btn--off' : ''}`}
+                                onClick={this.handleMute}
+                                title={muted ? 'Unmute' : 'Mute'}>
+                                {muted ? <MicOffIcon /> : <MicIcon />}
+                            </button>
+                        )}
+                        {isVideo && !isRinging && (
                             <button
                                 className={`active-call-btn${!videoEnabled ? ' active-call-btn--off' : ''}`}
                                 onClick={this.handleVideo}
@@ -151,7 +163,7 @@ class ActiveCall extends Component {
                         <button
                             className='active-call-btn active-call-btn--hangup'
                             onClick={this.handleHangUp}
-                            title='Hang up'>
+                            title={isRinging ? 'Cancel' : 'Hang up'}>
                             <CallEndIcon />
                         </button>
                     </div>
