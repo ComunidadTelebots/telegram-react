@@ -1,0 +1,60 @@
+.inline-keyboard {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-top: 6px;
+    width: 100%;
+}
+
+.inline-keyboard-row {
+    display: flex;
+    gap: 4px;
+}
+
+.inline-keyboard-btn {
+    flex: 1;
+    padding: 6px 8px;
+    border: none;
+    border-radius: 6px;
+    background: var(--inline-keyboard-btn-bg, rgba(74, 159, 213, 0.15));
+    color: var(--inline-keyboard-btn-color, #4a9fd5);
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    text-align: center;
+    transition: background 0.15s;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.inline-keyboard-btn:hover {
+    background: var(--inline-keyboard-btn-hover, rgba(74, 159, 213, 0.28));
+}
+
+.inline-keyboard-btn:active {
+    background: var(--inline-keyboard-btn-active, rgba(74, 159, 213, 0.4));
+}
+
+.callback-toast {
+    position: fixed;
+    bottom: 80px;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: rgba(0, 0, 0, 0.75);
+    color: #fff;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 13px;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.2s, transform 0.2s;
+    z-index: 9999;
+    max-width: 80vw;
+    text-align: center;
+}
+
+.callback-toast--visible {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+}

@@ -21,6 +21,7 @@ import ChatTile from '../Tile/ChatTile';
 import UnreadSeparator from './UnreadSeparator';
 import WebPage from './Media/WebPage';
 import Reactions from './Reactions';
+import InlineKeyboard from './InlineKeyboard';
 import {
     getEmojiMatches,
     getText,
@@ -30,7 +31,7 @@ import {
     openMedia,
     showMessageForward,
     canMessageBeEdited,
-    isMessagePinned
+    isMessagePinned,
 } from '../../Utils/Message';
 import { canPinMessages, canSendMessages, isGroupChat } from '../../Utils/Chat';
 import {
@@ -42,7 +43,7 @@ import {
     replyMessage,
     editMessage,
     clearSelection,
-    deleteMessages
+    deleteMessages,
 } from '../../Actions/Client';
 import MessageStore from '../../Stores/MessageStore';
 import TdLibController from '../../Controllers/TdLibController';
@@ -56,28 +57,28 @@ import { withRestoreRef, withSaveRef } from '../../Utils/HOC';
 
 const styles = theme => ({
     message: {
-        backgroundColor: 'transparent'
+        backgroundColor: 'transparent',
     },
     menuListRoot: {
-        minWidth: 150
+        minWidth: 150,
     },
     messageAuthorColor: {
-        color: theme.palette.primary.main
+        color: theme.palette.primary.main,
     },
     messageSelected: {
-        backgroundColor: theme.palette.primary.main + '22'
+        backgroundColor: theme.palette.primary.main + '22',
     },
     messageSelectTick: {
         background: theme.palette.primary.main,
-        color: 'white'
+        color: 'white',
     },
     '@keyframes highlighted': {
         from: { backgroundColor: theme.palette.primary.main + '22' },
-        to: { backgroundColor: 'transparent' }
+        to: { backgroundColor: 'transparent' },
     },
     messageHighlighted: {
-        animation: '$highlighted 4s ease-out'
-    }
+        animation: '$highlighted 4s ease-out',
+    },
 });
 
 class Message extends Component {
@@ -92,7 +93,7 @@ class Message extends Component {
                 selected: false,
                 highlighted: false,
                 translationText: null,
-                translating: false
+                translating: false,
             };
         } else {
             this.state = {
@@ -100,7 +101,7 @@ class Message extends Component {
                 selected: false,
                 highlighted: false,
                 translationText: null,
-                translating: false
+                translating: false,
             };
         }
     }
@@ -114,7 +115,7 @@ class Message extends Component {
             showUnreadSeparator,
             showTail,
             showTitle,
-            showAuthor
+            showAuthor,
         } = this.props;
         const { contextMenu, selected, highlighted, emojiMatches, translationText, translating } = this.state;
 
@@ -305,7 +306,7 @@ class Message extends Component {
             TdLibController.clientUpdate({
                 '@type': 'clientUpdateReply',
                 chatId: chatId,
-                messageId: messageId
+                messageId: messageId,
             });
             return;
         }
@@ -316,8 +317,8 @@ class Message extends Component {
                 '@type': 'clientUpdateForward',
                 info: {
                     chatId: chatId,
-                    messageIds: [messageId]
-                }
+                    messageIds: [messageId],
+                },
             });
         }
     };
@@ -375,7 +376,7 @@ class Message extends Component {
             this.setState({
                 contextMenu: true,
                 left,
-                top
+                top,
             });
         }
     };
@@ -486,12 +487,12 @@ class Message extends Component {
             const result = await TdLibController.send({
                 '@type': 'translateText',
                 text,
-                to_language_code: 'en'
+                to_language_code: 'en',
             });
             const translated = result && (result.text || result);
             this.setState({
                 translating: false,
-                translationText: typeof translated === 'string' ? translated : translated.text || String(translated)
+                translationText: typeof translated === 'string' ? translated : translated.text || String(translated),
             });
         } catch (e) {
             this.setState({ translating: false, translationText: t('TranslationUnavailable') });
@@ -507,7 +508,7 @@ class Message extends Component {
                 chat_id: chatId,
                 message_ids: [messageId],
                 reason: { '@type': 'chatReportReasonSpam' },
-                text: ''
+                text: '',
             });
         } catch (e) {
             console.warn('[Message] reportChat error', e);
@@ -567,7 +568,7 @@ class Message extends Component {
             const result = await TdLibController.send({
                 '@type': 'getMessageLink',
                 chat_id: chatId,
-                message_id: messageId
+                message_id: messageId,
             });
             if (result?.link) {
                 await navigator.clipboard.writeText(result.link);
@@ -588,7 +589,7 @@ class Message extends Component {
             left,
             top,
             translationText,
-            translating
+            translating,
         } = this.state;
 
         const message = MessageStore.get(chatId, messageId);
@@ -602,7 +603,7 @@ class Message extends Component {
             edit_date,
             reply_to_message_id,
             forward_info,
-            sender_user_id
+            sender_user_id,
         } = message;
 
         const showForward = showMessageForward(chatId, messageId);
@@ -626,7 +627,7 @@ class Message extends Component {
             'message-selected': selected,
             [classes.messageSelected]: selected,
             [classes.messageHighlighted]: highlighted && !selected,
-            'message-short': !tile
+            'message-short': !tile,
         });
 
         const meta = <Meta date={date} editDate={edit_date} views={views} onDateClick={this.handleDateClick} />;
@@ -673,7 +674,7 @@ class Message extends Component {
                     <div
                         className={classNames('message-content', {
                             'message-bubble': withBubble,
-                            'message-bubble-out': withBubble && is_outgoing
+                            'message-bubble-out': withBubble && is_outgoing,
                         })}>
                         <div className='message-title'>
                             {(showAuthor || (showTitle && !showForward)) && (
@@ -690,7 +691,7 @@ class Message extends Component {
                             className={classNames('message-text', {
                                 'message-text-1emoji': emojiMatches === 1,
                                 'message-text-2emoji': emojiMatches === 2,
-                                'message-text-3emoji': emojiMatches === 3
+                                'message-text-3emoji': emojiMatches === 3,
                             })}>
                             {text}
                         </div>
@@ -700,6 +701,9 @@ class Message extends Component {
                         )}
                         {translationText && <div className='message-translation'>{translationText}</div>}
                         <Reactions chatId={chatId} messageId={messageId} />
+                        {message.reply_markup && (
+                            <InlineKeyboard chatId={chatId} messageId={messageId} replyMarkup={message.reply_markup} />
+                        )}
                         {/*{!showTitle && meta}*/}
                     </div>
                     {/*{!showTitle && meta}*/}
@@ -712,11 +716,11 @@ class Message extends Component {
                     anchorPosition={{ top, left }}
                     anchorOrigin={{
                         vertical: 'bottom',
-                        horizontal: 'right'
+                        horizontal: 'right',
                     }}
                     transformOrigin={{
                         vertical: 'top',
-                        horizontal: 'left'
+                        horizontal: 'left',
                     }}
                     onMouseDown={e => e.stopPropagation()}>
                     <MenuList classes={{ root: classes.menuListRoot }} onClick={e => e.stopPropagation()}>

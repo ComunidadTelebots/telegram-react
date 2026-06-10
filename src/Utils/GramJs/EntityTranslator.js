@@ -742,20 +742,30 @@ export function translateMessage(msg, chatId) {
         edit_date: msg.editDate || 0,
         views: msg.views || 0,
         forward_info: translateForwardInfo(msg.fwdFrom),
-        interaction_info: msg.views
-            ? {
-                  '@type': 'messageInteractionInfo',
-                  view_count: msg.views || 0,
-                  forward_count: msg.forwards || 0,
-                  reply_info: null,
-              }
-            : null,
+        interaction_info:
+            msg.views || msg.replies
+                ? {
+                      '@type': 'messageInteractionInfo',
+                      view_count: msg.views || 0,
+                      forward_count: msg.forwards || 0,
+                      reply_info: msg.replies
+                          ? {
+                                '@type': 'messageReplyInfo',
+                                reply_count: msg.replies.replies || 0,
+                                last_read_inbox_message_id: 0,
+                                last_read_outbox_message_id: 0,
+                                last_message_id: msg.replies.maxId || 0,
+                                recent_replier_ids: [],
+                            }
+                          : null,
+                  }
+                : null,
         reply_to_message_id: msg.replyTo ? msg.replyTo.replyToMsgId || 0 : 0,
         reply_to: msg.replyTo
             ? { '@type': 'messageReplyToMessage', chat_id: chatId, message_id: msg.replyTo.replyToMsgId || 0 }
             : null,
         content,
-        reply_markup: null,
+        reply_markup: translateReplyMarkup(msg.replyMarkup),
         author_signature: msg.postAuthor || '',
         media_album_id: msg.groupedId ? String(msg.groupedId) : '0',
         restriction_reason: '',
@@ -1534,6 +1544,77 @@ function translatePageBlock(block, photos, docs) {
             };
         default:
             return null;
+    }
+}
+
+export function translateReplyMarkup(markup) {
+    if (!markup) return null;
+    const cls = markup.className || markup._;
+    if (cls === 'ReplyInlineMarkup') {
+        const rows = (markup.rows || []).map(row => ({
+            '@type': 'inlineKeyboardButtonRow',
+            buttons: (row.buttons || []).map(btn => translateInlineButton(btn)).filter(Boolean),
+        }));
+        return { '@type': 'replyMarkupInlineKeyboard', rows };
+    }
+    if (cls === 'ReplyKeyboardMarkup') {
+        const rows = (markup.rows || []).map(row => ({
+            '@type': 'keyboardButtonRow',
+            buttons: (row.buttons || [])
+                .map(btn => {
+                    const bc = btn.className || btn._;
+                    if (bc === 'KeyboardButton') return { '@type': 'keyboardButton', text: btn.text };
+                    return null;
+                })
+                .filter(Boolean),
+        }));
+        return {
+            '@type': 'replyMarkupShowKeyboard',
+            rows,
+            resize_keyboard: !!markup.resize,
+            one_time: !!markup.singleUse,
+            is_personal: !!markup.selective,
+        };
+    }
+    return null;
+}
+
+function translateInlineButton(btn) {
+    if (!btn) return null;
+    const cls = btn.className || btn._;
+    const text = btn.text || '';
+    switch (cls) {
+        case 'KeyboardButtonCallback':
+            return { '@type': 'inlineKeyboardButtonTypeCallback', text, data: btn.data };
+        case 'KeyboardButtonUrl':
+            return { '@type': 'inlineKeyboardButtonTypeUrl', text, url: btn.url };
+        case 'KeyboardButtonUrlAuth':
+        case 'InputKeyboardButtonUrlAuth':
+            return {
+                '@type': 'inlineKeyboardButtonTypeLoginUrl',
+                text,
+                url: btn.url,
+                id: Number(btn.buttonId || 0),
+                forward_text: '',
+            };
+        case 'KeyboardButtonWebView':
+        case 'KeyboardButtonSimpleWebView':
+            return { '@type': 'inlineKeyboardButtonTypeWebApp', text, url: btn.url };
+        case 'KeyboardButtonSwitchInline':
+            return {
+                '@type': 'inlineKeyboardButtonTypeSwitchInline',
+                text,
+                query: btn.query,
+                in_current_chat: !!btn.samePeer,
+            };
+        case 'KeyboardButtonGame':
+            return { '@type': 'inlineKeyboardButtonTypeCallbackGame', text };
+        case 'KeyboardButtonBuy':
+            return { '@type': 'inlineKeyboardButtonTypeBuy', text };
+        case 'KeyboardButtonUserProfile':
+            return { '@type': 'inlineKeyboardButtonTypeUser', text, user_id: Number(btn.userId || 0) };
+        default:
+            return { '@type': 'inlineKeyboardButtonTypeCallback', text, data: new Uint8Array(0) };
     }
 }
 

@@ -920,10 +920,35 @@ class GramJsController extends EventEmitter {
             case 'getWebPageInstantView':
                 return this._getWebPageInstantView(req);
 
+            // ── Inline keyboards ─────────────────────────────────────────────
+            case 'getCallbackQueryAnswer':
+                return this._getCallbackQueryAnswer(req);
+
             default:
                 if (!this.disableLog) console.warn('[GramJs] send no implementado:', type);
                 return {};
         }
+    };
+
+    _getCallbackQueryAnswer = async ({ chat_id, message_id, payload }) => {
+        const inputPeer = await this._getInputPeer(chat_id);
+        let data = null;
+        if (payload && payload['@type'] === 'callbackQueryPayloadData') {
+            data = payload.data instanceof Uint8Array ? Buffer.from(payload.data) : Buffer.from(payload.data || []);
+        }
+        const result = await this.client.invoke(
+            new Api.messages.GetBotCallbackAnswer({
+                peer: inputPeer,
+                msgId: message_id,
+                data: data || Buffer.alloc(0),
+            }),
+        );
+        return {
+            '@type': 'callbackQueryAnswer',
+            text: result.message || '',
+            show_alert: !!result.alert,
+            url: result.url || '',
+        };
     };
 
     // ─── Auth handlers ───────────────────────────────────────────────────────
