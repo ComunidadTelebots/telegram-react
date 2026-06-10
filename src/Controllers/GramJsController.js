@@ -90,6 +90,7 @@ class GramJsController extends EventEmitter {
         this._downloadReconnects = new Map();
         this._downloadReconnectAt = new Map();
         this._downloadDeferUntil = new Map();
+        this._qrPollGeneration = 0;
 
         // Auth state internos
         this._phone = null;
@@ -3535,6 +3536,11 @@ class GramJsController extends EventEmitter {
         });
     };
 
+    _isAuthTokenExpired = err => {
+        const message = err?.errorMessage || err?.message || String(err);
+        return message.includes('AUTH_TOKEN_EXPIRED');
+    };
+
     _emitQrLoginToken = result => {
         const tokenBase64 = this._bytesToBase64Url(result.token);
         const link = `tg://login?token=${tokenBase64}`;
@@ -3551,7 +3557,8 @@ class GramJsController extends EventEmitter {
     _handleQrLoginResult = async result => {
         if (result instanceof Api.auth.LoginToken) {
             this._emitQrLoginToken(result);
-            this._pollQrToken(result.expires);
+            this._qrPollGeneration += 1;
+            this._pollQrToken(result.expires, this._qrPollGeneration);
             return;
         }
 
@@ -3585,6 +3592,7 @@ class GramJsController extends EventEmitter {
     };
 
     _requestQrCodeAuthentication = async req => {
+        this._qrPollGeneration += 1;
         try {
             const result = await this.client.invoke(
                 new Api.auth.ExportLoginToken({
@@ -3596,14 +3604,19 @@ class GramJsController extends EventEmitter {
             await this._handleQrLoginResult(result);
         } catch (e) {
             console.error('[GramJs] requestQrCodeAuthentication error', e);
-            this._emitAuthError(e);
+            if (this._isAuthTokenExpired(e)) {
+                this._requestQrCodeAuthentication({}).catch(err => this._emitAuthError(err));
+            } else {
+                this._emitAuthError(e);
+            }
         }
         return {};
     };
 
-    _pollQrToken = async expires => {
+    _pollQrToken = async (expires, generation) => {
         const waitMs = Math.max(0, (expires - Math.floor(Date.now() / 1000) - 2) * 1000);
         await new Promise(r => setTimeout(r, Math.min(waitMs, 20000)));
+        if (generation !== this._qrPollGeneration) return;
         try {
             const result = await this.client.invoke(
                 new Api.auth.ExportLoginToken({
@@ -3615,7 +3628,11 @@ class GramJsController extends EventEmitter {
             await this._handleQrLoginResult(result);
         } catch (e) {
             console.warn('[GramJs] QR poll error', e);
-            this._emitAuthError(e);
+            if (this._isAuthTokenExpired(e)) {
+                this._requestQrCodeAuthentication({}).catch(err => this._emitAuthError(err));
+            } else {
+                this._emitAuthError(e);
+            }
         }
     };
 
