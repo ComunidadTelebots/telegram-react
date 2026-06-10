@@ -91,6 +91,7 @@ class GramJsController extends EventEmitter {
         this._downloadReconnectAt = new Map();
         this._downloadDeferUntil = new Map();
         this._qrPollGeneration = 0;
+        this._qrLoginCompleting = false;
 
         // Auth state internos
         this._phone = null;
@@ -326,6 +327,11 @@ class GramJsController extends EventEmitter {
             const rawCls = raw.className || raw._;
             if (rawCls && rawCls.toLowerCase().includes('phone')) {
                 console.log('[GramJs] phoneCall raw update', rawCls, raw);
+            }
+
+            if (raw instanceof Api.UpdateLoginToken || rawCls === 'UpdateLoginToken' || rawCls === 'updateLoginToken') {
+                this._completeQrLoginFromUpdate();
+                return;
             }
 
             // Actualizar usuarios/chats que vengan en el update
@@ -3587,7 +3593,34 @@ class GramJsController extends EventEmitter {
         }
 
         if (result instanceof Api.auth.LoginTokenSuccess) {
+            this._qrPollGeneration += 1;
             await this._onAuthorized();
+        }
+    };
+
+    _completeQrLoginFromUpdate = async () => {
+        if (this._qrLoginCompleting) return;
+        this._qrLoginCompleting = true;
+        this._qrPollGeneration += 1;
+
+        try {
+            const result = await this.client.invoke(
+                new Api.auth.ExportLoginToken({
+                    apiId: this.apiId,
+                    apiHash: this.apiHash,
+                    exceptIds: [],
+                }),
+            );
+            await this._handleQrLoginResult(result);
+        } catch (e) {
+            console.warn('[GramJs] complete QR login error', e);
+            if (this._isAuthTokenExpired(e)) {
+                this._requestQrCodeAuthentication({}).catch(err => this._emitAuthError(err));
+            } else {
+                this._emitAuthError(e);
+            }
+        } finally {
+            this._qrLoginCompleting = false;
         }
     };
 
