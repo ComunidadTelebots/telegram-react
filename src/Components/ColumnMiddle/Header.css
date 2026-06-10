@@ -126,3 +126,17 @@
     outline: none;
     box-shadow: 0 0 0 0;
 }
+
+/* Mobile back button — hidden on desktop, visible on mobile */
+.header-mobile-back {
+    display: none;
+}
+
+@media (max-width: 600px) {
+    .header-mobile-back {
+        display: inline-flex;
+        margin-left: 4px;
+        margin-right: 0;
+        flex-shrink: 0;
+    }
+}

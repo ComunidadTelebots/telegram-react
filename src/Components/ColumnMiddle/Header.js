@@ -16,6 +16,7 @@ import DialogContentText from '@material-ui/core/DialogContentText';
 import DialogTitle from '@material-ui/core/DialogTitle';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
 import IconButton from '@material-ui/core/IconButton';
+import ArrowBackIcon from '@material-ui/icons/ArrowBack';
 import SearchIcon from '@material-ui/icons/Search';
 import withStyles from '@material-ui/core/styles/withStyles';
 import { withTranslation } from 'react-i18next';
@@ -31,7 +32,7 @@ import {
     getChatTitle,
     isAccentChatSubtitle,
     isPrivateChat,
-    isChatSecret
+    isChatSecret,
 } from '../../Utils/Chat';
 import { clearSelection, searchChat } from '../../Actions/Client';
 import ChatStore from '../../Stores/ChatStore';
@@ -45,27 +46,27 @@ import './Header.css';
 
 const styles = theme => ({
     button: {
-        margin: '14px'
+        margin: '14px',
     },
     menuIconButton: {
-        margin: '8px -2px 8px 12px'
+        margin: '8px -2px 8px 12px',
     },
     searchIconButton: {
-        margin: '8px 12px 8px 0'
+        margin: '8px 12px 8px 0',
     },
     messageSearchIconButton: {
-        margin: '8px 0 8px 12px'
+        margin: '8px 0 8px 12px',
     },
     moreIconButton: {
-        margin: '8px 12px 8px 0'
+        margin: '8px 12px 8px 0',
     },
     headerStatusTitle: {
-        color: theme.palette.text.secondary
+        color: theme.palette.text.secondary,
     },
     headerStatusAccentTitle: {
-        color: theme.palette.primary.dark + '!important'
+        color: theme.palette.primary.dark + '!important',
     },
-    ...borderStyle(theme)
+    ...borderStyle(theme),
 });
 
 class Header extends Component {
@@ -75,7 +76,7 @@ class Header extends Component {
         this.state = {
             authorizationState: AppStore.getAuthorizationState(),
             connectionState: AppStore.getConnectionState(),
-            openDeleteDialog: false
+            openDeleteDialog: false,
         };
     }
 
@@ -158,7 +159,7 @@ class Header extends Component {
             chatId,
             messageIds,
             canBeDeletedForAllUsers: canBeDeletedForAllUsers,
-            revoke: canBeDeletedForAllUsers
+            revoke: canBeDeletedForAllUsers,
         });
     };
 
@@ -180,7 +181,7 @@ class Header extends Component {
             '@type': 'deleteMessages',
             chat_id: chatId,
             message_ids: messageIds,
-            revoke: revoke
+            revoke: revoke,
         });
     };
 
@@ -364,7 +365,7 @@ class Header extends Component {
             openDeleteDialog,
             canBeDeletedForAllUsers,
             revoke,
-            messageIds
+            messageIds,
         } = this.state;
 
         const count = messageIds ? messageIds.length : 0;
@@ -453,6 +454,12 @@ class Header extends Component {
 
         control = control || (
             <div className={classNames(classes.borderColor, 'header-details')}>
+                <IconButton
+                    className='header-mobile-back'
+                    aria-label='Back'
+                    onClick={() => TdLibController.setChatId(0)}>
+                    <ArrowBackIcon />
+                </IconButton>
                 <div
                     className={classNames('header-status', 'grow', chat ? 'cursor-pointer' : 'cursor-default')}
                     onClick={this.openChatDetails}>
@@ -463,7 +470,7 @@ class Header extends Component {
                     {showProgressAnimation && <HeaderProgress />}
                     <span
                         className={classNames('header-status-title', classes.headerStatusTitle, {
-                            [classes.headerStatusAccentTitle]: isAccentSubtitle
+                            [classes.headerStatusAccentTitle]: isAccentSubtitle,
                         })}>
                         {subtitle}
                     </span>

@@ -17,6 +17,19 @@
     flex-direction: column;
 }
 
+@media (max-width: 600px) {
+    .dialogs {
+        width: 100%;
+        float: none;
+    }
+    .dialogs-third-column {
+        width: 100%;
+    }
+    .dialogs.mobile-hidden {
+        display: none;
+    }
+}
+
 .dialogs-content {
     overflow: hidden;
     flex-grow: 1;

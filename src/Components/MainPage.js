@@ -57,6 +57,7 @@ class MainPage extends React.Component {
             ampViewerWebPage: null,
             newGroupOpen: false,
             newChannelOpen: false,
+            activeChatId: ApplicationStore.getChatId(),
         };
 
         /*this.store = localForage.createInstance({
@@ -71,6 +72,7 @@ class MainPage extends React.Component {
         ChatStore.on('clientUpdateOpenChat', this.onClientUpdateOpenChat);
 
         ApplicationStore.on('clientUpdateChatDetailsVisibility', this.onClientUpdateChatDetailsVisibility);
+        ApplicationStore.on('clientUpdateChatId', this.onClientUpdateChatId);
         ApplicationStore.on('clientUpdateMediaViewerContent', this.onClientUpdateMediaViewerContent);
         ApplicationStore.on('clientUpdateProfileMediaViewerContent', this.onClientUpdateProfileMediaViewerContent);
         ApplicationStore.on('clientUpdateForward', this.onClientUpdateForward);
@@ -84,6 +86,7 @@ class MainPage extends React.Component {
         ChatStore.off('clientUpdateOpenChat', this.onClientUpdateOpenChat);
 
         ApplicationStore.off('clientUpdateChatDetailsVisibility', this.onClientUpdateChatDetailsVisibility);
+        ApplicationStore.off('clientUpdateChatId', this.onClientUpdateChatId);
         ApplicationStore.off('clientUpdateMediaViewerContent', this.onClientUpdateMediaViewerContent);
         ApplicationStore.off('clientUpdateProfileMediaViewerContent', this.onClientUpdateProfileMediaViewerContent);
         ApplicationStore.off('clientUpdateForward', this.onClientUpdateForward);
@@ -110,6 +113,10 @@ class MainPage extends React.Component {
         const { userId, popup } = update;
 
         this.handleSelectUser(userId, popup);
+    };
+
+    onClientUpdateChatId = update => {
+        this.setState({ activeChatId: update.nextChatId || 0 });
     };
 
     onClientUpdateChatDetailsVisibility = update => {
@@ -174,6 +181,8 @@ class MainPage extends React.Component {
         } else {
             TdLibController.setChatId(chatId, messageId);
         }
+
+        this.setState({ activeChatId: chatId });
     };
 
     handleSelectUser = async (userId, popup) => {
@@ -200,6 +209,7 @@ class MainPage extends React.Component {
             forwardInfo,
             newGroupOpen,
             newChannelOpen,
+            activeChatId,
         } = this.state;
 
         return (
@@ -207,7 +217,8 @@ class MainPage extends React.Component {
                 <div
                     className={classNames(classes.page, classes.borderColor, 'page', {
                         'page-third-column': isChatDetailsVisible,
-                    })}>
+                    })}
+                    data-chat-active={activeChatId ? 'true' : 'false'}>
                     <Dialogs />
                     <DialogDetails ref={this.dialogDetailsRef} />
                     {isChatDetailsVisible && <ChatInfo />}

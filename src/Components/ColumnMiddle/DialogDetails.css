@@ -19,3 +19,16 @@
 .dialog-details-third-column {
     width: calc(50% - 0px);
 }
+
+@media (max-width: 600px) {
+    .dialog-details {
+        width: 100%;
+        float: none;
+    }
+    .dialog-details-third-column {
+        width: 100%;
+    }
+    .dialog-details.mobile-hidden {
+        display: none;
+    }
+}

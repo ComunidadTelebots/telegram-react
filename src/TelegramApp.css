@@ -63,6 +63,29 @@ mark {
     max-width: var(--page-max-width);
 }
 
+/* ── Responsive mobile layout ───────────────────────────────────────────── */
+@media (max-width: 600px) {
+    .page {
+        min-width: 0;
+        border-width: 0;
+    }
+
+    /* When a chat is active: hide dialogs, show dialog-details full-width */
+    .page[data-chat-active='true'] .dialogs {
+        display: none;
+    }
+
+    /* When no chat is active: show dialogs full-width, hide dialog-details */
+    .page[data-chat-active='false'] .dialog-details {
+        display: none;
+    }
+
+    /* Never show the third column on mobile */
+    .page .chat-info {
+        display: none;
+    }
+}
+
 .accent-color {
 }
 
