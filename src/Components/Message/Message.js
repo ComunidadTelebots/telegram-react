@@ -94,6 +94,8 @@ class Message extends Component {
                 selected: false,
                 highlighted: false,
                 contextMenu: false,
+                left: 0,
+                top: 0,
                 translationText: null,
                 translating: false,
             };
@@ -103,6 +105,8 @@ class Message extends Component {
                 selected: false,
                 highlighted: false,
                 contextMenu: false,
+                left: 0,
+                top: 0,
                 translationText: null,
                 translating: false,
             };
