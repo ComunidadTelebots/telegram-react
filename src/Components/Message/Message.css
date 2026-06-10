@@ -259,6 +259,23 @@ pre code {
     border-left: 3px solid var(--message-in-reply-title, #4a9fd5);
     color: var(--secondary-color, rgba(var(--color-text-primary-raw, 0, 0, 0), 0.6));
     font-style: normal;
+    position: relative;
+}
+
+.message-blockquote.collapsed {
+    max-height: 4.5em;
+    overflow: hidden;
+}
+
+.message-blockquote-toggle {
+    display: inline-block;
+    margin-left: 4px;
+    cursor: pointer;
+    color: var(--message-in-reply-title, #4a9fd5);
+    font-size: 0.85em;
+    font-style: normal;
+    user-select: none;
+    vertical-align: middle;
 }
 
 /* Message translation */

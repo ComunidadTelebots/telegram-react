@@ -14,6 +14,7 @@ import Contact from '../Components/Message/Media/Contact';
 import Document from '../Components/Message/Media/Document';
 import Game from '../Components/Message/Media/Game';
 import Location from '../Components/Message/Media/Location';
+import CollapsibleBlockquote from '../Components/Message/CollapsibleBlockquote';
 import CustomEmoji from '../Components/Message/CustomEmoji';
 import MentionLink from '../Components/Additional/MentionLink';
 import Photo from '../Components/Message/Media/Photo';
@@ -306,13 +307,11 @@ function getFormattedText(formattedText) {
                 break;
             }
             case 'textEntityTypeBlockQuote': {
-                const bqClass = type.is_collapsed ? 'message-blockquote collapsed' : 'message-blockquote';
                 result.push(
-                    <blockquote key={entityKey} className={bqClass}>
+                    <CollapsibleBlockquote key={entityKey} initialCollapsed={type.is_collapsed}>
                         {entityText}
-                    </blockquote>,
+                    </CollapsibleBlockquote>,
                 );
-                // TODO: implement expand/collapse toggle for collapsed blockquotes
                 break;
             }
             default:
