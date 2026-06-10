@@ -66,9 +66,10 @@ export async function encodeSignalingMessage(message, authKey, seq, isOutgoing) 
     new DataView(packet.buffer).setUint32(0, seq, false); // big-endian
     packet.set(compressed, 4);
 
-    // msgKeyLarge = SHA256(authKey[88+x : 88+x+32] + packet)
-    const x = 128 + (isOutgoing ? 0 : 8);
-    const msgKeyInput = concat(authKey.slice(88 + x, 88 + x + 32), packet);
+    // msgKeyLarge = SHA256(authKey[88+x : 88+x+36] + packet)
+    // x=0 para el iniciador (outgoing), x=8 para el receptor (incoming) — sin offset 128
+    const x = isOutgoing ? 0 : 8;
+    const msgKeyInput = concat(authKey.slice(88 + x, 88 + x + 36), packet);
     const msgKeyLarge = await sha256(msgKeyInput);
     const msgKey = msgKeyLarge.slice(8, 24); // 16 bytes
 
