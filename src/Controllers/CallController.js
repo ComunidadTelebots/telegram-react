@@ -176,12 +176,16 @@ class CallController extends EventEmitter {
         }
         this.callInfo = {
             callId: Number(callObj.id),
-            accessHash: callObj.access_hash,
+            accessHash: String(callObj.access_hash),
             userId: Number(callObj.admin_id),
             isVideo: !!(callObj.video || callObj.is_video),
             g_a_hash: callObj.g_a_hash,
             dhConfig: null,
         };
+        // Enviar ACK de recepción al servidor (requerido antes de aceptar/rechazar)
+        import('../Controllers/TdLibController').then(({ default: TdLib }) => {
+            TdLib.send({ '@type': 'receivedCall', call_id: this.callInfo.callId }).catch(() => {});
+        });
         this._setState(CallState.INCOMING);
     }
 

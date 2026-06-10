@@ -321,9 +321,35 @@ class GramJsController extends EventEmitter {
             const raw = event.originalUpdate || event;
             if (!raw) return;
 
+            // Log phone call updates for debugging
+            const rawCls = raw.className || raw._;
+            if (rawCls && rawCls.toLowerCase().includes('phone')) {
+                console.log('[GramJs] phoneCall raw update', rawCls, raw);
+            }
+
             // Actualizar usuarios/chats que vengan en el update
             if (raw.users) raw.users.forEach(u => this._cacheUser(u));
             if (raw.chats) raw.chats.forEach(c => this._cacheEntity(c));
+
+            // Manejo directo de UpdatePhoneCall y UpdatePhoneCallSignalingData
+            // (por si GramJS los entrega con className distinto al esperado)
+            if (rawCls === 'UpdatePhoneCall' || rawCls === 'updatePhoneCall') {
+                import('./CallController')
+                    .then(({ default: callController }) => {
+                        callController.onPhoneCallUpdate({
+                            '@type': 'updatePhoneCall',
+                            phone_call: raw.phoneCall || raw.phone_call || raw,
+                        });
+                    })
+                    .catch(() => {});
+            }
+            if (rawCls === 'UpdatePhoneCallSignalingData' || rawCls === 'updatePhoneCallSignalingData') {
+                import('./CallController')
+                    .then(({ default: callController }) => {
+                        callController.onSignalingData(raw.data);
+                    })
+                    .catch(() => {});
+            }
 
             const tdUpdate = translateUpdate(raw);
             if (tdUpdate) {
@@ -1012,6 +1038,8 @@ class GramJsController extends EventEmitter {
                 return this._confirmCall(req);
             case 'discardCall':
                 return this._discardCall(req);
+            case 'receivedCall':
+                return this._receivedCall(req);
             case 'sendCallSignalingData':
                 return this._sendCallSignalingData(req);
             case 'getDhConfig':
@@ -3692,6 +3720,20 @@ class GramJsController extends EventEmitter {
         const { callInfo } = callController;
         if (!callInfo) return {};
 
+        // Enviar ACK de recepción antes de aceptar (requerido por el protocolo)
+        try {
+            await this.client.invoke(
+                new Api.phone.ReceivedCall({
+                    peer: new Api.InputPhoneCall({
+                        id: BigInt(callInfo.callId),
+                        accessHash: BigInt(callInfo.accessHash),
+                    }),
+                }),
+            );
+        } catch (e) {
+            console.warn('[GramJs] ReceivedCall error (ignorado)', e.message);
+        }
+
         // Generate b, compute g^b
         const dhConfig = await this.client.invoke(new Api.messages.GetDhConfig({ version: 0, randomLength: 256 }));
         const p = BigInt('0x' + Buffer.from(dhConfig.p).toString('hex'));
@@ -3772,6 +3814,22 @@ class GramJsController extends EventEmitter {
             );
         } catch (e) {
             console.warn('[GramJs] discardCall error (may be already ended)', e.message);
+        }
+        return {};
+    };
+
+    _receivedCall = async ({ call_id }) => {
+        try {
+            const { default: callController } = await import('./CallController');
+            const info = callController.callInfo;
+            const accessHash = info ? BigInt(info.accessHash || 0) : BigInt(0);
+            await this.client.invoke(
+                new Api.phone.ReceivedCall({
+                    peer: new Api.InputPhoneCall({ id: BigInt(call_id), accessHash }),
+                }),
+            );
+        } catch (e) {
+            console.warn('[GramJs] receivedCall error (ignorado)', e.message);
         }
         return {};
     };
