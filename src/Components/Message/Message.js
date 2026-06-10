@@ -93,6 +93,7 @@ class Message extends Component {
                 emojiMatches: getEmojiMatches(chatId, messageId),
                 selected: false,
                 highlighted: false,
+                contextMenu: false,
                 translationText: null,
                 translating: false,
             };
@@ -101,6 +102,7 @@ class Message extends Component {
                 emojiMatches: getEmojiMatches(chatId, messageId),
                 selected: false,
                 highlighted: false,
+                contextMenu: false,
                 translationText: null,
                 translating: false,
             };
