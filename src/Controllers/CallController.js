@@ -175,10 +175,11 @@ class CallController extends EventEmitter {
             return;
         }
         this.callInfo = {
-            callId: String(callObj.id), // String para preservar precisión int64
+            callId: String(callObj.id),
             accessHash: String(callObj.access_hash),
             userId: String(callObj.admin_id),
             isVideo: !!(callObj.video || callObj.is_video),
+            isOutgoing: false, // nosotros recibimos → incoming
             g_a_hash: callObj.g_a_hash,
             dhConfig: null,
         };
@@ -197,13 +198,13 @@ class CallController extends EventEmitter {
         this._finishCallerDH(gb, callObj);
     }
 
-    _onCallConfirmed(callObj) {
+    async _onCallConfirmed(callObj) {
         // Callee recibe phoneCall (confirmación del caller con g_a)
         if (this.state !== CallState.ACCEPTING && this.state !== CallState.INCOMING) return;
         this.callInfo.accessHash = callObj.access_hash;
         const ga = callObj.g_a_or_b;
         if (ga) {
-            this._finishCalleeDH(ga, callObj);
+            await this._finishCalleeDH(ga, callObj); // esperar DH antes de iniciar WebRTC
         }
         this._startWebRTC(callObj);
     }
@@ -266,9 +267,7 @@ class CallController extends EventEmitter {
         this._setState(CallState.ACTIVE);
         this._startDurationTimer();
         this._signalingSeq = 0;
-
-        // Determinar si somos el iniciador (admin_id es el que llamó)
-        this._isOutgoing = String(callObj.admin_id) === String(this.callInfo.userId);
+        this._isOutgoing = !!(this.callInfo && this.callInfo.isOutgoing);
 
         const iceServers = this._extractIceServers(callObj) || [{ urls: 'stun:stun.l.google.com:19302' }];
 
