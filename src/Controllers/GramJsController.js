@@ -737,6 +737,10 @@ class GramJsController extends EventEmitter {
                 return this._deleteMessages(req);
             case 'viewMessages':
                 return this._viewMessages(req);
+            case 'getChatScheduledMessages':
+                return this._getChatScheduledMessages(req);
+            case 'deleteChatScheduledMessages':
+                return this._deleteChatScheduledMessages(req);
             case 'readAllChatMentions':
                 return this._readAllChatMentions(req);
             case 'reportChat':
@@ -3223,6 +3227,32 @@ class GramJsController extends EventEmitter {
         } catch (e) {
             console.warn('[GramJs] QR poll error', e);
         }
+    };
+
+    _getChatScheduledMessages = async req => {
+        const { chat_id } = req;
+        try {
+            const inputPeer = tdlibChatIdToInputPeer(chat_id, this._entityCache);
+            const result = await this.client.invoke(
+                new Api.messages.GetScheduledHistory({ peer: inputPeer, hash: BigInt(0) }),
+            );
+            const messages = (result.messages || []).map(m => translateMessage(m, chat_id)).filter(Boolean);
+            return { '@type': 'messages', messages, total_count: messages.length };
+        } catch (e) {
+            console.error('[GramJs] getChatScheduledMessages error', e);
+            return { '@type': 'messages', messages: [], total_count: 0 };
+        }
+    };
+
+    _deleteChatScheduledMessages = async req => {
+        const { chat_id, message_ids } = req;
+        try {
+            const inputPeer = tdlibChatIdToInputPeer(chat_id, this._entityCache);
+            await this.client.invoke(new Api.messages.DeleteScheduledMessages({ peer: inputPeer, id: message_ids }));
+        } catch (e) {
+            console.error('[GramJs] deleteChatScheduledMessages error', e);
+        }
+        return {};
     };
 }
 

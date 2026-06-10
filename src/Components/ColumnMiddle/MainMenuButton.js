@@ -21,6 +21,7 @@ import { withSnackbar } from 'notistack';
 import { compose } from 'recompose';
 import ChatTile from '../Tile/ChatTile';
 import NotificationTimer from '../Additional/NotificationTimer';
+import ScheduledMessages from '../Additional/ScheduledMessages';
 import { canClearHistory, canDeleteChat, getChatShortTitle, isPrivateChat } from '../../Utils/Chat';
 import { NOTIFICATION_AUTO_HIDE_DURATION_MS } from '../../Constants';
 import ApplicationStore from '../../Stores/ApplicationStore';
@@ -31,18 +32,18 @@ import './MainMenuButton.css';
 
 const styles = theme => ({
     menuIconButton: {
-        margin: '8px 12px 8px 0'
-    }
+        margin: '8px 12px 8px 0',
+    },
 });
 
 const menuAnchorOrigin = {
     vertical: 'bottom',
-    horizontal: 'right'
+    horizontal: 'right',
 };
 
 const menuTransformOrigin = {
     vertical: 'top',
-    horizontal: 'right'
+    horizontal: 'right',
 };
 
 class LeaveChatDialog extends React.Component {
@@ -144,7 +145,7 @@ class MainMenuButton extends React.Component {
         this.state = {
             anchorEl: null,
             openDelete: false,
-            openClearHistory: false
+            openClearHistory: false,
         };
     }
 
@@ -159,6 +160,12 @@ class MainMenuButton extends React.Component {
     handleChatInfo = () => {
         this.handleMenuClose();
         setTimeout(() => this.props.openChatDetails(), 150);
+    };
+
+    handleScheduledMessages = () => {
+        this.handleMenuClose();
+        const chatId = ApplicationStore.getChatId();
+        if (this.scheduledMessagesRef) this.scheduledMessagesRef.open(chatId);
     };
 
     handleClearHistory = () => {
@@ -177,7 +184,7 @@ class MainMenuButton extends React.Component {
         const request = {
             '@type': 'deleteChatHistory',
             chat_id: chatId,
-            remove_from_chat_list: false
+            remove_from_chat_list: false,
         };
 
         this.handleScheduledAction(chatId, 'clientUpdateClearHistory', message, request);
@@ -236,8 +243,8 @@ class MainMenuButton extends React.Component {
                         size='small'
                         onClick={() => ApplicationStore.removeScheduledAction(key)}>
                         UNDO
-                    </Button>
-                ]
+                    </Button>,
+                ],
             });
         }
     };
@@ -324,19 +331,18 @@ class MainMenuButton extends React.Component {
                     anchorOrigin={menuAnchorOrigin}
                     transformOrigin={menuTransformOrigin}>
                     <MenuItem onClick={this.handleChatInfo}>Chat info</MenuItem>
+                    <MenuItem onClick={this.handleScheduledMessages}>Mensajes programados</MenuItem>
                     {clearHistory && <MenuItem onClick={this.handleClearHistory}>Clear history</MenuItem>}
                     {deleteChat && leaveChatTitle && <MenuItem onClick={this.handleLeave}>{leaveChatTitle}</MenuItem>}
                 </Menu>
                 <LeaveChatDialog chatId={chatId} open={openDelete} onClose={this.handleLeaveContinue} />
                 <ClearHistoryDialog chatId={chatId} open={openClearHistory} onClose={this.handleClearHistoryContinue} />
+                <ScheduledMessages ref={ref => (this.scheduledMessagesRef = ref)} />
             </>
         );
     }
 }
 
-const enhance = compose(
-    withStyles(styles),
-    withSnackbar
-);
+const enhance = compose(withStyles(styles), withSnackbar);
 
 export default enhance(MainMenuButton);
