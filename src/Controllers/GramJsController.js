@@ -3742,7 +3742,10 @@ class GramJsController extends EventEmitter {
         const bBytes = dhConfig.random || crypto.getRandomValues(new Uint8Array(256));
         const b = BigInt('0x' + Buffer.from(bBytes).toString('hex'));
         const gB = modPowBig(g, b, p);
-        const gBBytes = bigIntToBytesBig(gB, 256);
+        // Buffer.from(Uint8Array) no produce un Buffer válido en el entorno browser;
+        // usar el ArrayBuffer subyacente garantiza compatibilidad con GramJS
+        const gBUint8 = bigIntToBytesBig(gB, 256);
+        const gBBytes = Buffer.from(gBUint8.buffer, gBUint8.byteOffset, gBUint8.byteLength);
 
         callController._dhConfig = dhConfig;
         callController._myPrivate = b;
@@ -3759,7 +3762,7 @@ class GramJsController extends EventEmitter {
         await this.client.invoke(
             new Api.phone.AcceptCall({
                 peer: new Api.InputPhoneCall({ id: BigInt(callInfo.callId), accessHash: BigInt(callInfo.accessHash) }),
-                gb: Buffer.from(gBBytes),
+                gb: gBBytes,
                 protocol,
             }),
         );
