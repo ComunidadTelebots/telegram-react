@@ -1,5 +1,14 @@
 # Changelog
 
+## [2026-06-10] (sesión 16)
+
+### Added
+- **Editar perfil** (`2103ab15`) — panel lateral accesible tocando el área del perfil en Settings. Permite cambiar nombre, apellido, bio (70 chars) y username (solo alfanumérico + `_`). Llama a `account.UpdateProfile` y `account.UpdateUsername`; emite `updateUser` de forma inmediata para que el nombre se refleje en la UI sin recargar. Archivos: `src/Components/Additional/EditProfile.{js,css}`, `src/Components/ColumnLeft/AndroidSettings.js`, `src/Controllers/GramJsController.js`.
+- **Saltar a fecha en el historial** (`2103ab15`) — botón de calendario 📅 en el header del chat abre un diálogo con `<input type="date">` nativo. Al confirmar, `getChatMessageByDate` usa `messages.GetHistory` con `offsetDate` para obtener el primer mensaje a partir de esa fecha y lo resalta con `highlightMessage`. Archivos: `src/Components/ColumnMiddle/Header.js`, `src/Controllers/GramJsController.js`.
+- **Resultados de encuestas en tiempo real** (`2103ab15`) — `UpdateMessagePoll` de GramJS ahora se traduce a `updatePoll` con votos, porcentajes e `is_chosen` actualizados. El `_setupUpdateHandler` de GramJsController busca en el `MessageStore` todos los mensajes con ese `poll.id` y emite `updateMessageContent` para que `Poll.js` re-renderice con los nuevos conteos sin necesidad de recargar el chat. Archivos: `src/Utils/GramJs/UpdateTranslator.js`, `src/Controllers/GramJsController.js`.
+
+---
+
 ## [2026-06-10] (sesión 15)
 
 ### Added
