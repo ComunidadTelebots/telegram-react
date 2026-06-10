@@ -225,13 +225,21 @@ class CallController extends EventEmitter {
             const authKeyBig = modPow(gbBig, this._myPrivate, p);
             this._authKey = bigIntToBytes(authKeyBig, 256);
 
-            // phone.confirmCall
+            // key_fingerprint = últimos 8 bytes de SHA1(auth_key) como int64 little-endian
+            const sha1buf = await crypto.subtle.digest('SHA-1', this._authKey);
+            const sha1 = new Uint8Array(sha1buf);
+            const last8 = sha1.slice(12); // SHA1 tiene 20 bytes, tomamos los últimos 8
+            let fingerprint = 0n;
+            for (let i = 0; i < 8; i++) {
+                fingerprint |= BigInt(last8[i]) << (BigInt(i) * 8n);
+            }
+
             await import('../Controllers/TdLibController').then(({ default: TdLib }) => {
                 return TdLib.send({
                     '@type': 'confirmCall',
                     call_id: this.callInfo.callId,
                     g_a: bigIntToBytes(this._myPublic, 256),
-                    key_fingerprint: computeKeyFingerprint(this._authKey),
+                    key_fingerprint: fingerprint.toString(), // String para preservar int64
                 });
             });
             this._startWebRTC(callObj);
@@ -438,13 +446,6 @@ function bigIntToBytes(n, length) {
         bytes[i] = parseInt(hex.slice(i * 2, i * 2 + 2), 16);
     }
     return bytes;
-}
-
-function computeKeyFingerprint(authKey) {
-    // SHA1 de auth_key, últimos 8 bytes como int64 (little-endian)
-    // Usamos una aproximación sync: retornar 0 si SubtleCrypto no está disponible
-    // La verificación real se hace en el servidor; esto es solo para phone.confirmCall
-    return 0;
 }
 
 const callController = new CallController();
