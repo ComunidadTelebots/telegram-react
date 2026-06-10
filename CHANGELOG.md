@@ -1,5 +1,19 @@
 # Changelog
 
+## [2026-06-10] (sesión 15)
+
+### Added
+- **Teclados inline** (`f951adac`) — los mensajes de bots ahora muestran sus botones interactivos debajo de la burbuja. Nuevo componente `InlineKeyboard.js` que renderiza filas de botones; soporta tipos `url`, `callback`, `webApp`, `switchInline`, `game`, `buy`, `user`. Los botones callback muestran la respuesta del servidor con un toast flotante (`callback-toast`). Archivos: `src/Components/Message/InlineKeyboard.{js,css}`, `src/Components/Message/Message.js`, `src/Utils/GramJs/EntityTranslator.js`, `src/Controllers/GramJsController.js`.
+- **Callback query (`getCallbackQueryAnswer`)** (`f951adac`) — handler en `GramJsController` vía `messages.GetBotCallbackAnswer`; devuelve texto, alerta y URL opcionales. Si la respuesta trae `show_alert=true` se usa `window.alert`, si no se muestra el toast.
+- **`translateReplyMarkup`** (`f951adac`) — nueva función exportada en `EntityTranslator.js` que convierte `ReplyInlineMarkup` → `replyMarkupInlineKeyboard` y `ReplyKeyboardMarkup` → `replyMarkupShowKeyboard` incluyendo flags `resize`, `one_time` y `selective`.
+- **Hilos de comentarios** (`14c5b29e`) — los posts de canal con replies muestran un botón "X comments" (o "Leave a comment") debajo de la burbuja. Al pulsar abre un panel lateral que carga el hilo de respuestas con `messages.GetReplies`. Nuevo `CommentsButton.js` y `MessageThread.js`; singleton montado en `MainPage` vía `window._messageThreadRef`. Archivos: `src/Components/Message/CommentsButton.{js,css}`, `src/Components/Additional/MessageThread.{js,css}`, `src/Components/MainPage.js`, `src/Controllers/GramJsController.js`.
+- **Bot Mini Apps / Web Apps** (`e79d9155`) — botones `inlineKeyboardButtonTypeWebApp` abren un panel lateral con iframe en lugar de pestaña externa. Sandbox correcto: `allow-scripts allow-same-origin allow-forms allow-popups`. Nuevo `BotWebApp.js`; singleton `window._botWebAppRef` en `MainPage`. Archivos: `src/Components/Additional/BotWebApp.{js,css}`, `src/Components/MainPage.js`, `src/Components/Message/InlineKeyboard.js`.
+- **Slow Mode para admins de supergrupos** (`e79d9155`) — selector dropdown en la info del chat (desactivado / 10s / 30s / 1min / 5min / 15min / 1h) visible solo para administradores de supergrupos. Lee `slow_mode_delay` de `supergroupFullInfo` (nuevo campo `full.slowmodeSeconds`); llama a `channels.ToggleSlowMode`. Archivos: `src/Components/ColumnRight/ChatDetails.js`, `src/Controllers/GramJsController.js`.
+- **Votar en encuestas** (`ea47b357`) — `setPollAnswer` implementado vía `messages.SendVote`; mapea índice de opción → bytes binarios (`_option_data`) guardados en el translator. Tras votar recarga el mensaje para refrescar resultados en el UI. También implementado `stopPoll` vía `messages.EditMessage` con `poll.closed=true`. Archivos: `src/Controllers/GramJsController.js`, `src/Utils/GramJs/EntityTranslator.js`.
+- **Sesiones activas conectadas a Settings** (`ea47b357`) — el botón "Devices" en AndroidSettings ahora abre el diálogo `ActiveSessions` (que ya existía pero no estaba conectado). Implementados `getActiveSessions` (`account.GetAuthorizations`), `terminateSession` (`account.ResetAuthorization`) y `terminateAllOtherSessions` (`auth.ResetAuthorizations`). Archivos: `src/Components/ColumnLeft/AndroidSettings.js`, `src/Controllers/GramJsController.js`.
+
+---
+
 ## [2026-06-10] (sesión 14)
 
 ### Added
