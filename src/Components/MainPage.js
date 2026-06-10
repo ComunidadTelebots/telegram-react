@@ -24,6 +24,8 @@ import InstantViewer from './InstantView/InstantViewer';
 import AmpViewer from './AmpViewer/AmpViewer';
 import MessageThread from './Additional/MessageThread';
 import BotWebApp from './Additional/BotWebApp';
+import IncomingCall from './Calls/IncomingCall';
+import ActiveCall from './Calls/ActiveCall';
 import MediaViewer from './Viewer/MediaViewer';
 import ProfileMediaViewer from './Viewer/ProfileMediaViewer';
 import { borderStyle } from './Theme';
@@ -235,6 +237,8 @@ class MainPage extends React.Component {
                 <DesignSwitcher />
                 <MessageThread ref={ref => (window._messageThreadRef = ref)} />
                 <BotWebApp ref={ref => (window._botWebAppRef = ref)} />
+                <IncomingCall />
+                <ActiveCall />
             </>
         );
     }

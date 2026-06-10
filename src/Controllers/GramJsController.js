@@ -400,6 +400,22 @@ class GramJsController extends EventEmitter {
                         });
                     }
                 }
+
+                // Llamadas VoIP — despachar al CallController
+                if (updateType === 'updatePhoneCall') {
+                    import('./CallController')
+                        .then(({ default: callController }) => {
+                            callController.onPhoneCallUpdate(tdUpdate);
+                        })
+                        .catch(() => {});
+                }
+                if (updateType === 'updatePhoneCallSignalingData') {
+                    import('./CallController')
+                        .then(({ default: callController }) => {
+                            callController.onSignalingData(tdUpdate.data);
+                        })
+                        .catch(() => {});
+                }
             }
         });
     };
@@ -986,6 +1002,20 @@ class GramJsController extends EventEmitter {
                 return this._terminateSession(req);
             case 'terminateAllOtherSessions':
                 return this._terminateAllOtherSessions(req);
+
+            // ── VoIP Calls ────────────────────────────────────────────────────
+            case 'requestCall':
+                return this._requestCall(req);
+            case 'acceptCall':
+                return this._acceptCall(req);
+            case 'confirmCall':
+                return this._confirmCall(req);
+            case 'discardCall':
+                return this._discardCall(req);
+            case 'sendCallSignalingData':
+                return this._sendCallSignalingData(req);
+            case 'getDhConfig':
+                return this._getDhConfig(req);
 
             default:
                 if (!this.disableLog) console.warn('[GramJs] send no implementado:', type);
@@ -3590,6 +3620,178 @@ class GramJsController extends EventEmitter {
         }
         return {};
     };
+
+    // ─── VoIP Calls ──────────────────────────────────────────────────────────────
+
+    _getDhConfig = async () => {
+        const result = await this.client.invoke(new Api.messages.GetDhConfig({ version: 0, randomLength: 256 }));
+        return {
+            '@type': 'dh_config',
+            p: result.p,
+            g: result.g,
+            version: result.version,
+            random: result.random,
+        };
+    };
+
+    _requestCall = async ({ user_id, is_video }) => {
+        const inputUser =
+            this._entityCache.get(user_id) || new Api.InputUser({ userId: BigInt(user_id), accessHash: BigInt(0) });
+
+        // Step 1: get DH config
+        const dhConfig = await this.client.invoke(new Api.messages.GetDhConfig({ version: 0, randomLength: 256 }));
+
+        // Step 2: generate a, compute g^a, sha256(g^a)
+        const p = BigInt('0x' + Buffer.from(dhConfig.p).toString('hex'));
+        const g = BigInt(dhConfig.g);
+        const aBytes = dhConfig.random || crypto.getRandomValues(new Uint8Array(256));
+        const a = BigInt('0x' + Buffer.from(aBytes).toString('hex'));
+        const gA = modPowBig(g, a, p);
+        const gABytes = bigIntToBytesBig(gA, 256);
+        const gAHash = await crypto.subtle.digest('SHA-256', gABytes);
+
+        // Store DH state in callController
+        const { default: callController } = await import('./CallController');
+        callController._dhConfig = dhConfig;
+        callController._myPrivate = a;
+        callController._myPublic = gA;
+
+        const protocol = new Api.PhoneCallProtocol({
+            udpP2p: true,
+            udpReflector: true,
+            minLayer: 65,
+            maxLayer: 92,
+            libraryVersions: ['5.0.0'],
+        });
+
+        const result = await this.client.invoke(
+            new Api.phone.RequestCall({
+                userId: inputUser,
+                randomId: Math.floor(Math.random() * 2147483647),
+                gAHash: Buffer.from(gAHash),
+                protocol,
+                video: !!is_video,
+            }),
+        );
+
+        // The phoneCallWaiting update will arrive via updatePhoneCall
+        const call = result.phoneCall;
+        const { default: cc } = await import('./CallController');
+        cc.callInfo = {
+            callId: Number(call.id),
+            accessHash: String(call.accessHash),
+            userId: user_id,
+            isVideo: !!is_video,
+        };
+        cc._setState('waiting');
+        return {};
+    };
+
+    _acceptCall = async ({ call_id, is_video }) => {
+        const { default: callController } = await import('./CallController');
+        const { callInfo } = callController;
+        if (!callInfo) return {};
+
+        // Generate b, compute g^b
+        const dhConfig = await this.client.invoke(new Api.messages.GetDhConfig({ version: 0, randomLength: 256 }));
+        const p = BigInt('0x' + Buffer.from(dhConfig.p).toString('hex'));
+        const g = BigInt(dhConfig.g);
+        const bBytes = dhConfig.random || crypto.getRandomValues(new Uint8Array(256));
+        const b = BigInt('0x' + Buffer.from(bBytes).toString('hex'));
+        const gB = modPowBig(g, b, p);
+        const gBBytes = bigIntToBytesBig(gB, 256);
+
+        callController._dhConfig = dhConfig;
+        callController._myPrivate = b;
+        callController._myPublic = gB;
+
+        const protocol = new Api.PhoneCallProtocol({
+            udpP2p: true,
+            udpReflector: true,
+            minLayer: 65,
+            maxLayer: 92,
+            libraryVersions: ['5.0.0'],
+        });
+
+        await this.client.invoke(
+            new Api.phone.AcceptCall({
+                peer: new Api.InputPhoneCall({ id: BigInt(callInfo.callId), accessHash: BigInt(callInfo.accessHash) }),
+                gb: Buffer.from(gBBytes),
+                protocol,
+            }),
+        );
+        return {};
+    };
+
+    _confirmCall = async ({ call_id, g_a, key_fingerprint }) => {
+        const { default: callController } = await import('./CallController');
+        const { callInfo } = callController;
+        if (!callInfo) return {};
+
+        const protocol = new Api.PhoneCallProtocol({
+            udpP2p: true,
+            udpReflector: true,
+            minLayer: 65,
+            maxLayer: 92,
+            libraryVersions: ['5.0.0'],
+        });
+
+        await this.client.invoke(
+            new Api.phone.ConfirmCall({
+                peer: new Api.InputPhoneCall({ id: BigInt(callInfo.callId), accessHash: BigInt(callInfo.accessHash) }),
+                gA: Buffer.from(g_a),
+                keyFingerprint: BigInt(key_fingerprint || 0),
+                protocol,
+            }),
+        );
+        return {};
+    };
+
+    _discardCall = async ({ call_id, is_disconnected, duration, is_video, connection_id }) => {
+        if (!call_id) return {};
+        try {
+            const { default: callController } = await import('./CallController');
+            const info = callController.callInfo;
+            const accessHash = info ? BigInt(info.accessHash || 0) : BigInt(0);
+
+            let reason;
+            if (is_disconnected) {
+                reason = new Api.PhoneCallDiscardReasonDisconnect();
+            } else {
+                reason = new Api.PhoneCallDiscardReasonHangup();
+            }
+
+            await this.client.invoke(
+                new Api.phone.DiscardCall({
+                    peer: new Api.InputPhoneCall({ id: BigInt(call_id), accessHash }),
+                    duration: duration || 0,
+                    reason,
+                    connectionId: BigInt(connection_id || 0),
+                    video: !!is_video,
+                }),
+            );
+        } catch (e) {
+            console.warn('[GramJs] discardCall error (may be already ended)', e.message);
+        }
+        return {};
+    };
+
+    _sendCallSignalingData = async ({ call_id, data }) => {
+        try {
+            const { default: callController } = await import('./CallController');
+            const info = callController.callInfo;
+            const accessHash = info ? BigInt(info.accessHash || 0) : BigInt(0);
+            await this.client.invoke(
+                new Api.phone.SendSignalingData({
+                    peer: new Api.InputPhoneCall({ id: BigInt(call_id), accessHash }),
+                    data: Buffer.from(data || []),
+                }),
+            );
+        } catch (e) {
+            console.warn('[GramJs] sendCallSignalingData error', e.message);
+        }
+        return {};
+    };
 }
 
 const TDLIB_TO_GRAMJS_ENTITY = {
@@ -3624,6 +3826,29 @@ function tdEntitiesToGramJs(tdEntities) {
             return new Api[gramCls](opts);
         })
         .filter(Boolean);
+}
+
+// ─── DH helpers (usados por _requestCall y _acceptCall) ──────────────────────
+
+function modPowBig(base, exp, mod) {
+    if (mod === 1n) return 0n;
+    let result = 1n;
+    base = base % mod;
+    while (exp > 0n) {
+        if (exp % 2n === 1n) result = (result * base) % mod;
+        exp = exp / 2n;
+        base = (base * base) % mod;
+    }
+    return result;
+}
+
+function bigIntToBytesBig(n, length) {
+    const hex = n.toString(16).padStart(length * 2, '0');
+    const bytes = new Uint8Array(length);
+    for (let i = 0; i < length; i++) {
+        bytes[i] = parseInt(hex.slice(i * 2, i * 2 + 2), 16);
+    }
+    return bytes;
 }
 
 const controller = new GramJsController();

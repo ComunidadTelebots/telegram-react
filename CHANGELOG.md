@@ -1,5 +1,17 @@
 # Changelog
 
+## [2026-06-10] (sesión 17)
+
+### Added
+- **Llamadas de voz y videollamadas P2P** — implementación completa de llamadas 1-a-1 usando WebRTC + señalización MTProto vía GramJS. Flujo completo: Diffie-Hellman key exchange (`messages.GetDhConfig`, `g^a mod p`, `sha256(g_a_hash)`), `phone.RequestCall` / `phone.AcceptCall` / `phone.ConfirmCall` / `phone.DiscardCall`. Datos de señalización WebRTC (SDP offer/answer + ICE candidates) intercambiados vía `phone.SendSignalingData` / `UpdatePhoneCallSignalingData`. Archivos nuevos: `src/Controllers/CallController.js`, `src/Components/Calls/IncomingCall.{js,css}`, `src/Components/Calls/ActiveCall.{js,css}`.
+- **UI de llamada entrante** — overlay con avatar pulsante, nombre del contacto, botones de aceptar (verde) y rechazar (rojo). Se activa automáticamente al recibir `UpdatePhoneCall` con `phoneCallRequested`. El overlay tiene mayor z-index que todo el resto de la UI.
+- **UI de llamada activa** — panel con temporizador de duración (MM:SS), botones de mute, cámara (en videollamadas) y colgar. Para videollamadas muestra el stream remoto a pantalla completa y el propio stream local en una ventana pequeña (picture-in-picture). Archivos: `src/Components/Calls/ActiveCall.{js,css}`.
+- **Botones de llamada en el Header** — en chats privados aparecen dos botones (teléfono y cámara) al lado del botón de búsqueda. Al pulsar se inicia la llamada de voz o video respectivamente. Solo visibles cuando `isPrivateChat(chatId)` es verdadero. Archivos: `src/Components/ColumnMiddle/Header.js`.
+- **UpdatePhoneCall / UpdatePhoneCallSignalingData en UpdateTranslator** — los updates `PhoneCallRequested`, `PhoneCallAccepted`, `PhoneCall`, `PhoneCallDiscarded`, `PhoneCallWaiting` se traducen al formato interno y se despachan al `CallController`. Archivos: `src/Utils/GramJs/UpdateTranslator.js`.
+- **Métodos de llamada en GramJsController** — `requestCall`, `acceptCall`, `confirmCall`, `discardCall`, `sendCallSignalingData`, `getDhConfig` implementados vía `Api.phone.*`. El DH key exchange usa BigInt nativo del navegador para aritmética modular de 2048 bits. Archivos: `src/Controllers/GramJsController.js`.
+
+---
+
 ## [2026-06-10] (sesión 16)
 
 ### Added

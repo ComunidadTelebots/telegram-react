@@ -19,6 +19,8 @@ import IconButton from '@material-ui/core/IconButton';
 import ArrowBackIcon from '@material-ui/icons/ArrowBack';
 import SearchIcon from '@material-ui/icons/Search';
 import DateRangeIcon from '@material-ui/icons/DateRange';
+import CallIcon from '@material-ui/icons/Call';
+import VideocamIcon from '@material-ui/icons/Videocam';
 import withStyles from '@material-ui/core/styles/withStyles';
 import { withTranslation } from 'react-i18next';
 import { compose } from 'recompose';
@@ -175,6 +177,30 @@ class Header extends Component {
 
     handleJumpToDate = () => {
         this.setState({ openJumpToDate: true });
+    };
+
+    handleVoiceCall = () => {
+        const chatId = AppStore.getChatId();
+        const chat = ChatStore.get(chatId);
+        if (!chat || !chat.type) return;
+        const type = chat.type['@type'];
+        if (type !== 'chatTypePrivate' && type !== 'chatTypeSecret') return;
+        const userId = chat.type.user_id;
+        import('../../Controllers/CallController').then(({ default: callController }) => {
+            callController.requestCall(userId, false);
+        });
+    };
+
+    handleVideoCall = () => {
+        const chatId = AppStore.getChatId();
+        const chat = ChatStore.get(chatId);
+        if (!chat || !chat.type) return;
+        const type = chat.type['@type'];
+        if (type !== 'chatTypePrivate' && type !== 'chatTypeSecret') return;
+        const userId = chat.type.user_id;
+        import('../../Controllers/CallController').then(({ default: callController }) => {
+            callController.requestCall(userId, true);
+        });
     };
 
     handleCloseJumpToDate = () => {
@@ -513,6 +539,24 @@ class Header extends Component {
                 </div>
                 {chat && (
                     <>
+                        {isPrivateChat(chatId) && (
+                            <>
+                                <IconButton
+                                    className={classes.messageSearchIconButton}
+                                    aria-label='Voice call'
+                                    title='Voice call'
+                                    onClick={this.handleVoiceCall}>
+                                    <CallIcon />
+                                </IconButton>
+                                <IconButton
+                                    className={classes.messageSearchIconButton}
+                                    aria-label='Video call'
+                                    title='Video call'
+                                    onClick={this.handleVideoCall}>
+                                    <VideocamIcon />
+                                </IconButton>
+                            </>
+                        )}
                         <IconButton
                             className={classes.messageSearchIconButton}
                             aria-label='Search'

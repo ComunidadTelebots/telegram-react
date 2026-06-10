@@ -1,0 +1,157 @@
+.active-call-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2900;
+    animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+.active-call-panel {
+    background: #1e1e2e;
+    border-radius: 20px;
+    padding: 36px 48px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    min-width: 300px;
+    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.5);
+    position: relative;
+}
+
+.active-call-panel--video {
+    background: #000;
+    min-width: 480px;
+    min-height: 360px;
+    padding: 0;
+    overflow: hidden;
+}
+
+.active-call-remote-video {
+    width: 100%;
+    height: 360px;
+    object-fit: cover;
+    border-radius: 20px;
+}
+
+.active-call-local-video {
+    position: absolute;
+    bottom: 90px;
+    right: 16px;
+    width: 120px;
+    height: 90px;
+    object-fit: cover;
+    border-radius: 10px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+}
+
+.active-call-avatar {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: #229af0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+    font-weight: 700;
+    color: #fff;
+}
+
+.active-call-name {
+    font-size: 20px;
+    font-weight: 600;
+    color: #fff;
+    margin-top: 8px;
+}
+
+.active-call-duration {
+    font-size: 15px;
+    color: rgba(255, 255, 255, 0.6);
+    font-variant-numeric: tabular-nums;
+}
+
+.active-call-actions {
+    display: flex;
+    gap: 24px;
+    margin-top: 24px;
+}
+
+.active-call-panel--video .active-call-name,
+.active-call-panel--video .active-call-duration,
+.active-call-panel--video .active-call-actions {
+    position: absolute;
+}
+
+.active-call-panel--video .active-call-name {
+    top: 16px;
+    left: 0;
+    right: 0;
+    text-align: center;
+}
+
+.active-call-panel--video .active-call-duration {
+    top: 44px;
+    left: 0;
+    right: 0;
+    text-align: center;
+}
+
+.active-call-panel--video .active-call-actions {
+    bottom: 16px;
+    left: 0;
+    right: 0;
+    justify-content: center;
+    margin-top: 0;
+}
+
+.active-call-btn {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    border: none;
+    cursor: pointer;
+    background: rgba(255, 255, 255, 0.15);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.15s, background 0.15s;
+}
+
+.active-call-btn:hover {
+    background: rgba(255, 255, 255, 0.25);
+    transform: scale(1.08);
+}
+
+.active-call-btn--off {
+    background: rgba(255, 255, 255, 0.08);
+    color: rgba(255, 255, 255, 0.4);
+}
+
+.active-call-btn--hangup {
+    background: #e53935;
+}
+
+.active-call-btn--hangup:hover {
+    background: #c62828;
+}
+
+.active-call-btn svg {
+    font-size: 24px;
+}

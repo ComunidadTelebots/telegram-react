@@ -104,6 +104,12 @@ export function translateUpdate(update) {
         case 'UpdateStoriesStealthMode':
             return updateStoriesStealthMode(update);
 
+        // ── Llamadas VoIP ────────────────────────────────────────────────────
+        case 'UpdatePhoneCall':
+            return phoneCallUpdate(update);
+        case 'UpdatePhoneCallSignalingData':
+            return phoneCallSignalingData(update);
+
         default:
             return null;
     }
@@ -586,5 +592,85 @@ function messagePoll(update) {
             close_date: poll.closeDate || 0,
             is_closed: !!poll.closed,
         },
+    };
+}
+
+// ─── Llamadas VoIP ─────────────────────────────────────────────────────────────
+
+function phoneCallUpdate(update) {
+    const call = update.phoneCall;
+    if (!call) return null;
+    const cls = call.className || call._;
+    let phoneCall;
+
+    if (cls === 'PhoneCallRequested' || cls === 'phoneCallRequested') {
+        phoneCall = {
+            '@type': 'phoneCallRequested',
+            id: Number(call.id),
+            access_hash: String(call.accessHash),
+            admin_id: Number(call.adminId),
+            participant_id: Number(call.participantId),
+            g_a_hash: call.gAHash,
+            is_video: !!call.video,
+            protocol: translateCallProtocol(call.protocol),
+        };
+    } else if (cls === 'PhoneCallAccepted' || cls === 'phoneCallAccepted') {
+        phoneCall = {
+            '@type': 'phoneCallAccepted',
+            id: Number(call.id),
+            access_hash: String(call.accessHash),
+            admin_id: Number(call.adminId),
+            participant_id: Number(call.participantId),
+            g_b: call.gB,
+            protocol: translateCallProtocol(call.protocol),
+        };
+    } else if (cls === 'PhoneCall' || cls === 'phoneCall') {
+        phoneCall = {
+            '@type': 'phoneCall',
+            id: Number(call.id),
+            access_hash: String(call.accessHash),
+            admin_id: Number(call.adminId),
+            participant_id: Number(call.participantId),
+            g_a_or_b: call.gAOrB,
+            key_fingerprint: call.keyFingerprint,
+            connections: call.connections,
+            protocol: translateCallProtocol(call.protocol),
+            is_video: !!call.video,
+        };
+    } else if (cls === 'PhoneCallDiscarded' || cls === 'phoneCallDiscarded') {
+        phoneCall = {
+            '@type': 'phoneCallDiscarded',
+            id: Number(call.id),
+            reason: call.reason ? call.reason.className || call.reason._ || 'hangup' : 'hangup',
+        };
+    } else if (cls === 'PhoneCallWaiting' || cls === 'phoneCallWaiting') {
+        phoneCall = {
+            '@type': 'phoneCallWaiting',
+            id: Number(call.id),
+            access_hash: String(call.accessHash),
+        };
+    } else {
+        return null;
+    }
+
+    return { '@type': 'updatePhoneCall', phone_call: phoneCall };
+}
+
+function translateCallProtocol(proto) {
+    if (!proto) return null;
+    return {
+        '@type': 'callProtocol',
+        udp_p2p: !!proto.udpP2p,
+        udp_reflector: !!proto.udpReflector,
+        min_layer: proto.minLayer || 65,
+        max_layer: proto.maxLayer || 92,
+    };
+}
+
+function phoneCallSignalingData(update) {
+    return {
+        '@type': 'updatePhoneCallSignalingData',
+        call_id: Number(update.phoneCallId),
+        data: update.data,
     };
 }
