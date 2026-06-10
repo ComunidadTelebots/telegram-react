@@ -13,8 +13,11 @@ import { compose } from 'recompose';
 import withStyles from '@material-ui/core/styles/withStyles';
 import { withSnackbar } from 'notistack';
 import { withTranslation } from 'react-i18next';
+import MenuItem from '@material-ui/core/MenuItem';
+import Select from '@material-ui/core/Select';
 import AlternateEmailIcon from '@material-ui/icons/AlternateEmail';
 import BlockIcon from '@material-ui/icons/Block';
+import TimerIcon from '@material-ui/icons/Timer';
 import ExitToAppIcon from '@material-ui/icons/ExitToApp';
 import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
 import TextField from '@material-ui/core/TextField';
@@ -186,6 +189,7 @@ class ChatDetails extends React.Component {
         UserStore.on('updateUserFullInfo', this.onUpdateUserFullInfo);
         BasicGroupStore.on('updateBasicGroupFullInfo', this.onUpdateBasicGroupFullInfo);
         SupergroupStore.on('updateSupergroupFullInfo', this.onUpdateSupergroupFullInfo);
+        ChatStore.on('updateChatMessageTtl', this.onUpdateChatMessageTtl);
     }
 
     componentWillUnmount() {
@@ -193,7 +197,12 @@ class ChatDetails extends React.Component {
         UserStore.off('updateUserFullInfo', this.onUpdateUserFullInfo);
         BasicGroupStore.off('updateBasicGroupFullInfo', this.onUpdateBasicGroupFullInfo);
         SupergroupStore.off('updateSupergroupFullInfo', this.onUpdateSupergroupFullInfo);
+        ChatStore.off('updateChatMessageTtl', this.onUpdateChatMessageTtl);
     }
+
+    onUpdateChatMessageTtl = update => {
+        if (update.chat_id === this.props.chatId) this.forceUpdate();
+    };
 
     onUpdateBasicGroupFullInfo = update => {
         const chat = ChatStore.get(this.props.chatId);
@@ -422,6 +431,12 @@ class ChatDetails extends React.Component {
         this.setState({ editingDescription: false });
     };
 
+    handleSetMessageTtl = async event => {
+        const { chatId } = this.props;
+        const ttl = Number(event.target.value);
+        await TdLibController.send({ '@type': 'setChatMessageTtl', chat_id: chatId, ttl });
+    };
+
     handleCopyInviteLink = async () => {
         const { chatId } = this.props;
         try {
@@ -640,6 +655,36 @@ class ChatDetails extends React.Component {
                             <Divider />
                             <List>
                                 {!isMe && <NotificationsListItem chatId={chatId} />}
+                                {!isMe &&
+                                    (() => {
+                                        const chat = ChatStore.get(chatId);
+                                        const currentTtl = chat ? chat.message_ttl || 0 : 0;
+                                        const ttlOptions = [
+                                            { value: 0, label: 'Desactivado' },
+                                            { value: 86400, label: '1 día' },
+                                            { value: 604800, label: '1 semana' },
+                                            { value: 2592000, label: '1 mes' },
+                                        ];
+                                        return (
+                                            <ListItem className={classes.listItem}>
+                                                <ListItemIcon>
+                                                    <TimerIcon />
+                                                </ListItemIcon>
+                                                <ListItemText primary='Borrado automático' />
+                                                <Select
+                                                    value={currentTtl}
+                                                    onChange={this.handleSetMessageTtl}
+                                                    disableUnderline
+                                                    style={{ fontSize: '0.875rem' }}>
+                                                    {ttlOptions.map(o => (
+                                                        <MenuItem key={o.value} value={o.value}>
+                                                            {o.label}
+                                                        </MenuItem>
+                                                    ))}
+                                                </Select>
+                                            </ListItem>
+                                        );
+                                    })()}
                                 {isGroup && <MoreListItem chatId={chatId} />}
                                 {isAdmin && isGroup && (
                                     <ListItem button className={classes.listItem} onClick={this.handleCopyInviteLink}>

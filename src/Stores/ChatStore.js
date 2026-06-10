@@ -105,7 +105,7 @@ class ChatStore extends EventEmitter {
                         TdLibController.parameters.fastUpdating = false;
                         this.emitUpdate({
                             '@type': 'clientUpdateFastUpdatingComplete',
-                            updates: this.skippedUpdates
+                            updates: this.skippedUpdates,
                         });
                         this.skippedUpdates = [];
                     }
@@ -148,7 +148,7 @@ class ChatStore extends EventEmitter {
                 if (chat) {
                     this.assign(chat, {
                         order: order === '0' ? chat.order : order,
-                        draft_message
+                        draft_message,
                     });
                 }
 
@@ -195,7 +195,7 @@ class ChatStore extends EventEmitter {
                 if (chat) {
                     this.assign(chat, {
                         order: order === '0' ? chat.order : order,
-                        last_message
+                        last_message,
                     });
                 }
 
@@ -308,6 +308,17 @@ class ChatStore extends EventEmitter {
                 this.emitFastUpdate(update);
                 break;
             }
+            case 'updateChatMessageTtl': {
+                const { chat_id, message_ttl } = update;
+
+                const chat = this.get(chat_id);
+                if (chat) {
+                    this.assign(chat, { message_ttl });
+                }
+
+                this.emitFastUpdate(update);
+                break;
+            }
             case 'updateChatUnreadMentionCount': {
                 const { chat_id, unread_mention_count } = update;
 
@@ -401,7 +412,7 @@ class ChatStore extends EventEmitter {
                 TdLibController.send({
                     '@type': 'setChatClientData',
                     chat_id: chatId,
-                    client_data: JSON.stringify(clientData)
+                    client_data: JSON.stringify(clientData),
                 });
                 this.setClientData(chatId, clientData);
                 this.saveClientData();

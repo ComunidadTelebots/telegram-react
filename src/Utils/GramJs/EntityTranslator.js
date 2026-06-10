@@ -517,6 +517,7 @@ export function translateChat(entity, dialog) {
         pinned_message_id: dialog?.pinnedMsgId || 0,
         reply_markup_message_id: dialog?.replyMarkupMsgId || 0,
         draft_message: draftMessage,
+        message_ttl: dialog?.ttlPeriod || 0,
         client_data: '',
     };
 }

@@ -797,6 +797,8 @@ class GramJsController extends EventEmitter {
                 return this._toggleChatIsMarkedAsUnread(req);
             case 'setChatDraftMessage':
                 return this._setChatDraftMessage(req);
+            case 'setChatMessageTtl':
+                return this._setChatMessageTtl(req);
 
             // ── Búsqueda ──────────────────────────────────────────────────────
             case 'searchMessages':
@@ -3227,6 +3229,22 @@ class GramJsController extends EventEmitter {
         } catch (e) {
             console.warn('[GramJs] QR poll error', e);
         }
+    };
+
+    _setChatMessageTtl = async req => {
+        const { chat_id, ttl } = req;
+        try {
+            const inputPeer = tdlibChatIdToInputPeer(chat_id, this._entityCache);
+            await this.client.invoke(new Api.messages.SetHistoryTTL({ peer: inputPeer, period: ttl }));
+            this._emitUpdate({
+                '@type': 'updateChatMessageTtl',
+                chat_id,
+                message_ttl: ttl,
+            });
+        } catch (e) {
+            console.error('[GramJs] setChatMessageTtl error', e);
+        }
+        return {};
     };
 
     _getChatScheduledMessages = async req => {
