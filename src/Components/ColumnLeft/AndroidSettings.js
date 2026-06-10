@@ -21,6 +21,7 @@ import GroupIcon from '@material-ui/icons/Group';
 import PersonAddIcon from '@material-ui/icons/PersonAdd';
 import ExitToAppIcon from '@material-ui/icons/ExitToApp';
 import CropFreeIcon from '@material-ui/icons/CropFree';
+import TwoStepVerification from '../Additional/TwoStepVerification';
 import { getSrc } from '../../Utils/File';
 import { getUserFullName } from '../../Utils/User';
 import UserStore from '../../Stores/UserStore';
@@ -87,6 +88,10 @@ class AndroidSettings extends React.PureComponent {
         TdLibController.send({ '@type': 'logOut' });
     };
 
+    handleTwoStepVerification = () => {
+        if (this.twoStepRef) this.twoStepRef.open();
+    };
+
     render() {
         const { onClose } = this.props;
         const { isDark, design, bio } = this.state;
@@ -111,7 +116,13 @@ class AndroidSettings extends React.PureComponent {
                 key: 'account',
                 rows: [
                     { icon: <NotificationsIcon />, label: 'Notifications and Sounds', sub: '', arrow: true },
-                    { icon: <LockIcon />, label: 'Privacy and Security', sub: '', arrow: true },
+                    {
+                        icon: <LockIcon />,
+                        label: 'Privacy and Security',
+                        sub: 'Two-Step Verification',
+                        arrow: true,
+                        action: this.handleTwoStepVerification,
+                    },
                     { icon: <DataUsageIcon />, label: 'Data and Storage', sub: '', arrow: true },
                     { icon: <ChatBubbleIcon />, label: 'Chat Settings', sub: '', arrow: true },
                     ...(isOld ? [] : [{ icon: <FolderIcon />, label: 'Chat Folders', sub: '', arrow: true }]),
@@ -201,88 +212,95 @@ class AndroidSettings extends React.PureComponent {
         ];
 
         return (
-            <div className='android-settings-overlay'>
-                {/* Toolbar */}
-                <div className='android-settings-toolbar'>
-                    <button className='android-settings-back' onClick={onClose} aria-label='Back'>
-                        <ArrowBackIcon />
-                    </button>
-                    <span className='android-settings-toolbar-title'>Settings</span>
-                    <button className='android-settings-toolbar-action' aria-label='Edit'>
-                        <EditIcon style={{ fontSize: 20 }} />
-                    </button>
-                    {!isOld && (
-                        <button className='android-settings-toolbar-action' aria-label='QR'>
-                            <CropFreeIcon style={{ fontSize: 20 }} />
+            <>
+                <div className='android-settings-overlay'>
+                    {/* Toolbar */}
+                    <div className='android-settings-toolbar'>
+                        <button className='android-settings-back' onClick={onClose} aria-label='Back'>
+                            <ArrowBackIcon />
                         </button>
-                    )}
-                </div>
-
-                <div className='android-settings-content'>
-                    {/* Profile hero */}
-                    <div className='android-settings-profile'>
-                        <div className='android-settings-avatar'>
-                            {avatarSrc ? <img src={avatarSrc} alt='' /> : initials}
-                        </div>
-                        <div className='android-settings-profile-info'>
-                            <div className='android-settings-profile-name'>{name}</div>
-                            {bio ? (
-                                <div className='android-settings-profile-bio'>{bio}</div>
-                            ) : username ? (
-                                <div className='android-settings-profile-bio'>{username}</div>
-                            ) : null}
-                            {phone && <div className='android-settings-profile-phone'>{phone}</div>}
-                        </div>
+                        <span className='android-settings-toolbar-title'>Settings</span>
+                        <button className='android-settings-toolbar-action' aria-label='Edit'>
+                            <EditIcon style={{ fontSize: 20 }} />
+                        </button>
+                        {!isOld && (
+                            <button className='android-settings-toolbar-action' aria-label='QR'>
+                                <CropFreeIcon style={{ fontSize: 20 }} />
+                            </button>
+                        )}
                     </div>
 
-                    {/* Sections */}
-                    {sections.map(section => (
-                        <div key={section.key} className='android-settings-section'>
-                            {section.rows.map((row, i) => (
-                                <React.Fragment key={row.label}>
-                                    <button
-                                        className={`android-settings-row${
-                                            row.accent ? ' android-settings-row--accent' : ''
-                                        }`}
-                                        onClick={row.action || undefined}>
-                                        <span className={`android-settings-row-icon${row.accent ? ' accent' : ''}`}>
-                                            {row.icon}
-                                        </span>
-                                        <span className='android-settings-row-content'>
-                                            <span className='android-settings-row-label'>{row.label}</span>
-                                            {row.sub && <span className='android-settings-row-value'>{row.sub}</span>}
-                                        </span>
-                                        {row.toggle !== undefined ? (
-                                            <span className={`android-settings-toggle${row.toggleOn ? ' on' : ''}`} />
-                                        ) : row.arrow ? (
-                                            <span className='android-settings-row-arrow'>
-                                                <ChevronRightIcon />
+                    <div className='android-settings-content'>
+                        {/* Profile hero */}
+                        <div className='android-settings-profile'>
+                            <div className='android-settings-avatar'>
+                                {avatarSrc ? <img src={avatarSrc} alt='' /> : initials}
+                            </div>
+                            <div className='android-settings-profile-info'>
+                                <div className='android-settings-profile-name'>{name}</div>
+                                {bio ? (
+                                    <div className='android-settings-profile-bio'>{bio}</div>
+                                ) : username ? (
+                                    <div className='android-settings-profile-bio'>{username}</div>
+                                ) : null}
+                                {phone && <div className='android-settings-profile-phone'>{phone}</div>}
+                            </div>
+                        </div>
+
+                        {/* Sections */}
+                        {sections.map(section => (
+                            <div key={section.key} className='android-settings-section'>
+                                {section.rows.map((row, i) => (
+                                    <React.Fragment key={row.label}>
+                                        <button
+                                            className={`android-settings-row${
+                                                row.accent ? ' android-settings-row--accent' : ''
+                                            }`}
+                                            onClick={row.action || undefined}>
+                                            <span className={`android-settings-row-icon${row.accent ? ' accent' : ''}`}>
+                                                {row.icon}
                                             </span>
-                                        ) : null}
-                                    </button>
-                                    {i < section.rows.length - 1 && <div className='android-settings-divider' />}
-                                </React.Fragment>
-                            ))}
-                        </div>
-                    ))}
+                                            <span className='android-settings-row-content'>
+                                                <span className='android-settings-row-label'>{row.label}</span>
+                                                {row.sub && (
+                                                    <span className='android-settings-row-value'>{row.sub}</span>
+                                                )}
+                                            </span>
+                                            {row.toggle !== undefined ? (
+                                                <span
+                                                    className={`android-settings-toggle${row.toggleOn ? ' on' : ''}`}
+                                                />
+                                            ) : row.arrow ? (
+                                                <span className='android-settings-row-arrow'>
+                                                    <ChevronRightIcon />
+                                                </span>
+                                            ) : null}
+                                        </button>
+                                        {i < section.rows.length - 1 && <div className='android-settings-divider' />}
+                                    </React.Fragment>
+                                ))}
+                            </div>
+                        ))}
 
-                    {/* Log out */}
-                    <div className='android-settings-section android-settings-section--danger'>
-                        <button
-                            className='android-settings-row android-settings-row--danger'
-                            onClick={this.handleLogOut}>
-                            <span className='android-settings-row-icon android-settings-row-icon--danger'>
-                                <ExitToAppIcon />
-                            </span>
-                            <span className='android-settings-row-content'>
-                                <span className='android-settings-row-label android-settings-row-label--danger'>
-                                    Log Out
+                        {/* Log out */}
+                        <div className='android-settings-section android-settings-section--danger'>
+                            <button
+                                className='android-settings-row android-settings-row--danger'
+                                onClick={this.handleLogOut}>
+                                <span className='android-settings-row-icon android-settings-row-icon--danger'>
+                                    <ExitToAppIcon />
                                 </span>
-                            </span>
-                        </button>
+                                <span className='android-settings-row-content'>
+                                    <span className='android-settings-row-label android-settings-row-label--danger'>
+                                        Log Out
+                                    </span>
+                                </span>
+                            </button>
+                        </div>
                     </div>
                 </div>
-            </div>
+                <TwoStepVerification ref={ref => (this.twoStepRef = ref)} />
+            </>
         );
     }
 }

@@ -799,6 +799,10 @@ class GramJsController extends EventEmitter {
                 return this._setChatDraftMessage(req);
             case 'setChatMessageTtl':
                 return this._setChatMessageTtl(req);
+            case 'getTwoStepVerificationStatus':
+                return this._getTwoStepVerificationStatus();
+            case 'setTwoStepVerificationPassword':
+                return this._setTwoStepVerificationPassword(req);
 
             // ── Búsqueda ──────────────────────────────────────────────────────
             case 'searchMessages':
@@ -3228,6 +3232,36 @@ class GramJsController extends EventEmitter {
             }
         } catch (e) {
             console.warn('[GramJs] QR poll error', e);
+        }
+    };
+
+    _getTwoStepVerificationStatus = async () => {
+        try {
+            const pwd = await this.client.invoke(new Api.account.GetPassword());
+            return {
+                '@type': 'twoStepVerificationStatus',
+                has_password: pwd.hasPassword || false,
+                password_hint: pwd.hint || '',
+                has_recovery_email_address: pwd.hasRecovery || false,
+            };
+        } catch (e) {
+            console.error('[GramJs] getTwoStepVerificationStatus error', e);
+            return { '@type': 'twoStepVerificationStatus', has_password: false, password_hint: '' };
+        }
+    };
+
+    _setTwoStepVerificationPassword = async req => {
+        const { current_password, new_password, new_hint } = req;
+        try {
+            await this.client.updateTwoFaSettings({
+                currentPassword: current_password || undefined,
+                newPassword: new_password || '',
+                hint: new_hint || '',
+            });
+            return { '@type': 'ok' };
+        } catch (e) {
+            console.error('[GramJs] setTwoStepVerificationPassword error', e);
+            throw new Error(e.message || 'Error al cambiar la contraseña 2FA');
         }
     };
 
