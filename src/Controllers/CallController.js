@@ -204,6 +204,42 @@ class CallController extends EventEmitter {
         this.callInfo.accessHash = callObj.access_hash;
         const ga = callObj.g_a_or_b;
         if (ga) {
+            // Verificar que SHA-256(g_a) coincide con el g_a_hash recibido en phoneCallRequested (anti-MITM)
+            if (this.callInfo.g_a_hash) {
+                const gaBytes = ga instanceof Uint8Array ? ga : new Uint8Array(ga);
+                const hashBuf = await crypto.subtle.digest('SHA-256', gaBytes);
+                const hashBytes = new Uint8Array(hashBuf);
+                const expected =
+                    this.callInfo.g_a_hash instanceof Uint8Array
+                        ? this.callInfo.g_a_hash
+                        : new Uint8Array(this.callInfo.g_a_hash);
+                let match = hashBytes.length === expected.length;
+                if (match) {
+                    for (let i = 0; i < hashBytes.length; i++) {
+                        if (hashBytes[i] !== expected[i]) {
+                            match = false;
+                            break;
+                        }
+                    }
+                }
+                if (!match) {
+                    console.error('[CallController] g_a_hash mismatch — posible ataque MITM, abortando llamada');
+                    this._cleanup();
+                    this._setState(CallState.ENDED);
+                    setTimeout(() => this._setState(CallState.IDLE), 2000);
+                    import('./TdLibController').then(({ default: TdLib }) => {
+                        TdLib.send({
+                            '@type': 'discardCall',
+                            call_id: this.callInfo && this.callInfo.callId,
+                            is_disconnected: true,
+                            duration: 0,
+                            is_video: false,
+                            connection_id: 0,
+                        }).catch(() => {});
+                    });
+                    return;
+                }
+            }
             await this._finishCalleeDH(ga, callObj); // esperar DH antes de iniciar WebRTC
         }
         this._startWebRTC(callObj);
@@ -347,6 +383,16 @@ class CallController extends EventEmitter {
     async _handleTgCallsData(rawData) {
         if (!this._authKey) {
             this._signalingQueue.push(rawData);
+            // Arrancar timeout solo en el primer mensaje encolado
+            if (!this._signalingQueueTimer) {
+                this._signalingQueueTimer = setTimeout(() => {
+                    if (!this._authKey) {
+                        console.warn('[CallController] signaling queue timeout — _authKey nunca llegó, vaciando cola');
+                        this._signalingQueue = [];
+                    }
+                    this._signalingQueueTimer = null;
+                }, 10000);
+            }
             return;
         }
         const { decodeSignalingMessage, buildRemoteSdp } = await import('../lib/TgCallsSignaling');
@@ -423,7 +469,17 @@ class CallController extends EventEmitter {
                 await this.pc.setLocalDescription(answer);
                 await this._sendLocalSetup(answer.sdp);
             }
-            this._pendingCandidates = [];
+            // Añadir candidatos que llegaron antes de que remoteDescription estuviera listo
+            const pending = this._pendingCandidates.splice(0);
+            for (const c of pending) {
+                try {
+                    await this.pc.addIceCandidate(
+                        new RTCIceCandidate({ candidate: c.sdpString, sdpMid: c.sdpMid || '0' }),
+                    );
+                } catch (e) {
+                    console.warn('[CallController] addIceCandidate (pending) error', e);
+                }
+            }
         } catch (e) {
             console.error('[CallController] setRemoteDescription error', e);
         }
@@ -488,6 +544,10 @@ class CallController extends EventEmitter {
 
     _cleanup() {
         clearInterval(this._durationTimer);
+        if (this._signalingQueueTimer) {
+            clearTimeout(this._signalingQueueTimer);
+            this._signalingQueueTimer = null;
+        }
         if (this._localStream) {
             this._localStream.getTracks().forEach(t => t.stop());
             this._localStream = null;
