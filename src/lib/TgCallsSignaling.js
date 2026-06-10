@@ -45,13 +45,13 @@ async function calcAesKey(authKey, msgKey, isOutgoing) {
 
 async function aesCtrEncrypt(data, key, iv) {
     const cryptoKey = await crypto.subtle.importKey('raw', key, { name: 'AES-CTR' }, false, ['encrypt']);
-    const encrypted = await crypto.subtle.encrypt({ name: 'AES-CTR', counter: iv, length: 64 }, cryptoKey, data);
+    const encrypted = await crypto.subtle.encrypt({ name: 'AES-CTR', counter: iv, length: 128 }, cryptoKey, data);
     return new Uint8Array(encrypted);
 }
 
 async function aesCtrDecrypt(data, key, iv) {
     const cryptoKey = await crypto.subtle.importKey('raw', key, { name: 'AES-CTR' }, false, ['decrypt']);
-    const decrypted = await crypto.subtle.decrypt({ name: 'AES-CTR', counter: iv, length: 64 }, cryptoKey, data);
+    const decrypted = await crypto.subtle.decrypt({ name: 'AES-CTR', counter: iv, length: 128 }, cryptoKey, data);
     return new Uint8Array(decrypted);
 }
 
