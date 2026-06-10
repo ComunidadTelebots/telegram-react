@@ -22,6 +22,7 @@ import DialogDetails from './ColumnMiddle/DialogDetails';
 import Footer from './Footer';
 import InstantViewer from './InstantView/InstantViewer';
 import AmpViewer from './AmpViewer/AmpViewer';
+import MessageThread from './Additional/MessageThread';
 import MediaViewer from './Viewer/MediaViewer';
 import ProfileMediaViewer from './Viewer/ProfileMediaViewer';
 import { borderStyle } from './Theme';
@@ -231,6 +232,7 @@ class MainPage extends React.Component {
                 <NewGroupDialog open={newGroupOpen} onClose={() => this.setState({ newGroupOpen: false })} />
                 <NewChannelDialog open={newChannelOpen} onClose={() => this.setState({ newChannelOpen: false })} />
                 <DesignSwitcher />
+                <MessageThread ref={ref => (window._messageThreadRef = ref)} />
             </>
         );
     }

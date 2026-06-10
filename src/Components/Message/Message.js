@@ -22,6 +22,7 @@ import UnreadSeparator from './UnreadSeparator';
 import WebPage from './Media/WebPage';
 import Reactions from './Reactions';
 import InlineKeyboard from './InlineKeyboard';
+import CommentsButton from './CommentsButton';
 import {
     getEmojiMatches,
     getText,
@@ -701,6 +702,16 @@ class Message extends Component {
                         )}
                         {translationText && <div className='message-translation'>{translationText}</div>}
                         <Reactions chatId={chatId} messageId={messageId} />
+                        {message.interaction_info && message.interaction_info.reply_info != null && (
+                            <CommentsButton
+                                replyCount={message.interaction_info.reply_info.reply_count || 0}
+                                onClick={() => {
+                                    if (window._messageThreadRef) {
+                                        window._messageThreadRef.open(chatId, messageId);
+                                    }
+                                }}
+                            />
+                        )}
                         {message.reply_markup && (
                             <InlineKeyboard chatId={chatId} messageId={messageId} replyMarkup={message.reply_markup} />
                         )}

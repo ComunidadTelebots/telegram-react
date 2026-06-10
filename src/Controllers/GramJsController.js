@@ -924,6 +924,10 @@ class GramJsController extends EventEmitter {
             case 'getCallbackQueryAnswer':
                 return this._getCallbackQueryAnswer(req);
 
+            // ── Comment threads ──────────────────────────────────────────────
+            case 'getMessageThreadHistory':
+                return this._getMessageThreadHistory(req);
+
             default:
                 if (!this.disableLog) console.warn('[GramJs] send no implementado:', type);
                 return {};
@@ -949,6 +953,26 @@ class GramJsController extends EventEmitter {
             show_alert: !!result.alert,
             url: result.url || '',
         };
+    };
+
+    _getMessageThreadHistory = async ({ chat_id, message_id, limit = 50 }) => {
+        const inputPeer = await this._getInputPeer(chat_id);
+        const result = await this.client.invoke(
+            new Api.messages.GetReplies({
+                peer: inputPeer,
+                msgId: message_id,
+                offsetId: 0,
+                offsetDate: 0,
+                addOffset: 0,
+                limit,
+                maxId: 0,
+                minId: 0,
+                hash: BigInt(0),
+            }),
+        );
+        const { translateMessage } = await import('../Utils/GramJs/EntityTranslator');
+        const messages = (result.messages || []).map(m => translateMessage(m, chat_id));
+        return { '@type': 'messages', messages, total_count: result.count || messages.length };
     };
 
     // ─── Auth handlers ───────────────────────────────────────────────────────
