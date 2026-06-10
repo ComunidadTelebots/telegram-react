@@ -603,13 +603,14 @@ function phoneCallUpdate(update) {
     const cls = call.className || call._;
     let phoneCall;
 
+    // Usar String() para id y accessHash — son int64 y Number() pierde precisión
     if (cls === 'PhoneCallRequested' || cls === 'phoneCallRequested') {
         phoneCall = {
             '@type': 'phoneCallRequested',
-            id: Number(call.id),
+            id: String(call.id),
             access_hash: String(call.accessHash),
-            admin_id: Number(call.adminId),
-            participant_id: Number(call.participantId),
+            admin_id: String(call.adminId),
+            participant_id: String(call.participantId),
             g_a_hash: call.gAHash,
             is_video: !!call.video,
             protocol: translateCallProtocol(call.protocol),
@@ -617,20 +618,20 @@ function phoneCallUpdate(update) {
     } else if (cls === 'PhoneCallAccepted' || cls === 'phoneCallAccepted') {
         phoneCall = {
             '@type': 'phoneCallAccepted',
-            id: Number(call.id),
+            id: String(call.id),
             access_hash: String(call.accessHash),
-            admin_id: Number(call.adminId),
-            participant_id: Number(call.participantId),
+            admin_id: String(call.adminId),
+            participant_id: String(call.participantId),
             g_b: call.gB,
             protocol: translateCallProtocol(call.protocol),
         };
     } else if (cls === 'PhoneCall' || cls === 'phoneCall') {
         phoneCall = {
             '@type': 'phoneCall',
-            id: Number(call.id),
+            id: String(call.id),
             access_hash: String(call.accessHash),
-            admin_id: Number(call.adminId),
-            participant_id: Number(call.participantId),
+            admin_id: String(call.adminId),
+            participant_id: String(call.participantId),
             g_a_or_b: call.gAOrB,
             key_fingerprint: call.keyFingerprint,
             connections: call.connections,
@@ -640,13 +641,13 @@ function phoneCallUpdate(update) {
     } else if (cls === 'PhoneCallDiscarded' || cls === 'phoneCallDiscarded') {
         phoneCall = {
             '@type': 'phoneCallDiscarded',
-            id: Number(call.id),
+            id: String(call.id),
             reason: call.reason ? call.reason.className || call.reason._ || 'hangup' : 'hangup',
         };
     } else if (cls === 'PhoneCallWaiting' || cls === 'phoneCallWaiting') {
         phoneCall = {
             '@type': 'phoneCallWaiting',
-            id: Number(call.id),
+            id: String(call.id),
             access_hash: String(call.accessHash),
         };
     } else {

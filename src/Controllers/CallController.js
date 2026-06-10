@@ -175,9 +175,9 @@ class CallController extends EventEmitter {
             return;
         }
         this.callInfo = {
-            callId: Number(callObj.id),
+            callId: String(callObj.id), // String para preservar precisión int64
             accessHash: String(callObj.access_hash),
-            userId: Number(callObj.admin_id),
+            userId: String(callObj.admin_id),
             isVideo: !!(callObj.video || callObj.is_video),
             g_a_hash: callObj.g_a_hash,
             dhConfig: null,

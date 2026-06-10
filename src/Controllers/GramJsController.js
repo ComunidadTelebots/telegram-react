@@ -3706,9 +3706,9 @@ class GramJsController extends EventEmitter {
         const call = result.phoneCall;
         const { default: cc } = await import('./CallController');
         cc.callInfo = {
-            callId: Number(call.id),
+            callId: String(call.id), // String para preservar precisión int64
             accessHash: String(call.accessHash),
-            userId: user_id,
+            userId: String(user_id),
             isVideo: !!is_video,
         };
         cc._setState('waiting');
