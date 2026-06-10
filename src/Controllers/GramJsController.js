@@ -3514,6 +3514,76 @@ class GramJsController extends EventEmitter {
         return {};
     };
 
+    _bytesToBase64Url = bytes => {
+        let binary = '';
+        const chunkSize = 0x8000;
+        for (let i = 0; i < bytes.length; i += chunkSize) {
+            binary += String.fromCharCode(...bytes.slice(i, i + chunkSize));
+        }
+        return btoa(binary)
+            .replace(/\+/g, '-')
+            .replace(/\//g, '_')
+            .replace(/=+$/, '');
+    };
+
+    _emitAuthError = err => {
+        const message = err?.errorMessage || err?.message || String(err);
+        this.emit('tdlib_auth_error', {
+            '@type': 'error',
+            code: err?.code || 400,
+            message,
+        });
+    };
+
+    _emitQrLoginToken = result => {
+        const tokenBase64 = this._bytesToBase64Url(result.token);
+        const link = `tg://login?token=${tokenBase64}`;
+        this._emitUpdate({
+            '@type': 'updateAuthorizationState',
+            authorization_state: {
+                '@type': 'authorizationStateWaitQrCode',
+                other_user_ids: [],
+                link,
+            },
+        });
+    };
+
+    _handleQrLoginResult = async result => {
+        if (result instanceof Api.auth.LoginToken) {
+            this._emitQrLoginToken(result);
+            this._pollQrToken(result.expires);
+            return;
+        }
+
+        if (result instanceof Api.auth.LoginTokenMigrateTo) {
+            try {
+                await this.client.disconnect();
+            } catch (_) {}
+
+            this.client = new TelegramClient(
+                new StringSession(''),
+                this.apiId,
+                this.apiHash,
+                this._buildClientOptions(result.dcId),
+            );
+            if (this.client.setLogLevel) this.client.setLogLevel('error');
+            this._setupUpdateHandler();
+            await this.client.connect();
+
+            const migratedResult = await this.client.invoke(
+                new Api.auth.ImportLoginToken({
+                    token: result.token,
+                }),
+            );
+            await this._handleQrLoginResult(migratedResult);
+            return;
+        }
+
+        if (result instanceof Api.auth.LoginTokenSuccess) {
+            await this._onAuthorized();
+        }
+    };
+
     _requestQrCodeAuthentication = async req => {
         try {
             const result = await this.client.invoke(
@@ -3523,25 +3593,10 @@ class GramJsController extends EventEmitter {
                     exceptIds: [],
                 }),
             );
-            if (result instanceof Api.auth.LoginToken) {
-                const tokenBase64 = Buffer.from(result.token)
-                    .toString('base64')
-                    .replace(/\+/g, '-')
-                    .replace(/\//g, '_')
-                    .replace(/=+$/, '');
-                const link = `tg://login?token=${tokenBase64}`;
-                this._emitUpdate({
-                    '@type': 'updateAuthorizationState',
-                    authorization_state: {
-                        '@type': 'authorizationStateWaitQrCode',
-                        other_user_ids: [],
-                        link,
-                    },
-                });
-                this._pollQrToken(result.expires);
-            }
+            await this._handleQrLoginResult(result);
         } catch (e) {
             console.error('[GramJs] requestQrCodeAuthentication error', e);
+            this._emitAuthError(e);
         }
         return {};
     };
@@ -3557,31 +3612,10 @@ class GramJsController extends EventEmitter {
                     exceptIds: [],
                 }),
             );
-            if (result instanceof Api.auth.LoginToken) {
-                const tokenBase64 = Buffer.from(result.token)
-                    .toString('base64')
-                    .replace(/\+/g, '-')
-                    .replace(/\//g, '_')
-                    .replace(/=+$/, '');
-                const link = `tg://login?token=${tokenBase64}`;
-                this._emitUpdate({
-                    '@type': 'updateAuthorizationState',
-                    authorization_state: {
-                        '@type': 'authorizationStateWaitQrCode',
-                        other_user_ids: [],
-                        link,
-                    },
-                });
-                this._pollQrToken(result.expires);
-            } else if (result instanceof Api.auth.LoginTokenSuccess) {
-                this._emitUpdate({
-                    '@type': 'updateAuthorizationState',
-                    authorization_state: { '@type': 'authorizationStateReady' },
-                });
-                await this._loadInitialData();
-            }
+            await this._handleQrLoginResult(result);
         } catch (e) {
             console.warn('[GramJs] QR poll error', e);
+            this._emitAuthError(e);
         }
     };
 
