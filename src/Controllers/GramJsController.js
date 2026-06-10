@@ -3547,6 +3547,20 @@ class GramJsController extends EventEmitter {
         return message.includes('AUTH_TOKEN_EXPIRED');
     };
 
+    _waitForClientConnection = async () => {
+        for (let attempt = 0; attempt < 40; attempt++) {
+            if (this.client?.connected) return true;
+            await new Promise(resolve => setTimeout(resolve, 250));
+        }
+
+        if (this.client && !this.client.connected) {
+            await this.client.connect();
+            return true;
+        }
+
+        return false;
+    };
+
     _emitQrLoginToken = result => {
         const tokenBase64 = this._bytesToBase64Url(result.token);
         const link = `tg://login?token=${tokenBase64}`;
@@ -3604,6 +3618,7 @@ class GramJsController extends EventEmitter {
         this._qrPollGeneration += 1;
 
         try {
+            if (!(await this._waitForClientConnection())) throw new Error('CLIENT_NOT_CONNECTED');
             const result = await this.client.invoke(
                 new Api.auth.ExportLoginToken({
                     apiId: this.apiId,
@@ -3627,6 +3642,7 @@ class GramJsController extends EventEmitter {
     _requestQrCodeAuthentication = async req => {
         this._qrPollGeneration += 1;
         try {
+            if (!(await this._waitForClientConnection())) throw new Error('CLIENT_NOT_CONNECTED');
             const result = await this.client.invoke(
                 new Api.auth.ExportLoginToken({
                     apiId: this.apiId,
@@ -3651,6 +3667,7 @@ class GramJsController extends EventEmitter {
         await new Promise(r => setTimeout(r, Math.min(waitMs, 20000)));
         if (generation !== this._qrPollGeneration) return;
         try {
+            if (!(await this._waitForClientConnection())) throw new Error('CLIENT_NOT_CONNECTED');
             const result = await this.client.invoke(
                 new Api.auth.ExportLoginToken({
                     apiId: this.apiId,

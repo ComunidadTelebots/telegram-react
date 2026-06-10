@@ -23,10 +23,17 @@ class QrCode extends React.Component {
     }
 
     componentDidMount() {
-        TdLibController.send({ '@type': 'requestQrCodeAuthentication', other_user_ids: [] });
+        this.renderQrCode();
+        if (!this.props.authorizationState?.link) {
+            TdLibController.send({ '@type': 'requestQrCodeAuthentication', other_user_ids: [] });
+        }
     }
 
     componentDidUpdate(prevProps) {
+        this.renderQrCode();
+    }
+
+    renderQrCode = () => {
         const { authorizationState } = this.props;
         if (!authorizationState) return;
 
@@ -40,7 +47,7 @@ class QrCode extends React.Component {
                 }
             });
         }
-    }
+    };
 
     handleUsePhone = () => {
         const { onChangePhone } = this.props;
