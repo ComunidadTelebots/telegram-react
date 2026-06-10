@@ -3524,7 +3524,11 @@ class GramJsController extends EventEmitter {
                 }),
             );
             if (result instanceof Api.auth.LoginToken) {
-                const tokenBase64 = Buffer.from(result.token).toString('base64url');
+                const tokenBase64 = Buffer.from(result.token)
+                    .toString('base64')
+                    .replace(/\+/g, '-')
+                    .replace(/\//g, '_')
+                    .replace(/=+$/, '');
                 const link = `tg://login?token=${tokenBase64}`;
                 this._emitUpdate({
                     '@type': 'updateAuthorizationState',
@@ -3554,7 +3558,11 @@ class GramJsController extends EventEmitter {
                 }),
             );
             if (result instanceof Api.auth.LoginToken) {
-                const tokenBase64 = Buffer.from(result.token).toString('base64url');
+                const tokenBase64 = Buffer.from(result.token)
+                    .toString('base64')
+                    .replace(/\+/g, '-')
+                    .replace(/\//g, '_')
+                    .replace(/=+$/, '');
                 const link = `tg://login?token=${tokenBase64}`;
                 this._emitUpdate({
                     '@type': 'updateAuthorizationState',
