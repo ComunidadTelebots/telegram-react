@@ -1,5 +1,14 @@
 # Changelog
 
+## [2026-06-12] (sesión 22) — `1e3719a5`
+
+### Added — compositor y mensajes
+- **Botón de velocidad en notas de voz** — nuevo componente `VoiceNoteSpeedButton` dentro de `VoiceNote.js` que cicla entre 1×, 1.5× y 2× al hacer clic. Despacha `clientUpdateMediaPlaybackRate` para que el `PlayerStore` y el reproductor recojan el cambio en tiempo real. Archivos: `src/Components/Message/Media/VoiceNote.{js,css}`.
+- **Toggle de previsualización de enlace** — botón 🔗 en la barra inferior del compositor que activa/desactiva la previsualización del enlace detectado. Cuando está desactivado el icono aparece en rojo. Pasa `disable_web_page_preview` al `GramJsController` que lo convierte en `noWebpage: true` en la llamada GramJS. Archivos: `InputBoxControl.js`, `GramJsController.js`.
+- **Modal "¿Quién reaccionó?"** — nuevo componente `ReactorsModal.js` (Dialog de MUI) que llama a `Api.messages.GetMessageReactionsList` y muestra la lista de usuarios con avatar, nombre y emoji de reacción. Se abre haciendo **clic derecho** sobre cualquier burbuja de reacción en un mensaje. Archivos: `src/Components/Message/ReactorsModal.{js,css}`, `Reactions.js`, `GramJsController.js`.
+
+---
+
 ## [2026-06-12] (sesión 21)
 
 ### Added — inspirado en Telegram Web A
