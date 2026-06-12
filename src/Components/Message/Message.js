@@ -51,6 +51,7 @@ import {
 } from '../../Actions/Client';
 import MessageStore from '../../Stores/MessageStore';
 import TdLibController from '../../Controllers/TdLibController';
+import { saveMedia } from '../../Utils/File';
 import './Message.css';
 import Popover from '@material-ui/core/Popover';
 import Snackbar from '@material-ui/core/Snackbar';
@@ -603,6 +604,36 @@ class Message extends Component {
         }
     };
 
+    handleDownloadMedia = event => {
+        const { chatId, messageId } = this.props;
+        const message = MessageStore.get(chatId, messageId);
+        this.handleCloseContextMenu(event);
+        if (!message) return;
+        const content = message.content;
+        if (!content) return;
+        const mediaTypes = [
+            'messageDocument',
+            'messagePhoto',
+            'messageVideo',
+            'messageAnimation',
+            'messageAudio',
+            'messageVoiceNote',
+            'messageVideoNote',
+        ];
+        if (!mediaTypes.includes(content['@type'])) return;
+        const mediaKey = content['@type'].replace('message', '').toLowerCase();
+        const media =
+            content[mediaKey] ||
+            content.document ||
+            content.photo ||
+            content.video ||
+            content.animation ||
+            content.audio ||
+            content.voice_note ||
+            content.video_note;
+        if (media) saveMedia(media, message);
+    };
+
     handleBlockUser = async event => {
         const { chatId, messageId } = this.props;
         const message = MessageStore.get(chatId, messageId);
@@ -787,6 +818,16 @@ class Message extends Component {
         const canBanUser = isAdmin && !message.is_outgoing && !!senderUserId && isGroupChat(chatId);
         const canDeleteAllFromUser = canBanUser;
         const canViewInfo = message.is_outgoing && isGroupChat(chatId);
+        const downloadableTypes = [
+            'messageDocument',
+            'messagePhoto',
+            'messageVideo',
+            'messageAnimation',
+            'messageAudio',
+            'messageVoiceNote',
+            'messageVideoNote',
+        ];
+        const canDownload = downloadableTypes.includes(contentType);
         const firstUrl = (() => {
             const entities = message.content?.text?.entities || message.content?.caption?.entities || [];
             const urlEntity = entities.find(e => e.type?.['@type'] === 'textEntityTypeUrl');
@@ -912,6 +953,7 @@ class Message extends Component {
                             <MenuItem onClick={this.handleDeleteAllFromUser}>Eliminar todos sus mensajes</MenuItem>
                         )}
                         {canViewInfo && <MenuItem onClick={this.handleViewMessageInfo}>Info del mensaje</MenuItem>}
+                        {canDownload && <MenuItem onClick={this.handleDownloadMedia}>Descargar</MenuItem>}
                         {canShowInChat && <MenuItem onClick={this.handleShowInChat}>{t('ShowInChat')}</MenuItem>}
                         {canBeSaved && (
                             <MenuItem onClick={this.handleSaveToSavedMessages}>Guardar en Mensajes Guardados</MenuItem>
