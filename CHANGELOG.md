@@ -1,5 +1,14 @@
 # Changelog
 
+## [2026-06-12] (sesión 24) — `c9bf1bf5`
+
+### Added
+- **GifPicker (Giphy)** — botón GIF en la barra izquierda del compositor. Abre un panel con GIFs en tendencia y búsqueda en tiempo real (debounce 350 ms). Click en un GIF lo envía como animación vía `InputMediaDocumentExternal`. Powered by Giphy API. Archivos: `GifPicker.{js,css}`, `InputBoxControl.js`, `GramJsController._sendGifByUrl`.
+- **Búsqueda de mensajes en el chat** — barra `ChatSearch` que aparece bajo el header al pulsar 🔍. Muestra contador `N/Total`, navegación ▲▼ entre resultados. Usa `searchChatMessages` de TDLib. Archivos: `ChatSearch.{js,css}`, `Header.js`.
+- **Temporizador de auto-borrado por chat** — botón ⏱ en el header abre un diálogo con opciones: Off / 1 día / 1 semana / 1 mes / 3 meses. Aplica el TTL vía `messages.SetHistoryTTL` de GramJS. Archivos: `AutoDeleteTimer.{js,css}`, `Header.js`, `GramJsController._setChatMessageAutoDeleteTime`.
+
+---
+
 ## [2026-06-12] (sesión 23) — `f966bbc2`
 
 ### Added
