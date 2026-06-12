@@ -789,6 +789,8 @@ class GramJsController extends EventEmitter {
                 return this._getChat(req);
             case 'searchPublicChat':
                 return this._searchPublicChat(req);
+            case 'openTelegramLink':
+                return this._openTelegramLink(req);
             case 'createPrivateChat':
                 return this._createPrivateChat(req);
             case 'getContacts':
@@ -1662,6 +1664,124 @@ class GramJsController extends EventEmitter {
             /* no-op */
         }
         return null;
+    };
+
+    _openTelegramLink = async req => {
+        const parsed = this._parseTelegramLink(req && req.url);
+        if (!parsed) return null;
+
+        try {
+            if (parsed.type === 'invite') {
+                return this._importChatInvite(parsed.hash);
+            }
+
+            if (parsed.type === 'username') {
+                const chat = await this._searchPublicChat({ username: parsed.username });
+                if (chat) return chat;
+            }
+        } catch (e) {
+            console.warn('[GramJs] openTelegramLink error', e);
+            throw e;
+        }
+
+        return null;
+    };
+
+    _parseTelegramLink = value => {
+        if (!value) return null;
+
+        let url = String(value).trim();
+        if (!url) return null;
+
+        if (/^tg:\/\//i.test(url)) {
+            const queryStart = url.indexOf('?');
+            const query = new URLSearchParams(queryStart >= 0 ? url.slice(queryStart + 1) : '');
+            const domain = (query.get('domain') || '').replace(/^@/, '');
+            const invite = query.get('invite');
+            const join = query.get('join');
+
+            if (invite || join) return { type: 'invite', hash: invite || join };
+            if (domain) return { type: 'username', username: domain };
+            return null;
+        }
+
+        if (!/^https?:\/\//i.test(url)) {
+            url = `https://${url}`;
+        }
+
+        try {
+            const parsed = new URL(url);
+            const host = parsed.hostname.toLowerCase();
+            if (!['t.me', 'telegram.me', 'telegram.dog'].includes(host)) return null;
+
+            const parts = parsed.pathname
+                .split('/')
+                .map(x => decodeURIComponent(x))
+                .filter(Boolean);
+            const first = parts[0] || '';
+
+            if (!first) return null;
+            if (first === '+' && parts[1]) return { type: 'invite', hash: parts[1] };
+            if (first.charAt(0) === '+') return { type: 'invite', hash: first.slice(1) };
+            if (first.toLowerCase() === 'joinchat' && parts[1]) return { type: 'invite', hash: parts[1] };
+            if (first.toLowerCase() === 'c') return null;
+
+            return { type: 'username', username: first.replace(/^@/, '') };
+        } catch (e) {
+            return null;
+        }
+    };
+
+    _importChatInvite = async hash => {
+        if (!hash) return null;
+
+        try {
+            const result = await this.client.invoke(new Api.messages.ImportChatInvite({ hash }));
+            const chat = this._upsertChatsFromUpdates(result);
+            if (chat) return chat;
+        } catch (e) {
+            if (!/USER_ALREADY_PARTICIPANT/i.test(e.message || '')) {
+                console.warn('[GramJs] importChatInvite error', e);
+                throw e;
+            }
+        }
+
+        const checked = await this.client.invoke(new Api.messages.CheckChatInvite({ hash }));
+        const chat = checked && checked.chat ? checked.chat : null;
+        if (!chat) return null;
+
+        this._cacheEntity(chat);
+        const tdChat = translateChat(chat, null);
+        if (tdChat) {
+            this._chatCache.set(tdChat.id, tdChat);
+            this._emitUpdate({ '@type': 'updateNewChat', chat: tdChat });
+        }
+        return tdChat;
+    };
+
+    _upsertChatsFromUpdates = result => {
+        let firstChat = null;
+
+        for (const user of result?.users || []) {
+            const tdUser = translateUser(user);
+            if (tdUser) {
+                this._userCache.set(tdUser.id, tdUser);
+                this._emitUpdate({ '@type': 'updateUser', user: tdUser });
+            }
+            this._cacheEntity(user);
+        }
+
+        for (const chatEntity of result?.chats || []) {
+            this._cacheEntity(chatEntity);
+            const tdChat = translateChat(chatEntity, null);
+            if (!tdChat) continue;
+
+            this._chatCache.set(tdChat.id, tdChat);
+            this._emitUpdate({ '@type': 'updateNewChat', chat: tdChat });
+            if (!firstChat) firstChat = tdChat;
+        }
+
+        return firstChat;
     };
 
     _createPrivateChat = async req => {
