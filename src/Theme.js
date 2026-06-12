@@ -95,6 +95,7 @@ const DESIGN_MUI = {
     'android-classic': { radius: 4, accent: '#527DA3', font: "'Roboto', 'Noto Sans', sans-serif", type: null },
     'android-redesign': { radius: 16, accent: '#229AF0', font: "'Roboto', 'Noto Sans', sans-serif", type: null },
     'android-glass': { radius: 18, accent: '#28C9B7', font: "'Roboto', 'Noto Sans', sans-serif", type: null },
+    webogram: { radius: 3, accent: '#5682A3', font: "'Helvetica Neue', Arial, sans-serif", type: null },
     ios: { radius: 16, accent: '#007AFF', font: "-apple-system, 'Helvetica Neue', sans-serif", type: null },
     macos: { radius: 10, accent: '#248BF2', font: "-apple-system, 'Helvetica Neue', sans-serif", type: null },
     tdesktop: { radius: 4, accent: '#40A7E3', font: "'Segoe UI', system-ui, sans-serif", type: null },

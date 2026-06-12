@@ -246,6 +246,20 @@ class ThemePicker extends React.Component {
                 },
             },
             {
+                value: 'webogram',
+                label: 'Webogram',
+                preview: {
+                    sidebar: '#ffffff',
+                    chatBg: '#e7ebf0',
+                    bubble: '#dcf8c6',
+                    bubbleTextOut: '#202020',
+                    bubbleIn: '#ffffff',
+                    radius: '3px',
+                    radiusOut: '3px',
+                    font: 'Helvetica Neue',
+                },
+            },
+            {
                 value: 'macos',
                 label: 'macOS',
                 preview: {
