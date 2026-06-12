@@ -65,8 +65,69 @@ const styles = theme => ({
 });
 
 class VoiceNote extends React.Component {
+    constructor(props) {
+        super(props);
+
+        this.state = {
+            transcribing: false,
+            transcription: '',
+            transcriptionError: '',
+        };
+    }
+
+    componentDidMount() {
+        TdLibController.addListener('update', this.onUpdate);
+    }
+
+    componentWillUnmount() {
+        TdLibController.off('update', this.onUpdate);
+    }
+
+    onUpdate = update => {
+        const { chatId, messageId } = this.props;
+        if (!update || update['@type'] !== 'updateTranscribedAudio') return;
+        if (update.chat_id !== chatId || update.message_id !== messageId) return;
+        if (update.pending) {
+            this.setState({ transcribing: true, transcriptionError: '' });
+            return;
+        }
+
+        this.setState({
+            transcribing: false,
+            transcription: update.text || '',
+            transcriptionError: '',
+        });
+    };
+
+    handleTranscribe = async event => {
+        event.stopPropagation();
+
+        const { chatId, messageId } = this.props;
+        this.setState({ transcribing: true, transcriptionError: '' });
+
+        try {
+            const result = await TdLibController.send({
+                '@type': 'transcribeAudio',
+                chat_id: chatId,
+                message_id: messageId,
+            });
+
+            this.setState({
+                transcribing: !!result.pending,
+                transcription: result.text || '',
+                transcriptionError: '',
+            });
+        } catch (error) {
+            this.setState({
+                transcribing: false,
+                transcriptionError: error.message || 'Transcription failed',
+            });
+        }
+    };
+
     render() {
         const { chatId, messageId, voiceNote, openMedia, classes } = this.props;
+        const { transcribing, transcription, transcriptionError } = this.state;
         if (!voiceNote) return null;
 
         const { duration, voice: file, waveform } = voiceNote;
@@ -86,7 +147,22 @@ class VoiceNote extends React.Component {
                         <AudioAction chatId={chatId} messageId={messageId} duration={duration} file={file} />
                         <MediaStatus chatId={chatId} messageId={messageId} icon={' •'} />
                         <VoiceNoteSpeedButton />
+                        <button
+                            className='voice-transcribe-btn'
+                            onClick={this.handleTranscribe}
+                            disabled={transcribing}
+                            title='Transcribe voice message'>
+                            {transcribing ? '...' : 'TXT'}
+                        </button>
                     </div>
+                    {(transcription || transcriptionError) && (
+                        <div
+                            className={classNames('voice-transcription', {
+                                'voice-transcription-error': transcriptionError,
+                            })}>
+                            {transcriptionError || transcription}
+                        </div>
+                    )}
                 </div>
             </div>
         );

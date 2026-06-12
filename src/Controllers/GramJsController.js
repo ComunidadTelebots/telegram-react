@@ -837,6 +837,8 @@ class GramJsController extends EventEmitter {
                 return this._unpinChatMessage(req);
             case 'translateText':
                 return this._translateText(req);
+            case 'transcribeAudio':
+                return this._transcribeAudio(req);
 
             // ── Usuarios ──────────────────────────────────────────────────────
             case 'getUser':
@@ -2964,6 +2966,33 @@ class GramJsController extends EventEmitter {
     // ─── File handlers ───────────────────────────────────────────────────────
 
     // ─── Sticker APIs ────────────────────────────────────────────────────────
+
+    _transcribeAudio = async req => {
+        const { chat_id, message_id } = req;
+        try {
+            const inputPeer = tdlibChatIdToInputPeer(chat_id, this._entityCache);
+            const result = await this.client.invoke(
+                new Api.messages.TranscribeAudio({
+                    peer: inputPeer,
+                    msgId: message_id,
+                }),
+            );
+
+            return {
+                '@type': 'transcribedAudio',
+                chat_id,
+                message_id,
+                pending: !!result.pending,
+                transcription_id: result.transcriptionId ? String(result.transcriptionId) : '',
+                text: result.text || '',
+                trial_remains_num: result.trialRemainsNum || 0,
+                trial_remains_until_date: result.trialRemainsUntilDate || 0,
+            };
+        } catch (e) {
+            console.error('[GramJs] transcribeAudio error', e);
+            throw e;
+        }
+    };
 
     _getInstalledStickerSets = async req => {
         try {
