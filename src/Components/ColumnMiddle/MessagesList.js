@@ -11,6 +11,7 @@ import classNames from 'classnames';
 import withStyles from '@material-ui/core/styles/withStyles';
 import DayMeta from '../Message/DayMeta';
 import FilesDropTarget from './FilesDropTarget';
+import Album from '../Message/Album';
 import Message from '../Message/Message';
 import PinnedMessage from './PinnedMessage';
 import Placeholder from './Placeholder';
@@ -1290,9 +1291,48 @@ class MessagesList extends React.Component {
         const uniqueHistory = history.filter(
             (x, i, arr) => arr.findIndex(m => m.id === x.id && m.chat_id === x.chat_id) === i,
         );
+
+        // Group consecutive messages sharing the same media_album_id into album buckets.
+        // Each bucket is either { album: true, albumId, messages: [...] } or { album: false, message }.
+        const buckets = [];
+        for (let i = 0; i < uniqueHistory.length; i++) {
+            const x = uniqueHistory[i];
+            const albumId = x.media_album_id && x.media_album_id !== '0' ? x.media_album_id : null;
+            if (albumId && !isServiceMessage(x)) {
+                const last = buckets[buckets.length - 1];
+                if (last && last.album && last.albumId === albumId) {
+                    last.messages.push(x);
+                } else {
+                    buckets.push({ album: true, albumId, messages: [x] });
+                }
+            } else {
+                buckets.push({ album: false, message: x });
+            }
+        }
+
         this.messages = clearHistory
             ? null
-            : uniqueHistory.map((x, i) => {
+            : buckets.map((bucket, bi) => {
+                  if (bucket.album) {
+                      const firstMsg = bucket.messages[0];
+                      const origIndex = uniqueHistory.indexOf(firstMsg);
+                      const prevMessage = origIndex > 0 ? uniqueHistory[origIndex - 1] : null;
+                      const showDate = this.showMessageDate(firstMsg, prevMessage, origIndex === 0);
+                      const showUnread = bucket.messages.some(m => separatorMessageId === m.id);
+                      return (
+                          <div key={`album_${bucket.albumId}`}>
+                              {showDate && <DayMeta date={firstMsg.date} />}
+                              <Album
+                                  chatId={firstMsg.chat_id}
+                                  messageIds={bucket.messages.map(m => m.id)}
+                                  showUnreadSeparator={showUnread}
+                              />
+                          </div>
+                      );
+                  }
+
+                  const x = bucket.message;
+                  const i = uniqueHistory.indexOf(x);
                   const prevMessage = i > 0 ? uniqueHistory[i - 1] : null;
                   const nextMessage = i < uniqueHistory.length - 1 ? uniqueHistory[i + 1] : null;
 
@@ -1303,7 +1343,7 @@ class MessagesList extends React.Component {
                       m = (
                           <ServiceMessage
                               key={`chat_id=${x.chat_id} message_id=${x.id}`}
-                              ref={el => this.itemsMap.set(i, el)}
+                              ref={el => this.itemsMap.set(bi, el)}
                               chatId={x.chat_id}
                               messageId={x.id}
                               showUnreadSeparator={separatorMessageId === x.id}
@@ -1319,7 +1359,7 @@ class MessagesList extends React.Component {
                       m = (
                           <Message
                               key={`chat_id=${x.chat_id} message_id=${x.id}`}
-                              ref={el => this.itemsMap.set(i, el)}
+                              ref={el => this.itemsMap.set(bi, el)}
                               chatId={x.chat_id}
                               messageId={x.id}
                               sendingState={x.sending_state}
