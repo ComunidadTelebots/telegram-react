@@ -1,5 +1,14 @@
 # Changelog
 
+## [2026-06-12] (sesión 23) — `f966bbc2`
+
+### Added
+- **"Visto por" en grupos** — mensajes salientes en grupos muestran los avatares de los usuarios que ya leyeron el mensaje (máx. 3 en línea + contador). Clic abre un modal con la lista completa de nombres. Usa `Api.messages.GetMessageReadParticipants` en GramJS. Archivos: `src/Components/Message/SeenBy.{js,css}`, `Message.js`, `GramJsController.js`.
+- **Diálogo de atajos de teclado** — nuevo `KeyboardShortcutsDialog` con tabla visual de todos los atajos (navegación, mensajes, formato). Se activa pulsando `?` cuando el foco no está en un campo de texto. Disponible globalmente vía `MainMenuButton`. Archivos: `src/Components/Additional/KeyboardShortcutsDialog.{js,css}`, `MainMenuButton.js`.
+- **Selector de idioma para traducción** — al pulsar "Traducir mensaje" en el menú contextual, aparece ahora un sub-menú con 10 idiomas (🇪🇸 ES · 🇬🇧 EN · 🇫🇷 FR · 🇩🇪 DE · 🇵🇹 PT · 🇮🇹 IT · 🇷🇺 RU · 🇨🇳 ZH · 🇯🇵 JA · 🇸🇦 AR) en lugar de traducir siempre a inglés. Archivo: `Message.js`.
+
+---
+
 ## [2026-06-12] (sesión 22) — `1e3719a5`
 
 ### Added — compositor y mensajes
