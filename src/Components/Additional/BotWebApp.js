@@ -29,8 +29,14 @@ class BotWebApp extends Component {
             title: '',
             loading: true,
             mainButton: null,
+            secondaryButton: null,
+            backButtonVisible: false,
             backgroundColor: null,
+            headerColor: null,
             expanded: false,
+            confirmClose: false,
+            popup: null,
+            headerColorKey: null,
         };
         this.iframeRef = React.createRef();
         this._chatId = null;
@@ -48,22 +54,30 @@ class BotWebApp extends Component {
             title,
             loading: true,
             mainButton: null,
+            secondaryButton: null,
+            backButtonVisible: false,
             backgroundColor: null,
+            headerColor: null,
             expanded: false,
+            confirmClose: false,
+            popup: null,
+            headerColorKey: null,
         });
     }
 
-    close = () => {
-        this.setState({ open: false, url: '', mainButton: null });
+    close = (force = false) => {
+        const { confirmClose } = this.state;
+        if (!force && confirmClose) {
+            if (!window.confirm('¿Cerrar la aplicación?')) return;
+        }
+        this.setState({ open: false, url: '', mainButton: null, secondaryButton: null, popup: null });
         this._queryId = null;
     };
 
     handleLoad = () => {
         this.setState({ loading: false });
         this._sendToFrame({ eventType: 'theme_changed', eventData: { theme_params: getThemeParams() } });
-        const panel = document.querySelector('.bot-webapp-panel');
-        const h = panel ? panel.clientHeight - 52 : window.innerHeight - 52;
-        this._sendToFrame({ eventType: 'viewport_changed', eventData: { height: h, is_state_stable: true } });
+        this._notifyViewport(true);
     };
 
     _sendToFrame(msg) {
@@ -77,10 +91,22 @@ class BotWebApp extends Component {
 
     componentDidMount() {
         window.addEventListener('message', this._handleMessage);
+        if (typeof ResizeObserver !== 'undefined') {
+            this._resizeObserver = new ResizeObserver(() => this._notifyViewport(false));
+            const panel = document.querySelector('.bot-webapp-panel');
+            if (panel) this._resizeObserver.observe(panel);
+        }
     }
 
     componentWillUnmount() {
         window.removeEventListener('message', this._handleMessage);
+        if (this._resizeObserver) this._resizeObserver.disconnect();
+    }
+
+    _notifyViewport(stable = true) {
+        const panel = document.querySelector('.bot-webapp-panel');
+        const h = panel ? panel.clientHeight - 52 : window.innerHeight - 52;
+        this._sendToFrame({ eventType: 'viewport_changed', eventData: { height: h, is_state_stable: stable } });
     }
 
     _handleMessage = e => {
@@ -108,14 +134,7 @@ class BotWebApp extends Component {
                 this._sendToFrame({ eventType: 'theme_changed', eventData: { theme_params: getThemeParams() } });
                 break;
             case 'web_app_request_viewport':
-                {
-                    const panel = document.querySelector('.bot-webapp-panel');
-                    const h = panel ? panel.clientHeight - 52 : window.innerHeight - 52;
-                    this._sendToFrame({
-                        eventType: 'viewport_changed',
-                        eventData: { height: h, is_state_stable: true },
-                    });
-                }
+                this._notifyViewport(true);
                 break;
             case 'web_app_open_link':
                 if (eventData.url) window.open(eventData.url, '_blank', 'noopener,noreferrer');
@@ -127,12 +146,60 @@ class BotWebApp extends Component {
             case 'web_app_setup_main_button':
                 this.setState({ mainButton: { ...eventData } });
                 break;
+            case 'web_app_setup_secondary_button':
+                this.setState({ secondaryButton: { ...eventData } });
+                break;
             case 'web_app_setup_back_button':
+                this.setState({ backButtonVisible: !!eventData.is_visible });
                 break;
             case 'web_app_set_background_color':
                 this.setState({ backgroundColor: eventData.color || null });
                 break;
             case 'web_app_set_header_color':
+                this.setState({ headerColor: eventData.color || null, headerColorKey: eventData.color_key || null });
+                break;
+            case 'web_app_set_bottom_bar_color':
+                break;
+            case 'web_app_setup_closing_behavior':
+                this.setState({ confirmClose: !!eventData.need_confirmation });
+                break;
+            case 'web_app_open_popup': {
+                const { title: popupTitle, message, buttons } = eventData;
+                const btns = Array.isArray(buttons) && buttons.length > 0 ? buttons : [{ id: 'ok', type: 'ok' }];
+                const popupId = `popup_${Date.now()}`;
+                this.setState({ popup: { id: popupId, title: popupTitle, message, buttons: btns } });
+                break;
+            }
+            case 'web_app_close_scan_qr_popup':
+                this._sendToFrame({ eventType: 'scan_qr_popup_closed', eventData: {} });
+                break;
+            case 'web_app_open_scan_qr_popup':
+                this._sendToFrame({ eventType: 'qr_text_received', eventData: { data: '' } });
+                break;
+            case 'web_app_request_write_access':
+                this._sendToFrame({ eventType: 'write_access_requested', eventData: { status: 'allowed' } });
+                break;
+            case 'web_app_request_phone':
+                this._sendToFrame({ eventType: 'phone_requested', eventData: { status: 'sent' } });
+                break;
+            case 'web_app_switch_inline_query':
+                if (eventData.query) {
+                    this.close(true);
+                }
+                break;
+            case 'web_app_invoke_custom_method':
+                this._sendToFrame({
+                    eventType: 'custom_method_invoked',
+                    eventData: { req_id: eventData.req_id, result: null, error: 'Not supported' },
+                });
+                break;
+            case 'web_app_share_to_story':
+                break;
+            case 'web_app_biometry_get_info':
+                this._sendToFrame({
+                    eventType: 'biometry_info_received',
+                    eventData: { available: false },
+                });
                 break;
             case 'web_app_data_send':
                 if (this._chatId && eventData.data) {
@@ -174,21 +241,63 @@ class BotWebApp extends Component {
         this._sendToFrame({ eventType: 'main_button_pressed' });
     };
 
+    handleSecondaryButtonClick = () => {
+        this._sendToFrame({ eventType: 'secondary_button_pressed' });
+    };
+
+    handleBackButtonClick = () => {
+        this._sendToFrame({ eventType: 'back_button_pressed' });
+    };
+
     handleOpenExternal = () => {
         window.open(this.state.url, '_blank', 'noopener,noreferrer');
     };
 
+    handlePopupButton = buttonId => {
+        this._sendToFrame({ eventType: 'popup_closed', eventData: { button_id: buttonId } });
+        this.setState({ popup: null });
+    };
+
+    _getPopupButtonLabel(btn) {
+        if (btn.text) return btn.text;
+        switch (btn.type) {
+            case 'ok':
+                return 'OK';
+            case 'close':
+                return 'Cerrar';
+            case 'cancel':
+                return 'Cancelar';
+            case 'destructive':
+                return btn.text || 'Eliminar';
+            default:
+                return 'OK';
+        }
+    }
+
     render() {
-        const { open, url, title, loading, mainButton, backgroundColor, expanded } = this.state;
+        const {
+            open,
+            url,
+            title,
+            loading,
+            mainButton,
+            secondaryButton,
+            backButtonVisible,
+            backgroundColor,
+            headerColor,
+            expanded,
+            popup,
+        } = this.state;
         if (!open) return null;
 
         const mainBtnVisible = mainButton && mainButton.is_visible;
+        const secBtnVisible = secondaryButton && secondaryButton.is_visible;
 
         return (
             <div className='bot-webapp-overlay'>
                 <div className={`bot-webapp-panel${expanded ? ' bot-webapp-expanded' : ''}`}>
-                    <div className='bot-webapp-header'>
-                        <IconButton onClick={this.close} size='small'>
+                    <div className='bot-webapp-header' style={headerColor ? { background: headerColor } : {}}>
+                        <IconButton onClick={backButtonVisible ? this.handleBackButtonClick : this.close} size='small'>
                             <ArrowBackIcon />
                         </IconButton>
                         <span className='bot-webapp-title'>{title}</span>
@@ -212,7 +321,47 @@ class BotWebApp extends Component {
                             onLoad={this.handleLoad}
                             style={{ opacity: loading ? 0 : 1 }}
                         />
+                        {popup && (
+                            <div className='bot-webapp-popup-overlay'>
+                                <div className='bot-webapp-popup'>
+                                    {popup.title && <div className='bot-webapp-popup-title'>{popup.title}</div>}
+                                    {popup.message && <div className='bot-webapp-popup-message'>{popup.message}</div>}
+                                    <div className='bot-webapp-popup-buttons'>
+                                        {popup.buttons.map(btn => (
+                                            <button
+                                                key={btn.id}
+                                                className={`bot-webapp-popup-btn${
+                                                    btn.type === 'destructive' ? ' destructive' : ''
+                                                }`}
+                                                onClick={() => this.handlePopupButton(btn.id)}>
+                                                {this._getPopupButtonLabel(btn)}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
+                        )}
                     </div>
+                    {secBtnVisible && (
+                        <button
+                            className='bot-webapp-secondary-btn'
+                            style={{
+                                background: secondaryButton.color || 'var(--design-panel-background)',
+                                color: secondaryButton.text_color || 'var(--fg1)',
+                                opacity: secondaryButton.is_active === false ? 0.5 : 1,
+                            }}
+                            disabled={secondaryButton.is_active === false}
+                            onClick={this.handleSecondaryButtonClick}>
+                            {secondaryButton.is_progress_visible ? (
+                                <CircularProgress
+                                    size={18}
+                                    style={{ color: secondaryButton.text_color || 'var(--fg1)' }}
+                                />
+                            ) : (
+                                secondaryButton.text || ''
+                            )}
+                        </button>
+                    )}
                     {mainBtnVisible && (
                         <button
                             className='bot-webapp-main-btn'
