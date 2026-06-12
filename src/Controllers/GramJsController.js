@@ -2221,6 +2221,17 @@ class GramJsController extends EventEmitter {
                 return this._sendFile(chat_id, inputPeer, input_message_content, reply_to_message_id, schedule_date);
             }
 
+            if (contentType === 'inputMessagePoll') {
+                return this._sendPoll(
+                    chat_id,
+                    inputPeer,
+                    input_message_content,
+                    reply_to_message_id,
+                    schedule_date,
+                    disable_notification,
+                );
+            }
+
             const text = input_message_content?.text?.text || '';
             const formattingEntities = tdEntitiesToGramJs(input_message_content?.text?.entities);
             const result = await this.client.sendMessage(inputPeer, {
@@ -2249,6 +2260,60 @@ class GramJsController extends EventEmitter {
         } catch (err) {
             console.error('[GramJs] sendMessage error', err);
             throw err;
+        }
+        return {};
+    };
+
+    _sendPoll = async (chatId, inputPeer, content, replyToMessageId, scheduleDate, disableNotification) => {
+        const { generateRandomBigInt } = await import('telegram/Helpers');
+        const optionBytes = (content.options || []).map((_, index) => Buffer.from(String(index)));
+        const answers = (content.options || []).map(
+            (text, index) =>
+                new Api.PollAnswer({
+                    text: new Api.TextWithEntities({ text, entities: [] }),
+                    option: optionBytes[index],
+                }),
+        );
+        const isQuiz = content.type && content.type['@type'] === 'pollTypeQuiz';
+        const correctOptionId = isQuiz ? content.type.correct_option_id : null;
+        const correctIndex = isQuiz ? (content.option_ids || []).findIndex(id => id === correctOptionId) : -1;
+        const media = new Api.InputMediaPoll({
+            poll: new Api.Poll({
+                id: BigInt(0),
+                closed: false,
+                publicVoters: content.is_anonymous === false,
+                multipleChoice: !isQuiz && !!content.allows_multiple_answers,
+                quiz: isQuiz,
+                question: new Api.TextWithEntities({ text: content.question || '', entities: [] }),
+                answers,
+            }),
+            correctAnswers: isQuiz && correctIndex >= 0 ? [optionBytes[correctIndex]] : undefined,
+        });
+
+        const result = await this.client.invoke(
+            new Api.messages.SendMedia({
+                peer: inputPeer,
+                media,
+                message: '',
+                randomId: generateRandomBigInt(),
+                scheduleDate: scheduleDate || undefined,
+                silent: !!disableNotification,
+                replyTo: replyToMessageId ? new Api.InputReplyToMessage({ replyToMsgId: replyToMessageId }) : undefined,
+            }),
+        );
+        const rawMessage = (result?.updates || []).find(update => update.message)?.message || result?.update?.message;
+        const tdMessage = rawMessage ? translateMessage(rawMessage, chatId) : null;
+        if (tdMessage) {
+            this._emitUpdate({ '@type': 'updateNewMessage', message: tdMessage });
+            const chat = this._chatCache.get(chatId);
+            if (chat) chat.last_message = tdMessage;
+            this._emitUpdate({
+                '@type': 'updateChatLastMessage',
+                chat_id: chatId,
+                last_message: tdMessage,
+                order: String(tdMessage.date * 1000),
+            });
+            return tdMessage;
         }
         return {};
     };

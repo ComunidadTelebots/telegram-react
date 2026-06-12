@@ -16,6 +16,10 @@ export function isValidPoll(poll) {
     const noneEmptyOptions = options.filter(x => Boolean(x.text));
     if (noneEmptyOptions.length <= 1) return false;
 
+    if (poll.type && poll.type['@type'] === 'pollTypeQuiz') {
+        if (!noneEmptyOptions.some(x => x.id === poll.type.correct_option_id)) return false;
+    }
+
     return noneEmptyOptions.every(isValidOption);
 }
 
