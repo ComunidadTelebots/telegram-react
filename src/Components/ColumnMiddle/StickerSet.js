@@ -18,7 +18,7 @@ import './StickerSet.css';
 const styles = theme => ({
     title: {
         backgroundColor: theme.palette.background.paper,
-        color: theme.palette.text.primary
+        color: theme.palette.text.primary,
     },
     stickerSetItem: {
         width: STICKER_SMALL_DISPLAY_SIZE,
@@ -27,19 +27,19 @@ const styles = theme => ({
         boxSizing: 'border-box',
         '&:hover': {
             background: theme.palette.type === 'dark' ? '#303030' : '#f4f4f4',
-            borderRadius: 6
-        }
+            borderRadius: 6,
+        },
     },
     iconRoot: {
         fontSize: 16,
         padding: 4,
-        margin: '4px 8px 4px 4px'
-    }
+        margin: '4px 8px 4px 4px',
+    },
 });
 
 class StickerSet extends React.Component {
     shouldComponentUpdate(nextProps, nextState, nextContext) {
-        const { info, theme } = this.props;
+        const { info, theme, autoplay } = this.props;
 
         if (theme !== nextProps.theme) {
             return true;
@@ -49,11 +49,15 @@ class StickerSet extends React.Component {
             return true;
         }
 
+        if (autoplay !== nextProps.autoplay) {
+            return true;
+        }
+
         return false;
     }
 
     render() {
-        const { classes, info, onSelect, onMouseDown, onMouseEnter, onDeleteClick } = this.props;
+        const { classes, info, onSelect, onMouseDown, onMouseEnter, onDeleteClick, autoplay } = this.props;
         if (!info) return null;
 
         const { title, stickers } = info;
@@ -69,7 +73,7 @@ class StickerSet extends React.Component {
                 <Sticker
                     key={x.sticker.id}
                     sticker={x}
-                    autoplay={false}
+                    autoplay={autoplay !== undefined ? autoplay : false}
                     blur={false}
                     displaySize={STICKER_SMALL_DISPLAY_SIZE - 6}
                     preview
@@ -104,7 +108,7 @@ StickerSet.propTypes = {
     info: PropTypes.object.isRequired,
     onSelect: PropTypes.func.isRequired,
     onMouseDown: PropTypes.func.isRequired,
-    onDeleteClick: PropTypes.func
+    onDeleteClick: PropTypes.func,
 };
 
 export default withStyles(styles, { withTheme: true })(StickerSet);

@@ -1001,6 +1001,8 @@ class GramJsController extends EventEmitter {
                 return this._setChatMessageAutoDeleteTime(req);
             case 'getChannelStats':
                 return this._getChannelStats(req);
+            case 'searchStickers':
+                return this._searchStickers(req);
 
             // ── Archivos ──────────────────────────────────────────────────────
             case 'downloadFile':
@@ -2193,6 +2195,51 @@ class GramJsController extends EventEmitter {
                 views_per_post: 0,
                 shares_per_post: 0,
             };
+        }
+    };
+
+    _searchStickers = async ({ query, limit = 40 }) => {
+        try {
+            const result = await this.client.invoke(
+                new Api.messages.SearchStickers({
+                    emojis: false,
+                    q: query,
+                    hash: BigInt(0),
+                }),
+            );
+            const stickers = (result.documents || []).slice(0, limit).map(doc => {
+                const animAttr = doc.attributes?.find(a => a.className === 'DocumentAttributeSticker');
+                const videoAttr = doc.attributes?.find(a => a.className === 'DocumentAttributeVideo');
+                const imageAttr = doc.attributes?.find(a => a.className === 'DocumentAttributeImageSize');
+                const isAnimated = doc.mimeType === 'application/x-tgsticker';
+                const isVideo = doc.mimeType === 'video/webm';
+                const w = (imageAttr || videoAttr)?.w || 512;
+                const h = (imageAttr || videoAttr)?.h || 512;
+                return {
+                    '@type': 'sticker',
+                    id: String(doc.id),
+                    width: w,
+                    height: h,
+                    emoji: animAttr?.alt || '',
+                    set_id: String(animAttr?.stickerset?.id || 0),
+                    is_animated: isAnimated,
+                    is_video: isVideo,
+                    sticker: {
+                        '@type': 'file',
+                        id: Number(doc.id) % 2147483647,
+                        size: Number(doc.size || 0),
+                        expected_size: Number(doc.size || 0),
+                        local: { '@type': 'localFile', can_be_downloaded: true, is_downloading_completed: false },
+                        remote: { '@type': 'remoteFile', id: String(doc.id) },
+                    },
+                    thumbnail: null,
+                    minithumbnail: null,
+                };
+            });
+            return { '@type': 'stickers', stickers };
+        } catch (e) {
+            console.warn('[GramJs] searchStickers error', e);
+            return { '@type': 'stickers', stickers: [] };
         }
     };
 
