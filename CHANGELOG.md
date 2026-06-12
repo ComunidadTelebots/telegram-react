@@ -1,5 +1,14 @@
 # Changelog
 
+## [2026-06-12] (sesión 26)
+
+### Added
+- **Guardar en Mensajes Guardados** — nueva opción en el menú contextual de cada mensaje (clic derecho). Reenvía el mensaje a tu chat "Mensajes Guardados" con una sola acción. Archivo: `Message.js`.
+- **Opciones de reenvío avanzadas** — al reenviar mensajes, ahora aparecen dos checkboxes: "Enviar como copia (sin enlace al original)" y "Eliminar título/caption". Usan los parámetros `send_copy` y `remove_caption` de la API `forwardMessages`. Archivo: `ForwardDialog.js`.
+- **Barra de reacciones rápidas en hover** — al pasar el ratón por cualquier mensaje aparece una barra flotante con 8 emojis frecuentes (👍 ❤️ 😂 😮 😢 🔥 🎉 👏). Un clic envía la reacción vía `setMessageReaction`. Animación de entrada y efecto scale en hover por emoji. Archivos: `QuickReactionBar.{js,css}`, `Message.js`.
+
+---
+
 ## [2026-06-12] (sesión 25) — `e96f1ba9`
 
 ### Added

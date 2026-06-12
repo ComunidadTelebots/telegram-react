@@ -14,6 +14,8 @@ import withStyles from '@material-ui/core/styles/withStyles';
 import { withTranslation } from 'react-i18next';
 import { withSnackbar } from 'notistack';
 import Button from '@material-ui/core/Button';
+import Checkbox from '@material-ui/core/Checkbox';
+import FormControlLabel from '@material-ui/core/FormControlLabel';
 import IconButton from '@material-ui/core/IconButton';
 import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
@@ -35,17 +37,17 @@ import { clearSelection } from '../../Actions/Client';
 
 const styles = theme => ({
     dialog: {
-        color: theme.palette.text.primary
+        color: theme.palette.text.primary,
     },
     dialogContent: {
         padding: 0,
         display: 'flex',
-        position: 'relative'
+        position: 'relative',
     },
     searchList: {
-        background: theme.palette.background.paper
+        background: theme.palette.background.paper,
     },
-    ...borderStyle(theme)
+    ...borderStyle(theme),
 });
 
 class ForwardDialog extends React.Component {
@@ -54,7 +56,9 @@ class ForwardDialog extends React.Component {
 
         this.state = {
             chatIds: [],
-            savedMessages: null
+            savedMessages: null,
+            sendCopy: false,
+            removeCaption: false,
         };
 
         this.searchRef = React.createRef();
@@ -77,14 +81,14 @@ class ForwardDialog extends React.Component {
             '@type': 'getChats',
             offset_order: '9223372036854775807',
             offset_chat_id: 0,
-            limit: 100
+            limit: 100,
         });
         promises.push(getChatsPromise);
 
         const savedMessagesPromise = TdLibController.send({
             '@type': 'createPrivateChat',
             user_id: UserStore.getMyId(),
-            force: true
+            force: true,
         });
         promises.push(savedMessagesPromise);
 
@@ -92,7 +96,7 @@ class ForwardDialog extends React.Component {
 
         this.setState({
             chatIds: chats.chat_ids,
-            savedMessages: savedMessages
+            savedMessages: savedMessages,
         });
 
         const store = FileStore.getStore();
@@ -111,18 +115,18 @@ class ForwardDialog extends React.Component {
             '@type': 'getPublicMessageLink',
             chat_id: chatId,
             message_id: messageIds[0],
-            for_album: false
+            for_album: false,
         });
 
         this.setState({
-            publicMessageLink: result
+            publicMessageLink: result,
         });
     };
 
     handleClose = () => {
         TdLibController.clientUpdate({
             '@type': 'clientUpdateForward',
-            info: null
+            info: null,
         });
     };
 
@@ -162,8 +166,8 @@ class ForwardDialog extends React.Component {
                         className='notification-close-button'
                         onClick={() => ApplicationStore.removeScheduledAction(key)}>
                         <CloseIcon />
-                    </IconButton>
-                ]
+                    </IconButton>,
+                ],
             });
         }
     };
@@ -195,6 +199,7 @@ class ForwardDialog extends React.Component {
         const { chatId, messageIds, inputMessageContent } = this.props;
         if (!chatId && !messageIds && !inputMessageContent) return;
 
+        const { sendCopy, removeCaption } = this.state;
         const text = this.getInnerText(this.messageRef.current);
 
         this.targetChats.forEach(targetChatId => {
@@ -204,7 +209,7 @@ class ForwardDialog extends React.Component {
                         inputMessageContent.caption = {
                             '@type': 'formattedText',
                             text,
-                            entities: null
+                            entities: null,
                         };
                     } else {
                         TdLibController.send({
@@ -219,11 +224,11 @@ class ForwardDialog extends React.Component {
                                 text: {
                                     '@type': 'formattedText',
                                     text,
-                                    entities: null
+                                    entities: null,
                                 },
                                 disable_web_page_preview: false,
-                                clear_draft: false
-                            }
+                                clear_draft: false,
+                            },
                         });
                     }
                 }
@@ -235,7 +240,7 @@ class ForwardDialog extends React.Component {
                     disable_notifications: false,
                     from_background: false,
                     reply_markup: null,
-                    input_message_content: inputMessageContent
+                    input_message_content: inputMessageContent,
                 });
 
                 return;
@@ -256,7 +261,7 @@ class ForwardDialog extends React.Component {
                         '@type': 'inputMessagePhoto',
                         photo: {
                             '@type': 'inputFileId',
-                            id: photo.id
+                            id: photo.id,
                         },
                         thumbnail: null,
                         added_sticker_file_ids: [],
@@ -265,10 +270,10 @@ class ForwardDialog extends React.Component {
                         caption: {
                             '@type': 'formattedText',
                             text,
-                            entities: null
+                            entities: null,
                         },
-                        ttl: 0
-                    }
+                        ttl: 0,
+                    },
                 });
 
                 return;
@@ -287,11 +292,11 @@ class ForwardDialog extends React.Component {
                         text: {
                             '@type': 'formattedText',
                             text,
-                            entities: null
+                            entities: null,
                         },
                         disable_web_page_preview: false,
-                        clear_draft: false
-                    }
+                        clear_draft: false,
+                    },
                 });
             }
 
@@ -302,7 +307,9 @@ class ForwardDialog extends React.Component {
                 message_ids: messageIds,
                 disable_notifications: false,
                 from_background: false,
-                as_album: false
+                as_album: false,
+                send_copy: sendCopy,
+                remove_caption: sendCopy && removeCaption,
             });
         });
     };
@@ -363,7 +370,7 @@ class ForwardDialog extends React.Component {
             x =>
                 this.hasSearchText(x, innerText) ||
                 (latinText && this.hasSearchText(x, latinText)) ||
-                (cyrillicText && this.hasSearchText(x, cyrillicText))
+                (cyrillicText && this.hasSearchText(x, cyrillicText)),
         );
 
         this.setState({ searchText: innerText, searchResults });
@@ -371,7 +378,7 @@ class ForwardDialog extends React.Component {
         const result = await TdLibController.send({
             '@type': 'searchChatsOnServer',
             query: innerText,
-            limit: 100
+            limit: 100,
         });
 
         if (this.state.searchText !== innerText) {
@@ -379,7 +386,7 @@ class ForwardDialog extends React.Component {
         }
 
         this.setState({
-            globalSearchResults: result.chat_ids
+            globalSearchResults: result.chat_ids,
         });
     };
 
@@ -451,7 +458,9 @@ class ForwardDialog extends React.Component {
             searchResults,
             globalSearchResults,
             savedMessages,
-            publicMessageLink
+            publicMessageLink,
+            sendCopy,
+            removeCaption,
         } = this.state;
 
         const chatsSource = savedMessages
@@ -469,7 +478,7 @@ class ForwardDialog extends React.Component {
 
         const searchResultsMap = new Map((searchResults || []).map(x => [x, x]));
         const filteredResults = (globalSearchResults || []).filter(
-            x => x !== savedMessages.id && canSendMessages(x) && !searchResultsMap.has(x)
+            x => x !== savedMessages.id && canSendMessages(x) && !searchResultsMap.has(x),
         );
 
         const foundChats = (searchResults || [])
@@ -518,6 +527,34 @@ class ForwardDialog extends React.Component {
                         onPaste={this.handleMessagePaste}
                     />
                 )}
+                {this.targetChats.size > 0 && (
+                    <div style={{ padding: '0 16px 4px' }}>
+                        <FormControlLabel
+                            control={
+                                <Checkbox
+                                    size='small'
+                                    checked={sendCopy}
+                                    onChange={e => this.setState({ sendCopy: e.target.checked })}
+                                    color='primary'
+                                />
+                            }
+                            label='Enviar como copia (sin enlace al original)'
+                        />
+                        {sendCopy && (
+                            <FormControlLabel
+                                control={
+                                    <Checkbox
+                                        size='small'
+                                        checked={removeCaption}
+                                        onChange={e => this.setState({ removeCaption: e.target.checked })}
+                                        color='primary'
+                                    />
+                                }
+                                label='Eliminar título/caption'
+                            />
+                        )}
+                    </div>
+                )}
                 <DialogActions>
                     <Button onClick={this.handleClose} color='primary'>
                         {t('Cancel')}
@@ -541,7 +578,7 @@ class ForwardDialog extends React.Component {
 ForwardDialog.propTypes = {
     chatId: PropTypes.number,
     messageIds: PropTypes.array,
-    inputMessageContent: PropTypes.object
+    inputMessageContent: PropTypes.object,
 };
 
 const enhance = compose(withStyles(styles, { withTheme: true }), withTranslation(), withSnackbar);

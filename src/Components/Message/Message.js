@@ -25,6 +25,7 @@ import InlineKeyboard from './InlineKeyboard';
 import CommentsButton from './CommentsButton';
 import FactCheck from './FactCheck';
 import SeenBy from './SeenBy';
+import QuickReactionBar from './QuickReactionBar';
 import {
     getEmojiMatches,
     getText,
@@ -101,6 +102,7 @@ class Message extends Component {
                 translationText: null,
                 translating: false,
                 langMenu: false,
+                hovered: false,
             };
         } else {
             this.state = {
@@ -113,6 +115,7 @@ class Message extends Component {
                 translationText: null,
                 translating: false,
                 langMenu: false,
+                hovered: false,
             };
         }
     }
@@ -128,7 +131,16 @@ class Message extends Component {
             showTitle,
             showAuthor,
         } = this.props;
-        const { contextMenu, selected, highlighted, emojiMatches, translationText, translating, langMenu } = this.state;
+        const {
+            contextMenu,
+            selected,
+            highlighted,
+            emojiMatches,
+            translationText,
+            translating,
+            langMenu,
+            hovered,
+        } = this.state;
 
         if (nextProps.theme !== theme) {
             // console.log('Message.shouldComponentUpdate true');
@@ -191,6 +203,7 @@ class Message extends Component {
 
         if (nextState.translationText !== translationText) return true;
         if (nextState.translating !== translating) return true;
+        if (nextState.hovered !== hovered) return true;
 
         // console.log('Message.shouldComponentUpdate false');
         return false;
@@ -355,10 +368,12 @@ class Message extends Component {
 
     handleMouseOver = () => {
         this.mouseDown = false;
+        if (!this.state.hovered) this.setState({ hovered: true });
     };
 
     handleMouseOut = () => {
         this.mouseOut = false;
+        if (this.state.hovered) this.setState({ hovered: false });
     };
 
     handleReplyClick = () => {
@@ -551,6 +566,26 @@ class Message extends Component {
         }
     };
 
+    handleSaveToSavedMessages = async event => {
+        const { chatId, messageId } = this.props;
+        this.handleCloseContextMenu(event);
+        try {
+            const myId = (await TdLibController.send({ '@type': 'getMe' })).id;
+            const saved = await TdLibController.send({ '@type': 'createPrivateChat', user_id: myId, force: true });
+            await TdLibController.send({
+                '@type': 'forwardMessages',
+                chat_id: saved.id,
+                from_chat_id: chatId,
+                message_ids: [messageId],
+                disable_notifications: true,
+                from_background: false,
+                as_album: false,
+            });
+        } catch (e) {
+            console.warn('[Message] saveToSavedMessages error', e);
+        }
+    };
+
     handleBlockUser = async event => {
         const { chatId, messageId } = this.props;
         const message = MessageStore.get(chatId, messageId);
@@ -611,6 +646,7 @@ class Message extends Component {
             translationText,
             translating,
             langMenu,
+            hovered,
         } = this.state;
 
         const message = MessageStore.get(chatId, messageId);
@@ -673,6 +709,8 @@ class Message extends Component {
         const forwardOriginType = message.forward_info?.origin?.['@type'];
         const canShowInChat = !!forwardOriginType && forwardOriginType === 'messageForwardOriginChannel';
         const canReplyInPrivate = !message.is_outgoing && !!message.sender_user_id && isGroupChat(chatId);
+        const canBeSaved = message.can_be_forwarded;
+        const showQuickReactions = hovered && !selected && !contextMenu && message.can_be_forwarded;
         const withBubble = contentType !== 'messageSticker' && contentType !== 'messageVideoNote';
 
         return (
@@ -685,7 +723,14 @@ class Message extends Component {
                 onAnimationEnd={this.handleAnimationEnd}
                 onContextMenu={this.handleContextMenu}>
                 {showUnreadSeparator && <UnreadSeparator />}
-                <div className='message-wrapper'>
+                <div className='message-wrapper' style={{ position: 'relative' }}>
+                    {showQuickReactions && (
+                        <QuickReactionBar
+                            chatId={chatId}
+                            messageId={messageId}
+                            onClose={() => this.setState({ hovered: false })}
+                        />
+                    )}
                     <div className='message-left-padding'>
                         <CheckMarkIcon className={classNames('message-select-tick', classes.messageSelectTick)} />
                         {/*{this.unread && (*/}
@@ -775,6 +820,9 @@ class Message extends Component {
                         )}
                         {canBeBlocked && <MenuItem onClick={this.handleBlockUser}>{t('BlockUser')}</MenuItem>}
                         {canShowInChat && <MenuItem onClick={this.handleShowInChat}>{t('ShowInChat')}</MenuItem>}
+                        {canBeSaved && (
+                            <MenuItem onClick={this.handleSaveToSavedMessages}>Guardar en Mensajes Guardados</MenuItem>
+                        )}
                     </MenuList>
                 </Popover>
                 <Popover
