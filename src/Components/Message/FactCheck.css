@@ -20,5 +20,5 @@
 }
 
 .fact-check-text {
-    color: var(--color-text, #222);
+    color: var(--fg1, #222);
 }

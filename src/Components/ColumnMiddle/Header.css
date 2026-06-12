@@ -142,7 +142,7 @@
 }
 
 .header-typing {
-    color: var(--color-primary, #5b8af1) !important;
+    color: var(--color-accent-main, #5b8af1) !important;
     animation: typing-pulse 1.4s ease-in-out infinite;
 }
 

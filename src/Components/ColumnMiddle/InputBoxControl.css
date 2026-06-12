@@ -143,7 +143,7 @@
     position: absolute;
     display: flex;
     align-items: center;
-    background: var(--color-background, #fff);
+    background: var(--design-panel-background, #fff);
     border: 1px solid rgba(0, 0, 0, 0.12);
     border-radius: 8px;
     box-shadow: 0 2px 12px rgba(0, 0, 0, 0.18);
@@ -162,7 +162,7 @@
     cursor: pointer;
     font-size: 13px;
     padding: 4px 7px;
-    color: var(--color-text, #222);
+    color: var(--fg1, #222);
     transition: background 0.15s;
     line-height: 1;
 }
@@ -172,6 +172,6 @@
 }
 
 .fmt-btn-clear {
-    color: #999;
+    color: var(--fg3, #999);
     font-size: 11px;
 }

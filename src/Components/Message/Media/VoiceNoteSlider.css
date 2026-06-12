@@ -32,12 +32,12 @@
     min-height: 15%;
     max-height: 100%;
     border-radius: 2px;
-    background: var(--color-hint, rgba(0, 0, 0, 0.3));
+    background: var(--fg3, rgba(0, 0, 0, 0.3));
     transition: background 0.12s;
 }
 
 .voice-bar-played {
-    background: var(--color-primary, #5b8af1);
+    background: var(--color-accent-main, #5b8af1);
 }
 
 .voice-waveform-flat .voice-bar-flat {

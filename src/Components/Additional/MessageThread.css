@@ -11,7 +11,7 @@
 .message-thread-panel {
     width: 380px;
     max-width: 100vw;
-    background: var(--page-background, #fff);
+    background: var(--design-page-background, #fff);
     display: flex;
     flex-direction: column;
     box-shadow: -2px 0 12px rgba(0, 0, 0, 0.15);
@@ -22,13 +22,14 @@
     align-items: center;
     gap: 8px;
     padding: 8px 12px;
-    border-bottom: 1px solid var(--divider-color, #e0e0e0);
+    border-bottom: 1px solid var(--divider, rgba(0, 0, 0, 0.12));
     min-height: 52px;
 }
 
 .message-thread-title {
     font-size: 17px;
     font-weight: 600;
+    color: var(--fg1, #000);
 }
 
 .message-thread-body {
@@ -46,7 +47,7 @@
     justify-content: center;
     align-items: center;
     flex: 1;
-    color: var(--secondary-text, #999);
+    color: var(--fg2, #707579);
     font-size: 14px;
     padding: 32px 0;
 }
@@ -60,12 +61,13 @@
 .message-thread-item-sender {
     font-size: 12px;
     font-weight: 600;
-    color: var(--message-in-reply-title, #4a9fd5);
+    color: var(--message-in-reply-title, #5b8af1);
     margin-bottom: 3px;
 }
 
 .message-thread-item-text {
     font-size: 14px;
+    color: var(--message-in-color, #000);
     word-break: break-word;
     white-space: pre-wrap;
 }

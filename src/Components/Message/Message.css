@@ -328,8 +328,8 @@ pre code {
 .message-scheduled-badge {
     display: inline-block;
     font-size: 11px;
-    color: #888;
-    background: rgba(0, 0, 0, 0.07);
+    color: var(--fg3, #8d969c);
+    background: var(--divider, rgba(0, 0, 0, 0.07));
     border-radius: 10px;
     padding: 1px 8px;
     margin-top: 2px;
