@@ -6,9 +6,31 @@ import CircularProgress from '@material-ui/core/CircularProgress';
 import TdLibController from '../../Controllers/TdLibController';
 import './BotWebApp.css';
 
+function cssColorToHex(value) {
+    if (!value) return undefined;
+    value = value.trim();
+    if (/^#[0-9a-fA-F]{3,8}$/.test(value)) {
+        if (value.length === 4) {
+            return '#' + value[1] + value[1] + value[2] + value[2] + value[3] + value[3];
+        }
+        return value.slice(0, 7);
+    }
+    try {
+        const canvas = document.createElement('canvas');
+        canvas.width = canvas.height = 1;
+        const ctx = canvas.getContext('2d');
+        ctx.fillStyle = value;
+        ctx.fillRect(0, 0, 1, 1);
+        const [r, g, b] = ctx.getImageData(0, 0, 1, 1).data;
+        return '#' + [r, g, b].map(x => x.toString(16).padStart(2, '0')).join('');
+    } catch {
+        return undefined;
+    }
+}
+
 function getThemeParams() {
     const style = getComputedStyle(document.documentElement);
-    const get = v => style.getPropertyValue(v).trim() || undefined;
+    const get = v => cssColorToHex(style.getPropertyValue(v).trim());
     return {
         bg_color: get('--design-page-background') || '#ffffff',
         text_color: get('--fg1') || '#000000',
@@ -17,6 +39,12 @@ function getThemeParams() {
         button_color: get('--color-accent-main') || '#2196f3',
         button_text_color: '#ffffff',
         secondary_bg_color: get('--design-panel-background') || '#f0f0f0',
+        subtitle_text_color: get('--fg2') || '#777777',
+        destructive_text_color: '#e53935',
+        section_bg_color: get('--design-panel-background') || '#f0f0f0',
+        section_header_text_color: get('--color-accent-main') || '#2196f3',
+        accent_text_color: get('--color-accent-main') || '#2196f3',
+        header_bg_color: get('--design-panel-background') || '#f0f0f0',
     };
 }
 
@@ -91,16 +119,30 @@ class BotWebApp extends Component {
 
     componentDidMount() {
         window.addEventListener('message', this._handleMessage);
-        if (typeof ResizeObserver !== 'undefined') {
-            this._resizeObserver = new ResizeObserver(() => this._notifyViewport(false));
-            const panel = document.querySelector('.bot-webapp-panel');
-            if (panel) this._resizeObserver.observe(panel);
+        this._setupResizeObserver();
+    }
+
+    componentDidUpdate(prevProps, prevState) {
+        if (!prevState.open && this.state.open) {
+            this._setupResizeObserver();
+        }
+        if (prevState.expanded !== this.state.expanded) {
+            setTimeout(() => this._notifyViewport(true), 210);
         }
     }
 
     componentWillUnmount() {
         window.removeEventListener('message', this._handleMessage);
         if (this._resizeObserver) this._resizeObserver.disconnect();
+    }
+
+    _setupResizeObserver() {
+        if (typeof ResizeObserver === 'undefined') return;
+        if (this._resizeObserver) return;
+        const panel = document.querySelector('.bot-webapp-panel');
+        if (!panel) return;
+        this._resizeObserver = new ResizeObserver(() => this._notifyViewport(false));
+        this._resizeObserver.observe(panel);
     }
 
     _notifyViewport(stable = true) {
