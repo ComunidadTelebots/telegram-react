@@ -841,8 +841,20 @@ export function translateUserProfilePhoto(gPhoto) {
 
 export function translateReactions(raw) {
     if (!raw || !raw.results || raw.results.length === 0) return null;
+    const recentReactions = (raw.recentReactions || [])
+        .filter(r => r.reaction && (r.reaction.emoticon || r.reaction._ === 'reactionEmoji'))
+        .map(r => ({
+            '@type': 'messageRecentReaction',
+            sender_id: peerToTdlibChatId(r.peerId),
+            reaction: r.reaction.emoticon || '',
+            date: r.date || 0,
+            is_unread: Boolean(r.unread),
+        }));
+
     return {
         '@type': 'messageReactions',
+        has_unread_reactions: recentReactions.some(r => r.is_unread),
+        recent_reactions: recentReactions,
         reactions: raw.results
             .filter(r => r.reaction && (r.reaction.emoticon || r.reaction._ === 'reactionEmoji'))
             .map(r => ({

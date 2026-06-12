@@ -1003,6 +1003,8 @@ class GramJsController extends EventEmitter {
             // ── Reacciones ────────────────────────────────────────────────────
             case 'sendMessageReaction':
                 return this._sendReaction(req);
+            case 'readAllMessageReactions':
+                return this._readAllMessageReactions(req);
             case 'sendGifByUrl':
                 return this._sendGifByUrl(req);
             case 'setChatMessageAutoDeleteTime':
@@ -3013,6 +3015,17 @@ class GramJsController extends EventEmitter {
             );
         } catch (err) {
             console.error('[GramJs] sendReaction error', err);
+        }
+        return {};
+    };
+
+    _readAllMessageReactions = async req => {
+        const { chat_id } = req;
+        try {
+            const inputPeer = tdlibChatIdToInputPeer(chat_id, this._entityCache);
+            await this.client.invoke(new Api.messages.ReadReactions({ peer: inputPeer }));
+        } catch (err) {
+            console.error('[GramJs] readAllMessageReactions error', err);
         }
         return {};
     };

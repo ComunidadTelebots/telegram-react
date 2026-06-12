@@ -9,6 +9,7 @@ import ReactorsModal from './ReactorsModal';
 import './Reactions.css';
 
 const QUICK_REACTIONS = ['👍', '❤️', '😂', '😮', '😢', '🙏'];
+const readReactionChats = new Set();
 
 class Reactions extends Component {
     constructor(props) {
@@ -19,6 +20,11 @@ class Reactions extends Component {
     componentDidMount() {
         this._isMounted = true;
         MessageStore.on('updateMessageReactions', this.onUpdateReactions);
+        this.markUnreadReactionsAsRead();
+    }
+
+    componentDidUpdate() {
+        this.markUnreadReactionsAsRead();
     }
 
     componentWillUnmount() {
@@ -62,19 +68,42 @@ class Reactions extends Component {
         this.setState({ reactorsModal: null });
     };
 
+    markUnreadReactionsAsRead = () => {
+        const { chatId, messageId } = this.props;
+        const message = MessageStore.get(chatId, messageId);
+        const reactions = message && message.reactions;
+        if (!reactions || !reactions.has_unread_reactions || readReactionChats.has(chatId)) return;
+
+        readReactionChats.add(chatId);
+        TdLibController.send({ '@type': 'readAllMessageReactions', chat_id: chatId });
+        reactions.has_unread_reactions = false;
+        if (reactions.recent_reactions) {
+            reactions.recent_reactions.forEach(r => {
+                r.is_unread = false;
+            });
+        }
+    };
+
     render() {
         const { chatId, messageId } = this.props;
         const { showPicker, reactorsModal } = this.state;
         const message = MessageStore.get(chatId, messageId);
         const reactions = message && message.reactions;
         const list = reactions ? reactions.reactions : [];
+        const unreadReactions = new Set(
+            reactions && reactions.recent_reactions
+                ? reactions.recent_reactions.filter(r => r.is_unread).map(r => r.reaction)
+                : [],
+        );
 
         return (
             <div className='reactions-wrap'>
                 {list.map(r => (
                     <button
                         key={r.reaction}
-                        className={`reaction-bubble${r.is_chosen ? ' reaction-chosen' : ''}`}
+                        className={`reaction-bubble${r.is_chosen ? ' reaction-chosen' : ''}${
+                            unreadReactions.has(r.reaction) ? ' reaction-unread' : ''
+                        }`}
                         onClick={() => this.handleReactionClick(r.reaction)}
                         onContextMenu={e => this.handleReactionLongPress(e, r.reaction)}
                         title={r.reaction}>
