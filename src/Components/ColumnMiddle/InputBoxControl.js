@@ -31,6 +31,7 @@ import AttachButton from './../ColumnMiddle/AttachButton';
 import CreatePollDialog from '../Popup/CreatePollDialog';
 import GifPicker from './GifPicker';
 import GifIcon from '@material-ui/icons/Gif';
+import MentionAutocomplete from './MentionAutocomplete';
 import EditUrlDialog from '../Popup/EditUrlDialog';
 import InputBoxHeader from './InputBoxHeader';
 import PasteFilesDialog from '../Popup/PasteFilesDialog';
@@ -88,6 +89,8 @@ class InputBoxControl extends Component {
             formatBar: null,
             disableLinkPreview: false,
             showGifPicker: false,
+            mentionQuery: null,
+            mentionMembers: [],
         };
 
         document.addEventListener(
@@ -1168,9 +1171,90 @@ class InputBoxControl extends Component {
         this.handleInput();
     };
 
+    loadMentionMembers = async chatId => {
+        if (this._mentionChatId === chatId && this._mentionMembersCache) return;
+        this._mentionChatId = chatId;
+        this._mentionMembersCache = [];
+
+        const { ChatStore: CS } = await import('../../Stores/ChatStore');
+        const chat = CS ? CS.get(chatId) : null;
+        if (!chat || !chat.type) return;
+
+        try {
+            let members = [];
+            if (chat.type['@type'] === 'chatTypeSupergroup') {
+                const result = await TdLibController.send({
+                    '@type': 'getSupergroupMembers',
+                    supergroup_id: chat.type.supergroup_id,
+                    filter: { '@type': 'supergroupMembersFilterRecent' },
+                    offset: 0,
+                    limit: 200,
+                });
+                members = result.members || [];
+            } else if (chat.type['@type'] === 'chatTypeBasicGroup') {
+                const result = await TdLibController.send({
+                    '@type': 'getBasicGroupFullInfo',
+                    basic_group_id: chat.type.basic_group_id,
+                });
+                members = result.members || [];
+            }
+            this._mentionMembersCache = members;
+            this.setState({ mentionMembers: members });
+        } catch {
+            // no-op
+        }
+    };
+
+    detectMention = () => {
+        const element = this.newMessageRef.current;
+        if (!element) return;
+
+        const sel = window.getSelection();
+        if (!sel || sel.rangeCount === 0) {
+            this.setState({ mentionQuery: null });
+            return;
+        }
+
+        const range = sel.getRangeAt(0);
+        const preRange = document.createRange();
+        preRange.selectNodeContents(element);
+        try {
+            preRange.setEnd(range.startContainer, range.startOffset);
+        } catch {
+            this.setState({ mentionQuery: null });
+            return;
+        }
+        const textBeforeCursor = preRange.toString();
+        const match = textBeforeCursor.match(/@(\w*)$/);
+        if (!match) {
+            this.setState({ mentionQuery: null });
+            return;
+        }
+
+        const { chatId } = this.state;
+        this.setState({ mentionQuery: match[1] });
+        this.loadMentionMembers(chatId);
+    };
+
+    handleMentionSelect = user => {
+        const { mentionQuery } = this.state;
+        const element = this.newMessageRef.current;
+        if (!element) return;
+
+        element.focus();
+        const deleteCount = (mentionQuery ? mentionQuery.length : 0) + 1;
+        for (let i = 0; i < deleteCount; i++) {
+            document.execCommand('delete', false);
+        }
+        const mention = user.username ? `@${user.username}` : `@${user.first_name}`;
+        document.execCommand('insertText', false, mention + ' ');
+        this.setState({ mentionQuery: null });
+    };
+
     handleInput = async event => {
         this.setTyping();
         this.setHints();
+        this.detectMention();
     };
 
     openEditUrlDialog = () => {
@@ -1343,6 +1427,8 @@ class InputBoxControl extends Component {
             disableLinkPreview,
             formatBar,
             showGifPicker,
+            mentionQuery,
+            mentionMembers,
         } = this.state;
 
         const isMediaEditing = editMessageId > 0 && !isTextMessage(chatId, editMessageId);
@@ -1386,6 +1472,13 @@ class InputBoxControl extends Component {
                                 </IconButton>
                             </div>
                             <div className='inputbox-middle-column' style={{ position: 'relative' }}>
+                                {mentionQuery !== null && (
+                                    <MentionAutocomplete
+                                        members={mentionMembers}
+                                        query={mentionQuery}
+                                        onSelect={this.handleMentionSelect}
+                                    />
+                                )}
                                 <div
                                     id='inputbox-message'
                                     ref={this.newMessageRef}

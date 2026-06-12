@@ -10,6 +10,7 @@ import PropTypes from 'prop-types';
 import { compose } from 'recompose';
 import { withTranslation } from 'react-i18next';
 import { withRestoreRef, withSaveRef } from '../../Utils/HOC';
+import withStyles from '@material-ui/core/styles/withStyles';
 import {
     Dialog,
     DialogActions,
@@ -23,6 +24,8 @@ import ArrowBackIcon from '@material-ui/icons/ArrowBack';
 import SearchIcon from '@material-ui/icons/Search';
 import CloseIcon from '@material-ui/icons/Close';
 import HelpOutlineIcon from '@material-ui/icons/HelpOutline';
+import Brightness4Icon from '@material-ui/icons/Brightness4';
+import Brightness7Icon from '@material-ui/icons/Brightness7';
 import SpeedDialIcon from '@material-ui/lab/SpeedDialIcon';
 import AndroidVersionSelector from './AndroidVersionSelector';
 import MainMenuButton from './MainMenuButton';
@@ -42,6 +45,7 @@ class DialogsHeader extends React.Component {
         this.state = {
             authorizationState: AppStore.getAuthorizationState(),
             open: false,
+            isDark: false,
         };
     }
 
@@ -82,14 +86,34 @@ class DialogsHeader extends React.Component {
 
     componentDidMount() {
         AppStore.on('updateAuthorizationState', this.onUpdateAuthorizationState);
+        AppStore.on('clientUpdateThemeChange', this.onThemeChange);
+        const palette = this.props.theme && this.props.theme.palette;
+        this.setState({ isDark: palette ? palette.type === 'dark' : false });
     }
 
     componentWillUnmount() {
         AppStore.off('updateAuthorizationState', this.onUpdateAuthorizationState);
+        AppStore.off('clientUpdateThemeChange', this.onThemeChange);
     }
 
     onUpdateAuthorizationState = update => {
         this.setState({ authorizationState: update.authorization_state });
+    };
+
+    onThemeChange = () => {
+        const palette = this.props.theme && this.props.theme.palette;
+        this.setState({ isDark: palette ? palette.type === 'dark' : false });
+    };
+
+    handleToggleDark = () => {
+        const { isDark } = this.state;
+        const newType = isDark ? 'light' : 'dark';
+        this.setState({ isDark: !isDark });
+        const palette = this.props.theme && this.props.theme.palette;
+        AppStore.emit('clientUpdateThemeChanging', {
+            type: newType,
+            primary: palette ? palette.primary : { main: '#5B8AF1' },
+        });
     };
 
     handleLogOut = () => {
@@ -150,7 +174,7 @@ class DialogsHeader extends React.Component {
 
     render() {
         const { onClick, openArchive, openSearch, t } = this.props;
-        const { open } = this.state;
+        const { open, isDark } = this.state;
 
         const confirmLogoutDialog = open ? (
             <Dialog transitionDuration={0} open={open} onClose={this.handleClose} aria-labelledby='form-dialog-title'>
@@ -205,6 +229,13 @@ class DialogsHeader extends React.Component {
                     <IconButton className='header-left-button' aria-label='Tutorial' onClick={() => openTutorial()}>
                         <HelpOutlineIcon />
                     </IconButton>
+                    <IconButton
+                        className='header-left-button'
+                        aria-label='Cambiar tema'
+                        title={isDark ? 'Modo claro' : 'Modo oscuro'}
+                        onClick={this.handleToggleDark}>
+                        {isDark ? <Brightness7Icon /> : <Brightness4Icon />}
+                    </IconButton>
                     {confirmLogoutDialog}
                     <div className='header-status grow cursor-pointer' onClick={onClick}>
                         <span className='header-status-content'>{t('AppName')}</span>
@@ -233,6 +264,6 @@ DialogsHeader.propTypes = {
     onSearchTextChange: PropTypes.func.isRequired,
 };
 
-const enhance = compose(withSaveRef(), withTranslation(), withRestoreRef());
+const enhance = compose(withSaveRef(), withTranslation(), withStyles({}, { withTheme: true }), withRestoreRef());
 
 export default enhance(DialogsHeader);
