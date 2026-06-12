@@ -815,6 +815,10 @@ class GramJsController extends EventEmitter {
                 return this._sendGifByUrl(req);
             case 'setChatMessageAutoDeleteTime':
                 return this._setChatMessageAutoDeleteTime(req);
+            case 'getDefaultMessageAutoDeleteTime':
+                return this._getDefaultMessageAutoDeleteTime();
+            case 'setDefaultMessageAutoDeleteTime':
+                return this._setDefaultMessageAutoDeleteTime(req);
             case 'getChannelStats':
                 return this._getChannelStats(req);
             case 'editMessageText':
@@ -2372,6 +2376,25 @@ class GramJsController extends EventEmitter {
             );
         } catch (e) {
             console.warn('[GramJs] setChatMessageAutoDeleteTime error', e);
+        }
+        return {};
+    };
+
+    _getDefaultMessageAutoDeleteTime = async () => {
+        try {
+            const result = await this.client.invoke(new Api.messages.GetDefaultHistoryTTL());
+            return { '@type': 'messageAutoDeleteTime', message_auto_delete_time: result?.period || 0 };
+        } catch (e) {
+            console.warn('[GramJs] getDefaultMessageAutoDeleteTime error', e);
+            return { '@type': 'messageAutoDeleteTime', message_auto_delete_time: 0 };
+        }
+    };
+
+    _setDefaultMessageAutoDeleteTime = async ({ message_auto_delete_time }) => {
+        try {
+            await this.client.invoke(new Api.messages.SetDefaultHistoryTTL({ period: message_auto_delete_time || 0 }));
+        } catch (e) {
+            console.warn('[GramJs] setDefaultMessageAutoDeleteTime error', e);
         }
         return {};
     };
