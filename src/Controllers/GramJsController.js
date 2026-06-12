@@ -1027,6 +1027,8 @@ class GramJsController extends EventEmitter {
                 return this._getChannelStats(req);
             case 'searchStickers':
                 return this._searchStickers(req);
+            case 'requestBotWebView':
+                return this._requestBotWebView(req);
 
             // ── Archivos ──────────────────────────────────────────────────────
             case 'downloadFile':
@@ -2478,6 +2480,26 @@ class GramJsController extends EventEmitter {
         } catch (e) {
             console.warn('[GramJs] searchStickers error', e);
             return { '@type': 'stickers', stickers: [] };
+        }
+    };
+
+    _requestBotWebView = async ({ bot_user_id, chat_id, url, start_param }) => {
+        try {
+            const botInput = await this.client.getInputEntity(bot_user_id);
+            const peerInput = tdlibChatIdToInputPeer(chat_id, this._entityCache);
+            const result = await this.client.invoke(
+                new Api.messages.RequestWebView({
+                    peer: peerInput,
+                    bot: botInput,
+                    url: url || undefined,
+                    startParam: start_param || undefined,
+                    platform: 'web',
+                }),
+            );
+            return { url: result.url || '', query_id: String(result.queryId || '0') };
+        } catch (e) {
+            console.warn('[GramJs] requestBotWebView error', e);
+            return { url: '', query_id: '0' };
         }
     };
 

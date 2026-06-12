@@ -39,6 +39,7 @@ import Brightness7Icon from '@material-ui/icons/Brightness7';
 import ArchiveIcon from '@material-ui/icons/Archive';
 import UnarchiveIcon from '@material-ui/icons/Unarchive';
 import LinkIcon from '@material-ui/icons/Link';
+import WebIcon from '@material-ui/icons/Web';
 import Snackbar from '@material-ui/core/Snackbar';
 import { borderStyle } from '../Theme';
 import LockIcon from '@material-ui/icons/Lock';
@@ -768,6 +769,44 @@ class Header extends Component {
                                     title='Copiar enlace de invitación'
                                     onClick={this.handleCopyInviteLink}>
                                     <LinkIcon />
+                                </IconButton>
+                            );
+                        })()}
+                        {(() => {
+                            const _wcid = AppStore.getChatId();
+                            const _wchat = ChatStore.get(_wcid);
+                            if (!_wchat || !_wchat.type) return null;
+                            const _wtype = _wchat.type;
+                            if (_wtype['@type'] !== 'chatTypePrivate') return null;
+                            const _wuser = UserStore.get(_wtype.user_id);
+                            if (!_wuser || _wuser.type['@type'] !== 'userTypeBot') return null;
+                            return (
+                                <IconButton
+                                    className={classes.messageSearchIconButton}
+                                    aria-label='Abrir Web App del bot'
+                                    title='Abrir Web App del bot'
+                                    onClick={async () => {
+                                        if (!window._botWebAppRef) return;
+                                        try {
+                                            const res = await TdLibController.send({
+                                                '@type': 'requestBotWebView',
+                                                bot_user_id: _wtype.user_id,
+                                                chat_id: _wcid,
+                                            });
+                                            if (res && res.url) {
+                                                window._botWebAppRef.open(
+                                                    res.url,
+                                                    _wuser.first_name || 'Bot',
+                                                    _wcid,
+                                                    _wtype.user_id,
+                                                    res.query_id,
+                                                );
+                                            }
+                                        } catch (e) {
+                                            console.warn('[BotWebApp] requestBotWebView error', e);
+                                        }
+                                    }}>
+                                    <WebIcon />
                                 </IconButton>
                             );
                         })()}
