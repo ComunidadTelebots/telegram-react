@@ -137,3 +137,41 @@
     box-shadow: var(--shadow-bubble);
     color: #fff;
 }
+
+/* Formatting toolbar */
+.format-toolbar {
+    position: absolute;
+    display: flex;
+    align-items: center;
+    background: var(--color-background, #fff);
+    border: 1px solid rgba(0, 0, 0, 0.12);
+    border-radius: 8px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.18);
+    padding: 3px 4px;
+    gap: 2px;
+    z-index: 300;
+    transform: translateX(-50%);
+    white-space: nowrap;
+    pointer-events: all;
+}
+
+.fmt-btn {
+    background: none;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 13px;
+    padding: 4px 7px;
+    color: var(--color-text, #222);
+    transition: background 0.15s;
+    line-height: 1;
+}
+
+.fmt-btn:hover {
+    background: rgba(0, 0, 0, 0.07);
+}
+
+.fmt-btn-clear {
+    color: #999;
+    font-size: 11px;
+}

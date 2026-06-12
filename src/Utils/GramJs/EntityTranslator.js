@@ -773,6 +773,16 @@ export function translateMessage(msg, chatId) {
         ttl_expires_in: 0,
         via_bot_user_id: msg.viaBotId ? Number(msg.viaBotId) : 0,
         reactions: translateReactions(msg.reactions),
+        fact_check: translateFactCheck(msg.factcheck),
+    };
+}
+
+export function translateFactCheck(raw) {
+    if (!raw || raw.needCheck || !raw.text) return null;
+    return {
+        country: raw.country || '',
+        text: raw.text.text || '',
+        entities: (raw.text.entities || []).map(translateTextEntity).filter(Boolean),
     };
 }
 

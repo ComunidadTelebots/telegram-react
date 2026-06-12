@@ -1,0 +1,24 @@
+.fact-check {
+    display: flex;
+    flex-direction: column;
+    margin-top: 6px;
+    padding: 8px 10px;
+    border-left: 3px solid #f44336;
+    background: rgba(244, 67, 54, 0.07);
+    border-radius: 0 6px 6px 0;
+    font-size: 13px;
+    line-height: 1.4;
+}
+
+.fact-check-label {
+    font-weight: 700;
+    color: #f44336;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 3px;
+}
+
+.fact-check-text {
+    color: var(--color-text, #222);
+}

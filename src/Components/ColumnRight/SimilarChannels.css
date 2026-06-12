@@ -1,0 +1,50 @@
+.similar-channels {
+    padding: 8px 0 4px;
+}
+
+.similar-channels-title {
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--color-primary, #2196f3);
+    padding: 0 16px 6px;
+}
+
+.similar-channels-list {
+    display: flex;
+    flex-direction: column;
+}
+
+.similar-channel-item {
+    display: flex;
+    align-items: center;
+    padding: 6px 16px;
+    cursor: pointer;
+    gap: 10px;
+    transition: background 0.15s;
+}
+
+.similar-channel-item:hover {
+    background: rgba(0, 0, 0, 0.05);
+}
+
+.similar-channel-info {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.similar-channel-title {
+    font-size: 14px;
+    font-weight: 500;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: var(--color-text, #222);
+}
+
+.similar-channel-members {
+    font-size: 12px;
+    color: var(--color-hint, #888);
+}

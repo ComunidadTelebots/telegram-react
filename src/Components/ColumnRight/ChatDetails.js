@@ -75,6 +75,7 @@ import OptionStore from '../../Stores/OptionStore';
 import FileStore from '../../Stores/FileStore';
 import ApplicationStore from '../../Stores/ApplicationStore';
 import TdLibController from '../../Controllers/TdLibController';
+import SimilarChannels from './SimilarChannels';
 import './ChatDetails.css';
 
 const styles = theme => ({
@@ -895,6 +896,12 @@ class ChatDetails extends React.Component {
                         <>
                             <Divider />
                             <List>{items}</List>
+                        </>
+                    )}
+                    {chat && chat.type && chat.type['@type'] === 'chatTypeSupergroup' && chat.type.is_channel && (
+                        <>
+                            <Divider />
+                            <SimilarChannels chatId={chatId} />
                         </>
                     )}
                 </div>

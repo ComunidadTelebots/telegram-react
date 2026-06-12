@@ -53,15 +53,15 @@ const EmojiPickerButton = React.lazy(() => import('./../ColumnMiddle/EmojiPicker
 
 const styles = theme => ({
     inputboxBackground: {
-        background: theme.palette.type === 'dark' ? theme.palette.grey[900] : '#e6ebee'
+        background: theme.palette.type === 'dark' ? theme.palette.grey[900] : '#e6ebee',
     },
     inputboxBubble: {
         background: theme.palette.type === 'dark' ? theme.palette.background.default : '#FFFFFF',
         '&::after': {
-            background: theme.palette.type === 'dark' ? theme.palette.background.default : '#FFFFFF'
-        }
+            background: theme.palette.type === 'dark' ? theme.palette.background.default : '#FFFFFF',
+        },
     },
-    ...borderStyle(theme)
+    ...borderStyle(theme),
 });
 
 class InputBoxControl extends Component {
@@ -82,7 +82,8 @@ class InputBoxControl extends Component {
             scheduleDialogOpen: false,
             scheduleDateValue: '',
             pendingScheduleContent: null,
-            silentSend: false
+            silentSend: false,
+            formatBar: null,
         };
 
         document.addEventListener(
@@ -93,7 +94,7 @@ class InputBoxControl extends Component {
                     this.saveSelection();
                 }
             },
-            true
+            true,
         );
     }
 
@@ -107,7 +108,7 @@ class InputBoxControl extends Component {
             editMessageId,
             openEditMedia,
             openEditUrl,
-            recording
+            recording,
         } = this.state;
 
         if (nextProps.theme !== theme) {
@@ -233,7 +234,7 @@ class InputBoxControl extends Component {
         this.setState(
             {
                 editMessageId: messageId,
-                openEditMedia: messageId !== 0 && isEditedMedia(chatId, messageId)
+                openEditMedia: messageId !== 0 && isEditedMedia(chatId, messageId),
             },
             () => {
                 if (!this.state.openEditMedia) {
@@ -241,7 +242,7 @@ class InputBoxControl extends Component {
                     this.handleInput();
                     this.focusInput();
                 }
-            }
+            },
         );
     };
 
@@ -278,7 +279,7 @@ class InputBoxControl extends Component {
 
         this.beforeEditText = {
             innerHTML: element.innerHTML,
-            range: this.range
+            range: this.range,
         };
     }
 
@@ -311,10 +312,10 @@ class InputBoxControl extends Component {
             '@type': 'inputMessageSticker',
             sticker: {
                 '@type': 'inputFileId',
-                id: sticker.id
+                id: sticker.id,
             },
             width,
-            height
+            height,
         };
 
         if (thumbnail) {
@@ -323,10 +324,10 @@ class InputBoxControl extends Component {
             content.thumbnail = {
                 thumbnail: {
                     '@type': 'inputFileId',
-                    id: photo.id
+                    id: photo.id,
                 },
                 width: thumbnailWidth,
-                height: thumbnailHeight
+                height: thumbnailHeight,
             };
         }
 
@@ -334,7 +335,7 @@ class InputBoxControl extends Component {
 
         TdLibController.clientUpdate({
             '@type': 'clientUpdateLocalStickersHint',
-            hint: null
+            hint: null,
         });
     };
 
@@ -364,11 +365,11 @@ class InputBoxControl extends Component {
                 chatId: update.nextChatId,
                 replyToMessageId: getChatDraftReplyToMessageId(update.nextChatId),
                 editMessageId: 0,
-                openEditUrl: false
+                openEditUrl: false,
             },
             () => {
                 this.loadDraft();
-            }
+            },
         );
     };
 
@@ -381,7 +382,7 @@ class InputBoxControl extends Component {
         if (formattedText) {
             this.setFormattedText(formattedText);
             this.setState({
-                replyToMessageId: getChatDraftReplyToMessageId(chatId)
+                replyToMessageId: getChatDraftReplyToMessageId(chatId),
             });
         } else {
             element.innerText = null;
@@ -448,7 +449,7 @@ class InputBoxControl extends Component {
         TdLibController.send({
             '@type': 'setChatDraftMessage',
             chat_id: chatId,
-            draft_message: draftMessage
+            draft_message: draftMessage,
         });
     };
 
@@ -468,11 +469,11 @@ class InputBoxControl extends Component {
                           text: {
                               '@type': 'formattedText',
                               text,
-                              entities
+                              entities,
                           },
                           disable_web_page_preview: false,
-                          clear_draft: false
-                      }
+                          clear_draft: false,
+                      },
                   }
                 : null;
 
@@ -495,7 +496,7 @@ class InputBoxControl extends Component {
         TdLibController.clientUpdate({
             '@type': 'clientUpdateEditMessage',
             chatId,
-            messageId: 0
+            messageId: 0,
         });
 
         if (!innerHTML) return;
@@ -506,13 +507,13 @@ class InputBoxControl extends Component {
         const formattedText = {
             '@type': 'formattedText',
             text,
-            entities
+            entities,
         };
         const inputContent = {
             '@type': 'inputMessageText',
             text: formattedText,
             disable_web_page_preview: false,
-            clear_draft: true
+            clear_draft: true,
         };
 
         if (editMessageId) {
@@ -535,7 +536,7 @@ class InputBoxControl extends Component {
 
     handleAttachPoll = () => {
         TdLibController.clientUpdate({
-            '@type': 'clientUpdateNewPoll'
+            '@type': 'clientUpdateNewPoll',
         });
     };
 
@@ -605,7 +606,7 @@ class InputBoxControl extends Component {
             if (hint) {
                 TdLibController.clientUpdate({
                     '@type': 'clientUpdateLocalStickersHint',
-                    hint: null
+                    hint: null,
                 });
             }
 
@@ -622,7 +623,7 @@ class InputBoxControl extends Component {
             if (hint) {
                 TdLibController.clientUpdate({
                     '@type': 'clientUpdateLocalStickersHint',
-                    hint: null
+                    hint: null,
                 });
             }
 
@@ -633,30 +634,30 @@ class InputBoxControl extends Component {
         TdLibController.send({
             '@type': 'getStickers',
             emoji: match[0],
-            limit: 100
+            limit: 100,
         }).then(stickers => {
             TdLibController.clientUpdate({
                 '@type': 'clientUpdateLocalStickersHint',
                 hint: {
                     timestamp,
                     emoji: match[0],
-                    stickers
-                }
+                    stickers,
+                },
             });
         });
 
         TdLibController.send({
             '@type': 'searchStickers',
             emoji: match[0],
-            limit: 100
+            limit: 100,
         }).then(stickers => {
             TdLibController.clientUpdate({
                 '@type': 'clientUpdateRemoteStickersHint',
                 hint: {
                     timestamp,
                     emoji: match[0],
-                    stickers
-                }
+                    stickers,
+                },
             });
         });
     }
@@ -710,8 +711,44 @@ class InputBoxControl extends Component {
         document.execCommand('strikeThrough', false, null);
     };
 
+    handleSpoiler = () => {
+        const sel = document.getSelection();
+        if (!sel || sel.isCollapsed) return;
+        const text = sel.toString();
+        if (!text) return;
+        document.execCommand('removeFormat', false, null);
+        document.execCommand('insertHTML', false, `<span class="spoiler-text">${text}</span>`);
+        this.hideFormatBar();
+    };
+
     handleUrl = () => {
         this.openEditUrlDialog();
+    };
+
+    showFormatBar = () => {
+        const sel = document.getSelection();
+        if (!sel || sel.isCollapsed || !sel.toString().trim()) {
+            this.setState({ formatBar: null });
+            return;
+        }
+        const input = this.newMessageRef && this.newMessageRef.current;
+        if (!input || !input.contains(sel.anchorNode)) {
+            this.setState({ formatBar: null });
+            return;
+        }
+        const range = sel.getRangeAt(0);
+        const rect = range.getBoundingClientRect();
+        const inputRect = input.getBoundingClientRect();
+        this.setState({
+            formatBar: {
+                x: rect.left - inputRect.left + rect.width / 2,
+                y: rect.top - inputRect.top - 44,
+            },
+        });
+    };
+
+    hideFormatBar = () => {
+        this.setState({ formatBar: null });
     };
 
     handleCancel = () => {
@@ -720,13 +757,13 @@ class InputBoxControl extends Component {
             TdLibController.clientUpdate({
                 '@type': 'clientUpdateEditMessage',
                 chatId,
-                messageId: 0
+                messageId: 0,
             });
         } else if (replyToMessageId) {
             TdLibController.clientUpdate({
                 '@type': 'clientUpdateReply',
                 chatId,
-                messageId: 0
+                messageId: 0,
             });
         }
     };
@@ -766,7 +803,7 @@ class InputBoxControl extends Component {
                         if (editMessageId) return;
 
                         TdLibController.clientUpdate({
-                            '@type': 'clientUpdateTryEditMessage'
+                            '@type': 'clientUpdateTryEditMessage',
                         });
 
                         event.preventDefault();
@@ -832,7 +869,7 @@ class InputBoxControl extends Component {
             '@type': 'inputMessagePhoto',
             photo: { '@type': 'inputFileBlob', name: file.name, data: file },
             width: file.photoWidth,
-            height: file.photoHeight
+            height: file.photoHeight,
         };
 
         this.sendMessage(content, true, result => {
@@ -854,7 +891,7 @@ class InputBoxControl extends Component {
 
         const content = {
             '@type': 'inputMessageDocument',
-            document: { '@type': 'inputFileBlob', name: file.name, data: file }
+            document: { '@type': 'inputFileBlob', name: file.name, data: file },
         };
 
         this.sendMessage(content, true, result => FileStore.uploadFile(result.content.document.document.id, result));
@@ -905,7 +942,7 @@ class InputBoxControl extends Component {
             '@type': 'inputMessageVoiceNote',
             voice_note: { '@type': 'inputFileBlob', name: file.name, data: file },
             duration,
-            waveform: ''
+            waveform: '',
         };
 
         this.sendMessage(content, true, () => {});
@@ -993,7 +1030,7 @@ class InputBoxControl extends Component {
             '@type': 'editMessageMedia',
             chat_id: chatId,
             message_id: editMessageId,
-            input_message_content: content
+            input_message_content: content,
         });
 
         callback(result);
@@ -1010,7 +1047,7 @@ class InputBoxControl extends Component {
             '@type': 'editMessageCaption',
             chat_id: chatId,
             message_id: editMessageId,
-            caption
+            caption,
         });
 
         callback(result);
@@ -1028,7 +1065,7 @@ class InputBoxControl extends Component {
                 '@type': 'editMessageText',
                 chat_id: chatId,
                 message_id: editMessageId,
-                input_message_content: content
+                input_message_content: content,
             });
 
             callback(result);
@@ -1040,7 +1077,7 @@ class InputBoxControl extends Component {
         const d = new Date(Date.now() + 3600000);
         const pad = n => String(n).padStart(2, '0');
         return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(
-            d.getMinutes()
+            d.getMinutes(),
         )}`;
     };
 
@@ -1059,12 +1096,12 @@ class InputBoxControl extends Component {
         const content = {
             '@type': 'inputMessageText',
             text: { '@type': 'formattedText', text, entities },
-            clear_draft: true
+            clear_draft: true,
         };
         this.setState({
             pendingScheduleContent: { content, clearDraft: true, callback: () => {} },
             scheduleDateValue: this._scheduleIsoDefault(),
-            scheduleDialogOpen: true
+            scheduleDialogOpen: true,
         });
     };
 
@@ -1096,7 +1133,7 @@ class InputBoxControl extends Component {
                 reply_to_message_id: replyToMessageId,
                 input_message_content: content,
                 schedule_date: scheduleDate || undefined,
-                disable_notification: silentSend || undefined
+                disable_notification: silentSend || undefined,
             });
 
             this.setState({ replyToMessageId: 0 }, () => {
@@ -1109,7 +1146,7 @@ class InputBoxControl extends Component {
             TdLibController.send({
                 '@type': 'viewMessages',
                 chat_id: chatId,
-                message_ids: [result.id]
+                message_ids: [result.id],
             });
 
             callback(result);
@@ -1154,18 +1191,18 @@ class InputBoxControl extends Component {
         this.setState({
             openEditUrl: true,
             defaultUrl,
-            defaultText
+            defaultText,
         });
     };
 
     closeEditUrlDialog = () => {
         this.setState(
             {
-                openEditUrl: false
+                openEditUrl: false,
             },
             () => {
                 this.restoreSelection();
-            }
+            },
         );
     };
 
@@ -1270,11 +1307,11 @@ class InputBoxControl extends Component {
     closeEditMediaDialog() {
         this.setState(
             {
-                openEditMedia: false
+                openEditMedia: false,
             },
             () => {
                 this.restoreSelection();
-            }
+            },
         );
     }
 
@@ -1297,7 +1334,8 @@ class InputBoxControl extends Component {
             recording,
             scheduleDialogOpen,
             scheduleDateValue,
-            silentSend
+            silentSend,
+            formatBar,
         } = this.state;
 
         const isMediaEditing = editMessageId > 0 && !isTextMessage(chatId, editMessageId);
@@ -1332,7 +1370,7 @@ class InputBoxControl extends Component {
                                     <TagFacesIcon />
                                 </IconButton>
                             </div>
-                            <div className='inputbox-middle-column'>
+                            <div className='inputbox-middle-column' style={{ position: 'relative' }}>
                                 <div
                                     id='inputbox-message'
                                     ref={this.newMessageRef}
@@ -1342,7 +1380,62 @@ class InputBoxControl extends Component {
                                     onKeyDown={this.handleKeyDown}
                                     onPaste={this.handlePaste}
                                     onInput={this.handleInput}
+                                    onMouseUp={this.showFormatBar}
+                                    onKeyUp={this.showFormatBar}
                                 />
+                                {formatBar && (
+                                    <div
+                                        className='format-toolbar'
+                                        style={{ left: formatBar.x, top: formatBar.y }}
+                                        onMouseDown={e => e.preventDefault()}>
+                                        <button
+                                            className='fmt-btn'
+                                            title='Negrita (Ctrl+B)'
+                                            onMouseDown={this.handleBold}>
+                                            <b>B</b>
+                                        </button>
+                                        <button
+                                            className='fmt-btn'
+                                            title='Cursiva (Ctrl+I)'
+                                            onMouseDown={this.handleItalic}>
+                                            <i>I</i>
+                                        </button>
+                                        <button
+                                            className='fmt-btn'
+                                            title='Subrayado (Ctrl+U)'
+                                            onMouseDown={this.handleUnderline}>
+                                            <u>U</u>
+                                        </button>
+                                        <button
+                                            className='fmt-btn'
+                                            title='Tachado'
+                                            onMouseDown={this.handleStrikeThrough}>
+                                            <s>S</s>
+                                        </button>
+                                        <button
+                                            className='fmt-btn'
+                                            title='Código'
+                                            onMouseDown={this.handleMono}
+                                            style={{ fontFamily: 'monospace' }}>
+                                            &lt;/&gt;
+                                        </button>
+                                        <button className='fmt-btn' title='Spoiler' onMouseDown={this.handleSpoiler}>
+                                            👁
+                                        </button>
+                                        <button
+                                            className='fmt-btn'
+                                            title='Enlace (Ctrl+K)'
+                                            onMouseDown={this.handleUrl}>
+                                            🔗
+                                        </button>
+                                        <button
+                                            className='fmt-btn fmt-btn-clear'
+                                            title='Quitar formato'
+                                            onMouseDown={this.handleClear}>
+                                            ✕
+                                        </button>
+                                    </div>
+                                )}
                             </div>
                             <div className='inputbox-right-column'>
                                 <input

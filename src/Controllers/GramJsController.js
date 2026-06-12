@@ -849,6 +849,8 @@ class GramJsController extends EventEmitter {
                 return this._getMessageLink(req);
             case 'getActiveSessions':
                 return this._getActiveSessions(req);
+            case 'getSimilarChannels':
+                return this._getSimilarChannels(req);
             case 'terminateSession':
                 return this._terminateSession(req);
             case 'terminateAllOtherSessions':
@@ -1031,6 +1033,8 @@ class GramJsController extends EventEmitter {
             // ── Sessions ─────────────────────────────────────────────────────
             case 'getActiveSessions':
                 return this._getActiveSessions(req);
+            case 'getSimilarChannels':
+                return this._getSimilarChannels(req);
             case 'terminateSession':
                 return this._terminateSession(req);
             case 'terminateAllOtherSessions':
@@ -1176,6 +1180,18 @@ class GramJsController extends EventEmitter {
             }),
         );
         return {};
+    };
+
+    _getSimilarChannels = async ({ chat_id }) => {
+        try {
+            const inputPeer = tdlibChatIdToInputPeer(chat_id, this._entityCache);
+            const result = await this.client.invoke(new Api.channels.GetChannelRecommendations({ channel: inputPeer }));
+            const chats = (result.chats || []).map(c => translateChat(c, null, this._entityCache)).filter(Boolean);
+            return { chats };
+        } catch (e) {
+            console.warn('[GramJs] getSimilarChannels error', e);
+            return { chats: [] };
+        }
     };
 
     _getActiveSessions = async () => {

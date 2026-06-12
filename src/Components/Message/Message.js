@@ -23,6 +23,7 @@ import WebPage from './Media/WebPage';
 import Reactions from './Reactions';
 import InlineKeyboard from './InlineKeyboard';
 import CommentsButton from './CommentsButton';
+import FactCheck from './FactCheck';
 import {
     getEmojiMatches,
     getText,
@@ -707,6 +708,7 @@ class Message extends Component {
                             <div className='message-translation message-translation-loading'>{t('Translate')}…</div>
                         )}
                         {translationText && <div className='message-translation'>{translationText}</div>}
+                        {message.fact_check && <FactCheck factCheck={message.fact_check} />}
                         <Reactions chatId={chatId} messageId={messageId} />
                         {message.interaction_info && message.interaction_info.reply_info != null && (
                             <CommentsButton
