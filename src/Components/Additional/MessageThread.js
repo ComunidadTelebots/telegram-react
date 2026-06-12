@@ -10,18 +10,18 @@ import './MessageThread.css';
 class MessageThread extends Component {
     constructor(props) {
         super(props);
-        this.state = { open: false, chatId: 0, messageId: 0, messages: [], loading: false };
+        this.state = { open: false, chatId: 0, messageId: 0, topicId: 0, title: '', messages: [], loading: false };
     }
 
-    open(chatId, messageId) {
-        this.setState({ open: true, chatId, messageId, messages: [], loading: true }, () => {
-            this._load(chatId, messageId);
+    open(chatId, messageId, { topicId = 0, title = 'Comments' } = {}) {
+        this.setState({ open: true, chatId, messageId, topicId, title, messages: [], loading: true }, () => {
+            this._load(chatId, messageId, topicId);
         });
     }
 
     close = () => this.setState({ open: false });
 
-    _load = async (chatId, messageId) => {
+    _load = async (chatId, messageId, topicId) => {
         try {
             const result = await TdLibController.send({
                 '@type': 'getMessageThreadHistory',
@@ -30,6 +30,7 @@ class MessageThread extends Component {
                 from_message_id: 0,
                 limit: 50,
                 offset: 0,
+                message_thread_id: topicId || 0,
             });
             const messages = result && result.messages ? result.messages : [];
             this.setState({ messages, loading: false });
@@ -50,7 +51,7 @@ class MessageThread extends Component {
                         <IconButton onClick={this.close} size='small'>
                             <ArrowBackIcon />
                         </IconButton>
-                        <span className='message-thread-title'>Comments</span>
+                        <span className='message-thread-title'>{title}</span>
                     </div>
                     <div className='message-thread-body'>
                         {loading && (

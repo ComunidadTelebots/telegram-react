@@ -30,8 +30,10 @@ import HeaderProgress from './HeaderProgress';
 import ChatSearch from './ChatSearch';
 import AutoDeleteTimer from './AutoDeleteTimer';
 import ChannelStatsDialog from './ChannelStatsDialog';
+import ForumTopicsList from '../Additional/ForumTopicsList';
 import TimerIcon from '@material-ui/icons/Timer';
 import BarChartIcon from '@material-ui/icons/BarChart';
+import ForumIcon from '@material-ui/icons/Forum';
 import VolumeOffIcon from '@material-ui/icons/VolumeOff';
 import VolumeUpIcon from '@material-ui/icons/VolumeUp';
 import Brightness4Icon from '@material-ui/icons/Brightness4';
@@ -700,15 +702,30 @@ class Header extends Component {
                             const _type = _chat && _chat.type;
                             if (!_type || _type['@type'] !== 'chatTypeSupergroup') return null;
                             const _sg = SupergroupStore.get(_type.supergroup_id);
-                            if (!_sg || !_sg.is_broadcast) return null;
+                            if (!_sg) return null;
                             return (
-                                <IconButton
-                                    className={classes.messageSearchIconButton}
-                                    aria-label='Estadísticas del canal'
-                                    title='Estadísticas del canal'
-                                    onClick={() => this.channelStatsRef && this.channelStatsRef.open()}>
-                                    <BarChartIcon />
-                                </IconButton>
+                                <>
+                                    {_sg.is_forum && (
+                                        <IconButton
+                                            className={classes.messageSearchIconButton}
+                                            aria-label='Forum topics'
+                                            title='Forum topics'
+                                            onClick={() =>
+                                                this.forumTopicsRef && this.forumTopicsRef.open(_cid, _chat.title || '')
+                                            }>
+                                            <ForumIcon />
+                                        </IconButton>
+                                    )}
+                                    {_sg.is_broadcast && (
+                                        <IconButton
+                                            className={classes.messageSearchIconButton}
+                                            aria-label='Estadísticas del canal'
+                                            title='Estadísticas del canal'
+                                            onClick={() => this.channelStatsRef && this.channelStatsRef.open()}>
+                                            <BarChartIcon />
+                                        </IconButton>
+                                    )}
+                                </>
                             );
                         })()}
                         {(() => {
@@ -851,6 +868,7 @@ class Header extends Component {
                         </Button>
                     </DialogActions>
                 </Dialog>
+                <ForumTopicsList ref={r => (this.forumTopicsRef = r)} />
             </>
         );
     }

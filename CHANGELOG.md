@@ -1,5 +1,10 @@
 # Changelog
 
+## [2026-06-12] (feat/forum-topics)
+
+### Added
+- **Forum Topics** — panel lateral (derecha) que se abre pulsando el icono Forum en el header de grupos con `is_forum: true`. Lista todos los topics con su color, nombre, badge de no leídos y estado (cerrado/fijado). Clic en un topic abre el MessageThread con el hilo del topic. Botón "+" para crear nuevos topics con título y color aleatorio. Adapta `GramJsController` con `_getForumTopics` (`channels.GetForumTopics`) y `_createForumTopic` (`channels.CreateForumTopic`). Expone `is_forum` del supergroup en el objeto traducido. Archivos: `ForumTopicsList.{js,css}` (nuevo), `Header.js`, `MessageThread.js`, `GramJsController.js`.
+
 ## [2026-06-12] (sesión 28)
 
 ### Added

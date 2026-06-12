@@ -566,6 +566,7 @@ class GramJsController extends EventEmitter {
                             is_verified: !!entity.verified,
                             restriction_reason: '',
                             is_scam: !!entity.scam,
+                            is_forum: !!entity.forum,
                         },
                     });
                 }
@@ -1024,6 +1025,12 @@ class GramJsController extends EventEmitter {
             case 'getMessageThreadHistory':
                 return this._getMessageThreadHistory(req);
 
+            // ── Forum topics ─────────────────────────────────────────────────
+            case 'getForumTopics':
+                return this._getForumTopics(req);
+            case 'createForumTopic':
+                return this._createForumTopic(req);
+
             // ── Group management ─────────────────────────────────────────────
             case 'setSupergroupSlowModeDelay':
                 return this._setSupergroupSlowModeDelay(req);
@@ -1121,6 +1128,43 @@ class GramJsController extends EventEmitter {
         const { translateMessage } = await import('../Utils/GramJs/EntityTranslator');
         const messages = (result.messages || []).map(m => translateMessage(m, chat_id));
         return { '@type': 'messages', messages, total_count: result.count || messages.length };
+    };
+
+    _getForumTopics = async ({ chat_id, limit = 100 }) => {
+        const inputPeer = await this._getInputPeer(chat_id);
+        const result = await this.client.invoke(
+            new Api.channels.GetForumTopics({
+                channel: inputPeer,
+                offsetDate: 0,
+                offsetId: 0,
+                offsetTopic: 0,
+                limit,
+            }),
+        );
+        const topics = (result.topics || []).map(t => ({
+            id: t.id,
+            title: t.title,
+            icon_color: t.iconColor || 0,
+            unread_count: t.unreadCount || 0,
+            unread_mention_count: t.unreadMentionsCount || 0,
+            is_closed: !!t.closed,
+            is_pinned: !!t.pinned,
+            is_hidden: !!t.hidden,
+        }));
+        return { '@type': 'forumTopics', topics, total_count: result.count || topics.length };
+    };
+
+    _createForumTopic = async ({ chat_id, title, icon_color }) => {
+        const inputPeer = await this._getInputPeer(chat_id);
+        await this.client.invoke(
+            new Api.channels.CreateForumTopic({
+                channel: inputPeer,
+                title,
+                iconColor: icon_color || 0,
+                randomId: BigInt(Math.floor(Math.random() * 1e15)),
+            }),
+        );
+        return {};
     };
 
     _setSupergroupSlowModeDelay = async ({ supergroup_id, seconds }) => {
@@ -1871,6 +1915,7 @@ class GramJsController extends EventEmitter {
                     is_verified: false,
                     restriction_reason: '',
                     is_scam: false,
+                    is_forum: false,
                 },
             });
             const tdChat = translateChat(newChat, null);
