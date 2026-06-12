@@ -195,9 +195,9 @@ class WebPage extends React.Component {
 
         const { description, instant_view_version, site_name, title, url, type } = web_page;
 
-        // Evaluados de forma independiente: una página puede tener ambos, ninguno, o solo uno
         const hasInstantView = instant_view_version > 0;
-        const hasAmp = type === 'article' && url && url.startsWith('https://');
+        // Mostrar AMP solo si no hay Instant View nativo (es el fallback para artículos)
+        const hasAmp = !hasInstantView && type === 'article' && url && url.startsWith('https://');
 
         const webPageContent = (
             <>

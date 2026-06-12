@@ -12,6 +12,9 @@ import { compose } from 'recompose';
 import withStyles from '@material-ui/core/styles/withStyles';
 import { withTranslation } from 'react-i18next';
 import CloseIcon from '../../Assets/Icons/Close';
+import OpenInNewIcon from '@material-ui/icons/OpenInNew';
+import ShareIcon from '@material-ui/icons/Share';
+import Tooltip from '@material-ui/core/Tooltip';
 import Article from './Article';
 import InstantViewMediaViewer from '../Viewer/InstantViewMediaViewer';
 import IVContext from './IVContext';
@@ -53,7 +56,7 @@ class InstantViewer extends React.Component {
         this.articleRef = React.createRef();
         this.instantViewerRef = React.createRef();
 
-        this.state = {};
+        this.state = { readProgress: 0 };
 
         this.updateItemsInView = throttle(this.updateItemsInView, 500);
     }
@@ -257,6 +260,25 @@ class InstantViewer extends React.Component {
         setInstantViewContent(null);
     }
 
+    handleOpenExternal = () => {
+        const { instantView } = this.props;
+        const url = instantView && instantView.url;
+        if (url) window.open(url, '_blank', 'noopener,noreferrer');
+    };
+
+    handleShare = async () => {
+        const { instantView } = this.props;
+        const url = instantView && instantView.url;
+        if (!url) return;
+        try {
+            if (navigator.share) {
+                await navigator.share({ url });
+            } else {
+                await navigator.clipboard.writeText(url);
+            }
+        } catch {}
+    };
+
     handleBack = () => {
         const { hasPrev, hasScroll } = this.state;
         if (hasScroll) {
@@ -276,10 +298,10 @@ class InstantViewer extends React.Component {
 
     handleScroll = () => {
         const element = this.instantViewerRef.current;
-        this.setState({
-            hasScroll: element.scrollTop > 50,
-        });
-
+        const scrolled = element.scrollTop;
+        const total = element.scrollHeight - element.clientHeight;
+        const readProgress = total > 0 ? Math.min(100, Math.round((scrolled / total) * 100)) : 0;
+        this.setState({ hasScroll: scrolled > 50, readProgress });
         this.updateItemsInView();
     };
 
@@ -312,11 +334,14 @@ class InstantViewer extends React.Component {
 
     render() {
         const { classes, instantView } = this.props;
-        const { hasPrev, hasScroll, media, caption, url } = this.state;
+        const { hasPrev, hasScroll, media, caption, url, readProgress } = this.state;
         if (!instantView) return null;
 
         return (
             <IVContext.Provider value={instantView}>
+                <div className='instant-viewer-progress-bar'>
+                    <div className='instant-viewer-progress-fill' style={{ width: `${readProgress}%` }} />
+                </div>
                 <div
                     ref={this.instantViewerRef}
                     className={classNames('instant-viewer', classes.instantViewer)}
@@ -343,6 +368,22 @@ class InstantViewer extends React.Component {
                         <MediaViewerButton className={classes.closeButton} onClick={this.handleClose}>
                             <CloseIcon />
                         </MediaViewerButton>
+                        <Tooltip title='Abrir en navegador' placement='left'>
+                            <MediaViewerButton
+                                className={classes.closeButton}
+                                style={{ top: 52 }}
+                                onClick={this.handleOpenExternal}>
+                                <OpenInNewIcon />
+                            </MediaViewerButton>
+                        </Tooltip>
+                        <Tooltip title='Compartir enlace' placement='left'>
+                            <MediaViewerButton
+                                className={classes.closeButton}
+                                style={{ top: 104 }}
+                                onClick={this.handleShare}>
+                                <ShareIcon />
+                            </MediaViewerButton>
+                        </Tooltip>
                     </div>
                 </div>
                 {media && <InstantViewMediaViewer media={media} size={IV_PHOTO_SIZE} caption={caption} url={url} />}
