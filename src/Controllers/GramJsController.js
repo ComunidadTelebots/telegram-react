@@ -992,6 +992,12 @@ class GramJsController extends EventEmitter {
             case 'removeNotification':
                 return {};
 
+            // ── Inline bots ───────────────────────────────────────────────────
+            case 'getInlineBotResults':
+                return this._getInlineBotResults(req);
+            case 'sendInlineBotResult':
+                return this._sendInlineBotResult(req);
+
             // ── Reacciones ────────────────────────────────────────────────────
             case 'sendMessageReaction':
                 return this._sendReaction(req);
@@ -2756,6 +2762,61 @@ class GramJsController extends EventEmitter {
             console.warn('[GramJs] getWebPageInstantView error:', e);
             return {};
         }
+    };
+
+    // ─── Inline bot handlers ─────────────────────────────────────────────────
+
+    _getInlineBotResults = async ({ bot_username, chat_id, query, offset = '' }) => {
+        try {
+            const botInputUser = await this.client.getInputEntity(bot_username);
+            const peerInputPeer = tdlibChatIdToInputPeer(chat_id, this._entityCache);
+            const result = await this.client.invoke(
+                new Api.messages.GetInlineBotResults({
+                    bot: botInputUser,
+                    peer: peerInputPeer,
+                    query: query || '',
+                    offset,
+                }),
+            );
+            const items = (result.results || []).map(r => ({
+                id: r.id,
+                type: r.type || 'article',
+                title: r.title || '',
+                description: r.description || '',
+                thumb_url: r.thumb?.url || (r.thumb?.sizes?.[0]?.location ? null : null),
+                content_url: r.content?.url || null,
+                send_message: r.sendMessage,
+            }));
+            return {
+                query_id: String(result.queryId || '0'),
+                results: items,
+                switch_pm_text: result.switchPm?.text || null,
+                switch_pm_parameter: result.switchPm?.startParam || null,
+            };
+        } catch (err) {
+            console.error('[GramJs] getInlineBotResults error', err);
+            return { query_id: '0', results: [] };
+        }
+    };
+
+    _sendInlineBotResult = async ({ chat_id, query_id, result_id, reply_to_message_id }) => {
+        try {
+            const inputPeer = tdlibChatIdToInputPeer(chat_id, this._entityCache);
+            await this.client.invoke(
+                new Api.messages.SendInlineBotResult({
+                    peer: inputPeer,
+                    queryId: BigInt(query_id),
+                    id: result_id,
+                    randomId: BigInt(Math.floor(Math.random() * Number.MAX_SAFE_INTEGER)),
+                    replyTo: reply_to_message_id
+                        ? new Api.InputReplyToMessage({ replyToMsgId: reply_to_message_id })
+                        : undefined,
+                }),
+            );
+        } catch (err) {
+            console.error('[GramJs] sendInlineBotResult error', err);
+        }
+        return {};
     };
 
     // ─── Reaction handlers ───────────────────────────────────────────────────

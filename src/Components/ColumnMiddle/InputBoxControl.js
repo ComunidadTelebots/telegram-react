@@ -33,6 +33,7 @@ import GifPicker from './GifPicker';
 import GifIcon from '@material-ui/icons/Gif';
 import MentionAutocomplete from './MentionAutocomplete';
 import BotCommandSuggestions from './BotCommandSuggestions';
+import InlineBotResults from './InlineBotResults';
 import EditUrlDialog from '../Popup/EditUrlDialog';
 import InputBoxHeader from './InputBoxHeader';
 import PasteFilesDialog from '../Popup/PasteFilesDialog';
@@ -97,6 +98,10 @@ class InputBoxControl extends Component {
             botCommands: [],
             charCount: 0,
             ctrlEnterMode: localStorage.getItem('ctrlEnterMode') === 'true',
+            inlineQueryId: null,
+            inlineResults: null,
+            inlineBotUsername: null,
+            inlineSwitchPm: null,
         };
 
         document.addEventListener(
@@ -1308,11 +1313,76 @@ class InputBoxControl extends Component {
         this.setState({ botCommandQuery: null });
     };
 
+    detectInlineBot = async () => {
+        const element = this.newMessageRef.current;
+        if (!element) return;
+
+        const text = (element.innerText || '').trim();
+        // Inline query pattern: text starts with @username followed by space + query
+        const match = text.match(/^@(\w+) (.*)$/);
+        if (!match) {
+            if (this.state.inlineResults !== null) {
+                this.setState({ inlineResults: null, inlineQueryId: null, inlineBotUsername: null });
+            }
+            return;
+        }
+
+        const [, botUsername, query] = match;
+        const { chatId } = this.state;
+
+        // Debounce: skip if same query as last request
+        const cacheKey = `${botUsername}::${query}`;
+        if (this._lastInlineKey === cacheKey) return;
+        this._lastInlineKey = cacheKey;
+
+        try {
+            const result = await TdLibController.send({
+                '@type': 'getInlineBotResults',
+                bot_username: botUsername,
+                chat_id: chatId,
+                query,
+            });
+            if (this._lastInlineKey === cacheKey) {
+                this.setState({
+                    inlineResults: result.results || [],
+                    inlineQueryId: result.query_id,
+                    inlineBotUsername: botUsername,
+                    inlineSwitchPm: result.switch_pm_text || null,
+                });
+            }
+        } catch {
+            if (this._lastInlineKey === cacheKey) {
+                this.setState({ inlineResults: null, inlineQueryId: null });
+            }
+        }
+    };
+
+    handleInlineResultSelect = async result => {
+        const { chatId, inlineQueryId } = this.state;
+        const element = this.newMessageRef.current;
+
+        this.setState({ inlineResults: null, inlineQueryId: null, inlineBotUsername: null });
+        this._lastInlineKey = null;
+        if (element) element.innerText = '';
+
+        try {
+            await TdLibController.send({
+                '@type': 'sendInlineBotResult',
+                chat_id: chatId,
+                query_id: inlineQueryId,
+                result_id: result.id,
+            });
+        } catch (e) {
+            console.warn('[inline] sendInlineBotResult error', e);
+        }
+    };
+
     handleInput = async event => {
         this.setTyping();
         this.setHints();
         this.detectMention();
         this.detectBotCommand();
+        this.detectInlineBot();
         const el = this.newMessageRef.current;
         if (el) this.setState({ charCount: (el.innerText || '').length });
     };
@@ -1500,6 +1570,9 @@ class InputBoxControl extends Component {
             botCommands,
             charCount,
             ctrlEnterMode,
+            inlineResults,
+            inlineBotUsername,
+            inlineSwitchPm,
         } = this.state;
         const MAX_MSG_LEN = 4096;
         const showCharCounter = charCount > 3000;
@@ -1557,6 +1630,14 @@ class InputBoxControl extends Component {
                                         members={mentionMembers}
                                         query={mentionQuery}
                                         onSelect={this.handleMentionSelect}
+                                    />
+                                )}
+                                {inlineResults !== null && (
+                                    <InlineBotResults
+                                        results={inlineResults}
+                                        botUsername={inlineBotUsername}
+                                        switchPmText={inlineSwitchPm}
+                                        onSelect={this.handleInlineResultSelect}
                                     />
                                 )}
                                 <div
