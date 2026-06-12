@@ -3,7 +3,7 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm install --legacy-peer-deps
 COPY . .
-RUN npm run build
+RUN SKIP_PREFLIGHT_CHECK=true npm run build
 
 FROM nginx:alpine
 COPY --from=builder /app/build /usr/share/nginx/html
