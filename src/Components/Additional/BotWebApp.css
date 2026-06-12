@@ -11,10 +11,15 @@
 .bot-webapp-panel {
     width: 420px;
     max-width: 100vw;
-    background: var(--page-background, #fff);
+    background: var(--design-page-background, #fff);
     display: flex;
     flex-direction: column;
     box-shadow: -2px 0 16px rgba(0, 0, 0, 0.2);
+    transition: width 0.2s ease;
+}
+
+.bot-webapp-expanded {
+    width: 600px;
 }
 
 .bot-webapp-header {
@@ -22,7 +27,7 @@
     align-items: center;
     gap: 8px;
     padding: 8px 12px;
-    border-bottom: 1px solid var(--divider-color, #e0e0e0);
+    border-bottom: 1px solid var(--divider, rgba(0, 0, 0, 0.12));
     min-height: 52px;
     flex-shrink: 0;
 }
@@ -34,6 +39,7 @@
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+    color: var(--fg1, #222);
 }
 
 .bot-webapp-body {
@@ -48,6 +54,8 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    background: var(--design-page-background, #fff);
+    z-index: 1;
 }
 
 .bot-webapp-frame {
@@ -57,8 +65,103 @@
     transition: opacity 0.2s;
 }
 
+.bot-webapp-main-btn {
+    flex-shrink: 0;
+    width: 100%;
+    padding: 14px 16px;
+    border: none;
+    cursor: pointer;
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+    transition: opacity 0.15s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.bot-webapp-main-btn:disabled {
+    cursor: default;
+}
+
+.bot-webapp-secondary-btn {
+    flex-shrink: 0;
+    width: 100%;
+    padding: 12px 16px;
+    border: none;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    transition: opacity 0.15s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.bot-webapp-secondary-btn:disabled {
+    cursor: default;
+}
+
+.bot-webapp-popup-overlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.4);
+    z-index: 10;
+}
+
+.bot-webapp-popup {
+    background: var(--design-panel-background, #fff);
+    border-radius: 12px;
+    padding: 20px;
+    max-width: 320px;
+    width: calc(100% - 40px);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.24);
+}
+
+.bot-webapp-popup-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--fg1, #222);
+    margin-bottom: 8px;
+}
+
+.bot-webapp-popup-message {
+    font-size: 14px;
+    color: var(--fg2, #555);
+    line-height: 1.5;
+    margin-bottom: 16px;
+}
+
+.bot-webapp-popup-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.bot-webapp-popup-btn {
+    padding: 10px 16px;
+    border: none;
+    border-radius: 8px;
+    background: var(--design-hover-background, #f0f0f0);
+    color: var(--color-accent-main, #2196f3);
+    font-size: 15px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: opacity 0.15s;
+}
+
+.bot-webapp-popup-btn.destructive {
+    color: #e53935;
+}
+
 @media (max-width: 600px) {
-    .bot-webapp-panel {
+    .bot-webapp-panel,
+    .bot-webapp-expanded {
         width: 100vw;
     }
 }

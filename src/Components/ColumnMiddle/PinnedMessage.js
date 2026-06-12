@@ -12,6 +12,7 @@ import { compose } from 'recompose';
 import withStyles from '@material-ui/core/styles/withStyles';
 import { withTranslation } from 'react-i18next';
 import Button from '@material-ui/core/Button';
+import ClearAllIcon from '@material-ui/icons/ClearAll';
 import CloseIcon from '@material-ui/icons/Close';
 import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
@@ -37,8 +38,8 @@ const styles = theme => ({
     ...borderStyle(theme),
     pinnedMessage: {
         background: theme.palette.type === 'dark' ? theme.palette.background.default : '#FFFFFF',
-        color: theme.palette.text.primary
-    }
+        color: theme.palette.text.primary,
+    },
 });
 
 class PinnedMessage extends React.Component {
@@ -61,7 +62,8 @@ class PinnedMessage extends React.Component {
                 messageId: firstId,
                 pinnedIds: firstId ? [firstId] : [],
                 currentIndex: 0,
-                confirm: false
+                confirm: false,
+                confirmAll: false,
             };
         }
 
@@ -107,7 +109,7 @@ class PinnedMessage extends React.Component {
                 from_message_id: 0,
                 offset: 0,
                 limit: 50,
-                filter: { '@type': 'searchMessagesFilterPinned' }
+                filter: { '@type': 'searchMessagesFilterPinned' },
             });
             if (result && result.messages && result.messages.length > 0) {
                 const pinnedIds = result.messages.map(m => m.id);
@@ -216,7 +218,7 @@ class PinnedMessage extends React.Component {
             await TdLibController.clientUpdate({
                 '@type': 'clientUpdateSetChatClientData',
                 chatId,
-                clientData: Object.assign({}, data, { unpinned_message_id: messageId })
+                clientData: Object.assign({}, data, { unpinned_message_id: messageId }),
             });
         }
     };
@@ -228,13 +230,30 @@ class PinnedMessage extends React.Component {
         TdLibController.send({ '@type': 'unpinChatMessage', chat_id: chatId, message_id: messageId });
     };
 
+    handleDeleteAll = event => {
+        event.preventDefault();
+        event.stopPropagation();
+
+        const { chatId } = this.props;
+        if (!canPinMessages(chatId)) return;
+
+        this.setState({ confirmAll: true });
+    };
+
+    handleUnpinAll = async () => {
+        const { chatId } = this.props;
+        this.handleClose();
+        this.setState({ pinnedIds: [], messageId: 0, currentIndex: 0 });
+        TdLibController.send({ '@type': 'unpinAllChatMessages', chat_id: chatId });
+    };
+
     handleClose = () => {
-        this.setState({ confirm: false });
+        this.setState({ confirm: false, confirmAll: false });
     };
 
     render() {
         const { chatId, classes, t } = this.props;
-        const { messageId, confirm, pinnedIds, currentIndex } = this.state;
+        const { messageId, confirm, confirmAll, pinnedIds, currentIndex } = this.state;
 
         if (!chatId) return null;
 
@@ -269,7 +288,7 @@ class PinnedMessage extends React.Component {
                                         key={i}
                                         className={classNames('pinned-counter-bar', {
                                             'pinned-counter-bar-active':
-                                                i === (total - 1 - currentIndex) % Math.min(total, 4)
+                                                i === (total - 1 - currentIndex) % Math.min(total, 4),
                                         })}
                                     />
                                 ))}
@@ -289,6 +308,11 @@ class PinnedMessage extends React.Component {
                             <div className='pinned-message-content-subtitle'>{content}</div>
                         </div>
                         <div className='pinned-message-delete-button'>
+                            {total > 1 && canPinMessages(chatId) && (
+                                <IconButton onClick={this.handleDeleteAll} title='Desanclar todos'>
+                                    <ClearAllIcon />
+                                </IconButton>
+                            )}
                             <IconButton onClick={this.handleDelete}>
                                 <CloseIcon />
                             </IconButton>
@@ -315,13 +339,33 @@ class PinnedMessage extends React.Component {
                         </DialogActions>
                     </Dialog>
                 )}
+                {confirmAll && (
+                    <Dialog
+                        transitionDuration={0}
+                        open
+                        onClose={this.handleClose}
+                        aria-labelledby='unpin-all-messages-confirmation'>
+                        <DialogTitle id='unpin-all-messages-confirmation'>{t('Confirm')}</DialogTitle>
+                        <DialogContent>
+                            <DialogContentText>Desanclar todos los mensajes fijados de este chat.</DialogContentText>
+                        </DialogContent>
+                        <DialogActions>
+                            <Button onClick={this.handleClose} color='primary'>
+                                {t('Cancel')}
+                            </Button>
+                            <Button onClick={this.handleUnpinAll} color='primary'>
+                                {t('Ok')}
+                            </Button>
+                        </DialogActions>
+                    </Dialog>
+                )}
             </>
         );
     }
 }
 
 PinnedMessage.propTypes = {
-    chatId: PropTypes.number.isRequired
+    chatId: PropTypes.number.isRequired,
 };
 
 const enhance = compose(withStyles(styles, { withTheme: true }), withTranslation());

@@ -4,3 +4,11 @@
     color: var(--color-hint, #888);
     line-height: 1.4;
 }
+
+.auto-delete-section-title {
+    padding: 12px 16px 4px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--design-muted-color, var(--color-hint, #888));
+    text-transform: uppercase;
+}

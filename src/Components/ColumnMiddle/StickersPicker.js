@@ -34,7 +34,10 @@ class StickersPicker extends React.Component {
             stickerSets: null,
             sets: [],
             headerStickers: [],
-            position: 0
+            position: 0,
+            searchQuery: '',
+            searchResults: null,
+            stickerAutoplay: localStorage.getItem('stickerAutoplay') !== 'false',
         };
 
         this.loadInViewContentOnScrollEnd = debounce(this.loadInViewContentOnScrollEnd, 100);
@@ -62,6 +65,18 @@ class StickersPicker extends React.Component {
         }
 
         if (nextState.position !== position) {
+            return true;
+        }
+
+        if (nextState.searchQuery !== this.state.searchQuery) {
+            return true;
+        }
+
+        if (nextState.searchResults !== this.state.searchResults) {
+            return true;
+        }
+
+        if (nextState.stickerAutoplay !== this.state.stickerAutoplay) {
             return true;
         }
 
@@ -96,11 +111,11 @@ class StickersPicker extends React.Component {
     async reloadRecentContent() {
         const recent = await TdLibController.send({
             '@type': 'getRecentStickers',
-            is_attached: false
+            is_attached: false,
         });
 
         this.setState({
-            recent
+            recent,
         });
     }
 
@@ -114,14 +129,14 @@ class StickersPicker extends React.Component {
         if (!recent) {
             recent = await TdLibController.send({
                 '@type': 'getRecentStickers',
-                is_attached: false
+                is_attached: false,
             });
         }
 
         if (!sets) {
             const result = await TdLibController.send({
                 '@type': 'getInstalledStickerSets',
-                is_masks: false
+                is_masks: false,
             });
 
             const promises = [];
@@ -129,8 +144,8 @@ class StickersPicker extends React.Component {
                 promises.push(
                     TdLibController.send({
                         '@type': 'getStickerSet',
-                        set_id: x.id
-                    })
+                        set_id: x.id,
+                    }),
                 );
             });
 
@@ -150,7 +165,7 @@ class StickersPicker extends React.Component {
             stickerSets,
             sets: slicedSets,
             fullSets: sets,
-            headerStickers
+            headerStickers,
         });
         this.setsLength = slicedSets.length;
     };
@@ -226,7 +241,7 @@ class StickersPicker extends React.Component {
 
         TdLibController.clientUpdate({
             '@type': 'clientUpdateStickerSetPosition',
-            position
+            position,
         });
     };
 
@@ -257,8 +272,8 @@ class StickersPicker extends React.Component {
             promises.push(
                 TdLibController.send({
                     '@type': 'getStickerSet',
-                    set_id: x.id
-                })
+                    set_id: x.id,
+                }),
             );
         });
 
@@ -379,8 +394,8 @@ class StickersPicker extends React.Component {
                 promises.push(
                     TdLibController.send({
                         '@type': 'getStickerSet',
-                        set_id: x.id
-                    })
+                        set_id: x.id,
+                    }),
                 );
             });
 
@@ -399,7 +414,7 @@ class StickersPicker extends React.Component {
     handleDeleteRecent = () => {
         TdLibController.send({
             '@type': 'clearRecentStickers',
-            is_attached: false
+            is_attached: false,
         });
     };
 
@@ -407,13 +422,52 @@ class StickersPicker extends React.Component {
         TdLibController.send({
             '@type': 'changeStickerSet',
             set_id: id,
-            is_installed: false
+            is_installed: false,
+        });
+    };
+
+    handleSearchChange = async e => {
+        const query = e.target.value;
+        this.setState({ searchQuery: query });
+
+        if (!query.trim()) {
+            this.setState({ searchResults: null });
+            return;
+        }
+
+        clearTimeout(this._searchTimeout);
+        this._searchTimeout = setTimeout(async () => {
+            try {
+                const result = await TdLibController.send({
+                    '@type': 'searchStickers',
+                    query: query.trim(),
+                    limit: 40,
+                });
+                this.setState({ searchResults: result.stickers || [] });
+                if (result.stickers) {
+                    loadStickerContent(FileStore.getState(), result.stickers, null);
+                }
+            } catch {
+                this.setState({ searchResults: [] });
+            }
+        }, 350);
+    };
+
+    handleSearchClear = () => {
+        this.setState({ searchQuery: '', searchResults: null });
+    };
+
+    handleToggleAutoplay = () => {
+        this.setState(prev => {
+            const next = !prev.stickerAutoplay;
+            localStorage.setItem('stickerAutoplay', String(next));
+            return { stickerAutoplay: next };
         });
     };
 
     render() {
         const { t } = this.props;
-        const { recent, stickerSets, sets, headerStickers } = this.state;
+        const { recent, stickerSets, sets, headerStickers, searchQuery, searchResults, stickerAutoplay } = this.state;
         // console.log('[sp] render', recent, stickerSets, sets);
         // if (!stickerSets) return null;
         //
@@ -436,25 +490,79 @@ class StickersPicker extends React.Component {
             recent && recent.stickers.length > 0
                 ? {
                       stickers: recent.stickers,
-                      title: t('RecentStickers')
+                      title: t('RecentStickers'),
                   }
+                : null;
+
+        const searchResultsInfo =
+            searchResults && searchResults.length > 0
+                ? { stickers: searchResults, title: t('SearchStickers') || 'Resultados' }
                 : null;
 
         return (
             <div className='stickers-picker'>
                 <StickersPickerHeader onSelect={this.handleSelectSet} stickers={headerStickers} />
-                <div ref={this.scrollRef} className='stickers-picker-scroll' onScroll={this.handleScroll}>
-                    {Boolean(recentInfo) && (
-                        <StickerSet
-                            info={recentInfo}
-                            onSelect={this.handleStickerSelect}
-                            onMouseDown={this.handleMouseDown}
-                            onMouseEnter={this.handleMouseEnter}
-                            onDeleteClick={this.handleDeleteRecent}
-                        />
+                <div className='stickers-picker-toolbar'>
+                    <input
+                        className='stickers-picker-search'
+                        placeholder='Buscar stickers…'
+                        value={searchQuery}
+                        onChange={this.handleSearchChange}
+                    />
+                    {searchQuery && (
+                        <button
+                            className='stickers-picker-search-clear'
+                            onClick={this.handleSearchClear}
+                            title='Limpiar'>
+                            ✕
+                        </button>
                     )}
-                    {items}
+                    <button
+                        className={`stickers-autoplay-btn${stickerAutoplay ? ' active' : ''}`}
+                        onClick={this.handleToggleAutoplay}
+                        title={stickerAutoplay ? 'Desactivar animación' : 'Activar animación'}>
+                        ▶
+                    </button>
                 </div>
+                {searchResults !== null ? (
+                    <div className='stickers-picker-scroll'>
+                        {searchResultsInfo ? (
+                            <StickerSet
+                                info={searchResultsInfo}
+                                onSelect={this.handleStickerSelect}
+                                onMouseDown={this.handleMouseDown}
+                                onMouseEnter={this.handleMouseEnter}
+                                autoplay={stickerAutoplay}
+                            />
+                        ) : (
+                            <div className='stickers-picker-empty'>Sin resultados</div>
+                        )}
+                    </div>
+                ) : (
+                    <div ref={this.scrollRef} className='stickers-picker-scroll' onScroll={this.handleScroll}>
+                        {Boolean(recentInfo) && (
+                            <StickerSet
+                                info={recentInfo}
+                                onSelect={this.handleStickerSelect}
+                                onMouseDown={this.handleMouseDown}
+                                onMouseEnter={this.handleMouseEnter}
+                                onDeleteClick={this.handleDeleteRecent}
+                                autoplay={stickerAutoplay}
+                            />
+                        )}
+                        {sets.map(x => (
+                            <StickerSet
+                                key={x.id}
+                                ref={el => this.itemsMap.set(x.id, el)}
+                                info={x}
+                                onSelect={this.handleStickerSelect}
+                                onMouseDown={this.handleMouseDown}
+                                onMouseEnter={this.handleMouseEnter}
+                                autoplay={stickerAutoplay}
+                            />
+                        ))}
+                    </div>
+                )}
             </div>
         );
     }
@@ -462,13 +570,9 @@ class StickersPicker extends React.Component {
 
 StickersPicker.propTypes = {
     onSelect: PropTypes.func.isRequired,
-    onPreview: PropTypes.func.isRequired
+    onPreview: PropTypes.func.isRequired,
 };
 
-const enhance = compose(
-    withSaveRef(),
-    withTranslation(),
-    withRestoreRef()
-);
+const enhance = compose(withSaveRef(), withTranslation(), withRestoreRef());
 
 export default enhance(StickersPicker);

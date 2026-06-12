@@ -12,6 +12,7 @@ import './designs/unigram.css';
 import './designs/aurora.css';
 import './designs/shell.css';
 import './designs/telegramx.css';
+import './designs/webogram.css';
 
 const DESIGN_KEY = 'tg_design';
 
@@ -27,7 +28,7 @@ const ANDROID_SUB_VARIANTS = [
 ];
 
 // Entradas visibles en el selector principal (DesignSwitcher)
-const DESIGNS = ['current', 'android', 'unigram', 'ios', 'macos', 'tdesktop', 'aurora', 'telegramx'];
+const DESIGNS = ['current', 'android', 'webogram', 'unigram', 'ios', 'macos', 'tdesktop', 'aurora', 'telegramx'];
 
 // Conjunto completo de nombres válidos (menú + sub-variantes Android)
 const ALL_DESIGNS = [...DESIGNS, ...ANDROID_SUB_VARIANTS];
@@ -37,6 +38,7 @@ const DEFAULT_DESIGN = 'current';
 export const DESIGN_LABELS = {
     current: 'Web (react)',
     android: 'Android',
+    webogram: 'Webogram',
     unigram: 'Unigram',
     ios: 'iOS',
     macos: 'macOS',
@@ -48,6 +50,7 @@ export const DESIGN_LABELS = {
 export const DESIGN_ACCENTS = {
     current: '#5b8af1',
     android: '#229af0',
+    webogram: '#5682a3',
     unigram: '#2b7fe0',
     ios: '#007aff',
     macos: '#248bf2',

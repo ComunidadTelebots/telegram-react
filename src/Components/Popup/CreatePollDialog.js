@@ -16,9 +16,13 @@ import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogTitle from '@material-ui/core/DialogTitle';
 import Divider from '@material-ui/core/Divider';
+import FormControlLabel from '@material-ui/core/FormControlLabel';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
+import MenuItem from '@material-ui/core/MenuItem';
+import Select from '@material-ui/core/Select';
+import Switch from '@material-ui/core/Switch';
 import Typography from '@material-ui/core/Typography';
 import CreatePollOption from './CreatePollOption';
 import { focusNode } from '../../Utils/Component';
@@ -29,7 +33,7 @@ import {
     POLL_OPTIONS_MAX_COUNT,
     POLL_QUESTION_HINT_LENGTH,
     POLL_QUESTION_LENGTH,
-    POLL_QUESTION_MAX_LENGTH
+    POLL_QUESTION_MAX_LENGTH,
 } from '../../Constants';
 import PollStore from '../../Stores/PollStore';
 import TdLibController from '../../Controllers/TdLibController';
@@ -37,23 +41,23 @@ import './CreatePollDialog.css';
 
 const styles = theme => ({
     dialogRoot: {
-        color: theme.palette.text.primary
+        color: theme.palette.text.primary,
     },
     contentRoot: {
-        width: 300
+        width: 300,
     },
     dividerRoot: {
-        margin: '8px -24px'
+        margin: '8px -24px',
     },
     listRoot: {
-        margin: '0 -24px'
+        margin: '0 -24px',
     },
     listItem: {
         padding: '11px 24px',
         color: '#8e9396',
-        height: 48
+        height: 48,
     },
-    typographyRoot: {}
+    typographyRoot: {},
 });
 
 class CreatePollDialog extends React.Component {
@@ -66,7 +70,7 @@ class CreatePollDialog extends React.Component {
         this.state = {
             poll: null,
             confirm: false,
-            remainLength: POLL_QUESTION_MAX_LENGTH
+            remainLength: POLL_QUESTION_MAX_LENGTH,
         };
     }
 
@@ -94,7 +98,7 @@ class CreatePollDialog extends React.Component {
         this.setState({
             confirm: false,
             remainLength: POLL_QUESTION_MAX_LENGTH,
-            poll
+            poll,
         });
     };
 
@@ -107,7 +111,7 @@ class CreatePollDialog extends React.Component {
 
         this.setState({
             remainLength: length - innerText.length,
-            poll
+            poll,
         });
     };
 
@@ -236,7 +240,7 @@ class CreatePollDialog extends React.Component {
 
         TdLibController.clientUpdate({
             '@type': 'clientUpdatePollQuestion',
-            question: innerText
+            question: innerText,
         });
     };
 
@@ -249,12 +253,46 @@ class CreatePollDialog extends React.Component {
 
         const option = {
             id: Date.now(),
-            text: ''
+            text: '',
         };
 
         TdLibController.clientUpdate({
             '@type': 'clientUpdateNewPollOption',
-            option
+            option,
+        });
+    };
+
+    updatePollSettings = settings => {
+        TdLibController.clientUpdate({
+            '@type': 'clientUpdatePollSettings',
+            settings,
+        });
+    };
+
+    handleAnonymousChange = event => {
+        this.updatePollSettings({ is_anonymous: event.target.checked });
+    };
+
+    handleMultipleAnswersChange = event => {
+        this.updatePollSettings({ allows_multiple_answers: event.target.checked });
+    };
+
+    handleQuizChange = event => {
+        const isQuiz = event.target.checked;
+        const { poll } = this.state;
+        const firstOption = poll && poll.options.find(x => Boolean(x.text));
+
+        this.updatePollSettings({
+            allows_multiple_answers: isQuiz ? false : poll.allows_multiple_answers,
+            type: isQuiz
+                ? { '@type': 'pollTypeQuiz', correct_option_id: firstOption ? firstOption.id : 0 }
+                : { '@type': 'pollTypeRegular' },
+        });
+    };
+
+    handleCorrectOptionChange = event => {
+        this.updatePollSettings({
+            type: { '@type': 'pollTypeQuiz', correct_option_id: Number(event.target.value) },
         });
     };
 
@@ -269,7 +307,7 @@ class CreatePollDialog extends React.Component {
     handleDelete = id => {
         TdLibController.clientUpdate({
             '@type': 'clientUpdateDeletePollOption',
-            id
+            id,
         });
     };
 
@@ -395,7 +433,7 @@ class CreatePollDialog extends React.Component {
         this.handleConfirmationClose();
 
         TdLibController.clientUpdate({
-            '@type': 'clientUpdateDeletePoll'
+            '@type': 'clientUpdateDeletePoll',
         });
     };
 
@@ -420,6 +458,11 @@ class CreatePollDialog extends React.Component {
 
         const canAddOption = POLL_OPTIONS_MAX_COUNT - options.length > 0;
         const hint = this.getHint();
+        const isQuiz = poll.type && poll.type['@type'] === 'pollTypeQuiz';
+        const validOptions = options.filter(x => Boolean(x.text));
+        const correctOptionId = isQuiz
+            ? poll.type.correct_option_id || (validOptions[0] && validOptions[0].id) || 0
+            : 0;
 
         return (
             <>
@@ -470,6 +513,52 @@ class CreatePollDialog extends React.Component {
                             )}
                         </List>
                         <Typography>{hint}</Typography>
+                        <Divider className={classes.dividerRoot} />
+                        <div className='create-poll-settings'>
+                            <FormControlLabel
+                                control={
+                                    <Switch
+                                        color='primary'
+                                        checked={poll.is_anonymous !== false}
+                                        onChange={this.handleAnonymousChange}
+                                    />
+                                }
+                                label='Anonymous voting'
+                            />
+                            <FormControlLabel
+                                control={
+                                    <Switch
+                                        color='primary'
+                                        checked={!!poll.allows_multiple_answers}
+                                        onChange={this.handleMultipleAnswersChange}
+                                        disabled={isQuiz}
+                                    />
+                                }
+                                label='Multiple answers'
+                            />
+                            <FormControlLabel
+                                control={<Switch color='primary' checked={isQuiz} onChange={this.handleQuizChange} />}
+                                label='Quiz mode'
+                            />
+                            {isQuiz && validOptions.length > 0 && (
+                                <div className='create-poll-correct-answer'>
+                                    <Typography color='primary' variant='subtitle1'>
+                                        Correct answer
+                                    </Typography>
+                                    <Select
+                                        value={correctOptionId}
+                                        onChange={this.handleCorrectOptionChange}
+                                        fullWidth
+                                        disableUnderline>
+                                        {validOptions.map(option => (
+                                            <MenuItem key={option.id} value={option.id}>
+                                                {option.text}
+                                            </MenuItem>
+                                        ))}
+                                    </Select>
+                                </div>
+                            )}
+                        </div>
                     </DialogContent>
                     <DialogActions>
                         <Button color='primary' onClick={this.handleClose}>
@@ -505,14 +594,9 @@ class CreatePollDialog extends React.Component {
 }
 
 CreatePollDialog.propTypes = {
-    onSend: PropTypes.func.isRequired
+    onSend: PropTypes.func.isRequired,
 };
 
-const enhance = compose(
-    withSaveRef(),
-    withStyles(styles),
-    withTranslation(),
-    withRestoreRef()
-);
+const enhance = compose(withSaveRef(), withStyles(styles), withTranslation(), withRestoreRef());
 
 export default enhance(CreatePollDialog);

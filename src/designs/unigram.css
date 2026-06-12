@@ -395,3 +395,28 @@ body.design-unigram .similar-channels-title {
 body.design-unigram .similar-channel-item:hover {
     background: rgba(43, 127, 224, 0.05);
 }
+
+body.design-unigram .voice-transcribe-btn,
+body.design-unigram .voice-speed-btn,
+body.design-unigram .message-scheduled-badge {
+    border-radius: 6px;
+    border-color: var(--unigram-accent);
+    color: var(--unigram-accent);
+    background: rgba(43, 127, 224, 0.08);
+}
+
+body.design-unigram .voice-transcription,
+body.design-unigram .create-poll-settings,
+body.design-unigram .create-poll-correct-answer {
+    border-radius: 6px;
+    background: rgba(43, 127, 224, 0.08);
+}
+
+body.design-unigram .video-note-transcribe-btn,
+body.design-unigram .video-note-transcription {
+    border-radius: 6px;
+}
+
+body.design-unigram .reaction-unread {
+    box-shadow: 0 0 0 2px rgba(43, 127, 224, 0.34);
+}

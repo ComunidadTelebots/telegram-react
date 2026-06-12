@@ -30,7 +30,9 @@ import HeaderProgress from './HeaderProgress';
 import ChatSearch from './ChatSearch';
 import AutoDeleteTimer from './AutoDeleteTimer';
 import ChannelStatsDialog from './ChannelStatsDialog';
+import ChannelBoostDialog from './ChannelBoostDialog';
 import TimerIcon from '@material-ui/icons/Timer';
+import FlashOnIcon from '@material-ui/icons/FlashOn';
 import BarChartIcon from '@material-ui/icons/BarChart';
 import VolumeOffIcon from '@material-ui/icons/VolumeOff';
 import VolumeUpIcon from '@material-ui/icons/VolumeUp';
@@ -39,6 +41,7 @@ import Brightness7Icon from '@material-ui/icons/Brightness7';
 import ArchiveIcon from '@material-ui/icons/Archive';
 import UnarchiveIcon from '@material-ui/icons/Unarchive';
 import LinkIcon from '@material-ui/icons/Link';
+import WebIcon from '@material-ui/icons/Web';
 import Snackbar from '@material-ui/core/Snackbar';
 import { borderStyle } from '../Theme';
 import LockIcon from '@material-ui/icons/Lock';
@@ -96,6 +99,7 @@ class Header extends Component {
             openJumpToDate: false,
             showChatSearch: false,
             inviteLinkCopied: false,
+            boostDialogOpen: false,
         };
     }
 
@@ -702,13 +706,22 @@ class Header extends Component {
                             const _sg = SupergroupStore.get(_type.supergroup_id);
                             if (!_sg || !_sg.is_broadcast) return null;
                             return (
-                                <IconButton
-                                    className={classes.messageSearchIconButton}
-                                    aria-label='Estadísticas del canal'
-                                    title='Estadísticas del canal'
-                                    onClick={() => this.channelStatsRef && this.channelStatsRef.open()}>
-                                    <BarChartIcon />
-                                </IconButton>
+                                <>
+                                    <IconButton
+                                        className={classes.messageSearchIconButton}
+                                        aria-label='Estadísticas del canal'
+                                        title='Estadísticas del canal'
+                                        onClick={() => this.channelStatsRef && this.channelStatsRef.open()}>
+                                        <BarChartIcon />
+                                    </IconButton>
+                                    <IconButton
+                                        className={classes.messageSearchIconButton}
+                                        aria-label='Boostear canal'
+                                        title='Boostear canal'
+                                        onClick={() => this.setState({ boostDialogOpen: true })}>
+                                        <FlashOnIcon />
+                                    </IconButton>
+                                </>
                             );
                         })()}
                         {(() => {
@@ -771,6 +784,44 @@ class Header extends Component {
                                 </IconButton>
                             );
                         })()}
+                        {(() => {
+                            const _wcid = AppStore.getChatId();
+                            const _wchat = ChatStore.get(_wcid);
+                            if (!_wchat || !_wchat.type) return null;
+                            const _wtype = _wchat.type;
+                            if (_wtype['@type'] !== 'chatTypePrivate') return null;
+                            const _wuser = UserStore.get(_wtype.user_id);
+                            if (!_wuser || _wuser.type['@type'] !== 'userTypeBot') return null;
+                            return (
+                                <IconButton
+                                    className={classes.messageSearchIconButton}
+                                    aria-label='Abrir Web App del bot'
+                                    title='Abrir Web App del bot'
+                                    onClick={async () => {
+                                        if (!window._botWebAppRef) return;
+                                        try {
+                                            const res = await TdLibController.send({
+                                                '@type': 'requestBotWebView',
+                                                bot_user_id: _wtype.user_id,
+                                                chat_id: _wcid,
+                                            });
+                                            if (res && res.url) {
+                                                window._botWebAppRef.open(
+                                                    res.url,
+                                                    _wuser.first_name || 'Bot',
+                                                    _wcid,
+                                                    _wtype.user_id,
+                                                    res.query_id,
+                                                );
+                                            }
+                                        } catch (e) {
+                                            console.warn('[BotWebApp] requestBotWebView error', e);
+                                        }
+                                    }}>
+                                    <WebIcon />
+                                </IconButton>
+                            );
+                        })()}
                         <MainMenuButton openChatDetails={this.openChatDetails} />
                     </>
                 )}
@@ -783,6 +834,11 @@ class Header extends Component {
                 {showChatSearch && <ChatSearch chatId={AppStore.getChatId()} onClose={this.handleCloseChatSearch} />}
                 <AutoDeleteTimer ref={r => (this.autoDeleteRef = r)} />
                 <ChannelStatsDialog chatId={AppStore.getChatId()} ref={r => (this.channelStatsRef = r)} />
+                <ChannelBoostDialog
+                    open={!!this.state.boostDialogOpen}
+                    chatId={AppStore.getChatId()}
+                    onClose={() => this.setState({ boostDialogOpen: false })}
+                />
                 <Snackbar
                     open={this.state.inviteLinkCopied}
                     autoHideDuration={2000}

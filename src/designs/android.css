@@ -2944,3 +2944,130 @@ body.theme-dark.design-android .similar-channel-item:hover,
 body.theme-dark.design-android-glass .similar-channel-item:hover {
     background: rgba(255, 255, 255, 0.05);
 }
+
+/* ── Funciones modernas adaptadas a todas las variantes Android ─────────── */
+body.design-android .voice-transcribe-btn,
+body.design-android .voice-speed-btn {
+    border-radius: 12px;
+    border-color: var(--android-accent);
+    color: var(--android-accent);
+    background: rgba(34, 154, 240, 0.08);
+}
+
+body.design-android .voice-transcription {
+    margin-top: 6px;
+    padding: 6px 8px;
+    border-radius: 10px;
+    background: rgba(34, 154, 240, 0.08);
+    color: var(--message-in-color);
+}
+
+body.design-android .video-note-transcribe-btn {
+    border-radius: 14px;
+    background: rgba(0, 0, 0, 0.38);
+}
+
+body.design-android .video-note-transcription {
+    border-radius: 12px;
+    background: rgba(0, 0, 0, 0.42);
+}
+
+body.design-android .message-scheduled-badge {
+    border-radius: 12px;
+    color: var(--android-accent);
+    background: rgba(34, 154, 240, 0.1);
+}
+
+body.design-android .create-poll-settings,
+body.design-android .create-poll-correct-answer {
+    border-radius: 12px;
+    background: rgba(34, 154, 240, 0.06);
+}
+
+body.design-android .reaction-unread {
+    box-shadow: 0 0 0 2px rgba(34, 154, 240, 0.32);
+}
+
+body.design-android-holo .voice-transcribe-btn,
+body.design-android-holo .voice-speed-btn,
+body.design-android-holo .message-scheduled-badge {
+    border-radius: 0;
+    color: #00bcd4;
+    border-color: #00bcd4;
+    background: rgba(0, 188, 212, 0.12);
+}
+
+body.design-android-holo .voice-transcription,
+body.design-android-holo .create-poll-settings,
+body.design-android-holo .create-poll-correct-answer {
+    border-radius: 0;
+    background: rgba(0, 188, 212, 0.1);
+}
+
+body.design-android-holo .video-note-transcribe-btn,
+body.design-android-holo .video-note-transcription {
+    border-radius: 0;
+}
+
+body.design-android-classic .voice-transcribe-btn,
+body.design-android-classic .voice-speed-btn,
+body.design-android-classic .message-scheduled-badge {
+    border-radius: 3px;
+    color: #527da3;
+    border-color: #527da3;
+    background: rgba(82, 125, 163, 0.1);
+}
+
+body.design-android-classic .voice-transcription,
+body.design-android-classic .create-poll-settings,
+body.design-android-classic .create-poll-correct-answer {
+    border-radius: 4px;
+    background: rgba(82, 125, 163, 0.08);
+}
+
+body.design-android-v9 .voice-transcribe-btn,
+body.design-android-v9 .voice-speed-btn,
+body.design-android-v9 .message-scheduled-badge {
+    color: #2ca5e0;
+    border-color: #2ca5e0;
+    background: rgba(44, 165, 224, 0.1);
+}
+
+body.design-android-v11 .voice-transcribe-btn,
+body.design-android-v11 .voice-speed-btn,
+body.design-android-v11 .message-scheduled-badge {
+    color: #4fa08c;
+    border-color: #4fa08c;
+    background: rgba(79, 160, 140, 0.1);
+}
+
+body.design-android-redesign .voice-transcribe-btn,
+body.design-android-redesign .voice-speed-btn,
+body.design-android-redesign .message-scheduled-badge {
+    border-radius: 16px;
+}
+
+body.design-android-redesign .voice-transcription,
+body.design-android-redesign .create-poll-settings,
+body.design-android-redesign .create-poll-correct-answer,
+body.design-android-redesign .video-note-transcription {
+    border-radius: 16px;
+}
+
+body.design-android-glass .voice-transcribe-btn,
+body.design-android-glass .voice-speed-btn,
+body.design-android-glass .message-scheduled-badge {
+    color: #28c9b7;
+    border-color: rgba(40, 201, 183, 0.55);
+    background: rgba(40, 201, 183, 0.12);
+    backdrop-filter: blur(12px);
+}
+
+body.design-android-glass .voice-transcription,
+body.design-android-glass .create-poll-settings,
+body.design-android-glass .create-poll-correct-answer,
+body.design-android-glass .video-note-transcription {
+    background: rgba(40, 201, 183, 0.1);
+    border-radius: 18px;
+    backdrop-filter: blur(14px);
+}

@@ -48,7 +48,10 @@ class PollStore extends EventEmitter {
                 this.set({
                     id: Date.now(),
                     question: '',
-                    options: []
+                    options: [],
+                    is_anonymous: true,
+                    allows_multiple_answers: false,
+                    type: { '@type': 'pollTypeRegular' },
                 });
 
                 this.emit('clientUpdateNewPoll', update);
@@ -87,6 +90,12 @@ class PollStore extends EventEmitter {
                 this.emit('clientUpdateDeletePollOption', update);
                 break;
             }
+            case 'clientUpdatePollSettings': {
+                const { settings } = update;
+                this.assign(this.poll, settings);
+                this.emit('clientUpdatePollSettings', update);
+                break;
+            }
             case 'clientUpdateDeletePoll': {
                 this.set(null);
 
@@ -119,12 +128,17 @@ class PollStore extends EventEmitter {
     getInputMessagePoll() {
         if (!this.poll) return null;
         if (!isValidPoll(this.poll)) return null;
-        const { question, options } = this.poll;
+        const { question, options, is_anonymous, allows_multiple_answers, type } = this.poll;
+        const validOptions = options.filter(x => Boolean(x.text));
 
         return {
             '@type': 'inputMessagePoll',
             question,
-            options: options.filter(x => Boolean(x.text)).map(x => x.text)
+            options: validOptions.map(x => x.text),
+            option_ids: validOptions.map(x => x.id),
+            is_anonymous,
+            allows_multiple_answers,
+            type,
         };
     }
 }

@@ -13,6 +13,27 @@ import './QuickReactionBar.css';
 const QUICK_EMOJIS = ['👍', '❤️', '😂', '😮', '😢', '🔥', '🎉', '👏'];
 
 class QuickReactionBar extends React.PureComponent {
+    constructor(props) {
+        super(props);
+        this.state = { reactions: QUICK_EMOJIS };
+    }
+
+    componentDidMount() {
+        this.loadAvailableReactions();
+    }
+
+    loadAvailableReactions = async () => {
+        try {
+            const result = await TdLibController.send({ '@type': 'getAvailableReactions' });
+            const reactions = result?.reactions || [];
+            if (reactions.length) {
+                this.setState({ reactions: reactions.slice(0, 8) });
+            }
+        } catch (e) {
+            console.warn('[QuickReactionBar] getAvailableReactions error', e);
+        }
+    };
+
     handleReact = async emoji => {
         const { chatId, messageId, onClose } = this.props;
         onClose && onClose();
@@ -29,15 +50,30 @@ class QuickReactionBar extends React.PureComponent {
         }
     };
 
+    handleSetDefaultReaction = async (event, emoji) => {
+        event.preventDefault();
+        event.stopPropagation();
+        const { onClose } = this.props;
+        try {
+            await TdLibController.send({ '@type': 'setDefaultReaction', reaction: emoji });
+        } catch (e) {
+            console.warn('[QuickReactionBar] setDefaultReaction error', e);
+        }
+        onClose && onClose();
+    };
+
     render() {
+        const { reactions } = this.state;
+
         return (
             <div className='quick-reaction-bar' onMouseDown={e => e.preventDefault()}>
-                {QUICK_EMOJIS.map(emoji => (
+                {reactions.map(emoji => (
                     <button
                         key={emoji}
                         className='quick-reaction-btn'
-                        title={emoji}
-                        onClick={() => this.handleReact(emoji)}>
+                        title='Click para reaccionar; click derecho para predeterminada'
+                        onClick={() => this.handleReact(emoji)}
+                        onContextMenu={event => this.handleSetDefaultReaction(event, emoji)}>
                         {emoji}
                     </button>
                 ))}

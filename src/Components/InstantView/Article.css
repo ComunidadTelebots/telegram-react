@@ -224,12 +224,12 @@ article table {
     border-collapse: collapse;
 }
 article table tr {
-    background-color: #fff;
-    color: black;
+    background-color: var(--design-page-background, #fff);
+    color: var(--fg1, black);
 }
 article table[striped] tr:nth-child(odd) {
-    background-color: #f7f7f7;
-    color: black;
+    background-color: var(--design-hover-background, #f7f7f7);
+    color: var(--fg1, black);
 }
 
 article td,
@@ -238,12 +238,12 @@ article th {
 }
 
 article th {
-    background-color: #efefef;
-    color: black;
+    background-color: var(--design-active-background, #efefef);
+    color: var(--fg1, black);
 }
 
 article table[striped] tr:nth-child(odd) td {
-    background-color: #f7f7f7;
+    background-color: var(--design-hover-background, #f7f7f7);
 }
 
 article table.f td,

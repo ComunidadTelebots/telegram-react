@@ -360,3 +360,28 @@ body.design-tdesktop .fact-check-label {
 body.design-tdesktop .similar-channels-title {
     color: var(--color-accent-main);
 }
+
+body.design-tdesktop .voice-transcribe-btn,
+body.design-tdesktop .voice-speed-btn,
+body.design-tdesktop .message-scheduled-badge {
+    border-radius: 4px;
+    border-color: var(--color-accent-main);
+    color: var(--color-accent-main);
+    background: rgba(58, 154, 208, 0.08);
+}
+
+body.design-tdesktop .voice-transcription,
+body.design-tdesktop .create-poll-settings,
+body.design-tdesktop .create-poll-correct-answer {
+    border-radius: 4px;
+    background: rgba(58, 154, 208, 0.08);
+}
+
+body.design-tdesktop .video-note-transcribe-btn,
+body.design-tdesktop .video-note-transcription {
+    border-radius: 4px;
+}
+
+body.design-tdesktop .reaction-unread {
+    box-shadow: 0 0 0 2px rgba(58, 154, 208, 0.34);
+}

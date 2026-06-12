@@ -15,11 +15,13 @@ import { withSnackbar } from 'notistack';
 import { withTranslation } from 'react-i18next';
 import MenuItem from '@material-ui/core/MenuItem';
 import Select from '@material-ui/core/Select';
+import Switch from '@material-ui/core/Switch';
 import AlternateEmailIcon from '@material-ui/icons/AlternateEmail';
 import BlockIcon from '@material-ui/icons/Block';
 import TimerIcon from '@material-ui/icons/Timer';
 import HourglassEmptyIcon from '@material-ui/icons/HourglassEmpty';
 import ExitToAppIcon from '@material-ui/icons/ExitToApp';
+import TranslateIcon from '@material-ui/icons/Translate';
 import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
 import TextField from '@material-ui/core/TextField';
 import Tooltip from '@material-ui/core/Tooltip';
@@ -106,6 +108,7 @@ class ChatDetails extends React.Component {
             editingDescription: false,
             descriptionDraft: '',
             supergroupMembers: [],
+            translationSettingsVersion: 0,
         };
     }
 
@@ -140,7 +143,7 @@ class ChatDetails extends React.Component {
 
     shouldComponentUpdate(nextProps, nextState) {
         const { chatId, theme, counters, migratedCounters } = this.props;
-        const { editingDescription, descriptionDraft } = this.state;
+        const { editingDescription, descriptionDraft, translationSettingsVersion } = this.state;
 
         if (nextProps.chatId !== chatId) {
             return true;
@@ -163,6 +166,10 @@ class ChatDetails extends React.Component {
         }
 
         if (nextState.descriptionDraft !== descriptionDraft) {
+            return true;
+        }
+
+        if (nextState.translationSettingsVersion !== translationSettingsVersion) {
             return true;
         }
 
@@ -448,6 +455,29 @@ class ChatDetails extends React.Component {
         await TdLibController.send({ '@type': 'setChatMessageTtl', chat_id: chatId, ttl });
     };
 
+    handleProtectedContentChange = async event => {
+        const { chatId } = this.props;
+        await TdLibController.send({
+            '@type': 'setChatProtectedContent',
+            chat_id: chatId,
+            has_protected_content: event.target.checked,
+        });
+    };
+
+    handleChatTranslationsChange = async event => {
+        const { chatId } = this.props;
+        const disabled = !event.target.checked;
+        await TdLibController.send({ '@type': 'toggleChatTranslations', chat_id: chatId, disabled });
+
+        const data = ChatStore.getClientData(chatId);
+        await TdLibController.clientUpdate({
+            '@type': 'clientUpdateSetChatClientData',
+            chatId,
+            clientData: Object.assign({}, data, { chat_translations_disabled: disabled }),
+        });
+        this.setState({ translationSettingsVersion: Date.now() });
+    };
+
     handleCopyInviteLink = async () => {
         const { chatId } = this.props;
         try {
@@ -711,6 +741,44 @@ class ChatDetails extends React.Component {
                                         />
                                     </ListItem>
                                 )}
+                                {!isChatSecret(chatId) &&
+                                    (() => {
+                                        const clientData = ChatStore.getClientData(chatId);
+                                        return (
+                                            <ListItem className={classes.listItem}>
+                                                <ListItemIcon>
+                                                    <TranslateIcon />
+                                                </ListItemIcon>
+                                                <ListItemText primary='Traducciones del chat' />
+                                                <Switch
+                                                    color='primary'
+                                                    checked={!clientData.chat_translations_disabled}
+                                                    onChange={this.handleChatTranslationsChange}
+                                                />
+                                            </ListItem>
+                                        );
+                                    })()}
+                                {isAdmin &&
+                                    isGroup &&
+                                    (() => {
+                                        const chat = ChatStore.get(chatId);
+                                        const supergroupId = chat && chat.type && chat.type.supergroup_id;
+                                        if (!supergroupId) return null;
+                                        const full = SupergroupStore.getFullInfo(supergroupId);
+                                        return (
+                                            <ListItem className={classes.listItem}>
+                                                <ListItemIcon>
+                                                    <LockIcon />
+                                                </ListItemIcon>
+                                                <ListItemText primary='Protected Content' />
+                                                <Switch
+                                                    color='primary'
+                                                    checked={!!(full && full.has_protected_content)}
+                                                    onChange={this.handleProtectedContentChange}
+                                                />
+                                            </ListItem>
+                                        );
+                                    })()}
                                 {isAdmin &&
                                     isGroup &&
                                     (() => {

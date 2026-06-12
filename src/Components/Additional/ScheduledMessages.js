@@ -19,6 +19,7 @@ import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
 import ListItemText from '@material-ui/core/ListItemText';
 import Typography from '@material-ui/core/Typography';
 import DeleteIcon from '@material-ui/icons/Delete';
+import SendIcon from '@material-ui/icons/Send';
 import TdLibController from '../../Controllers/TdLibController';
 import { getText } from '../../Utils/Message';
 
@@ -49,6 +50,16 @@ class ScheduledMessages extends React.Component {
         const { chatId } = this.state;
         await TdLibController.send({
             '@type': 'deleteChatScheduledMessages',
+            chat_id: chatId,
+            message_ids: [message.id],
+        });
+        this.setState(prev => ({ messages: prev.messages.filter(m => m.id !== message.id) }));
+    };
+
+    handleSendNow = async message => {
+        const { chatId } = this.state;
+        await TdLibController.send({
+            '@type': 'sendChatScheduledMessages',
             chat_id: chatId,
             message_ids: [message.id],
         });
@@ -111,6 +122,12 @@ class ScheduledMessages extends React.Component {
                                         secondary={this.formatScheduleDate(msg)}
                                     />
                                     <ListItemSecondaryAction>
+                                        <IconButton
+                                            size='small'
+                                            title='Enviar ahora'
+                                            onClick={() => this.handleSendNow(msg)}>
+                                            <SendIcon fontSize='small' />
+                                        </IconButton>
                                         <IconButton
                                             edge='end'
                                             size='small'

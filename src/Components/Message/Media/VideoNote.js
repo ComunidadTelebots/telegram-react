@@ -21,11 +21,12 @@ import PlayerStore from '../../../Stores/PlayerStore';
 import FileStore from '../../../Stores/FileStore';
 import MessageStore from '../../../Stores/MessageStore';
 import ApplicationStore from '../../../Stores/ApplicationStore';
+import TdLibController from '../../../Controllers/TdLibController';
 import './VideoNote.css';
 import InstantViewStore from '../../../Stores/InstantViewStore';
 
 const circleStyle = {
-    circle: 'video-note-progress-circle'
+    circle: 'video-note-progress-circle',
 };
 
 class VideoNote extends React.Component {
@@ -45,7 +46,12 @@ class VideoNote extends React.Component {
             srcObject: active ? videoStream : null,
             src: getSrc(video),
             currentTime: active && time ? time.currentTime : 0.0,
-            videoDuration: active && time ? time.duration : 0.0
+            videoDuration: active && time ? time.duration : 0.0,
+            transcribing: false,
+            transcription: '',
+            transcriptionId: '',
+            transcriptionError: '',
+            transcriptionRated: null,
         };
 
         this.windowFocused = window.hasFocus;
@@ -104,6 +110,7 @@ class VideoNote extends React.Component {
         PlayerStore.on('clientUpdateMediaCaptureStream', this.onClientUpdateMediaCaptureStream);
         PlayerStore.on('clientUpdateMediaTime', this.onClientUpdateMediaTime);
         PlayerStore.on('clientUpdateMediaEnd', this.onClientUpdateMediaEnd);
+        TdLibController.addListener('update', this.onUpdate);
     }
 
     componentWillUnmount() {
@@ -121,7 +128,71 @@ class VideoNote extends React.Component {
         PlayerStore.off('clientUpdateMediaCaptureStream', this.onClientUpdateMediaCaptureStream);
         PlayerStore.off('clientUpdateMediaTime', this.onClientUpdateMediaTime);
         PlayerStore.off('clientUpdateMediaEnd', this.onClientUpdateMediaEnd);
+        TdLibController.off('update', this.onUpdate);
     }
+
+    onUpdate = update => {
+        const { chatId, messageId } = this.props;
+        if (!update || update['@type'] !== 'updateTranscribedAudio') return;
+        if (update.chat_id !== chatId || update.message_id !== messageId) return;
+        if (update.pending) {
+            this.setState({ transcribing: true, transcriptionError: '' });
+            return;
+        }
+
+        this.setState({
+            transcribing: false,
+            transcription: update.text || '',
+            transcriptionId: update.transcription_id || '',
+            transcriptionError: '',
+            transcriptionRated: null,
+        });
+    };
+
+    handleTranscribe = async event => {
+        event.stopPropagation();
+
+        const { chatId, messageId } = this.props;
+        this.setState({ transcribing: true, transcriptionError: '' });
+
+        try {
+            const result = await TdLibController.send({
+                '@type': 'transcribeAudio',
+                chat_id: chatId,
+                message_id: messageId,
+            });
+
+            this.setState({
+                transcribing: !!result.pending,
+                transcription: result.text || '',
+                transcriptionId: result.transcription_id || '',
+                transcriptionError: '',
+                transcriptionRated: null,
+            });
+        } catch (error) {
+            this.setState({
+                transcribing: false,
+                transcriptionError: error.message || 'Transcription failed',
+            });
+        }
+    };
+
+    handleRateTranscription = async (event, isGood) => {
+        event.stopPropagation();
+
+        const { chatId, messageId } = this.props;
+        const { transcriptionId } = this.state;
+        if (!transcriptionId) return;
+
+        await TdLibController.send({
+            '@type': 'rateTranscribedAudio',
+            chat_id: chatId,
+            message_id: messageId,
+            transcription_id: transcriptionId,
+            is_good: isGood,
+        });
+        this.setState({ transcriptionRated: isGood });
+    };
 
     startStopPlayer = () => {
         const player = this.videoRef.current;
@@ -196,7 +267,7 @@ class VideoNote extends React.Component {
             if (player) {
                 this.setState({
                     currentTime: update.currentTime,
-                    videoDuration: update.duration
+                    videoDuration: update.duration,
                 });
             }
         }
@@ -210,7 +281,7 @@ class VideoNote extends React.Component {
                 {
                     active: false,
                     srcObject: null,
-                    currentTime: 0
+                    currentTime: 0,
                 },
                 () => {
                     const player = this.videoRef.current;
@@ -221,7 +292,7 @@ class VideoNote extends React.Component {
                     if (!window.hasFocus) {
                         player.pause();
                     }
-                }
+                },
             );
         }
     };
@@ -235,7 +306,7 @@ class VideoNote extends React.Component {
             } else {
                 this.setState({
                     active: true,
-                    currentTime: null
+                    currentTime: null,
                 });
             }
         } else if (this.state.active) {
@@ -243,7 +314,7 @@ class VideoNote extends React.Component {
                 {
                     active: false,
                     srcObject: null,
-                    currentTime: 0
+                    currentTime: 0,
                 },
                 () => {
                     const player = this.videoRef.current;
@@ -254,7 +325,7 @@ class VideoNote extends React.Component {
                     if (!window.hasFocus) {
                         player.pause();
                     }
-                }
+                },
             );
         }
     };
@@ -268,11 +339,11 @@ class VideoNote extends React.Component {
         if (video.id === fileId) {
             this.setState(
                 {
-                    src: getSrc(video)
+                    src: getSrc(video),
                 },
                 () => {
                     this.updateVideoSrc();
-                }
+                },
             );
         }
     };
@@ -302,7 +373,16 @@ class VideoNote extends React.Component {
 
     render() {
         const { displaySize, chatId, messageId, openMedia } = this.props;
-        const { active, currentTime, videoDuration } = this.state;
+        const {
+            active,
+            currentTime,
+            videoDuration,
+            transcribing,
+            transcription,
+            transcriptionId,
+            transcriptionError,
+            transcriptionRated,
+        } = this.state;
         const { minithumbnail, thumbnail, video, duration } = this.props.videoNote;
 
         const message = MessageStore.get(chatId, messageId);
@@ -366,7 +446,7 @@ class VideoNote extends React.Component {
                             <img
                                 className={classNames('animation-preview', {
                                     'media-blurred': isBlurred,
-                                    'media-mini-blurred': !src && !thumbnailSrc && isBlurred
+                                    'media-mini-blurred': !src && !thumbnailSrc && isBlurred,
                                 })}
                                 style={style}
                                 src={thumbnailSrc || miniSrc}
@@ -383,6 +463,41 @@ class VideoNote extends React.Component {
                     </>
                 )}
                 <FileProgress file={video} download upload cancelButton icon={<ArrowDownwardIcon />} />
+                <button
+                    className='video-note-transcribe-btn'
+                    onClick={this.handleTranscribe}
+                    disabled={transcribing}
+                    title='Transcribe video message'>
+                    {transcribing ? '...' : 'TXT'}
+                </button>
+                {(transcription || transcriptionError) && (
+                    <div
+                        className={classNames('video-note-transcription', {
+                            'video-note-transcription-error': transcriptionError,
+                        })}>
+                        {transcriptionError || transcription}
+                        {transcription && transcriptionId && !transcriptionError && (
+                            <span className='video-note-transcription-rating'>
+                                <button
+                                    className={classNames('video-note-transcription-rate-btn', {
+                                        'video-note-transcription-rate-selected': transcriptionRated === true,
+                                    })}
+                                    onClick={event => this.handleRateTranscription(event, true)}
+                                    title='La transcripcion es correcta'>
+                                    ✓
+                                </button>
+                                <button
+                                    className={classNames('video-note-transcription-rate-btn', {
+                                        'video-note-transcription-rate-selected': transcriptionRated === false,
+                                    })}
+                                    onClick={event => this.handleRateTranscription(event, false)}
+                                    title='La transcripcion necesita mejora'>
+                                    ✕
+                                </button>
+                            </span>
+                        )}
+                    </div>
+                )}
             </div>
         );
     }
@@ -394,12 +509,12 @@ VideoNote.propTypes = {
     videoNote: PropTypes.object.isRequired,
     openMedia: PropTypes.func,
     size: PropTypes.number,
-    displaySize: PropTypes.number
+    displaySize: PropTypes.number,
 };
 
 VideoNote.defaultProps = {
     size: PHOTO_SIZE,
-    displaySize: PHOTO_DISPLAY_SIZE
+    displaySize: PHOTO_DISPLAY_SIZE,
 };
 
 export default VideoNote;

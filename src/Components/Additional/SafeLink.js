@@ -14,7 +14,9 @@ import DialogTitle from '@material-ui/core/DialogTitle';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogContentText from '@material-ui/core/DialogContentText';
 import DialogActions from '@material-ui/core/DialogActions';
-import { getDecodedUrl, getHref, isUrlSafe } from '../../Utils/Url';
+import { openChat } from '../../Actions/Client';
+import TdLibController from '../../Controllers/TdLibController';
+import { getDecodedUrl, getHref, isUrlSafe, parseTelegramInternalLink } from '../../Utils/Url';
 import './SafeLink.css';
 
 class SafeLink extends React.Component {
@@ -34,7 +36,8 @@ class SafeLink extends React.Component {
                 safe: isUrlSafe(displayText, url),
                 decodedUrl: getDecodedUrl(url, mail),
                 href: getHref(url, mail),
-                confirm: false
+                telegramLink: !mail ? parseTelegramInternalLink(url) : null,
+                confirm: false,
             };
         }
 
@@ -76,10 +79,32 @@ class SafeLink extends React.Component {
         event.stopPropagation();
 
         const { onClick } = this.props;
+        const { telegramLink } = this.state;
 
         if (onClick) {
             event.preventDefault();
             onClick(event);
+        } else if (telegramLink) {
+            event.preventDefault();
+            this.openTelegramLink();
+        }
+    };
+
+    openTelegramLink = async () => {
+        const { url } = this.props;
+        const { telegramLink } = this.state;
+        if (!telegramLink) return;
+
+        try {
+            const chat = await TdLibController.send({ '@type': 'openTelegramLink', url });
+            if (chat && chat.id) {
+                openChat(chat.id, telegramLink.messageId || null);
+            }
+        } catch (error) {
+            const newWindow = window.open();
+            if (!newWindow) return;
+            newWindow.opener = null;
+            newWindow.location = getHref(url);
         }
     };
 
@@ -137,7 +162,7 @@ SafeLink.propTypes = {
     url: PropTypes.string.isRequired,
     displayText: PropTypes.string,
     mail: PropTypes.bool,
-    onClick: PropTypes.func
+    onClick: PropTypes.func,
 };
 
 export default withTranslation()(SafeLink);

@@ -32,6 +32,7 @@
     opacity: 0.55;
     transition: opacity 0.15s, color 0.15s;
     line-height: 1.4;
+    pointer-events: auto;
 }
 
 .voice-speed-btn:hover {
@@ -42,4 +43,68 @@
     opacity: 1;
     color: var(--color-primary, #2196f3);
     border-color: var(--color-primary, #2196f3);
+}
+
+.voice-transcribe-btn {
+    background: none;
+    border: 1px solid currentColor;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 1px 5px;
+    margin-left: 6px;
+    color: inherit;
+    opacity: 0.55;
+    transition: opacity 0.15s, color 0.15s;
+    line-height: 1.4;
+    pointer-events: auto;
+}
+
+.voice-transcribe-btn:hover {
+    opacity: 0.85;
+}
+
+.voice-transcribe-btn:disabled {
+    cursor: default;
+    opacity: 0.35;
+}
+
+.voice-transcription {
+    margin-top: 4px;
+    font-size: 13px;
+    line-height: 1.35;
+    white-space: pre-wrap;
+    color: var(--message-text-color, inherit);
+    pointer-events: auto;
+}
+
+.voice-transcription-error {
+    color: #e53935;
+}
+
+.voice-transcription-rating {
+    display: inline-flex;
+    gap: 4px;
+    margin-left: 8px;
+    vertical-align: middle;
+}
+
+.voice-transcription-rate-btn {
+    min-width: 20px;
+    height: 20px;
+    border: 1px solid currentColor;
+    border-radius: 10px;
+    background: transparent;
+    color: inherit;
+    cursor: pointer;
+    font-size: 12px;
+    line-height: 18px;
+    opacity: 0.65;
+}
+
+.voice-transcription-rate-btn:hover,
+.voice-transcription-rate-selected {
+    opacity: 1;
+    background: var(--reaction-chosen-bg, rgba(33, 150, 243, 0.1));
 }

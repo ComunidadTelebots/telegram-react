@@ -789,6 +789,8 @@ class GramJsController extends EventEmitter {
                 return this._getChat(req);
             case 'searchPublicChat':
                 return this._searchPublicChat(req);
+            case 'openTelegramLink':
+                return this._openTelegramLink(req);
             case 'createPrivateChat':
                 return this._createPrivateChat(req);
             case 'getContacts':
@@ -813,6 +815,10 @@ class GramJsController extends EventEmitter {
                 return this._sendGifByUrl(req);
             case 'setChatMessageAutoDeleteTime':
                 return this._setChatMessageAutoDeleteTime(req);
+            case 'getDefaultMessageAutoDeleteTime':
+                return this._getDefaultMessageAutoDeleteTime();
+            case 'setDefaultMessageAutoDeleteTime':
+                return this._setDefaultMessageAutoDeleteTime(req);
             case 'getChannelStats':
                 return this._getChannelStats(req);
             case 'editMessageText':
@@ -823,6 +829,8 @@ class GramJsController extends EventEmitter {
                 return this._viewMessages(req);
             case 'getChatScheduledMessages':
                 return this._getChatScheduledMessages(req);
+            case 'sendChatScheduledMessages':
+                return this._sendChatScheduledMessages(req);
             case 'deleteChatScheduledMessages':
                 return this._deleteChatScheduledMessages(req);
             case 'readAllChatMentions':
@@ -833,8 +841,16 @@ class GramJsController extends EventEmitter {
                 return this._pinChatMessage(req);
             case 'unpinChatMessage':
                 return this._unpinChatMessage(req);
+            case 'unpinAllChatMessages':
+                return this._unpinAllChatMessages(req);
             case 'translateText':
                 return this._translateText(req);
+            case 'toggleChatTranslations':
+                return this._toggleChatTranslations(req);
+            case 'transcribeAudio':
+                return this._transcribeAudio(req);
+            case 'rateTranscribedAudio':
+                return this._rateTranscribedAudio(req);
 
             // ── Usuarios ──────────────────────────────────────────────────────
             case 'getUser':
@@ -871,6 +887,8 @@ class GramJsController extends EventEmitter {
                 return this._banGroupMember(req);
             case 'setChatDescription':
                 return this._setChatDescription(req);
+            case 'setChatProtectedContent':
+                return this._setChatProtectedContent(req);
             case 'leaveChat':
                 return this._leaveChat(req);
             case 'getInviteLink':
@@ -995,12 +1013,56 @@ class GramJsController extends EventEmitter {
             // ── Reacciones ────────────────────────────────────────────────────
             case 'sendMessageReaction':
                 return this._sendReaction(req);
+            case 'readAllMessageReactions':
+                return this._readAllMessageReactions(req);
+            case 'getAvailableReactions':
+                return this._getAvailableReactions();
+            case 'setDefaultReaction':
+                return this._setDefaultReaction(req);
             case 'sendGifByUrl':
                 return this._sendGifByUrl(req);
             case 'setChatMessageAutoDeleteTime':
                 return this._setChatMessageAutoDeleteTime(req);
             case 'getChannelStats':
                 return this._getChannelStats(req);
+            case 'searchStickers':
+                return this._searchStickers(req);
+            case 'requestBotWebView':
+                return this._requestBotWebView(req);
+            case 'prolongWebView':
+                return this._prolongWebView(req);
+            case 'sendWebViewData':
+                return this._sendWebViewData(req);
+            case 'answerWebAppQuery':
+                return this._answerWebAppQuery(req);
+
+            // ── Channel Boosts ────────────────────────────────────────────────
+            case 'getBoostsStatus':
+                return this._getBoostsStatus(req);
+            case 'getMyBoosts':
+                return this._getMyBoosts(req);
+            case 'applyBoost':
+                return this._applyBoost(req);
+            case 'getBoostsList':
+                return this._getBoostsList(req);
+
+            // ── Stars / Payments ──────────────────────────────────────────────
+            case 'getStarsBalance':
+                return this._getStarsBalance(req);
+            case 'getStarsTransactions':
+                return this._getStarsTransactions(req);
+            case 'sendStarGift':
+                return this._sendStarGift(req);
+
+            // ── Premium ───────────────────────────────────────────────────────
+            case 'getPremiumFeatures':
+                return this._getPremiumFeatures(req);
+            case 'getPremiumLimit':
+                return this._getPremiumLimit(req);
+
+            // ── Business ─────────────────────────────────────────────────────
+            case 'getBusinessInfo':
+                return this._getBusinessInfo(req);
 
             // ── Archivos ──────────────────────────────────────────────────────
             case 'downloadFile':
@@ -1662,6 +1724,124 @@ class GramJsController extends EventEmitter {
         return null;
     };
 
+    _openTelegramLink = async req => {
+        const parsed = this._parseTelegramLink(req && req.url);
+        if (!parsed) return null;
+
+        try {
+            if (parsed.type === 'invite') {
+                return this._importChatInvite(parsed.hash);
+            }
+
+            if (parsed.type === 'username') {
+                const chat = await this._searchPublicChat({ username: parsed.username });
+                if (chat) return chat;
+            }
+        } catch (e) {
+            console.warn('[GramJs] openTelegramLink error', e);
+            throw e;
+        }
+
+        return null;
+    };
+
+    _parseTelegramLink = value => {
+        if (!value) return null;
+
+        let url = String(value).trim();
+        if (!url) return null;
+
+        if (/^tg:\/\//i.test(url)) {
+            const queryStart = url.indexOf('?');
+            const query = new URLSearchParams(queryStart >= 0 ? url.slice(queryStart + 1) : '');
+            const domain = (query.get('domain') || '').replace(/^@/, '');
+            const invite = query.get('invite');
+            const join = query.get('join');
+
+            if (invite || join) return { type: 'invite', hash: invite || join };
+            if (domain) return { type: 'username', username: domain };
+            return null;
+        }
+
+        if (!/^https?:\/\//i.test(url)) {
+            url = `https://${url}`;
+        }
+
+        try {
+            const parsed = new URL(url);
+            const host = parsed.hostname.toLowerCase();
+            if (!['t.me', 'telegram.me', 'telegram.dog'].includes(host)) return null;
+
+            const parts = parsed.pathname
+                .split('/')
+                .map(x => decodeURIComponent(x))
+                .filter(Boolean);
+            const first = parts[0] || '';
+
+            if (!first) return null;
+            if (first === '+' && parts[1]) return { type: 'invite', hash: parts[1] };
+            if (first.charAt(0) === '+') return { type: 'invite', hash: first.slice(1) };
+            if (first.toLowerCase() === 'joinchat' && parts[1]) return { type: 'invite', hash: parts[1] };
+            if (first.toLowerCase() === 'c') return null;
+
+            return { type: 'username', username: first.replace(/^@/, '') };
+        } catch (e) {
+            return null;
+        }
+    };
+
+    _importChatInvite = async hash => {
+        if (!hash) return null;
+
+        try {
+            const result = await this.client.invoke(new Api.messages.ImportChatInvite({ hash }));
+            const chat = this._upsertChatsFromUpdates(result);
+            if (chat) return chat;
+        } catch (e) {
+            if (!/USER_ALREADY_PARTICIPANT/i.test(e.message || '')) {
+                console.warn('[GramJs] importChatInvite error', e);
+                throw e;
+            }
+        }
+
+        const checked = await this.client.invoke(new Api.messages.CheckChatInvite({ hash }));
+        const chat = checked && checked.chat ? checked.chat : null;
+        if (!chat) return null;
+
+        this._cacheEntity(chat);
+        const tdChat = translateChat(chat, null);
+        if (tdChat) {
+            this._chatCache.set(tdChat.id, tdChat);
+            this._emitUpdate({ '@type': 'updateNewChat', chat: tdChat });
+        }
+        return tdChat;
+    };
+
+    _upsertChatsFromUpdates = result => {
+        let firstChat = null;
+
+        for (const user of result?.users || []) {
+            const tdUser = translateUser(user);
+            if (tdUser) {
+                this._userCache.set(tdUser.id, tdUser);
+                this._emitUpdate({ '@type': 'updateUser', user: tdUser });
+            }
+            this._cacheEntity(user);
+        }
+
+        for (const chatEntity of result?.chats || []) {
+            this._cacheEntity(chatEntity);
+            const tdChat = translateChat(chatEntity, null);
+            if (!tdChat) continue;
+
+            this._chatCache.set(tdChat.id, tdChat);
+            this._emitUpdate({ '@type': 'updateNewChat', chat: tdChat });
+            if (!firstChat) firstChat = tdChat;
+        }
+
+        return firstChat;
+    };
+
     _createPrivateChat = async req => {
         const { user_id } = req;
         const cached = this._chatCache.get(user_id);
@@ -2070,6 +2250,18 @@ class GramJsController extends EventEmitter {
         return {};
     };
 
+    _unpinAllChatMessages = async req => {
+        const { chat_id } = req;
+        try {
+            const inputPeer = tdlibChatIdToInputPeer(chat_id, this._entityCache);
+            await this.client.invoke(new Api.messages.UnpinAllMessages({ peer: inputPeer }));
+            this._emitUpdate({ '@type': 'updateChatPinnedMessage', chat_id, pinned_message_id: 0 });
+        } catch (err) {
+            console.error('[GramJs] unpinAllChatMessages error', err);
+        }
+        return {};
+    };
+
     _sendMessage = async req => {
         const {
             chat_id,
@@ -2095,6 +2287,17 @@ class GramJsController extends EventEmitter {
                 contentType === 'inputMessageAnimation'
             ) {
                 return this._sendFile(chat_id, inputPeer, input_message_content, reply_to_message_id, schedule_date);
+            }
+
+            if (contentType === 'inputMessagePoll') {
+                return this._sendPoll(
+                    chat_id,
+                    inputPeer,
+                    input_message_content,
+                    reply_to_message_id,
+                    schedule_date,
+                    disable_notification,
+                );
             }
 
             const text = input_message_content?.text?.text || '';
@@ -2125,6 +2328,60 @@ class GramJsController extends EventEmitter {
         } catch (err) {
             console.error('[GramJs] sendMessage error', err);
             throw err;
+        }
+        return {};
+    };
+
+    _sendPoll = async (chatId, inputPeer, content, replyToMessageId, scheduleDate, disableNotification) => {
+        const { generateRandomBigInt } = await import('telegram/Helpers');
+        const optionBytes = (content.options || []).map((_, index) => Buffer.from(String(index)));
+        const answers = (content.options || []).map(
+            (text, index) =>
+                new Api.PollAnswer({
+                    text: new Api.TextWithEntities({ text, entities: [] }),
+                    option: optionBytes[index],
+                }),
+        );
+        const isQuiz = content.type && content.type['@type'] === 'pollTypeQuiz';
+        const correctOptionId = isQuiz ? content.type.correct_option_id : null;
+        const correctIndex = isQuiz ? (content.option_ids || []).findIndex(id => id === correctOptionId) : -1;
+        const media = new Api.InputMediaPoll({
+            poll: new Api.Poll({
+                id: BigInt(0),
+                closed: false,
+                publicVoters: content.is_anonymous === false,
+                multipleChoice: !isQuiz && !!content.allows_multiple_answers,
+                quiz: isQuiz,
+                question: new Api.TextWithEntities({ text: content.question || '', entities: [] }),
+                answers,
+            }),
+            correctAnswers: isQuiz && correctIndex >= 0 ? [optionBytes[correctIndex]] : undefined,
+        });
+
+        const result = await this.client.invoke(
+            new Api.messages.SendMedia({
+                peer: inputPeer,
+                media,
+                message: '',
+                randomId: generateRandomBigInt(),
+                scheduleDate: scheduleDate || undefined,
+                silent: !!disableNotification,
+                replyTo: replyToMessageId ? new Api.InputReplyToMessage({ replyToMsgId: replyToMessageId }) : undefined,
+            }),
+        );
+        const rawMessage = (result?.updates || []).find(update => update.message)?.message || result?.update?.message;
+        const tdMessage = rawMessage ? translateMessage(rawMessage, chatId) : null;
+        if (tdMessage) {
+            this._emitUpdate({ '@type': 'updateNewMessage', message: tdMessage });
+            const chat = this._chatCache.get(chatId);
+            if (chat) chat.last_message = tdMessage;
+            this._emitUpdate({
+                '@type': 'updateChatLastMessage',
+                chat_id: chatId,
+                last_message: tdMessage,
+                order: String(tdMessage.date * 1000),
+            });
+            return tdMessage;
         }
         return {};
     };
@@ -2165,6 +2422,25 @@ class GramJsController extends EventEmitter {
         return {};
     };
 
+    _getDefaultMessageAutoDeleteTime = async () => {
+        try {
+            const result = await this.client.invoke(new Api.messages.GetDefaultHistoryTTL());
+            return { '@type': 'messageAutoDeleteTime', message_auto_delete_time: result?.period || 0 };
+        } catch (e) {
+            console.warn('[GramJs] getDefaultMessageAutoDeleteTime error', e);
+            return { '@type': 'messageAutoDeleteTime', message_auto_delete_time: 0 };
+        }
+    };
+
+    _setDefaultMessageAutoDeleteTime = async ({ message_auto_delete_time }) => {
+        try {
+            await this.client.invoke(new Api.messages.SetDefaultHistoryTTL({ period: message_auto_delete_time || 0 }));
+        } catch (e) {
+            console.warn('[GramJs] setDefaultMessageAutoDeleteTime error', e);
+        }
+        return {};
+    };
+
     _getChannelStats = async ({ chat_id }) => {
         try {
             const inputPeer = tdlibChatIdToInputPeer(chat_id, this._entityCache);
@@ -2193,6 +2469,286 @@ class GramJsController extends EventEmitter {
                 views_per_post: 0,
                 shares_per_post: 0,
             };
+        }
+    };
+
+    _searchStickers = async ({ query, limit = 40 }) => {
+        try {
+            const result = await this.client.invoke(
+                new Api.messages.SearchStickers({
+                    emojis: false,
+                    q: query,
+                    hash: BigInt(0),
+                }),
+            );
+            const stickers = (result.documents || []).slice(0, limit).map(doc => {
+                const animAttr = doc.attributes?.find(a => a.className === 'DocumentAttributeSticker');
+                const videoAttr = doc.attributes?.find(a => a.className === 'DocumentAttributeVideo');
+                const imageAttr = doc.attributes?.find(a => a.className === 'DocumentAttributeImageSize');
+                const isAnimated = doc.mimeType === 'application/x-tgsticker';
+                const isVideo = doc.mimeType === 'video/webm';
+                const w = (imageAttr || videoAttr)?.w || 512;
+                const h = (imageAttr || videoAttr)?.h || 512;
+                return {
+                    '@type': 'sticker',
+                    id: String(doc.id),
+                    width: w,
+                    height: h,
+                    emoji: animAttr?.alt || '',
+                    set_id: String(animAttr?.stickerset?.id || 0),
+                    is_animated: isAnimated,
+                    is_video: isVideo,
+                    sticker: {
+                        '@type': 'file',
+                        id: Number(doc.id) % 2147483647,
+                        size: Number(doc.size || 0),
+                        expected_size: Number(doc.size || 0),
+                        local: { '@type': 'localFile', can_be_downloaded: true, is_downloading_completed: false },
+                        remote: { '@type': 'remoteFile', id: String(doc.id) },
+                    },
+                    thumbnail: null,
+                    minithumbnail: null,
+                };
+            });
+            return { '@type': 'stickers', stickers };
+        } catch (e) {
+            console.warn('[GramJs] searchStickers error', e);
+            return { '@type': 'stickers', stickers: [] };
+        }
+    };
+
+    _requestBotWebView = async ({ bot_user_id, chat_id, url, start_param }) => {
+        try {
+            const botInput = await this.client.getInputEntity(bot_user_id);
+            const peerInput = tdlibChatIdToInputPeer(chat_id, this._entityCache);
+            const result = await this.client.invoke(
+                new Api.messages.RequestWebView({
+                    peer: peerInput,
+                    bot: botInput,
+                    url: url || undefined,
+                    startParam: start_param || undefined,
+                    platform: 'web',
+                }),
+            );
+            return { url: result.url || '', query_id: String(result.queryId || '0') };
+        } catch (e) {
+            console.warn('[GramJs] requestBotWebView error', e);
+            return { url: '', query_id: '0' };
+        }
+    };
+
+    _prolongWebView = async ({ bot_user_id, chat_id, query_id }) => {
+        try {
+            const botInput = await this.client.getInputEntity(bot_user_id);
+            const peerInput = tdlibChatIdToInputPeer(chat_id, this._entityCache);
+            await this.client.invoke(
+                new Api.messages.ProlongWebView({
+                    peer: peerInput,
+                    bot: botInput,
+                    queryId: BigInt(query_id || '0'),
+                }),
+            );
+        } catch (e) {
+            console.warn('[GramJs] prolongWebView error', e);
+        }
+    };
+
+    _sendWebViewData = async ({ bot_user_id, button_text, data }) => {
+        try {
+            const botInput = await this.client.getInputEntity(bot_user_id);
+            await this.client.invoke(
+                new Api.messages.SendWebViewData({
+                    bot: botInput,
+                    randomId: BigInt(Math.floor(Math.random() * Number.MAX_SAFE_INTEGER)),
+                    buttonText: button_text || '',
+                    data: data || '',
+                }),
+            );
+        } catch (e) {
+            console.warn('[GramJs] sendWebViewData error', e);
+        }
+    };
+
+    _answerWebAppQuery = async ({ query_id, result }) => {
+        try {
+            await this.client.invoke(
+                new Api.messages.SendWebViewResultMessage({
+                    botQueryId: query_id,
+                    result,
+                }),
+            );
+        } catch (e) {
+            console.warn('[GramJs] answerWebAppQuery error', e);
+        }
+    };
+
+    // ── Channel Boosts ────────────────────────────────────────────────────────
+
+    _getBoostsStatus = async ({ chat_id }) => {
+        try {
+            const peer = tdlibChatIdToInputPeer(chat_id, this._entityCache);
+            const result = await this.client.invoke(new Api.premium.GetBoostsStatus({ peer }));
+            return {
+                level: result.level || 0,
+                boost_count: Number(result.boosts || 0),
+                current_level_boost_count: Number(result.currentLevelBoosts || 0),
+                next_level_boost_count: Number(result.nextLevelBoosts || 0),
+                premium_subscriber_count: Number(result.premiumSubscribers || 0),
+                prepaid_giveaways: result.prepaidGiveaways || [],
+                boost_url: result.boostUrl || '',
+                my_boost_slots: result.myBoostSlots || [],
+            };
+        } catch (e) {
+            console.warn('[GramJs] getBoostsStatus error', e);
+            return { level: 0, boost_count: 0 };
+        }
+    };
+
+    _getMyBoosts = async () => {
+        try {
+            const result = await this.client.invoke(new Api.premium.GetMyBoosts());
+            return {
+                my_boosts: (result.myBoosts || []).map(b => ({
+                    slot: b.slot,
+                    peer: b.peer,
+                    date: Number(b.date || 0),
+                    expires: Number(b.expires || 0),
+                    cooldown_until_date: Number(b.cooldownUntilDate || 0),
+                })),
+            };
+        } catch (e) {
+            console.warn('[GramJs] getMyBoosts error', e);
+            return { my_boosts: [] };
+        }
+    };
+
+    _applyBoost = async ({ chat_id, slots }) => {
+        try {
+            const peer = tdlibChatIdToInputPeer(chat_id, this._entityCache);
+            await this.client.invoke(new Api.premium.ApplyBoost({ peer, slots: slots || [] }));
+            return { ok: true };
+        } catch (e) {
+            console.warn('[GramJs] applyBoost error', e);
+            return { ok: false, error: e.message };
+        }
+    };
+
+    _getBoostsList = async ({ chat_id, gifts = false, offset = '', limit = 50 }) => {
+        try {
+            const peer = tdlibChatIdToInputPeer(chat_id, this._entityCache);
+            const result = await this.client.invoke(new Api.premium.GetBoostsList({ peer, gifts, offset, limit }));
+            return {
+                count: Number(result.count || 0),
+                boosts: (result.boosts || []).map(b => ({
+                    user_id: b.userId ? Number(b.userId) : null,
+                    giveaway: !!b.giveaway,
+                    unclaimed: !!b.unclaimed,
+                    date: Number(b.date || 0),
+                    expires: Number(b.expires || 0),
+                    multiplier: b.multiplier || 1,
+                })),
+                next_offset: result.nextOffset || '',
+            };
+        } catch (e) {
+            console.warn('[GramJs] getBoostsList error', e);
+            return { count: 0, boosts: [] };
+        }
+    };
+
+    // ── Stars ─────────────────────────────────────────────────────────────────
+
+    _getStarsBalance = async () => {
+        try {
+            const result = await this.client.invoke(new Api.payments.GetStarsStatus({ peer: new Api.InputPeerSelf() }));
+            return { balance: Number(result.balance?.amount || 0) };
+        } catch (e) {
+            console.warn('[GramJs] getStarsBalance error', e);
+            return { balance: 0 };
+        }
+    };
+
+    _getStarsTransactions = async ({ peer_id, offset = '', limit = 25 }) => {
+        try {
+            const peer = peer_id ? tdlibChatIdToInputPeer(peer_id, this._entityCache) : new Api.InputPeerSelf();
+            const result = await this.client.invoke(new Api.payments.GetStarsTransactions({ peer, offset, limit }));
+            return {
+                balance: Number(result.balance?.amount || 0),
+                transactions: (result.history || []).map(t => ({
+                    id: String(t.id || ''),
+                    stars: Number(t.stars?.amount || 0),
+                    date: Number(t.date || 0),
+                    description: t.description || '',
+                    peer: t.peer,
+                })),
+                next_offset: result.nextOffset || '',
+            };
+        } catch (e) {
+            console.warn('[GramJs] getStarsTransactions error', e);
+            return { balance: 0, transactions: [] };
+        }
+    };
+
+    _sendStarGift = async ({ user_id, gift_id, message }) => {
+        try {
+            const userInput = await this.client.getInputEntity(user_id);
+            await this.client.invoke(
+                new Api.payments.SendStarGift({
+                    userId: userInput,
+                    gift: new Api.InputSavedStarGiftUser({ userId: userInput, msgId: 0 }),
+                    message: message ? { text: message } : undefined,
+                    hideName: false,
+                }),
+            );
+            return { ok: true };
+        } catch (e) {
+            console.warn('[GramJs] sendStarGift error', e);
+            return { ok: false, error: e.message };
+        }
+    };
+
+    // ── Premium ───────────────────────────────────────────────────────────────
+
+    _getPremiumFeatures = async () => {
+        try {
+            const result = await this.client.invoke(new Api.help.GetPremiumPromo({ langCode: 'es' }));
+            return {
+                features: result.videoSections || [],
+                monthly_amount: result.monthlyAmount ? Number(result.monthlyAmount.amount) : null,
+                currency: result.monthlyAmount?.currency || 'USD',
+            };
+        } catch (e) {
+            console.warn('[GramJs] getPremiumFeatures error', e);
+            return { features: [] };
+        }
+    };
+
+    _getPremiumLimit = async ({ type }) => {
+        try {
+            const result = await this.client.invoke(new Api.help.GetAppConfig({ hash: 0 }));
+            const cfg = result?.config?.value || [];
+            return { limits: cfg };
+        } catch (e) {
+            console.warn('[GramJs] getPremiumLimit error', e);
+            return { limits: [] };
+        }
+    };
+
+    // ── Business ─────────────────────────────────────────────────────────────
+
+    _getBusinessInfo = async ({ user_id }) => {
+        try {
+            const userInput = await this.client.getInputEntity(user_id);
+            const result = await this.client.invoke(new Api.account.GetBusinessInfo({ peer: userInput }));
+            return {
+                location: result.location ? { address: result.location.address, geo: result.location.geoPoint } : null,
+                work_hours: result.workHours || null,
+                greeting_message: result.greetingMessage || null,
+                away_message: result.awayMessage || null,
+                intro: result.intro || null,
+            };
+        } catch (e) {
+            console.warn('[GramJs] getBusinessInfo error', e);
+            return {};
         }
     };
 
@@ -2489,6 +3045,7 @@ class GramJsController extends EventEmitter {
             sticker_set_id: '0',
             invite_link: '',
             upgraded_from_basic_group_id: 0,
+            has_protected_content: false,
         };
         try {
             const inputPeer = tdlibChatIdToInputPeer(chatId, this._entityCache);
@@ -2508,6 +3065,7 @@ class GramJsController extends EventEmitter {
                 sticker_set_id: full.stickerset ? String(full.stickerset.id) : '0',
                 invite_link: full.exportedInvite?.link || '',
                 upgraded_from_basic_group_id: 0,
+                has_protected_content: !!full.noforwards,
                 slow_mode_delay: full.slowmodeSeconds || 0,
                 slow_mode_delay_expires_in: full.slowmodeNextSendDate
                     ? full.slowmodeNextSendDate - Math.floor(Date.now() / 1000)
@@ -2777,6 +3335,49 @@ class GramJsController extends EventEmitter {
         return {};
     };
 
+    _readAllMessageReactions = async req => {
+        const { chat_id } = req;
+        try {
+            const inputPeer = tdlibChatIdToInputPeer(chat_id, this._entityCache);
+            await this.client.invoke(new Api.messages.ReadReactions({ peer: inputPeer }));
+        } catch (err) {
+            console.error('[GramJs] readAllMessageReactions error', err);
+        }
+        return {};
+    };
+
+    _getAvailableReactions = async () => {
+        try {
+            if (this._availableReactions?.length) {
+                return { '@type': 'availableReactions', reactions: this._availableReactions };
+            }
+
+            const result = await this.client.invoke(new Api.messages.GetAvailableReactions({ hash: 0 }));
+            const reactions = (result?.reactions || [])
+                .filter(r => !r.inactive && !r.premium && r.reaction)
+                .map(r => r.reaction)
+                .slice(0, 24);
+            this._availableReactions = reactions;
+            return { '@type': 'availableReactions', reactions };
+        } catch (err) {
+            console.error('[GramJs] getAvailableReactions error', err);
+            return { '@type': 'availableReactions', reactions: [] };
+        }
+    };
+
+    _setDefaultReaction = async req => {
+        const { reaction } = req;
+        try {
+            await this.client.invoke(
+                new Api.messages.SetDefaultReaction({ reaction: new Api.ReactionEmoji({ emoticon: reaction }) }),
+            );
+        } catch (err) {
+            console.error('[GramJs] setDefaultReaction error', err);
+            throw err;
+        }
+        return {};
+    };
+
     _translateText = async req => {
         const { text, to_language_code } = req;
         try {
@@ -2797,6 +3398,64 @@ class GramJsController extends EventEmitter {
     // ─── File handlers ───────────────────────────────────────────────────────
 
     // ─── Sticker APIs ────────────────────────────────────────────────────────
+
+    _toggleChatTranslations = async req => {
+        const { chat_id, disabled = false } = req;
+        try {
+            const inputPeer = tdlibChatIdToInputPeer(chat_id, this._entityCache);
+            await this.client.invoke(new Api.messages.TogglePeerTranslations({ peer: inputPeer, disabled }));
+        } catch (e) {
+            console.error('[GramJs] toggleChatTranslations error', e);
+            throw e;
+        }
+        return { '@type': 'ok' };
+    };
+
+    _transcribeAudio = async req => {
+        const { chat_id, message_id } = req;
+        try {
+            const inputPeer = tdlibChatIdToInputPeer(chat_id, this._entityCache);
+            const result = await this.client.invoke(
+                new Api.messages.TranscribeAudio({
+                    peer: inputPeer,
+                    msgId: message_id,
+                }),
+            );
+
+            return {
+                '@type': 'transcribedAudio',
+                chat_id,
+                message_id,
+                pending: !!result.pending,
+                transcription_id: result.transcriptionId ? String(result.transcriptionId) : '',
+                text: result.text || '',
+                trial_remains_num: result.trialRemainsNum || 0,
+                trial_remains_until_date: result.trialRemainsUntilDate || 0,
+            };
+        } catch (e) {
+            console.error('[GramJs] transcribeAudio error', e);
+            throw e;
+        }
+    };
+
+    _rateTranscribedAudio = async req => {
+        const { chat_id, message_id, transcription_id, is_good } = req;
+        try {
+            const inputPeer = tdlibChatIdToInputPeer(chat_id, this._entityCache);
+            await this.client.invoke(
+                new Api.messages.RateTranscribedAudio({
+                    peer: inputPeer,
+                    msgId: message_id,
+                    transcriptionId: BigInt(transcription_id),
+                    good: !!is_good,
+                }),
+            );
+        } catch (e) {
+            console.error('[GramJs] rateTranscribedAudio error', e);
+            throw e;
+        }
+        return {};
+    };
 
     _getInstalledStickerSets = async req => {
         try {
@@ -3599,6 +4258,35 @@ class GramJsController extends EventEmitter {
         return null;
     };
 
+    _setChatProtectedContent = async req => {
+        const { chat_id, has_protected_content } = req;
+        try {
+            const inputPeer = tdlibChatIdToInputPeer(chat_id, this._entityCache);
+            if (!(inputPeer instanceof Api.InputPeerChannel)) return null;
+
+            await this.client.invoke(
+                new Api.messages.ToggleNoForwards({
+                    peer: inputPeer,
+                    enabled: !!has_protected_content,
+                }),
+            );
+
+            const chat = this._chatCache.get(chat_id);
+            const supergroupId = chat && chat.type && chat.type.supergroup_id;
+            if (supergroupId) {
+                this._emitUpdate({
+                    '@type': 'updateSupergroupFullInfo',
+                    supergroup_id: supergroupId,
+                    supergroup_full_info: { has_protected_content: !!has_protected_content },
+                });
+            }
+            return { '@type': 'ok' };
+        } catch (e) {
+            console.error('[GramJs] setChatProtectedContent error', e);
+        }
+        return null;
+    };
+
     _leaveChat = async req => {
         const { chat_id } = req;
         try {
@@ -3916,6 +4604,48 @@ class GramJsController extends EventEmitter {
             await this.client.invoke(new Api.messages.DeleteScheduledMessages({ peer: inputPeer, id: message_ids }));
         } catch (e) {
             console.error('[GramJs] deleteChatScheduledMessages error', e);
+        }
+        return {};
+    };
+    _sendChatScheduledMessages = async req => {
+        const { chat_id, message_ids } = req;
+        try {
+            const inputPeer = tdlibChatIdToInputPeer(chat_id, this._entityCache);
+            const result = await this.client.invoke(
+                new Api.messages.SendScheduledMessages({ peer: inputPeer, id: message_ids }),
+            );
+            const sentMessages = (result?.updates || []).map(u => u.message).filter(Boolean);
+            let lastMessage = null;
+
+            sentMessages
+                .map(message => translateMessage(message, chat_id))
+                .filter(Boolean)
+                .forEach(message => {
+                    lastMessage = message;
+                    this._emitUpdate({ '@type': 'updateNewMessage', message });
+                });
+
+            this._emitUpdate({
+                '@type': 'updateDeleteMessages',
+                chat_id,
+                message_ids,
+                is_permanent: true,
+                from_cache: false,
+            });
+
+            if (lastMessage) {
+                const chat = this._chatCache.get(chat_id);
+                if (chat) chat.last_message = lastMessage;
+                this._emitUpdate({
+                    '@type': 'updateChatLastMessage',
+                    chat_id,
+                    last_message: lastMessage,
+                    order: String(lastMessage.date * 1000),
+                });
+            }
+        } catch (e) {
+            console.error('[GramJs] sendChatScheduledMessages error', e);
+            throw e;
         }
         return {};
     };

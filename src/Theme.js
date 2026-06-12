@@ -95,6 +95,7 @@ const DESIGN_MUI = {
     'android-classic': { radius: 4, accent: '#527DA3', font: "'Roboto', 'Noto Sans', sans-serif", type: null },
     'android-redesign': { radius: 16, accent: '#229AF0', font: "'Roboto', 'Noto Sans', sans-serif", type: null },
     'android-glass': { radius: 18, accent: '#28C9B7', font: "'Roboto', 'Noto Sans', sans-serif", type: null },
+    webogram: { radius: 3, accent: '#5682A3', font: "'Helvetica Neue', Arial, sans-serif", type: null },
     ios: { radius: 16, accent: '#007AFF', font: "-apple-system, 'Helvetica Neue', sans-serif", type: null },
     macos: { radius: 10, accent: '#248BF2', font: "-apple-system, 'Helvetica Neue', sans-serif", type: null },
     tdesktop: { radius: 4, accent: '#40A7E3', font: "'Segoe UI', system-ui, sans-serif", type: null },
@@ -189,10 +190,33 @@ function withTheme(WrappedComponent) {
 
         componentDidMount() {
             ApplicationStore.on('clientUpdateThemeChanging', this.onClientUpdateThemeChanging);
+            this._mq = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)');
+            if (this._mq) {
+                this._mqHandler = e => {
+                    const cookies = new Cookies();
+                    const saved = cookies.get('themeOptions');
+                    if (saved && saved.type) return; // user has explicit preference, don't override
+                    const type = e.matches ? 'dark' : 'light';
+                    const theme = createTheme(type, null);
+                    this.setState({ theme }, () => ApplicationStore.emit('clientUpdateThemeChange'));
+                };
+                this._mq.addEventListener('change', this._mqHandler);
+                // Apply system preference on first load if no explicit cookie set
+                const cookies = new Cookies();
+                const saved = cookies.get('themeOptions');
+                if (!saved || !saved.type) {
+                    const type = this._mq.matches ? 'dark' : 'light';
+                    const theme = createTheme(type, null);
+                    this.setState({ theme });
+                }
+            }
         }
 
         componentWillUnmount() {
             ApplicationStore.off('clientUpdateThemeChanging', this.onClientUpdateThemeChanging);
+            if (this._mq && this._mqHandler) {
+                this._mq.removeEventListener('change', this._mqHandler);
+            }
         }
 
         onClientUpdateThemeChanging = update => {

@@ -470,3 +470,28 @@ body.design-ios .similar-channels-title {
 body.design-ios .similar-channel-item:hover {
     background: rgba(0, 0, 0, 0.04);
 }
+
+body.design-ios .voice-transcribe-btn,
+body.design-ios .voice-speed-btn,
+body.design-ios .message-scheduled-badge {
+    border-radius: 14px;
+    border-color: #007aff;
+    color: #007aff;
+    background: rgba(0, 122, 255, 0.08);
+}
+
+body.design-ios .voice-transcription,
+body.design-ios .create-poll-settings,
+body.design-ios .create-poll-correct-answer {
+    border-radius: 12px;
+    background: rgba(0, 122, 255, 0.08);
+}
+
+body.design-ios .video-note-transcribe-btn,
+body.design-ios .video-note-transcription {
+    border-radius: 14px;
+}
+
+body.design-ios .reaction-unread {
+    box-shadow: 0 0 0 2px rgba(0, 122, 255, 0.35);
+}

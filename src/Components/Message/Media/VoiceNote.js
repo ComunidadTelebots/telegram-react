@@ -65,8 +65,92 @@ const styles = theme => ({
 });
 
 class VoiceNote extends React.Component {
+    constructor(props) {
+        super(props);
+
+        this.state = {
+            transcribing: false,
+            transcription: '',
+            transcriptionId: '',
+            transcriptionError: '',
+            transcriptionRated: null,
+        };
+    }
+
+    componentDidMount() {
+        TdLibController.addListener('update', this.onUpdate);
+    }
+
+    componentWillUnmount() {
+        TdLibController.off('update', this.onUpdate);
+    }
+
+    onUpdate = update => {
+        const { chatId, messageId } = this.props;
+        if (!update || update['@type'] !== 'updateTranscribedAudio') return;
+        if (update.chat_id !== chatId || update.message_id !== messageId) return;
+        if (update.pending) {
+            this.setState({ transcribing: true, transcriptionError: '' });
+            return;
+        }
+
+        this.setState({
+            transcribing: false,
+            transcription: update.text || '',
+            transcriptionId: update.transcription_id || '',
+            transcriptionError: '',
+            transcriptionRated: null,
+        });
+    };
+
+    handleTranscribe = async event => {
+        event.stopPropagation();
+
+        const { chatId, messageId } = this.props;
+        this.setState({ transcribing: true, transcriptionError: '' });
+
+        try {
+            const result = await TdLibController.send({
+                '@type': 'transcribeAudio',
+                chat_id: chatId,
+                message_id: messageId,
+            });
+
+            this.setState({
+                transcribing: !!result.pending,
+                transcription: result.text || '',
+                transcriptionId: result.transcription_id || '',
+                transcriptionError: '',
+                transcriptionRated: null,
+            });
+        } catch (error) {
+            this.setState({
+                transcribing: false,
+                transcriptionError: error.message || 'Transcription failed',
+            });
+        }
+    };
+
+    handleRateTranscription = async (event, isGood) => {
+        event.stopPropagation();
+
+        const { chatId, messageId } = this.props;
+        const { transcriptionId } = this.state;
+        if (!transcriptionId) return;
+
+        await TdLibController.send({
+            '@type': 'rateTranscribedAudio',
+            chat_id: chatId,
+            message_id: messageId,
+            transcription_id: transcriptionId,
+            is_good: isGood,
+        });
+        this.setState({ transcriptionRated: isGood });
+    };
+
     render() {
         const { chatId, messageId, voiceNote, openMedia, classes } = this.props;
+        const { transcribing, transcription, transcriptionId, transcriptionError, transcriptionRated } = this.state;
         if (!voiceNote) return null;
 
         const { duration, voice: file, waveform } = voiceNote;
@@ -86,7 +170,42 @@ class VoiceNote extends React.Component {
                         <AudioAction chatId={chatId} messageId={messageId} duration={duration} file={file} />
                         <MediaStatus chatId={chatId} messageId={messageId} icon={' •'} />
                         <VoiceNoteSpeedButton />
+                        <button
+                            className='voice-transcribe-btn'
+                            onClick={this.handleTranscribe}
+                            disabled={transcribing}
+                            title='Transcribe voice message'>
+                            {transcribing ? '...' : 'TXT'}
+                        </button>
                     </div>
+                    {(transcription || transcriptionError) && (
+                        <div
+                            className={classNames('voice-transcription', {
+                                'voice-transcription-error': transcriptionError,
+                            })}>
+                            {transcriptionError || transcription}
+                            {transcription && transcriptionId && !transcriptionError && (
+                                <span className='voice-transcription-rating'>
+                                    <button
+                                        className={classNames('voice-transcription-rate-btn', {
+                                            'voice-transcription-rate-selected': transcriptionRated === true,
+                                        })}
+                                        onClick={event => this.handleRateTranscription(event, true)}
+                                        title='La transcripcion es correcta'>
+                                        ✓
+                                    </button>
+                                    <button
+                                        className={classNames('voice-transcription-rate-btn', {
+                                            'voice-transcription-rate-selected': transcriptionRated === false,
+                                        })}
+                                        onClick={event => this.handleRateTranscription(event, false)}
+                                        title='La transcripcion necesita mejora'>
+                                        ✕
+                                    </button>
+                                </span>
+                            )}
+                        </div>
+                    )}
                 </div>
             </div>
         );

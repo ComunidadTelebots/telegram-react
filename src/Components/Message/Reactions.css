@@ -30,6 +30,10 @@
     background: var(--reaction-chosen-bg);
 }
 
+.reaction-unread {
+    box-shadow: 0 0 0 2px var(--reaction-unread-ring);
+}
+
 .reaction-emoji {
     font-size: var(--text-body);
 }

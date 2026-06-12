@@ -62,6 +62,7 @@
     --highlight-flash: #80d066;
     --media-overlay: rgba(0, 0, 0, 0.25);
     --reaction-chosen-bg: rgba(33, 150, 243, 0.1);
+    --reaction-unread-ring: rgba(33, 150, 243, 0.35);
     --divider: rgba(0, 0, 0, 0.12);
 
     /* ── Shape ────────────────────────────────────────────────────────────── */
@@ -107,6 +108,7 @@ body.theme-dark {
     --shadow-bubble: 0 1px 2px 0 rgba(0, 0, 0, 0.45);
     --media-overlay: rgba(0, 0, 0, 0.4);
     --reaction-chosen-bg: rgba(91, 138, 241, 0.15);
+    --reaction-unread-ring: rgba(91, 138, 241, 0.45);
     --divider: rgba(255, 255, 255, 0.12);
 }
 

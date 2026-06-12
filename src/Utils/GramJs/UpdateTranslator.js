@@ -109,6 +109,8 @@ export function translateUpdate(update) {
             return phoneCallUpdate(update);
         case 'UpdatePhoneCallSignalingData':
             return phoneCallSignalingData(update);
+        case 'UpdateTranscribedAudio':
+            return transcribedAudio(update);
 
         default:
             return null;
@@ -232,6 +234,17 @@ function typing(update) {
         user_id: userId,
         sender_id: { '@type': 'messageSenderUser', user_id: userId },
         action: translateTypingAction(update.action),
+    };
+}
+
+function transcribedAudio(update) {
+    return {
+        '@type': 'updateTranscribedAudio',
+        chat_id: peerToTdlibChatId(update.peer),
+        message_id: update.msgId || 0,
+        pending: !!update.pending,
+        transcription_id: update.transcriptionId ? String(update.transcriptionId) : '',
+        text: update.text || '',
     };
 }
 

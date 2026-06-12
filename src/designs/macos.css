@@ -487,3 +487,28 @@ body.design-macos .fact-check-label {
 body.design-macos .similar-channels-title {
     color: var(--macos-accent);
 }
+
+body.design-macos .voice-transcribe-btn,
+body.design-macos .voice-speed-btn,
+body.design-macos .message-scheduled-badge {
+    border-radius: 8px;
+    border-color: var(--macos-accent);
+    color: var(--macos-accent);
+    background: rgba(36, 139, 242, 0.08);
+}
+
+body.design-macos .voice-transcription,
+body.design-macos .create-poll-settings,
+body.design-macos .create-poll-correct-answer {
+    border-radius: 10px;
+    background: rgba(36, 139, 242, 0.08);
+}
+
+body.design-macos .video-note-transcribe-btn,
+body.design-macos .video-note-transcription {
+    border-radius: 10px;
+}
+
+body.design-macos .reaction-unread {
+    box-shadow: 0 0 0 2px rgba(36, 139, 242, 0.35);
+}
