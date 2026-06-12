@@ -84,6 +84,7 @@ class InputBoxControl extends Component {
             pendingScheduleContent: null,
             silentSend: false,
             formatBar: null,
+            disableLinkPreview: false,
         };
 
         document.addEventListener(
@@ -1119,7 +1120,7 @@ class InputBoxControl extends Component {
     };
 
     sendMessage = async (content, clearDraft, callback, scheduleDate = 0) => {
-        const { chatId, replyToMessageId, silentSend } = this.state;
+        const { chatId, replyToMessageId, silentSend, disableLinkPreview } = this.state;
 
         if (!chatId) return;
         if (!content) return;
@@ -1134,6 +1135,7 @@ class InputBoxControl extends Component {
                 input_message_content: content,
                 schedule_date: scheduleDate || undefined,
                 disable_notification: silentSend || undefined,
+                disable_web_page_preview: disableLinkPreview || undefined,
             });
 
             this.setState({ replyToMessageId: 0 }, () => {
@@ -1335,6 +1337,7 @@ class InputBoxControl extends Component {
             scheduleDialogOpen,
             scheduleDateValue,
             silentSend,
+            disableLinkPreview,
             formatBar,
         } = this.state;
 
@@ -1484,6 +1487,29 @@ class InputBoxControl extends Component {
                             onClick={() => this.setState(s => ({ silentSend: !s.silentSend }))}
                             style={silentSend ? { color: '#e53935', marginRight: 2 } : { marginRight: 2 }}>
                             {silentSend ? <VolumeOffIcon fontSize='small' /> : <VolumeUpIcon fontSize='small' />}
+                        </IconButton>
+                    )}
+                    {!Boolean(editMessageId) && (
+                        <IconButton
+                            size='small'
+                            aria-label={
+                                disableLinkPreview ? 'Vista previa desactivada' : 'Desactivar vista previa de enlace'
+                            }
+                            title={
+                                disableLinkPreview
+                                    ? 'Vista previa desactivada — clic para activar'
+                                    : 'Desactivar vista previa de enlace'
+                            }
+                            onClick={() => this.setState(s => ({ disableLinkPreview: !s.disableLinkPreview }))}
+                            style={disableLinkPreview ? { color: '#e53935', marginRight: 2 } : { marginRight: 2 }}>
+                            <span
+                                style={{
+                                    fontSize: 16,
+                                    lineHeight: 1,
+                                    textDecoration: disableLinkPreview ? 'line-through' : 'none',
+                                }}>
+                                🔗
+                            </span>
                         </IconButton>
                     )}
                     {!Boolean(editMessageId) && (

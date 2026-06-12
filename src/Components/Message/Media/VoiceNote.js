@@ -13,12 +13,55 @@ import AudioAction from './AudioAction';
 import VoiceNoteTile from '../../Tile/VoiceNoteTile';
 import MediaStatus from './MediaStatus';
 import VoiceNoteSlider from './VoiceNoteSlider';
+import PlayerStore from '../../../Stores/PlayerStore';
+import TdLibController from '../../../Controllers/TdLibController';
 import './VoiceNote.css';
+
+const SPEEDS = [1.0, 1.5, 2.0];
+
+class VoiceNoteSpeedButton extends React.Component {
+    constructor(props) {
+        super(props);
+        this.state = { playbackRate: PlayerStore.playbackRate || 1.0 };
+    }
+
+    componentDidMount() {
+        PlayerStore.on('clientUpdateMediaPlaybackRate', this.onRateUpdate);
+    }
+
+    componentWillUnmount() {
+        PlayerStore.off('clientUpdateMediaPlaybackRate', this.onRateUpdate);
+    }
+
+    onRateUpdate = ({ playbackRate }) => this.setState({ playbackRate });
+
+    handleClick = e => {
+        e.stopPropagation();
+        const { playbackRate } = this.state;
+        const idx = SPEEDS.indexOf(playbackRate);
+        const next = SPEEDS[(idx + 1) % SPEEDS.length];
+        TdLibController.clientUpdate({ '@type': 'clientUpdateMediaPlaybackRate', playbackRate: next });
+    };
+
+    render() {
+        const { playbackRate } = this.state;
+        const label = playbackRate === 1.5 ? '1.5×' : playbackRate === 2.0 ? '2×' : '1×';
+        const active = playbackRate !== 1.0;
+        return (
+            <button
+                className={classNames('voice-speed-btn', { 'voice-speed-active': active })}
+                onClick={this.handleClick}
+                title='Velocidad de reproducción'>
+                {label}
+            </button>
+        );
+    }
+}
 
 const styles = theme => ({
     voiceNoteMeta: {
-        color: theme.palette.text.secondary
-    }
+        color: theme.palette.text.secondary,
+    },
 });
 
 class VoiceNote extends React.Component {
@@ -35,7 +78,8 @@ class VoiceNote extends React.Component {
                     <VoiceNoteSlider chatId={chatId} messageId={messageId} duration={duration} file={file} />
                     <div className={classNames(classes.voiceNoteMeta, 'voice-note-meta')}>
                         <AudioAction chatId={chatId} messageId={messageId} duration={duration} file={file} />
-                        <MediaStatus chatId={chatId} messageId={messageId} icon={'\u00A0•'} />
+                        <MediaStatus chatId={chatId} messageId={messageId} icon={' •'} />
+                        <VoiceNoteSpeedButton />
                     </div>
                 </div>
             </div>
@@ -47,7 +91,7 @@ VoiceNote.propTypes = {
     chatId: PropTypes.number.isRequired,
     messageId: PropTypes.number.isRequired,
     voiceNote: PropTypes.object.isRequired,
-    openMedia: PropTypes.func
+    openMedia: PropTypes.func,
 };
 
 export default withStyles(styles, { withTheme: true })(VoiceNote);

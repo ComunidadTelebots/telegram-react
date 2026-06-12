@@ -1,0 +1,9 @@
+.reactors-loading,
+.reactors-empty {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 32px;
+    color: var(--color-hint, #888);
+    font-size: 14px;
+}

@@ -849,6 +849,8 @@ class GramJsController extends EventEmitter {
                 return this._getMessageLink(req);
             case 'getActiveSessions':
                 return this._getActiveSessions(req);
+            case 'getMessageReactors':
+                return this._getMessageReactors(req);
             case 'getSimilarChannels':
                 return this._getSimilarChannels(req);
             case 'terminateSession':
@@ -1033,6 +1035,8 @@ class GramJsController extends EventEmitter {
             // ── Sessions ─────────────────────────────────────────────────────
             case 'getActiveSessions':
                 return this._getActiveSessions(req);
+            case 'getMessageReactors':
+                return this._getMessageReactors(req);
             case 'getSimilarChannels':
                 return this._getSimilarChannels(req);
             case 'terminateSession':
@@ -1180,6 +1184,35 @@ class GramJsController extends EventEmitter {
             }),
         );
         return {};
+    };
+
+    _getMessageReactors = async ({ chat_id, message_id, reaction }) => {
+        try {
+            const inputPeer = tdlibChatIdToInputPeer(chat_id, this._entityCache);
+            const result = await this.client.invoke(
+                new Api.messages.GetMessageReactionsList({
+                    peer: inputPeer,
+                    id: message_id,
+                    reaction: reaction ? new Api.ReactionEmoji({ emoticon: reaction }) : undefined,
+                    limit: 50,
+                }),
+            );
+            const reactors = (result.reactions || []).map(r => {
+                const peerId = r.peerId;
+                let userId = 0;
+                let name = '';
+                if (peerId && peerId.userId) {
+                    userId = Number(peerId.userId);
+                    const user = result.users && result.users.find(u => Number(u.id) === userId);
+                    if (user) name = [user.firstName, user.lastName].filter(Boolean).join(' ');
+                }
+                return { sender_id: { user_id: userId }, sender_name: name, reaction: r.reaction?.emoticon || '' };
+            });
+            return { reactors };
+        } catch (e) {
+            console.warn('[GramJs] getMessageReactors error', e);
+            return { reactors: [] };
+        }
     };
 
     _getSimilarChannels = async ({ chat_id }) => {
@@ -2000,7 +2033,14 @@ class GramJsController extends EventEmitter {
     };
 
     _sendMessage = async req => {
-        const { chat_id, input_message_content, reply_to_message_id = 0, schedule_date, disable_notification } = req;
+        const {
+            chat_id,
+            input_message_content,
+            reply_to_message_id = 0,
+            schedule_date,
+            disable_notification,
+            disable_web_page_preview,
+        } = req;
         const contentType = input_message_content?.['@type'];
 
         try {
@@ -2028,6 +2068,7 @@ class GramJsController extends EventEmitter {
                 formattingEntities: formattingEntities.length ? formattingEntities : undefined,
                 scheduleDate: schedule_date || undefined,
                 silent: !!disable_notification,
+                noWebpage: !!disable_web_page_preview,
             });
 
             const tdMessage = translateMessage(result, chat_id);
