@@ -24,6 +24,7 @@ import Reactions from './Reactions';
 import InlineKeyboard from './InlineKeyboard';
 import CommentsButton from './CommentsButton';
 import FactCheck from './FactCheck';
+import SeenBy from './SeenBy';
 import {
     getEmojiMatches,
     getText,
@@ -99,6 +100,7 @@ class Message extends Component {
                 top: 0,
                 translationText: null,
                 translating: false,
+                langMenu: false,
             };
         } else {
             this.state = {
@@ -110,6 +112,7 @@ class Message extends Component {
                 top: 0,
                 translationText: null,
                 translating: false,
+                langMenu: false,
             };
         }
     }
@@ -125,7 +128,7 @@ class Message extends Component {
             showTitle,
             showAuthor,
         } = this.props;
-        const { contextMenu, selected, highlighted, emojiMatches, translationText, translating } = this.state;
+        const { contextMenu, selected, highlighted, emojiMatches, translationText, translating, langMenu } = this.state;
 
         if (nextProps.theme !== theme) {
             // console.log('Message.shouldComponentUpdate true');
@@ -473,9 +476,18 @@ class Message extends Component {
         }
     };
 
-    handleTranslate = async event => {
-        const { chatId, messageId, t } = this.props;
+    handleTranslate = event => {
         this.handleCloseContextMenu(event);
+        this.setState({ langMenu: true });
+    };
+
+    handleCloseLangMenu = () => {
+        this.setState({ langMenu: false });
+    };
+
+    handleTranslateTo = async langCode => {
+        this.setState({ langMenu: false });
+        const { chatId, messageId, t } = this.props;
 
         const message = MessageStore.get(chatId, messageId);
         if (!message) return;
@@ -495,7 +507,7 @@ class Message extends Component {
             const result = await TdLibController.send({
                 '@type': 'translateText',
                 text,
-                to_language_code: 'en',
+                to_language_code: langCode,
             });
             const translated = result && (result.text || result);
             this.setState({
@@ -598,6 +610,7 @@ class Message extends Component {
             top,
             translationText,
             translating,
+            langMenu,
         } = this.state;
 
         const message = MessageStore.get(chatId, messageId);
@@ -653,6 +666,7 @@ class Message extends Component {
                 ? !!(message.content.text && message.content.text.text)
                 : !!(message.content && message.content.caption && message.content.caption.text);
         const canBeTranslated = canBeCopied;
+        const isOutgoingGroup = is_outgoing && isGroupChat(chatId);
         const canBeReported = !message.is_outgoing;
         const canBeBlocked = !message.is_outgoing && !!message.sender_user_id;
         const canCopyLink = !message.is_outgoing;
@@ -710,6 +724,7 @@ class Message extends Component {
                         {translationText && <div className='message-translation'>{translationText}</div>}
                         {message.fact_check && <FactCheck factCheck={message.fact_check} />}
                         <Reactions chatId={chatId} messageId={messageId} />
+                        {isOutgoingGroup && <SeenBy chatId={chatId} messageId={messageId} />}
                         {message.interaction_info && message.interaction_info.reply_info != null && (
                             <CommentsButton
                                 replyCount={message.interaction_info.reply_info.reply_count || 0}
@@ -760,6 +775,33 @@ class Message extends Component {
                         )}
                         {canBeBlocked && <MenuItem onClick={this.handleBlockUser}>{t('BlockUser')}</MenuItem>}
                         {canShowInChat && <MenuItem onClick={this.handleShowInChat}>{t('ShowInChat')}</MenuItem>}
+                    </MenuList>
+                </Popover>
+                <Popover
+                    open={langMenu}
+                    onClose={this.handleCloseLangMenu}
+                    anchorReference='anchorPosition'
+                    anchorPosition={{ top, left }}
+                    anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+                    transformOrigin={{ vertical: 'top', horizontal: 'left' }}
+                    onMouseDown={e => e.stopPropagation()}>
+                    <MenuList classes={{ root: classes.menuListRoot }} onClick={e => e.stopPropagation()}>
+                        {[
+                            { code: 'es', label: '🇪🇸 Español' },
+                            { code: 'en', label: '🇬🇧 English' },
+                            { code: 'fr', label: '🇫🇷 Français' },
+                            { code: 'de', label: '🇩🇪 Deutsch' },
+                            { code: 'pt', label: '🇵🇹 Português' },
+                            { code: 'it', label: '🇮🇹 Italiano' },
+                            { code: 'ru', label: '🇷🇺 Русский' },
+                            { code: 'zh', label: '🇨🇳 中文' },
+                            { code: 'ja', label: '🇯🇵 日本語' },
+                            { code: 'ar', label: '🇸🇦 العربية' },
+                        ].map(({ code, label }) => (
+                            <MenuItem key={code} onClick={() => this.handleTranslateTo(code)}>
+                                {label}
+                            </MenuItem>
+                        ))}
                     </MenuList>
                 </Popover>
             </div>

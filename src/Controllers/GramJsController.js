@@ -849,6 +849,8 @@ class GramJsController extends EventEmitter {
                 return this._getMessageLink(req);
             case 'getActiveSessions':
                 return this._getActiveSessions(req);
+            case 'getMessageReadParticipants':
+                return this._getMessageReadParticipants(req);
             case 'getMessageReactors':
                 return this._getMessageReactors(req);
             case 'getSimilarChannels':
@@ -1035,6 +1037,8 @@ class GramJsController extends EventEmitter {
             // ── Sessions ─────────────────────────────────────────────────────
             case 'getActiveSessions':
                 return this._getActiveSessions(req);
+            case 'getMessageReadParticipants':
+                return this._getMessageReadParticipants(req);
             case 'getMessageReactors':
                 return this._getMessageReactors(req);
             case 'getSimilarChannels':
@@ -1184,6 +1188,28 @@ class GramJsController extends EventEmitter {
             }),
         );
         return {};
+    };
+
+    _getMessageReadParticipants = async ({ chat_id, message_id }) => {
+        try {
+            const inputPeer = tdlibChatIdToInputPeer(chat_id, this._entityCache);
+            const result = await this.client.invoke(
+                new Api.messages.GetMessageReadParticipants({
+                    peer: inputPeer,
+                    msgId: message_id,
+                }),
+            );
+            const userIds = (result || [])
+                .map(r => {
+                    if (r && r.userId) return Number(r.userId);
+                    return Number(r);
+                })
+                .filter(Boolean);
+            return { user_ids: userIds };
+        } catch (e) {
+            console.warn('[GramJs] getMessageReadParticipants error', e);
+            return { user_ids: [] };
+        }
     };
 
     _getMessageReactors = async ({ chat_id, message_id, reaction }) => {

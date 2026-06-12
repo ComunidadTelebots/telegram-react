@@ -14,6 +14,7 @@ import { compose } from 'recompose';
 import ThemePicker from './ThemePicker';
 import LanguagePicker from './LanguagePicker';
 import ActiveSessions from '../Additional/ActiveSessions';
+import KeyboardShortcutsDialog from '../Additional/KeyboardShortcutsDialog';
 import AndroidDrawer from './AndroidDrawer';
 import { isAuthorizationReady } from '../../Utils/Common';
 import ApplicationStore from '../../Stores/ApplicationStore';
@@ -115,6 +116,7 @@ class MainMenuButton extends React.Component {
                 <ThemePicker innerRef={ref => (this.themePicker = ref)} />
                 <LanguagePicker ref={ref => (this.languagePicker = ref)} />
                 <ActiveSessions ref={ref => (this.activeSessionsRef = ref)} />
+                <KeyboardShortcutsDialog ref={ref => (this.kbdShortcutsRef = ref)} />
             </>
         );
     }
