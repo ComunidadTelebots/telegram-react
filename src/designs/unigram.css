@@ -341,3 +341,57 @@ body.theme-dark.design-unigram ::-webkit-scrollbar-thumb {
     border: 3px solid transparent;
     background-clip: padding-box;
 }
+
+/* ── Features sesión 21 ─────────────────────────────── */
+body.design-unigram .reaction-bubble {
+    border-radius: 12px;
+    border-color: var(--unigram-accent);
+    background: rgba(43, 127, 224, 0.07);
+}
+body.design-unigram .reaction-chosen {
+    background: rgba(43, 127, 224, 0.18);
+    border-color: var(--unigram-accent);
+    color: var(--unigram-accent);
+}
+body.design-unigram .reaction-add-btn {
+    border-color: var(--unigram-accent);
+    color: var(--unigram-accent);
+}
+body.design-unigram .spoiler-text {
+    background: var(--unigram-accent);
+    color: transparent;
+    border-radius: 3px;
+    cursor: pointer;
+    filter: blur(4px);
+    transition: filter 0.25s, color 0.25s;
+}
+body.design-unigram .spoiler-text.spoiler-revealed {
+    filter: none;
+    color: inherit;
+    background: rgba(43, 127, 224, 0.12);
+}
+body.design-unigram .format-toolbar {
+    background: #f8f8f8;
+    border-color: #e0e0e0;
+    border-radius: 8px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.12);
+}
+body.design-unigram .fmt-btn {
+    color: var(--unigram-accent);
+}
+body.design-unigram .fmt-btn:hover {
+    background: rgba(43, 127, 224, 0.09);
+}
+body.design-unigram .fact-check {
+    border-left-color: #c0392b;
+    background: rgba(192, 57, 43, 0.07);
+}
+body.design-unigram .fact-check-label {
+    color: #c0392b;
+}
+body.design-unigram .similar-channels-title {
+    color: var(--unigram-accent);
+}
+body.design-unigram .similar-channel-item:hover {
+    background: rgba(43, 127, 224, 0.05);
+}

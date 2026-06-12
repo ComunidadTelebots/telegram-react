@@ -309,3 +309,54 @@ body.design-tdesktop .search-recently-found-chats .recently-found-chat,
 body.design-tdesktop .search-local-chats .recently-found-chat {
     padding: 8px 20px;
 }
+
+/* ── Features sesión 21 ─────────────────────────────── */
+body.design-tdesktop .reaction-bubble {
+    border-radius: 10px;
+    border-color: var(--color-accent-main);
+    background: rgba(58, 154, 208, 0.07);
+}
+body.design-tdesktop .reaction-chosen {
+    background: rgba(58, 154, 208, 0.18);
+    border-color: var(--color-accent-main);
+    color: var(--color-accent-main);
+}
+body.design-tdesktop .reaction-add-btn {
+    border-color: var(--color-accent-main);
+    color: var(--color-accent-main);
+}
+body.design-tdesktop .spoiler-text {
+    background: var(--color-accent-main);
+    color: transparent;
+    border-radius: 2px;
+    cursor: pointer;
+    filter: blur(4px);
+    transition: filter 0.25s, color 0.25s;
+}
+body.design-tdesktop .spoiler-text.spoiler-revealed {
+    filter: none;
+    color: inherit;
+    background: rgba(58, 154, 208, 0.12);
+}
+body.design-tdesktop .format-toolbar {
+    background: #f4f4f4;
+    border-color: #d9d9d9;
+    border-radius: 6px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.14);
+}
+body.design-tdesktop .fmt-btn {
+    color: var(--color-accent-main);
+}
+body.design-tdesktop .fmt-btn:hover {
+    background: rgba(58, 154, 208, 0.1);
+}
+body.design-tdesktop .fact-check {
+    border-left-color: #e03c31;
+    background: rgba(224, 60, 49, 0.07);
+}
+body.design-tdesktop .fact-check-label {
+    color: #e03c31;
+}
+body.design-tdesktop .similar-channels-title {
+    color: var(--color-accent-main);
+}

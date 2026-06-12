@@ -2924,3 +2924,23 @@ body.theme-dark.design-android-glass .jump-to-unread-button {
 body.theme-dark.design-android-glass .inputbox-header {
     background: rgba(23, 33, 43, 0.72);
 }
+
+/* ── Features sesión 21 — dark mode overrides ───────────────────────────── */
+body.theme-dark.design-android .format-toolbar,
+body.theme-dark.design-android-glass .format-toolbar {
+    background: #17212b;
+    border-color: rgba(255, 255, 255, 0.1);
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.4);
+}
+body.theme-dark.design-android .fmt-btn,
+body.theme-dark.design-android-glass .fmt-btn {
+    color: var(--android-accent);
+}
+body.theme-dark.design-android .fact-check,
+body.theme-dark.design-android-glass .fact-check {
+    background: rgba(244, 67, 54, 0.1);
+}
+body.theme-dark.design-android .similar-channel-item:hover,
+body.theme-dark.design-android-glass .similar-channel-item:hover {
+    background: rgba(255, 255, 255, 0.05);
+}

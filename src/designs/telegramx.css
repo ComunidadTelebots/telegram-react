@@ -432,3 +432,54 @@ body.theme-dark.design-telegramx .message-bubble {
 body.theme-dark.design-telegramx ::-webkit-scrollbar-thumb {
     background: rgba(80, 168, 235, 0.2);
 }
+
+/* ── Features sesión 21 ─────────────────────────────── */
+body.design-telegramx .reaction-bubble {
+    border-radius: 16px;
+    border-color: var(--tgx-accent);
+    background: rgba(80, 168, 235, 0.07);
+}
+body.design-telegramx .reaction-chosen {
+    background: rgba(80, 168, 235, 0.18);
+    border-color: var(--tgx-accent);
+    color: var(--tgx-accent);
+}
+body.design-telegramx .reaction-add-btn {
+    border-color: var(--tgx-accent);
+    color: var(--tgx-accent);
+}
+body.design-telegramx .spoiler-text {
+    background: var(--tgx-accent);
+    color: transparent;
+    border-radius: 4px;
+    cursor: pointer;
+    filter: blur(4px);
+    transition: filter 0.25s, color 0.25s;
+}
+body.design-telegramx .spoiler-text.spoiler-revealed {
+    filter: none;
+    color: inherit;
+    background: rgba(80, 168, 235, 0.12);
+}
+body.design-telegramx .format-toolbar {
+    background: #fff;
+    border-color: rgba(80, 168, 235, 0.25);
+    border-radius: 12px;
+    box-shadow: 0 3px 16px rgba(80, 168, 235, 0.2);
+}
+body.design-telegramx .fmt-btn {
+    color: var(--tgx-accent);
+}
+body.design-telegramx .fmt-btn:hover {
+    background: rgba(80, 168, 235, 0.1);
+}
+body.design-telegramx .fact-check {
+    border-left-color: #e74c3c;
+    background: rgba(231, 76, 60, 0.07);
+}
+body.design-telegramx .fact-check-label {
+    color: #e74c3c;
+}
+body.design-telegramx .similar-channels-title {
+    color: var(--tgx-accent);
+}

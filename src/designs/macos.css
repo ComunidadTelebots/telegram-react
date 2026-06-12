@@ -436,3 +436,54 @@ body.design-macos .search-recently-found-chats .MuiListItem-root + .MuiListItem-
 body.design-macos .search-local-chats .MuiListItem-root + .MuiListItem-root {
     border-top: 1px solid var(--design-border-color);
 }
+
+/* ── Features sesión 21 ─────────────────────────────── */
+body.design-macos .reaction-bubble {
+    border-radius: 12px;
+    border-color: var(--macos-accent);
+    background: rgba(36, 139, 242, 0.07);
+}
+body.design-macos .reaction-chosen {
+    background: rgba(36, 139, 242, 0.18);
+    border-color: var(--macos-accent);
+    color: var(--macos-accent);
+}
+body.design-macos .reaction-add-btn {
+    border-color: var(--macos-accent);
+    color: var(--macos-accent);
+}
+body.design-macos .spoiler-text {
+    background: var(--macos-accent);
+    color: transparent;
+    border-radius: 3px;
+    cursor: pointer;
+    filter: blur(4px);
+    transition: filter 0.25s, color 0.25s;
+}
+body.design-macos .spoiler-text.spoiler-revealed {
+    filter: none;
+    color: inherit;
+    background: rgba(36, 139, 242, 0.1);
+}
+body.design-macos .format-toolbar {
+    background: #ffffff;
+    border-color: rgba(0, 0, 0, 0.12);
+    border-radius: 8px;
+    box-shadow: 0 2px 14px rgba(0, 0, 0, 0.16);
+}
+body.design-macos .fmt-btn {
+    color: var(--macos-accent);
+}
+body.design-macos .fmt-btn:hover {
+    background: rgba(36, 139, 242, 0.09);
+}
+body.design-macos .fact-check {
+    border-left-color: #ff453a;
+    background: rgba(255, 69, 58, 0.07);
+}
+body.design-macos .fact-check-label {
+    color: #ff453a;
+}
+body.design-macos .similar-channels-title {
+    color: var(--macos-accent);
+}

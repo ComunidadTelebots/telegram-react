@@ -342,3 +342,60 @@ body.design-aurora .search-local-chats .MuiListItem-root {
 body.design-aurora .search .MuiListItem-button:hover {
     background-color: rgba(52, 217, 168, 0.12);
 }
+
+/* ── Features sesión 21 ─────────────────────────────── */
+body.design-aurora .reaction-bubble {
+    border-radius: 14px;
+    border-color: var(--aurora-accent);
+    background: rgba(52, 217, 168, 0.07);
+}
+body.design-aurora .reaction-chosen {
+    background: rgba(52, 217, 168, 0.2);
+    border-color: var(--aurora-accent);
+    color: var(--aurora-accent-dark);
+}
+body.design-aurora .reaction-add-btn {
+    border-color: var(--aurora-accent);
+    color: var(--aurora-accent);
+}
+body.design-aurora .spoiler-text {
+    background: var(--aurora-accent);
+    color: transparent;
+    border-radius: 4px;
+    cursor: pointer;
+    filter: blur(4px);
+    transition: filter 0.25s, color 0.25s;
+}
+body.design-aurora .spoiler-text.spoiler-revealed {
+    filter: none;
+    color: inherit;
+    background: rgba(52, 217, 168, 0.15);
+}
+body.design-aurora .format-toolbar {
+    background: #1e2a2e;
+    border-color: var(--aurora-accent);
+    border-radius: 10px;
+    box-shadow: 0 3px 18px rgba(52, 217, 168, 0.25);
+}
+body.design-aurora .fmt-btn {
+    color: var(--aurora-accent);
+}
+body.design-aurora .fmt-btn:hover {
+    background: rgba(52, 217, 168, 0.12);
+}
+body.design-aurora .fmt-btn-clear {
+    color: rgba(52, 217, 168, 0.5);
+}
+body.design-aurora .fact-check {
+    border-left-color: #ff6b6b;
+    background: rgba(255, 107, 107, 0.08);
+}
+body.design-aurora .fact-check-label {
+    color: #ff6b6b;
+}
+body.design-aurora .similar-channels-title {
+    color: var(--aurora-accent);
+}
+body.design-aurora .similar-channel-item:hover {
+    background: rgba(52, 217, 168, 0.08);
+}

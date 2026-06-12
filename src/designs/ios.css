@@ -411,3 +411,62 @@ body.design-ios .search-recently-found-chats .MuiListItem-root + .MuiListItem-ro
 body.design-ios .search-local-chats .MuiListItem-root + .MuiListItem-root {
     border-top: 1px solid var(--design-border-color, rgba(60, 60, 67, 0.12));
 }
+
+/* ── Features sesión 21 ─────────────────────────────── */
+body.design-ios .reaction-bubble {
+    border-radius: 14px;
+    border-color: #007aff;
+    background: rgba(0, 122, 255, 0.07);
+    font-size: 13px;
+}
+body.design-ios .reaction-chosen {
+    background: rgba(0, 122, 255, 0.18);
+    border-color: #007aff;
+    color: #007aff;
+}
+body.design-ios .reaction-add-btn {
+    border-color: #007aff;
+    color: #007aff;
+}
+body.design-ios .spoiler-text {
+    background: #007aff;
+    color: transparent;
+    border-radius: 3px;
+    cursor: pointer;
+    filter: blur(4px);
+    transition: filter 0.25s, color 0.25s;
+}
+body.design-ios .spoiler-text.spoiler-revealed {
+    filter: none;
+    color: inherit;
+    background: rgba(0, 122, 255, 0.1);
+}
+body.design-ios .format-toolbar {
+    background: #f2f2f7;
+    border-color: rgba(0, 0, 0, 0.1);
+    border-radius: 10px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.14);
+}
+body.design-ios .fmt-btn {
+    color: #007aff;
+    font-size: 13px;
+}
+body.design-ios .fmt-btn:hover {
+    background: rgba(0, 122, 255, 0.1);
+}
+body.design-ios .fmt-btn-clear {
+    color: #8e8e93;
+}
+body.design-ios .fact-check {
+    border-left-color: #ff3b30;
+    background: rgba(255, 59, 48, 0.07);
+}
+body.design-ios .fact-check-label {
+    color: #ff3b30;
+}
+body.design-ios .similar-channels-title {
+    color: #007aff;
+}
+body.design-ios .similar-channel-item:hover {
+    background: rgba(0, 0, 0, 0.04);
+}

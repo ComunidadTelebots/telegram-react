@@ -191,3 +191,57 @@ body[class*='design-'] .media-viewer,
 body[class*='design-'] .media-viewer-dark {
     background: rgba(0, 0, 0, 0.88) !important;
 }
+
+/* ── Features sesión 21 (shell base — hereda en todos los diseños que usan shell) ── */
+.reaction-bubble {
+    border-radius: var(--design-control-radius, 10px);
+    border-color: var(--design-accent, #5b8af1);
+    background: rgba(91, 138, 241, 0.07);
+}
+.reaction-chosen {
+    background: rgba(91, 138, 241, 0.18);
+    border-color: var(--design-accent, #5b8af1);
+    color: var(--design-accent, #5b8af1);
+}
+.reaction-add-btn {
+    border-color: var(--design-accent, #5b8af1);
+    color: var(--design-accent, #5b8af1);
+}
+.spoiler-text {
+    background: var(--design-accent, #5b8af1);
+    color: transparent;
+    border-radius: 3px;
+    cursor: pointer;
+    filter: blur(4px);
+    transition: filter 0.25s, color 0.25s;
+}
+.spoiler-text.spoiler-revealed {
+    filter: none;
+    color: inherit;
+    background: rgba(91, 138, 241, 0.12);
+}
+.format-toolbar {
+    background: var(--design-panel-background, #fff);
+    border-color: var(--design-border-color, rgba(0, 0, 0, 0.12));
+    border-radius: var(--design-control-radius, 8px);
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.16);
+}
+.fmt-btn {
+    color: var(--design-accent, #5b8af1);
+}
+.fmt-btn:hover {
+    background: rgba(91, 138, 241, 0.09);
+}
+.fact-check {
+    border-left-color: #e03c31;
+    background: rgba(224, 60, 49, 0.07);
+}
+.fact-check-label {
+    color: #e03c31;
+}
+.similar-channels-title {
+    color: var(--design-accent, #5b8af1);
+}
+.similar-channel-item:hover {
+    background: var(--design-hover-background, rgba(0, 0, 0, 0.04));
+}
