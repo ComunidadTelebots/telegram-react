@@ -483,3 +483,28 @@ body.design-telegramx .fact-check-label {
 body.design-telegramx .similar-channels-title {
     color: var(--tgx-accent);
 }
+
+body.design-telegramx .voice-transcribe-btn,
+body.design-telegramx .voice-speed-btn,
+body.design-telegramx .message-scheduled-badge {
+    border-radius: 16px;
+    border-color: var(--tgx-accent);
+    color: var(--tgx-accent);
+    background: rgba(80, 168, 235, 0.08);
+}
+
+body.design-telegramx .voice-transcription,
+body.design-telegramx .create-poll-settings,
+body.design-telegramx .create-poll-correct-answer {
+    border-radius: 14px;
+    background: rgba(80, 168, 235, 0.08);
+}
+
+body.design-telegramx .video-note-transcribe-btn,
+body.design-telegramx .video-note-transcription {
+    border-radius: 14px;
+}
+
+body.design-telegramx .reaction-unread {
+    box-shadow: 0 0 0 2px rgba(80, 168, 235, 0.34);
+}

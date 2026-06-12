@@ -245,3 +245,28 @@ body[class*='design-'] .media-viewer-dark {
 .similar-channel-item:hover {
     background: var(--design-hover-background, rgba(0, 0, 0, 0.04));
 }
+
+.voice-transcribe-btn,
+.voice-speed-btn,
+.message-scheduled-badge {
+    border-color: var(--design-accent, #5b8af1);
+    color: var(--design-accent, #5b8af1);
+    background: rgba(91, 138, 241, 0.08);
+    border-radius: var(--design-control-radius, 8px);
+}
+
+.voice-transcription,
+.create-poll-settings,
+.create-poll-correct-answer {
+    border-radius: var(--design-control-radius, 8px);
+    background: rgba(91, 138, 241, 0.08);
+}
+
+.video-note-transcribe-btn,
+.video-note-transcription {
+    border-radius: var(--design-control-radius, 8px);
+}
+
+.reaction-unread {
+    box-shadow: 0 0 0 2px var(--reaction-unread-ring, rgba(91, 138, 241, 0.35));
+}

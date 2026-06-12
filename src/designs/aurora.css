@@ -399,3 +399,29 @@ body.design-aurora .similar-channels-title {
 body.design-aurora .similar-channel-item:hover {
     background: rgba(52, 217, 168, 0.08);
 }
+
+body.design-aurora .voice-transcribe-btn,
+body.design-aurora .voice-speed-btn,
+body.design-aurora .message-scheduled-badge {
+    border-radius: 14px;
+    border-color: var(--aurora-accent);
+    color: var(--aurora-accent);
+    background: rgba(52, 217, 168, 0.09);
+}
+
+body.design-aurora .voice-transcription,
+body.design-aurora .create-poll-settings,
+body.design-aurora .create-poll-correct-answer {
+    border-radius: 14px;
+    background: rgba(52, 217, 168, 0.08);
+}
+
+body.design-aurora .video-note-transcribe-btn,
+body.design-aurora .video-note-transcription {
+    border-radius: 14px;
+    background: rgba(13, 17, 23, 0.72);
+}
+
+body.design-aurora .reaction-unread {
+    box-shadow: 0 0 0 2px rgba(52, 217, 168, 0.34);
+}

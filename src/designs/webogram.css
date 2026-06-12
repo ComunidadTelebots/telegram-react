@@ -255,6 +255,27 @@ body.design-webogram .reaction-add-btn {
     color: var(--webogram-blue);
 }
 
+body.design-webogram .voice-transcribe-btn,
+body.design-webogram .voice-speed-btn,
+body.design-webogram .message-scheduled-badge {
+    border-radius: 3px;
+    border-color: var(--webogram-blue);
+    color: var(--webogram-blue);
+    background: rgba(86, 130, 163, 0.09);
+}
+
+body.design-webogram .voice-transcription,
+body.design-webogram .create-poll-settings,
+body.design-webogram .create-poll-correct-answer {
+    border-radius: 3px;
+    background: rgba(86, 130, 163, 0.08);
+}
+
+body.design-webogram .video-note-transcribe-btn,
+body.design-webogram .video-note-transcription {
+    border-radius: 3px;
+}
+
 body.design-webogram .format-toolbar,
 body.design-webogram .fact-check {
     border-color: var(--webogram-border);
