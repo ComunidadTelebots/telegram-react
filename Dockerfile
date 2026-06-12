@@ -3,7 +3,9 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm install --legacy-peer-deps
 COPY . .
-RUN SKIP_PREFLIGHT_CHECK=true npm run build
+ENV NODE_OPTIONS=--openssl-legacy-provider
+ENV SKIP_PREFLIGHT_CHECK=true
+RUN npm run build
 
 FROM nginx:alpine
 COPY --from=builder /app/build /usr/share/nginx/html
