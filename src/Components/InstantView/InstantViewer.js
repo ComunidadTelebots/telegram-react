@@ -78,31 +78,15 @@ class InstantViewer extends React.Component {
 
     shouldComponentUpdate(nextProps, nextState, nextContext) {
         const { instantView } = this.props;
-        const { hasScroll, hasPrev, media, caption, url } = this.state;
+        const { hasScroll, hasPrev, media, caption, url, readProgress } = this.state;
 
-        if (instantView !== nextProps.instantView) {
-            return true;
-        }
-
-        if (hasScroll !== nextState.hasScroll) {
-            return true;
-        }
-
-        if (hasPrev !== nextState.hasPrev) {
-            return true;
-        }
-
-        if (media !== nextState.media) {
-            return true;
-        }
-
-        if (caption !== nextState.caption) {
-            return true;
-        }
-
-        if (url !== nextState.url) {
-            return true;
-        }
+        if (instantView !== nextProps.instantView) return true;
+        if (hasScroll !== nextState.hasScroll) return true;
+        if (hasPrev !== nextState.hasPrev) return true;
+        if (media !== nextState.media) return true;
+        if (caption !== nextState.caption) return true;
+        if (url !== nextState.url) return true;
+        if (readProgress !== nextState.readProgress) return true;
 
         return false;
     }
