@@ -825,6 +825,8 @@ class GramJsController extends EventEmitter {
                 return this._viewMessages(req);
             case 'getChatScheduledMessages':
                 return this._getChatScheduledMessages(req);
+            case 'sendChatScheduledMessages':
+                return this._sendChatScheduledMessages(req);
             case 'deleteChatScheduledMessages':
                 return this._deleteChatScheduledMessages(req);
             case 'readAllChatMentions':
@@ -4210,6 +4212,48 @@ class GramJsController extends EventEmitter {
             await this.client.invoke(new Api.messages.DeleteScheduledMessages({ peer: inputPeer, id: message_ids }));
         } catch (e) {
             console.error('[GramJs] deleteChatScheduledMessages error', e);
+        }
+        return {};
+    };
+    _sendChatScheduledMessages = async req => {
+        const { chat_id, message_ids } = req;
+        try {
+            const inputPeer = tdlibChatIdToInputPeer(chat_id, this._entityCache);
+            const result = await this.client.invoke(
+                new Api.messages.SendScheduledMessages({ peer: inputPeer, id: message_ids }),
+            );
+            const sentMessages = (result?.updates || []).map(u => u.message).filter(Boolean);
+            let lastMessage = null;
+
+            sentMessages
+                .map(message => translateMessage(message, chat_id))
+                .filter(Boolean)
+                .forEach(message => {
+                    lastMessage = message;
+                    this._emitUpdate({ '@type': 'updateNewMessage', message });
+                });
+
+            this._emitUpdate({
+                '@type': 'updateDeleteMessages',
+                chat_id,
+                message_ids,
+                is_permanent: true,
+                from_cache: false,
+            });
+
+            if (lastMessage) {
+                const chat = this._chatCache.get(chat_id);
+                if (chat) chat.last_message = lastMessage;
+                this._emitUpdate({
+                    '@type': 'updateChatLastMessage',
+                    chat_id,
+                    last_message: lastMessage,
+                    order: String(lastMessage.date * 1000),
+                });
+            }
+        } catch (e) {
+            console.error('[GramJs] sendChatScheduledMessages error', e);
+            throw e;
         }
         return {};
     };
