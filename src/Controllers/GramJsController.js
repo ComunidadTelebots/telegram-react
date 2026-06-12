@@ -841,6 +841,8 @@ class GramJsController extends EventEmitter {
                 return this._unpinAllChatMessages(req);
             case 'translateText':
                 return this._translateText(req);
+            case 'toggleChatTranslations':
+                return this._toggleChatTranslations(req);
             case 'transcribeAudio':
                 return this._transcribeAudio(req);
 
@@ -3064,6 +3066,18 @@ class GramJsController extends EventEmitter {
     // ─── File handlers ───────────────────────────────────────────────────────
 
     // ─── Sticker APIs ────────────────────────────────────────────────────────
+
+    _toggleChatTranslations = async req => {
+        const { chat_id, disabled = false } = req;
+        try {
+            const inputPeer = tdlibChatIdToInputPeer(chat_id, this._entityCache);
+            await this.client.invoke(new Api.messages.TogglePeerTranslations({ peer: inputPeer, disabled }));
+        } catch (e) {
+            console.error('[GramJs] toggleChatTranslations error', e);
+            throw e;
+        }
+        return { '@type': 'ok' };
+    };
 
     _transcribeAudio = async req => {
         const { chat_id, message_id } = req;
