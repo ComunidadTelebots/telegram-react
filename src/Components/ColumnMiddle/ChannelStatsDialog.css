@@ -1,0 +1,64 @@
+.chan-stats-loading {
+    display: flex;
+    justify-content: center;
+    padding: 32px 0;
+}
+
+.chan-stats-error {
+    color: #e53935;
+    text-align: center;
+    padding: 16px 0;
+}
+
+.chan-stats-grid {
+    display: flex;
+    gap: 12px;
+    margin-top: 16px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.chan-stats-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background: var(--color-background-secondary, #f5f7fa);
+    border-radius: 12px;
+    padding: 16px 20px;
+    min-width: 90px;
+    flex: 1;
+}
+
+.chan-stats-icon {
+    font-size: 28px !important;
+    color: var(--color-primary, #5b8af1);
+    margin-bottom: 6px;
+}
+
+.chan-stats-value {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--color-text, #222);
+    line-height: 1;
+}
+
+.chan-stats-label {
+    font-size: 11px;
+    color: var(--color-hint, #888);
+    margin-top: 4px;
+    text-align: center;
+}
+
+.chan-stats-delta {
+    font-size: 12px;
+    font-weight: 600;
+    margin-top: 2px;
+}
+
+.chan-stats-delta.pos {
+    color: #43a047;
+}
+
+.chan-stats-delta.neg {
+    color: #e53935;
+}

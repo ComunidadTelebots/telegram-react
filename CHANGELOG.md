@@ -1,5 +1,14 @@
 # Changelog
 
+## [2026-06-12] (sesión 27)
+
+### Added
+- **Sugerencias de comandos de bot** — al escribir `/` en un chat privado con un bot aparece un panel flotante con todos los comandos disponibles (nombre + descripción). Click inserta el comando completo. Usa `getUserFullInfo` para cargar los comandos del bot. Archivos: `BotCommandSuggestions.{js,css}`, `InputBoxControl.js`.
+- **Emoji animado grande** — los mensajes de tipo `messageAnimatedEmoji` (emoji solitario enviado en chats donde está soportado) se renderizan como un emoji de 80 px con animación de aparición. Al hacer clic rebota con una animación `pop`. Archivos: `AnimatedEmoji.{js,css}`, `Utils/Message.js`.
+- **Estadísticas de canal** — botón 📊 en el header que aparece solo en canales (supergrupos con `is_broadcast`). Abre un diálogo con tarjetas de: Suscriptores (con delta ±), Vistas/post y Compartidos/post. Usa `Api.stats.GetBroadcastStats` vía GramJS. Archivos: `ChannelStatsDialog.{js,css}`, `Header.js`, `GramJsController._getChannelStats`.
+
+---
+
 ## [2026-06-12] (sesión 26)
 
 ### Added

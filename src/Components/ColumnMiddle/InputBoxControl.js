@@ -32,6 +32,7 @@ import CreatePollDialog from '../Popup/CreatePollDialog';
 import GifPicker from './GifPicker';
 import GifIcon from '@material-ui/icons/Gif';
 import MentionAutocomplete from './MentionAutocomplete';
+import BotCommandSuggestions from './BotCommandSuggestions';
 import EditUrlDialog from '../Popup/EditUrlDialog';
 import InputBoxHeader from './InputBoxHeader';
 import PasteFilesDialog from '../Popup/PasteFilesDialog';
@@ -49,6 +50,7 @@ import ChatStore from '../../Stores/ChatStore';
 import FileStore from '../../Stores/FileStore';
 import MessageStore from '../../Stores/MessageStore';
 import StickerStore from '../../Stores/StickerStore';
+import UserStore from '../../Stores/UserStore';
 import TdLibController from '../../Controllers/TdLibController';
 import './InputBoxControl.css';
 
@@ -91,6 +93,8 @@ class InputBoxControl extends Component {
             showGifPicker: false,
             mentionQuery: null,
             mentionMembers: [],
+            botCommandQuery: null,
+            botCommands: [],
         };
 
         document.addEventListener(
@@ -1251,10 +1255,59 @@ class InputBoxControl extends Component {
         this.setState({ mentionQuery: null });
     };
 
+    detectBotCommand = async () => {
+        const element = this.newMessageRef.current;
+        if (!element) return;
+
+        const text = element.innerText || '';
+        if (!text.startsWith('/')) {
+            this.setState({ botCommandQuery: null });
+            return;
+        }
+
+        const { chatId } = this.state;
+        const chat = ChatStore.get(chatId);
+        if (!chat || chat.type['@type'] !== 'chatTypePrivate') {
+            this.setState({ botCommandQuery: null });
+            return;
+        }
+
+        const userId = chat.type.user_id;
+        const user = UserStore.get(userId);
+        if (!user || user.type['@type'] !== 'userTypeBot') {
+            this.setState({ botCommandQuery: null });
+            return;
+        }
+
+        const query = text.slice(1);
+        this.setState({ botCommandQuery: query });
+
+        if (!this._botCommandsCache || this._botCommandsCache.userId !== userId) {
+            try {
+                const full = await TdLibController.send({ '@type': 'getUserFullInfo', user_id: userId });
+                this._botCommandsCache = { userId, commands: full.commands || [] };
+            } catch (e) {
+                this._botCommandsCache = { userId, commands: [] };
+            }
+        }
+        this.setState({ botCommands: this._botCommandsCache.commands });
+    };
+
+    handleBotCommandSelect = cmd => {
+        const element = this.newMessageRef.current;
+        if (!element) return;
+
+        element.focus();
+        element.innerText = '';
+        document.execCommand('insertText', false, '/' + cmd.command + ' ');
+        this.setState({ botCommandQuery: null });
+    };
+
     handleInput = async event => {
         this.setTyping();
         this.setHints();
         this.detectMention();
+        this.detectBotCommand();
     };
 
     openEditUrlDialog = () => {
@@ -1429,6 +1482,8 @@ class InputBoxControl extends Component {
             showGifPicker,
             mentionQuery,
             mentionMembers,
+            botCommandQuery,
+            botCommands,
         } = this.state;
 
         const isMediaEditing = editMessageId > 0 && !isTextMessage(chatId, editMessageId);
@@ -1472,6 +1527,13 @@ class InputBoxControl extends Component {
                                 </IconButton>
                             </div>
                             <div className='inputbox-middle-column' style={{ position: 'relative' }}>
+                                {botCommandQuery !== null && (
+                                    <BotCommandSuggestions
+                                        commands={botCommands}
+                                        query={botCommandQuery}
+                                        onSelect={this.handleBotCommandSelect}
+                                    />
+                                )}
                                 {mentionQuery !== null && (
                                     <MentionAutocomplete
                                         members={mentionMembers}

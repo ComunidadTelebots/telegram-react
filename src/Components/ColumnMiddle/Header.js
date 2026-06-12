@@ -29,7 +29,9 @@ import HeaderCommand from './HeaderCommand';
 import HeaderProgress from './HeaderProgress';
 import ChatSearch from './ChatSearch';
 import AutoDeleteTimer from './AutoDeleteTimer';
+import ChannelStatsDialog from './ChannelStatsDialog';
 import TimerIcon from '@material-ui/icons/Timer';
+import BarChartIcon from '@material-ui/icons/BarChart';
 import { borderStyle } from '../Theme';
 import LockIcon from '@material-ui/icons/Lock';
 import {
@@ -595,6 +597,23 @@ class Header extends Component {
                             onClick={this.handleJumpToDate}>
                             <DateRangeIcon />
                         </IconButton>
+                        {(() => {
+                            const _cid = AppStore.getChatId();
+                            const _chat = ChatStore.get(_cid);
+                            const _type = _chat && _chat.type;
+                            if (!_type || _type['@type'] !== 'chatTypeSupergroup') return null;
+                            const _sg = SupergroupStore.get(_type.supergroup_id);
+                            if (!_sg || !_sg.is_broadcast) return null;
+                            return (
+                                <IconButton
+                                    className={classes.messageSearchIconButton}
+                                    aria-label='Estadísticas del canal'
+                                    title='Estadísticas del canal'
+                                    onClick={() => this.channelStatsRef && this.channelStatsRef.open()}>
+                                    <BarChartIcon />
+                                </IconButton>
+                            );
+                        })()}
                         <MainMenuButton openChatDetails={this.openChatDetails} />
                     </>
                 )}
@@ -606,6 +625,7 @@ class Header extends Component {
                 {control}
                 {showChatSearch && <ChatSearch chatId={AppStore.getChatId()} onClose={this.handleCloseChatSearch} />}
                 <AutoDeleteTimer ref={r => (this.autoDeleteRef = r)} />
+                <ChannelStatsDialog chatId={AppStore.getChatId()} ref={r => (this.channelStatsRef = r)} />
                 <Dialog
                     transitionDuration={0}
                     open={openDeleteDialog}

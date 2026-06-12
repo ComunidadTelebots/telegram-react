@@ -813,6 +813,8 @@ class GramJsController extends EventEmitter {
                 return this._sendGifByUrl(req);
             case 'setChatMessageAutoDeleteTime':
                 return this._setChatMessageAutoDeleteTime(req);
+            case 'getChannelStats':
+                return this._getChannelStats(req);
             case 'editMessageText':
                 return this._editMessage(req);
             case 'deleteMessages':
@@ -997,6 +999,8 @@ class GramJsController extends EventEmitter {
                 return this._sendGifByUrl(req);
             case 'setChatMessageAutoDeleteTime':
                 return this._setChatMessageAutoDeleteTime(req);
+            case 'getChannelStats':
+                return this._getChannelStats(req);
 
             // ── Archivos ──────────────────────────────────────────────────────
             case 'downloadFile':
@@ -2159,6 +2163,37 @@ class GramJsController extends EventEmitter {
             console.warn('[GramJs] setChatMessageAutoDeleteTime error', e);
         }
         return {};
+    };
+
+    _getChannelStats = async ({ chat_id }) => {
+        try {
+            const inputPeer = tdlibChatIdToInputPeer(chat_id, this._entityCache);
+            const result = await this.client.invoke(
+                new Api.stats.GetBroadcastStats({
+                    channel: inputPeer,
+                    dark: false,
+                }),
+            );
+            const followers = result.followers;
+            const views = result.viewsPerPost;
+            const shares = result.sharesPerPost;
+            return {
+                '@type': 'channelStats',
+                followers_count: followers ? followers.current || 0 : 0,
+                followers_delta: followers ? (followers.current || 0) - (followers.previous || 0) : 0,
+                views_per_post: views ? views.current || 0 : 0,
+                shares_per_post: shares ? shares.current || 0 : 0,
+            };
+        } catch (e) {
+            console.warn('[GramJs] getChannelStats error', e);
+            return {
+                '@type': 'channelStats',
+                followers_count: 0,
+                followers_delta: 0,
+                views_per_post: 0,
+                shares_per_post: 0,
+            };
+        }
     };
 
     _sendFile = async (chatId, inputPeer, content, replyToMessageId, scheduleDate) => {

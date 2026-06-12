@@ -49,6 +49,7 @@ import TdLibController from '../Controllers/TdLibController';
 import Call from '../Components/Message/Media/Call';
 import Dice from '../Components/Message/Media/Dice';
 import Invoice from '../Components/Message/Media/Invoice';
+import AnimatedEmoji from '../Components/Message/Media/AnimatedEmoji';
 
 function getAuthor(message) {
     if (!message) return null;
@@ -457,6 +458,8 @@ function getMedia(message, openMedia, hasTitle = false, hasCaption = false) {
                     openMedia={openMedia}
                 />
             );
+        case 'messageAnimatedEmoji':
+            return <AnimatedEmoji emoji={content.emoji || ''} />;
         case 'messageText':
             return null;
         case 'messageVenue':
