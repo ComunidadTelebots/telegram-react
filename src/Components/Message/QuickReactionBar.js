@@ -50,6 +50,18 @@ class QuickReactionBar extends React.PureComponent {
         }
     };
 
+    handleSetDefaultReaction = async (event, emoji) => {
+        event.preventDefault();
+        event.stopPropagation();
+        const { onClose } = this.props;
+        try {
+            await TdLibController.send({ '@type': 'setDefaultReaction', reaction: emoji });
+        } catch (e) {
+            console.warn('[QuickReactionBar] setDefaultReaction error', e);
+        }
+        onClose && onClose();
+    };
+
     render() {
         const { reactions } = this.state;
 
@@ -59,8 +71,9 @@ class QuickReactionBar extends React.PureComponent {
                     <button
                         key={emoji}
                         className='quick-reaction-btn'
-                        title={emoji}
-                        onClick={() => this.handleReact(emoji)}>
+                        title='Click para reaccionar; click derecho para predeterminada'
+                        onClick={() => this.handleReact(emoji)}
+                        onContextMenu={event => this.handleSetDefaultReaction(event, emoji)}>
                         {emoji}
                     </button>
                 ))}

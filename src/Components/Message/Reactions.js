@@ -60,6 +60,17 @@ class Reactions extends Component {
         this.setState({ reactorsModal: { chatId, messageId, reaction: emoji } });
     };
 
+    handleSetDefaultReaction = async (event, emoji) => {
+        event.preventDefault();
+        event.stopPropagation();
+        try {
+            await TdLibController.send({ '@type': 'setDefaultReaction', reaction: emoji });
+        } catch (e) {
+            console.warn('[Reactions] setDefaultReaction error', e);
+        }
+        this.setState({ showPicker: false });
+    };
+
     handleTogglePicker = e => {
         e.stopPropagation();
         this.setState(s => ({ showPicker: !s.showPicker }));
@@ -133,7 +144,9 @@ class Reactions extends Component {
                             <button
                                 key={emoji}
                                 className='reaction-picker-item'
-                                onClick={() => this.handleReactionClick(emoji)}>
+                                onClick={() => this.handleReactionClick(emoji)}
+                                onContextMenu={event => this.handleSetDefaultReaction(event, emoji)}
+                                title='Click para reaccionar; click derecho para predeterminada'>
                                 {emoji}
                             </button>
                         ))}
