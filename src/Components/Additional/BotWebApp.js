@@ -70,12 +70,14 @@ class BotWebApp extends Component {
         this._chatId = null;
         this._botUserId = null;
         this._queryId = null;
+        this._prolongInterval = null;
     }
 
     open(url, title = 'Bot', chatId = null, botUserId = null, queryId = null) {
         this._chatId = chatId;
         this._botUserId = botUserId;
         this._queryId = queryId;
+        this._startProlong();
         this.setState({
             open: true,
             url,
@@ -98,9 +100,32 @@ class BotWebApp extends Component {
         if (!force && confirmClose) {
             if (!window.confirm('¿Cerrar la aplicación?')) return;
         }
+        this._stopProlong();
         this.setState({ open: false, url: '', mainButton: null, secondaryButton: null, popup: null });
         this._queryId = null;
     };
+
+    _startProlong() {
+        this._stopProlong();
+        if (!this._queryId || this._queryId === '0') return;
+        this._prolongInterval = setInterval(() => {
+            if (this._queryId && this._chatId && this._botUserId) {
+                TdLibController.send({
+                    '@type': 'prolongWebView',
+                    bot_user_id: this._botUserId,
+                    chat_id: this._chatId,
+                    query_id: this._queryId,
+                }).catch(() => {});
+            }
+        }, 25000);
+    }
+
+    _stopProlong() {
+        if (this._prolongInterval) {
+            clearInterval(this._prolongInterval);
+            this._prolongInterval = null;
+        }
+    }
 
     handleLoad = () => {
         this.setState({ loading: false });
@@ -134,6 +159,7 @@ class BotWebApp extends Component {
     componentWillUnmount() {
         window.removeEventListener('message', this._handleMessage);
         if (this._resizeObserver) this._resizeObserver.disconnect();
+        this._stopProlong();
     }
 
     _setupResizeObserver() {
@@ -238,25 +264,51 @@ class BotWebApp extends Component {
             case 'web_app_share_to_story':
                 break;
             case 'web_app_biometry_get_info':
+                this._sendToFrame({ eventType: 'biometry_info_received', eventData: { available: false } });
+                break;
+            case 'web_app_biometry_request_access':
                 this._sendToFrame({
                     eventType: 'biometry_info_received',
-                    eventData: { available: false },
+                    eventData: { available: false, access_requested: true, access_granted: false },
                 });
                 break;
+            case 'web_app_biometry_request_auth':
+                this._sendToFrame({
+                    eventType: 'biometry_auth_requested',
+                    eventData: { ok: false, error: 'NOT_AVAILABLE' },
+                });
+                break;
+            case 'web_app_biometry_update_token':
+                this._sendToFrame({ eventType: 'biometry_token_updated', eventData: { ok: false } });
+                break;
+            case 'web_app_biometry_open_settings':
+                break;
             case 'web_app_data_send':
-                if (this._chatId && eventData.data) {
+                if (this._botUserId && eventData.data) {
                     TdLibController.send({
-                        '@type': 'sendMessage',
-                        chat_id: this._chatId,
-                        input_message_content: {
-                            '@type': 'inputMessageText',
-                            text: { '@type': 'formattedText', text: eventData.data },
-                        },
+                        '@type': 'sendWebViewData',
+                        bot_user_id: this._botUserId,
+                        button_text: eventData.button_text || '',
+                        data: eventData.data,
                     }).catch(() => {});
                 }
-                this.close();
+                this.close(true);
                 break;
             case 'web_app_trigger_haptic_feedback':
+                if (navigator.vibrate) {
+                    const { type, impact_style, notification_type } = eventData;
+                    if (type === 'impact') {
+                        const ms = { light: 30, medium: 60, heavy: 100, rigid: 20, soft: 50 }[impact_style] || 40;
+                        navigator.vibrate(ms);
+                    } else if (type === 'notification') {
+                        const pattern = { success: [40, 30, 40], warning: [60], error: [50, 30, 50, 30, 50] }[
+                            notification_type
+                        ] || [40];
+                        navigator.vibrate(pattern);
+                    } else if (type === 'selection_change') {
+                        navigator.vibrate(15);
+                    }
+                }
                 break;
             case 'web_app_read_text_from_clipboard':
                 navigator.clipboard
@@ -273,6 +325,80 @@ class BotWebApp extends Component {
                             eventData: { req_id: eventData.req_id, data: '' },
                         });
                     });
+                break;
+            case 'web_app_open_invoice':
+                this._sendToFrame({
+                    eventType: 'invoice_closed',
+                    eventData: { url: eventData.slug, status: 'cancelled' },
+                });
+                break;
+            case 'web_app_request_fullscreen':
+                this.setState({ expanded: true });
+                this._sendToFrame({ eventType: 'fullscreen_changed', eventData: { is_fullscreen: true } });
+                break;
+            case 'web_app_exit_fullscreen':
+                this.setState({ expanded: false });
+                this._sendToFrame({ eventType: 'fullscreen_changed', eventData: { is_fullscreen: false } });
+                break;
+            case 'web_app_add_to_home_screen':
+                this._sendToFrame({ eventType: 'home_screen_failed', eventData: { error: 'NOT_SUPPORTED' } });
+                break;
+            case 'web_app_check_home_screen':
+                this._sendToFrame({ eventType: 'home_screen_checked', eventData: { status: 'unsupported' } });
+                break;
+            case 'web_app_set_emoji_status':
+                this._sendToFrame({ eventType: 'emoji_status_failed', eventData: { error: 'NOT_SUPPORTED' } });
+                break;
+            case 'web_app_start_accelerometer':
+                this._sendToFrame({ eventType: 'accelerometer_started' });
+                break;
+            case 'web_app_stop_accelerometer':
+                this._sendToFrame({ eventType: 'accelerometer_stopped' });
+                break;
+            case 'web_app_start_device_orientation':
+                this._sendToFrame({ eventType: 'device_orientation_started' });
+                break;
+            case 'web_app_stop_device_orientation':
+                this._sendToFrame({ eventType: 'device_orientation_stopped' });
+                break;
+            case 'web_app_start_gyroscope':
+                this._sendToFrame({ eventType: 'gyroscope_started' });
+                break;
+            case 'web_app_stop_gyroscope':
+                this._sendToFrame({ eventType: 'gyroscope_stopped' });
+                break;
+            case 'web_app_request_location':
+                if (navigator.geolocation) {
+                    navigator.geolocation.getCurrentPosition(
+                        pos => {
+                            this._sendToFrame({
+                                eventType: 'location_checked',
+                                eventData: {
+                                    available: true,
+                                    location: {
+                                        latitude: pos.coords.latitude,
+                                        longitude: pos.coords.longitude,
+                                        altitude: pos.coords.altitude,
+                                        course: pos.coords.heading,
+                                        speed: pos.coords.speed,
+                                        horizontal_accuracy: pos.coords.accuracy,
+                                    },
+                                },
+                            });
+                        },
+                        () => {
+                            this._sendToFrame({ eventType: 'location_checked', eventData: { available: false } });
+                        },
+                    );
+                } else {
+                    this._sendToFrame({ eventType: 'location_checked', eventData: { available: false } });
+                }
+                break;
+            case 'web_app_open_location_picker':
+                this._sendToFrame({ eventType: 'location_picker_failed', eventData: { error: 'NOT_SUPPORTED' } });
+                break;
+            case 'web_app_send_prepared_message':
+                this._sendToFrame({ eventType: 'prepared_message_failed', eventData: { error: 'NOT_SUPPORTED' } });
                 break;
             default:
                 break;

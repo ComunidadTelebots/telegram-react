@@ -1029,6 +1029,12 @@ class GramJsController extends EventEmitter {
                 return this._searchStickers(req);
             case 'requestBotWebView':
                 return this._requestBotWebView(req);
+            case 'prolongWebView':
+                return this._prolongWebView(req);
+            case 'sendWebViewData':
+                return this._sendWebViewData(req);
+            case 'answerWebAppQuery':
+                return this._answerWebAppQuery(req);
 
             // ── Archivos ──────────────────────────────────────────────────────
             case 'downloadFile':
@@ -2500,6 +2506,51 @@ class GramJsController extends EventEmitter {
         } catch (e) {
             console.warn('[GramJs] requestBotWebView error', e);
             return { url: '', query_id: '0' };
+        }
+    };
+
+    _prolongWebView = async ({ bot_user_id, chat_id, query_id }) => {
+        try {
+            const botInput = await this.client.getInputEntity(bot_user_id);
+            const peerInput = tdlibChatIdToInputPeer(chat_id, this._entityCache);
+            await this.client.invoke(
+                new Api.messages.ProlongWebView({
+                    peer: peerInput,
+                    bot: botInput,
+                    queryId: BigInt(query_id || '0'),
+                }),
+            );
+        } catch (e) {
+            console.warn('[GramJs] prolongWebView error', e);
+        }
+    };
+
+    _sendWebViewData = async ({ bot_user_id, button_text, data }) => {
+        try {
+            const botInput = await this.client.getInputEntity(bot_user_id);
+            await this.client.invoke(
+                new Api.messages.SendWebViewData({
+                    bot: botInput,
+                    randomId: BigInt(Math.floor(Math.random() * Number.MAX_SAFE_INTEGER)),
+                    buttonText: button_text || '',
+                    data: data || '',
+                }),
+            );
+        } catch (e) {
+            console.warn('[GramJs] sendWebViewData error', e);
+        }
+    };
+
+    _answerWebAppQuery = async ({ query_id, result }) => {
+        try {
+            await this.client.invoke(
+                new Api.messages.SendWebViewResultMessage({
+                    botQueryId: query_id,
+                    result,
+                }),
+            );
+        } catch (e) {
+            console.warn('[GramJs] answerWebAppQuery error', e);
         }
     };
 
