@@ -1,0 +1,17 @@
+services:
+  telegram-react:
+    build: .
+    restart: unless-stopped
+    networks:
+      - traefik
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.telegram-react.rule=Host(`tg.todosobreall.tech`)"
+      - "traefik.http.routers.telegram-react.entrypoints=websecure"
+      - "traefik.http.routers.telegram-react.tls=true"
+      - "traefik.http.routers.telegram-react.tls.certresolver=letsencrypt"
+      - "traefik.http.services.telegram-react.loadbalancer.server.port=80"
+
+networks:
+  traefik:
+    external: true
