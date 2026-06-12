@@ -837,6 +837,8 @@ class GramJsController extends EventEmitter {
                 return this._pinChatMessage(req);
             case 'unpinChatMessage':
                 return this._unpinChatMessage(req);
+            case 'unpinAllChatMessages':
+                return this._unpinAllChatMessages(req);
             case 'translateText':
                 return this._translateText(req);
             case 'transcribeAudio':
@@ -2196,6 +2198,18 @@ class GramJsController extends EventEmitter {
             this._emitUpdate({ '@type': 'updateChatPinnedMessage', chat_id, pinned_message_id: 0 });
         } catch (err) {
             console.error('[GramJs] unpinChatMessage error', err);
+        }
+        return {};
+    };
+
+    _unpinAllChatMessages = async req => {
+        const { chat_id } = req;
+        try {
+            const inputPeer = tdlibChatIdToInputPeer(chat_id, this._entityCache);
+            await this.client.invoke(new Api.messages.UnpinAllMessages({ peer: inputPeer }));
+            this._emitUpdate({ '@type': 'updateChatPinnedMessage', chat_id, pinned_message_id: 0 });
+        } catch (err) {
+            console.error('[GramJs] unpinAllChatMessages error', err);
         }
         return {};
     };
