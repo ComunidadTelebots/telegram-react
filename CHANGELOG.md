@@ -1,5 +1,14 @@
 # Changelog
 
+## [2026-06-12] (sesión 28)
+
+### Added
+- **Waveform en notas de voz** — las notas de voz ahora muestran 60 barras de amplitud real decodificadas del campo `waveform` de TDLib (5 bits por muestra, base64). Las barras ya reproducidas se colorean en azul primario. Clic en cualquier punto hace seek si el audio está activo. Archivos: `VoiceNoteSlider.{js,css}`, `VoiceNote.js`.
+- **Indicador "está escribiendo..."** — en el subtítulo del Header aparece en tiempo real quien está escribiendo: "Ana está escribiendo...", "Ana y Juan están escribiendo...", "3 personas están escribiendo...". Soporta también "grabando audio..." y "enviando archivo/foto...". El texto parpadea suavemente. El listener `updateUserChatAction` ya existía pero no mostraba nada. Archivo: `Header.js`, `Header.css`.
+- **Toast "Copiado al portapapeles"** — snackbar de confirmación de 1.8 s que aparece al usar "Copiar texto" o "Copiar enlace" en el menú contextual de cualquier mensaje. Archivo: `Message.js`.
+
+---
+
 ## [2026-06-12] (sesión 27)
 
 ### Added

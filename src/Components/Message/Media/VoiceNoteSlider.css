@@ -6,5 +6,40 @@
  */
 
 .voice-note-slider {
-    transform: translate(0, 14px);
+    display: flex;
+    align-items: center;
+    width: 100%;
+    min-width: 180px;
+    max-width: 220px;
+    height: 34px;
+    cursor: pointer;
+    padding: 2px 0;
+    box-sizing: border-box;
+}
+
+.voice-waveform {
+    display: flex;
+    align-items: center;
+    gap: 1.5px;
+    width: 100%;
+    height: 100%;
+    padding: 2px 0;
+    box-sizing: border-box;
+}
+
+.voice-bar {
+    flex: 1;
+    min-height: 15%;
+    max-height: 100%;
+    border-radius: 2px;
+    background: var(--color-hint, rgba(0, 0, 0, 0.3));
+    transition: background 0.12s;
+}
+
+.voice-bar-played {
+    background: var(--color-primary, #5b8af1);
+}
+
+.voice-waveform-flat .voice-bar-flat {
+    height: 3px !important;
 }

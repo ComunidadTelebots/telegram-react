@@ -140,3 +140,18 @@
         flex-shrink: 0;
     }
 }
+
+.header-typing {
+    color: var(--color-primary, #5b8af1) !important;
+    animation: typing-pulse 1.4s ease-in-out infinite;
+}
+
+@keyframes typing-pulse {
+    0%,
+    100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.6;
+    }
+}

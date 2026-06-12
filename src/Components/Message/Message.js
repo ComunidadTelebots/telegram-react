@@ -53,6 +53,7 @@ import MessageStore from '../../Stores/MessageStore';
 import TdLibController from '../../Controllers/TdLibController';
 import './Message.css';
 import Popover from '@material-ui/core/Popover';
+import Snackbar from '@material-ui/core/Snackbar';
 import MenuList from '@material-ui/core/MenuList';
 import MenuItem from '@material-ui/core/MenuItem';
 import ChatStore from '../../Stores/ChatStore';
@@ -103,6 +104,7 @@ class Message extends Component {
                 translating: false,
                 langMenu: false,
                 hovered: false,
+                copiedToast: false,
             };
         } else {
             this.state = {
@@ -116,6 +118,7 @@ class Message extends Component {
                 translating: false,
                 langMenu: false,
                 hovered: false,
+                copiedToast: false,
             };
         }
     }
@@ -488,6 +491,7 @@ class Message extends Component {
 
         if (text && navigator.clipboard) {
             navigator.clipboard.writeText(text).catch(() => {});
+            this.setState({ copiedToast: true });
         }
     };
 
@@ -627,6 +631,7 @@ class Message extends Component {
             });
             if (result?.link) {
                 await navigator.clipboard.writeText(result.link);
+                this.setState({ copiedToast: true });
             }
         } catch (e) {
             console.warn('[Message] getMessageLink error', e);
@@ -647,6 +652,7 @@ class Message extends Component {
             translating,
             langMenu,
             hovered,
+            copiedToast,
         } = this.state;
 
         const message = MessageStore.get(chatId, messageId);
@@ -825,6 +831,13 @@ class Message extends Component {
                         )}
                     </MenuList>
                 </Popover>
+                <Snackbar
+                    open={copiedToast}
+                    autoHideDuration={1800}
+                    onClose={() => this.setState({ copiedToast: false })}
+                    message='Copiado al portapapeles'
+                    anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+                />
                 <Popover
                     open={langMenu}
                     onClose={this.handleCloseLangMenu}

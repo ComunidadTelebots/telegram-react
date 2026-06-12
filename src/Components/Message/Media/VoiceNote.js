@@ -69,13 +69,19 @@ class VoiceNote extends React.Component {
         const { chatId, messageId, voiceNote, openMedia, classes } = this.props;
         if (!voiceNote) return null;
 
-        const { duration, voice: file } = voiceNote;
+        const { duration, voice: file, waveform } = voiceNote;
 
         return (
             <div className='document'>
                 <VoiceNoteTile chatId={chatId} messageId={messageId} file={file} openMedia={openMedia} />
                 <div className='voice-note-content'>
-                    <VoiceNoteSlider chatId={chatId} messageId={messageId} duration={duration} file={file} />
+                    <VoiceNoteSlider
+                        chatId={chatId}
+                        messageId={messageId}
+                        duration={duration}
+                        file={file}
+                        waveform={waveform}
+                    />
                     <div className={classNames(classes.voiceNoteMeta, 'voice-note-meta')}>
                         <AudioAction chatId={chatId} messageId={messageId} duration={duration} file={file} />
                         <MediaStatus chatId={chatId} messageId={messageId} icon={' •'} />

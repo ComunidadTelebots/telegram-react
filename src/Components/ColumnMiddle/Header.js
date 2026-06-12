@@ -462,6 +462,39 @@ class Header extends Component {
         const isSecret = isChatSecret(chatId);
         let title = getChatTitle(chatId, true, t);
         let subtitle = getChatSubtitle(chatId, true);
+        let isTyping = false;
+
+        const typingManager = chatId ? ChatStore.getTypingManager(chatId) : null;
+        if (typingManager && typingManager.actions && typingManager.actions.size > 0) {
+            const now = new Date();
+            const activeUsers = [...typingManager.actions.entries()].filter(([, v]) => v.expire > now);
+            if (activeUsers.length > 0) {
+                isTyping = true;
+                if (activeUsers.length === 1) {
+                    const [userId] = activeUsers[0];
+                    const user = UserStore.get(userId);
+                    const name = user ? user.first_name || user.last_name || 'Alguien' : 'Alguien';
+                    const action = activeUsers[0][1].action;
+                    const actionText =
+                        action['@type'] === 'chatActionRecordingVoiceNote'
+                            ? 'grabando audio...'
+                            : action['@type'] === 'chatActionUploadingDocument'
+                            ? 'enviando archivo...'
+                            : action['@type'] === 'chatActionUploadingPhoto'
+                            ? 'enviando foto...'
+                            : 'escribiendo...';
+                    subtitle = `${name} está ${actionText}`;
+                } else if (activeUsers.length === 2) {
+                    const names = activeUsers.map(([uid]) => {
+                        const u = UserStore.get(uid);
+                        return u ? u.first_name || 'Alguien' : 'Alguien';
+                    });
+                    subtitle = `${names[0]} y ${names[1]} están escribiendo...`;
+                } else {
+                    subtitle = `${activeUsers.length} personas están escribiendo...`;
+                }
+            }
+        }
         let showProgressAnimation = false;
 
         if (isSecret && chat && chat.type && chat.type['@type'] === 'chatTypeSecret') {
@@ -550,7 +583,8 @@ class Header extends Component {
                     {showProgressAnimation && <HeaderProgress />}
                     <span
                         className={classNames('header-status-title', classes.headerStatusTitle, {
-                            [classes.headerStatusAccentTitle]: isAccentSubtitle,
+                            [classes.headerStatusAccentTitle]: isAccentSubtitle && !isTyping,
+                            'header-typing': isTyping,
                         })}>
                         {subtitle}
                     </span>
