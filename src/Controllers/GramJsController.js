@@ -809,6 +809,10 @@ class GramJsController extends EventEmitter {
                 return this._forwardMessages(req);
             case 'sendMessage':
                 return this._sendMessage(req);
+            case 'sendGifByUrl':
+                return this._sendGifByUrl(req);
+            case 'setChatMessageAutoDeleteTime':
+                return this._setChatMessageAutoDeleteTime(req);
             case 'editMessageText':
                 return this._editMessage(req);
             case 'deleteMessages':
@@ -989,6 +993,10 @@ class GramJsController extends EventEmitter {
             // ── Reacciones ────────────────────────────────────────────────────
             case 'sendMessageReaction':
                 return this._sendReaction(req);
+            case 'sendGifByUrl':
+                return this._sendGifByUrl(req);
+            case 'setChatMessageAutoDeleteTime':
+                return this._setChatMessageAutoDeleteTime(req);
 
             // ── Archivos ──────────────────────────────────────────────────────
             case 'downloadFile':
@@ -2113,6 +2121,42 @@ class GramJsController extends EventEmitter {
         } catch (err) {
             console.error('[GramJs] sendMessage error', err);
             throw err;
+        }
+        return {};
+    };
+
+    _sendGifByUrl = async ({ chat_id, url, reply_to_message_id }) => {
+        try {
+            const inputPeer = tdlibChatIdToInputPeer(chat_id, this._entityCache);
+            const { generateRandomBigInt } = await import('telegram/Helpers');
+            await this.client.invoke(
+                new Api.messages.SendMedia({
+                    peer: inputPeer,
+                    media: new Api.InputMediaDocumentExternal({ url }),
+                    message: '',
+                    randomId: generateRandomBigInt(),
+                    replyTo: reply_to_message_id
+                        ? new Api.InputReplyToMessage({ replyToMsgId: reply_to_message_id })
+                        : undefined,
+                }),
+            );
+        } catch (e) {
+            console.warn('[GramJs] sendGifByUrl error', e);
+        }
+        return {};
+    };
+
+    _setChatMessageAutoDeleteTime = async ({ chat_id, message_auto_delete_time }) => {
+        try {
+            const inputPeer = tdlibChatIdToInputPeer(chat_id, this._entityCache);
+            await this.client.invoke(
+                new Api.messages.SetHistoryTTL({
+                    peer: inputPeer,
+                    period: message_auto_delete_time || 0,
+                }),
+            );
+        } catch (e) {
+            console.warn('[GramJs] setChatMessageAutoDeleteTime error', e);
         }
         return {};
     };

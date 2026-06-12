@@ -27,6 +27,9 @@ import { compose } from 'recompose';
 import MainMenuButton from './MainMenuButton';
 import HeaderCommand from './HeaderCommand';
 import HeaderProgress from './HeaderProgress';
+import ChatSearch from './ChatSearch';
+import AutoDeleteTimer from './AutoDeleteTimer';
+import TimerIcon from '@material-ui/icons/Timer';
 import { borderStyle } from '../Theme';
 import LockIcon from '@material-ui/icons/Lock';
 import {
@@ -81,6 +84,7 @@ class Header extends Component {
             connectionState: AppStore.getConnectionState(),
             openDeleteDialog: false,
             openJumpToDate: false,
+            showChatSearch: false,
         };
     }
 
@@ -177,6 +181,18 @@ class Header extends Component {
 
     handleJumpToDate = () => {
         this.setState({ openJumpToDate: true });
+    };
+
+    handleSearchChat = () => {
+        this.setState(s => ({ showChatSearch: !s.showChatSearch }));
+    };
+
+    handleCloseChatSearch = () => {
+        this.setState({ showChatSearch: false });
+    };
+
+    handleOpenAutoDelete = () => {
+        this.autoDeleteRef && this.autoDeleteRef.open();
     };
 
     handleVoiceCall = () => {
@@ -427,6 +443,7 @@ class Header extends Component {
             canBeDeletedForAllUsers,
             revoke,
             messageIds,
+            showChatSearch,
         } = this.state;
 
         const count = messageIds ? messageIds.length : 0;
@@ -559,9 +576,17 @@ class Header extends Component {
                         )}
                         <IconButton
                             className={classes.messageSearchIconButton}
-                            aria-label='Search'
+                            aria-label='Search in chat'
+                            title='Buscar en el chat'
                             onClick={this.handleSearchChat}>
                             <SearchIcon />
+                        </IconButton>
+                        <IconButton
+                            className={classes.messageSearchIconButton}
+                            aria-label='Auto-delete timer'
+                            title='Borrado automático'
+                            onClick={this.handleOpenAutoDelete}>
+                            <TimerIcon />
                         </IconButton>
                         <IconButton
                             className={classes.messageSearchIconButton}
@@ -579,6 +604,8 @@ class Header extends Component {
         return (
             <>
                 {control}
+                {showChatSearch && <ChatSearch chatId={AppStore.getChatId()} onClose={this.handleCloseChatSearch} />}
+                <AutoDeleteTimer ref={r => (this.autoDeleteRef = r)} />
                 <Dialog
                     transitionDuration={0}
                     open={openDeleteDialog}

@@ -29,6 +29,8 @@ import DialogActions from '@material-ui/core/DialogActions';
 import TextField from '@material-ui/core/TextField';
 import AttachButton from './../ColumnMiddle/AttachButton';
 import CreatePollDialog from '../Popup/CreatePollDialog';
+import GifPicker from './GifPicker';
+import GifIcon from '@material-ui/icons/Gif';
 import EditUrlDialog from '../Popup/EditUrlDialog';
 import InputBoxHeader from './InputBoxHeader';
 import PasteFilesDialog from '../Popup/PasteFilesDialog';
@@ -85,6 +87,7 @@ class InputBoxControl extends Component {
             silentSend: false,
             formatBar: null,
             disableLinkPreview: false,
+            showGifPicker: false,
         };
 
         document.addEventListener(
@@ -1339,6 +1342,7 @@ class InputBoxControl extends Component {
             silentSend,
             disableLinkPreview,
             formatBar,
+            showGifPicker,
         } = this.state;
 
         const isMediaEditing = editMessageId > 0 && !isTextMessage(chatId, editMessageId);
@@ -1347,6 +1351,7 @@ class InputBoxControl extends Component {
             <div className={classes.inputboxBackground}>
                 <div className={classNames(classes.borderColor, 'inputbox')}>
                     <div className={classNames('inputbox-bubble', classes.inputboxBubble)}>
+                        {showGifPicker && <GifPicker onClose={() => this.setState({ showGifPicker: false })} />}
                         <InputBoxHeader
                             chatId={chatId}
                             messageId={replyToMessageId}
@@ -1371,6 +1376,13 @@ class InputBoxControl extends Component {
                                         TdLibController.clientUpdate({ '@type': 'clientUpdateOpenStickersPanel' })
                                     }>
                                     <TagFacesIcon />
+                                </IconButton>
+                                <IconButton
+                                    className='inputbox-icon-button'
+                                    aria-label='GIF'
+                                    title='Enviar GIF'
+                                    onClick={() => this.setState(s => ({ showGifPicker: !s.showGifPicker }))}>
+                                    <GifIcon />
                                 </IconButton>
                             </div>
                             <div className='inputbox-middle-column' style={{ position: 'relative' }}>

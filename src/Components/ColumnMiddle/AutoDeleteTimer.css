@@ -1,0 +1,6 @@
+.auto-delete-desc {
+    margin: 8px 16px 4px;
+    font-size: 13px;
+    color: var(--color-hint, #888);
+    line-height: 1.4;
+}
