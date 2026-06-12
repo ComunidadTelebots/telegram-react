@@ -71,7 +71,9 @@ class VoiceNote extends React.Component {
         this.state = {
             transcribing: false,
             transcription: '',
+            transcriptionId: '',
             transcriptionError: '',
+            transcriptionRated: null,
         };
     }
 
@@ -95,7 +97,9 @@ class VoiceNote extends React.Component {
         this.setState({
             transcribing: false,
             transcription: update.text || '',
+            transcriptionId: update.transcription_id || '',
             transcriptionError: '',
+            transcriptionRated: null,
         });
     };
 
@@ -115,7 +119,9 @@ class VoiceNote extends React.Component {
             this.setState({
                 transcribing: !!result.pending,
                 transcription: result.text || '',
+                transcriptionId: result.transcription_id || '',
                 transcriptionError: '',
+                transcriptionRated: null,
             });
         } catch (error) {
             this.setState({
@@ -125,9 +131,26 @@ class VoiceNote extends React.Component {
         }
     };
 
+    handleRateTranscription = async (event, isGood) => {
+        event.stopPropagation();
+
+        const { chatId, messageId } = this.props;
+        const { transcriptionId } = this.state;
+        if (!transcriptionId) return;
+
+        await TdLibController.send({
+            '@type': 'rateTranscribedAudio',
+            chat_id: chatId,
+            message_id: messageId,
+            transcription_id: transcriptionId,
+            is_good: isGood,
+        });
+        this.setState({ transcriptionRated: isGood });
+    };
+
     render() {
         const { chatId, messageId, voiceNote, openMedia, classes } = this.props;
-        const { transcribing, transcription, transcriptionError } = this.state;
+        const { transcribing, transcription, transcriptionId, transcriptionError, transcriptionRated } = this.state;
         if (!voiceNote) return null;
 
         const { duration, voice: file, waveform } = voiceNote;
@@ -161,6 +184,26 @@ class VoiceNote extends React.Component {
                                 'voice-transcription-error': transcriptionError,
                             })}>
                             {transcriptionError || transcription}
+                            {transcription && transcriptionId && !transcriptionError && (
+                                <span className='voice-transcription-rating'>
+                                    <button
+                                        className={classNames('voice-transcription-rate-btn', {
+                                            'voice-transcription-rate-selected': transcriptionRated === true,
+                                        })}
+                                        onClick={event => this.handleRateTranscription(event, true)}
+                                        title='La transcripcion es correcta'>
+                                        ✓
+                                    </button>
+                                    <button
+                                        className={classNames('voice-transcription-rate-btn', {
+                                            'voice-transcription-rate-selected': transcriptionRated === false,
+                                        })}
+                                        onClick={event => this.handleRateTranscription(event, false)}
+                                        title='La transcripcion necesita mejora'>
+                                        ✕
+                                    </button>
+                                </span>
+                            )}
                         </div>
                     )}
                 </div>

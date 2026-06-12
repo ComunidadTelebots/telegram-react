@@ -49,7 +49,9 @@ class VideoNote extends React.Component {
             videoDuration: active && time ? time.duration : 0.0,
             transcribing: false,
             transcription: '',
+            transcriptionId: '',
             transcriptionError: '',
+            transcriptionRated: null,
         };
 
         this.windowFocused = window.hasFocus;
@@ -141,7 +143,9 @@ class VideoNote extends React.Component {
         this.setState({
             transcribing: false,
             transcription: update.text || '',
+            transcriptionId: update.transcription_id || '',
             transcriptionError: '',
+            transcriptionRated: null,
         });
     };
 
@@ -161,7 +165,9 @@ class VideoNote extends React.Component {
             this.setState({
                 transcribing: !!result.pending,
                 transcription: result.text || '',
+                transcriptionId: result.transcription_id || '',
                 transcriptionError: '',
+                transcriptionRated: null,
             });
         } catch (error) {
             this.setState({
@@ -169,6 +175,23 @@ class VideoNote extends React.Component {
                 transcriptionError: error.message || 'Transcription failed',
             });
         }
+    };
+
+    handleRateTranscription = async (event, isGood) => {
+        event.stopPropagation();
+
+        const { chatId, messageId } = this.props;
+        const { transcriptionId } = this.state;
+        if (!transcriptionId) return;
+
+        await TdLibController.send({
+            '@type': 'rateTranscribedAudio',
+            chat_id: chatId,
+            message_id: messageId,
+            transcription_id: transcriptionId,
+            is_good: isGood,
+        });
+        this.setState({ transcriptionRated: isGood });
     };
 
     startStopPlayer = () => {
@@ -350,7 +373,16 @@ class VideoNote extends React.Component {
 
     render() {
         const { displaySize, chatId, messageId, openMedia } = this.props;
-        const { active, currentTime, videoDuration, transcribing, transcription, transcriptionError } = this.state;
+        const {
+            active,
+            currentTime,
+            videoDuration,
+            transcribing,
+            transcription,
+            transcriptionId,
+            transcriptionError,
+            transcriptionRated,
+        } = this.state;
         const { minithumbnail, thumbnail, video, duration } = this.props.videoNote;
 
         const message = MessageStore.get(chatId, messageId);
@@ -444,6 +476,26 @@ class VideoNote extends React.Component {
                             'video-note-transcription-error': transcriptionError,
                         })}>
                         {transcriptionError || transcription}
+                        {transcription && transcriptionId && !transcriptionError && (
+                            <span className='video-note-transcription-rating'>
+                                <button
+                                    className={classNames('video-note-transcription-rate-btn', {
+                                        'video-note-transcription-rate-selected': transcriptionRated === true,
+                                    })}
+                                    onClick={event => this.handleRateTranscription(event, true)}
+                                    title='La transcripcion es correcta'>
+                                    ✓
+                                </button>
+                                <button
+                                    className={classNames('video-note-transcription-rate-btn', {
+                                        'video-note-transcription-rate-selected': transcriptionRated === false,
+                                    })}
+                                    onClick={event => this.handleRateTranscription(event, false)}
+                                    title='La transcripcion necesita mejora'>
+                                    ✕
+                                </button>
+                            </span>
+                        )}
                     </div>
                 )}
             </div>

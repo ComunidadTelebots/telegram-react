@@ -849,6 +849,8 @@ class GramJsController extends EventEmitter {
                 return this._toggleChatTranslations(req);
             case 'transcribeAudio':
                 return this._transcribeAudio(req);
+            case 'rateTranscribedAudio':
+                return this._rateTranscribedAudio(req);
 
             // ── Usuarios ──────────────────────────────────────────────────────
             case 'getUser':
@@ -3148,6 +3150,25 @@ class GramJsController extends EventEmitter {
             console.error('[GramJs] transcribeAudio error', e);
             throw e;
         }
+    };
+
+    _rateTranscribedAudio = async req => {
+        const { chat_id, message_id, transcription_id, is_good } = req;
+        try {
+            const inputPeer = tdlibChatIdToInputPeer(chat_id, this._entityCache);
+            await this.client.invoke(
+                new Api.messages.RateTranscribedAudio({
+                    peer: inputPeer,
+                    msgId: message_id,
+                    transcriptionId: BigInt(transcription_id),
+                    good: !!is_good,
+                }),
+            );
+        } catch (e) {
+            console.error('[GramJs] rateTranscribedAudio error', e);
+            throw e;
+        }
+        return {};
     };
 
     _getInstalledStickerSets = async req => {

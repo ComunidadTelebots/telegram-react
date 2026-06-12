@@ -82,3 +82,29 @@
 .voice-transcription-error {
     color: #e53935;
 }
+
+.voice-transcription-rating {
+    display: inline-flex;
+    gap: 4px;
+    margin-left: 8px;
+    vertical-align: middle;
+}
+
+.voice-transcription-rate-btn {
+    min-width: 20px;
+    height: 20px;
+    border: 1px solid currentColor;
+    border-radius: 10px;
+    background: transparent;
+    color: inherit;
+    cursor: pointer;
+    font-size: 12px;
+    line-height: 18px;
+    opacity: 0.65;
+}
+
+.voice-transcription-rate-btn:hover,
+.voice-transcription-rate-selected {
+    opacity: 1;
+    background: var(--reaction-chosen-bg, rgba(33, 150, 243, 0.1));
+}
