@@ -1,5 +1,20 @@
 # Changelog
 
+## [2026-06-12] (sesión 20)
+
+### Infraestructura
+- **Despliegue en producción con Docker + Traefik** — añadidos `Dockerfile` (multi-stage node:18-alpine → nginx:alpine), `nginx.conf` (SPA fallback, gzip, cache headers) y `docker-compose.yml` con integración Traefik para `tg.todosobreall.tech`. (`f9165204`)
+- **Fix `homepage` para despliegue en dominio raíz** — `package.json` tenía `homepage: http://evgeny-nadymov.github.io/telegram-react`, lo que causaba que el service worker pidiera assets desde `/telegram-react/...` con 404. Cambiado a `"/"`. (`5597af82`)
+- **Fix build Linux en Docker** — `set NODE_OPTIONS=...` es sintaxis Windows; movido a `ENV` en el Dockerfile. Añadido `SKIP_PREFLIGHT_CHECK=true` para evitar el error de versión de ESLint. Cambiado `npm ci` → `npm install` por desincronización del lock file. (`2fa3f31b`, `954f4191`, `f636dd0c`)
+
+### Fixed — Auth
+- **Estabilización del login QR en Chrome** — cuatro fixes encadenados: esperar conexión activa antes de pedir el QR (`730c6064`), completar el login al recibir el update correspondiente (`c138c6eb`), regenerar el QR cuando el token expira (`14f9e473`) y eliminar race condition que causaba pantalla en blanco en Chrome (`07ebabea`).
+
+### Documentación
+- **README completo** — sustituido el README original por documentación detallada del fork: arquitectura, tabla de estado de funcionalidades, despliegue local y en producción, guía de contribución, headers de seguridad y hoja de ruta. (`d2a0a8c5`)
+
+---
+
 ## [2026-06-10] (sesión 19)
 
 ### Fixed
