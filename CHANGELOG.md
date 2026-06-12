@@ -1,5 +1,14 @@
 # Changelog
 
+## [2026-06-12] (sesión 25) — `e96f1ba9`
+
+### Added
+- **@Menciones autocomplete** — al escribir `@` en el compositor aparece un panel flotante con los miembros del grupo filtrados en tiempo real por nombre/username. Click inserta `@username` (o `@nombre`) y cierra el panel. Carga miembros una vez por chat vía `getSupergroupMembers`/`getBasicGroupFullInfo`. Archivos: `MentionAutocomplete.{js,css}`, `InputBoxControl.js`.
+- **Toggle oscuro/claro rápido** — botón ☀️/🌙 en la cabecera de la lista de chats (junto a Tutorial). Conmuta entre `light` y `dark` sin abrir el ThemePicker completo. Archivo: `DialogsHeader.js`.
+- **Vista previa de PDF inline** — icono 👁 junto al nombre de archivos `.pdf`. Si el archivo está descargado, abre un `<iframe>` con la URL de blob en un diálogo de pantalla casi completa. Si no está descargado, inicia la descarga. Archivo: `Document.js`.
+
+---
+
 ## [2026-06-12] (sesión 24) — `c9bf1bf5`
 
 ### Added
