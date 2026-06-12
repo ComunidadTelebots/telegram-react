@@ -1,5 +1,15 @@
 # Changelog
 
+## [2026-06-12] (sesión 21)
+
+### Added — inspirado en Telegram Web A
+- **Barra de formato flotante en el compositor** (`03bd2d13`) — al seleccionar texto en el campo de mensaje aparece un toolbar flotante con botones: **B** (negrita), *I* (cursiva), U (subrayado), ~~S~~ (tachado), `</>` (código monoespaciado), 👁 (spoiler), 🔗 (enlace), ✕ (quitar formato). Se posiciona sobre la selección usando `getBoundingClientRect()`. Los handlers ya existían como atajos de teclado (Ctrl+B/I/U/etc); ahora tienen UI visual accesible. Archivos: `src/Components/ColumnMiddle/InputBoxControl.js`, `InputBoxControl.css`.
+- **Spoiler en compositor** (`03bd2d13`) — nuevo `handleSpoiler()` que inserta `<span class='spoiler-text'>` sobre el texto seleccionado, compatible con el renderizado de `textEntityTypeSpoiler` ya existente (blur + reveal al clic). Archivo: `InputBoxControl.js`.
+- **FactCheck en mensajes de canales** (`03bd2d13`) — nueva función `translateFactCheck()` en `EntityTranslator.js` traduce `msg.factcheck` (campo capa 198 de GramJS). Nuevo componente `FactCheck.js` muestra la anotación con borde rojo y etiqueta `FACT CHECK · <país>` debajo del contenido del mensaje. Solo aparece si `factcheck.needCheck === false` y tiene texto. Archivos: `src/Components/Message/FactCheck.{js,css}`, `EntityTranslator.js`, `Message.js`.
+- **Canales similares** (`03bd2d13`) — implementado `channels.GetChannelRecommendations` en `GramJsController._getSimilarChannels()`. Nuevo componente `SimilarChannels.js` en el panel derecho de info: lista de canales recomendados con avatar, nombre y número de miembros, clicables para abrir el canal. Solo visible en el panel de información de canales (supergrupo con `is_channel=true`). Archivos: `src/Components/ColumnRight/SimilarChannels.{js,css}`, `ChatDetails.js`, `GramJsController.js`.
+
+---
+
 ## [2026-06-12] (sesión 20)
 
 ### Infraestructura
