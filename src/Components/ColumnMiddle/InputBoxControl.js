@@ -95,6 +95,8 @@ class InputBoxControl extends Component {
             mentionMembers: [],
             botCommandQuery: null,
             botCommands: [],
+            charCount: 0,
+            ctrlEnterMode: localStorage.getItem('ctrlEnterMode') === 'true',
         };
 
         document.addEventListener(
@@ -787,9 +789,12 @@ class InputBoxControl extends Component {
         switch (keyCode) {
             // enter
             case 13: {
-                if (!altKey && !ctrlKey && !metaKey && !shiftKey) {
+                const { ctrlEnterMode } = this.state;
+                const shouldSend = ctrlEnterMode
+                    ? (ctrlKey || metaKey) && !altKey && !shiftKey
+                    : !altKey && !ctrlKey && !metaKey && !shiftKey;
+                if (shouldSend) {
                     if (!repeat) this.handleSubmit();
-
                     event.preventDefault();
                     event.stopPropagation();
                 }
@@ -1308,6 +1313,15 @@ class InputBoxControl extends Component {
         this.setHints();
         this.detectMention();
         this.detectBotCommand();
+        const el = this.newMessageRef.current;
+        if (el) this.setState({ charCount: (el.innerText || '').length });
+    };
+
+    handleCtrlEnterToggle = () => {
+        const { ctrlEnterMode } = this.state;
+        const next = !ctrlEnterMode;
+        localStorage.setItem('ctrlEnterMode', next);
+        this.setState({ ctrlEnterMode: next });
     };
 
     openEditUrlDialog = () => {
@@ -1484,7 +1498,11 @@ class InputBoxControl extends Component {
             mentionMembers,
             botCommandQuery,
             botCommands,
+            charCount,
+            ctrlEnterMode,
         } = this.state;
+        const MAX_MSG_LEN = 4096;
+        const showCharCounter = charCount > 3000;
 
         const isMediaEditing = editMessageId > 0 && !isTextMessage(chatId, editMessageId);
 
@@ -1608,6 +1626,31 @@ class InputBoxControl extends Component {
                                 )}
                             </div>
                             <div className='inputbox-right-column'>
+                                {showCharCounter && (
+                                    <span
+                                        title='Caracteres restantes'
+                                        style={{
+                                            fontSize: 11,
+                                            color: charCount > MAX_MSG_LEN - 100 ? '#e53935' : '#888',
+                                            alignSelf: 'center',
+                                            marginRight: 4,
+                                            minWidth: 32,
+                                            textAlign: 'right',
+                                        }}>
+                                        {MAX_MSG_LEN - charCount}
+                                    </span>
+                                )}
+                                <IconButton
+                                    size='small'
+                                    className='inputbox-icon-button'
+                                    aria-label={ctrlEnterMode ? 'Enviar con Ctrl+Enter' : 'Enviar con Enter'}
+                                    title={ctrlEnterMode ? 'Modo: Ctrl+Enter para enviar' : 'Modo: Enter para enviar'}
+                                    onClick={this.handleCtrlEnterToggle}
+                                    style={{ fontSize: 10, padding: 4 }}>
+                                    <span style={{ fontSize: 9, fontWeight: 'bold', lineHeight: 1 }}>
+                                        {ctrlEnterMode ? '⌃↵' : '↵'}
+                                    </span>
+                                </IconButton>
                                 <input
                                     ref={this.attachDocumentRef}
                                     className='inputbox-attach-button'

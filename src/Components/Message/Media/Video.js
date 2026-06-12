@@ -46,7 +46,7 @@ class Video extends React.Component {
         const videoStyle = {
             width: fitPhotoSize.width,
             height: fitPhotoSize.height,
-            ...style
+            ...style,
         };
 
         const miniSrc = minithumbnail ? 'data:image/jpeg;base64, ' + minithumbnail.data : null;
@@ -59,14 +59,14 @@ class Video extends React.Component {
                     'video-big': type === 'message',
                     'video-title': title,
                     'video-caption': caption,
-                    pointer: openMedia
+                    pointer: openMedia,
                 })}
                 style={videoStyle}
                 onClick={openMedia}>
                 <img
                     className={classNames('video-preview', {
                         'media-blurred': isBlurred,
-                        'media-mini-blurred': !thumbnailSrc && isBlurred
+                        'media-mini-blurred': !thumbnailSrc && isBlurred,
                     })}
                     src={thumbnailSrc || miniSrc}
                     alt=''
@@ -75,6 +75,7 @@ class Video extends React.Component {
                     <PlayArrowIcon />
                 </div>
                 <div className='video-meta'>{getDurationString(duration) + ' ' + getFileSize(video)}</div>
+                {duration > 0 && <div className='video-duration-overlay'>{getDurationString(duration)}</div>}
             </div>
         );
     }
@@ -86,12 +87,12 @@ Video.propTypes = {
     video: PropTypes.object.isRequired,
     openMedia: PropTypes.func,
     size: PropTypes.number,
-    displaySize: PropTypes.number
+    displaySize: PropTypes.number,
 };
 
 Video.defaultProps = {
     size: PHOTO_SIZE,
-    displaySize: PHOTO_DISPLAY_SIZE
+    displaySize: PHOTO_DISPLAY_SIZE,
 };
 
 export default Video;

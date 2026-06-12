@@ -570,6 +570,19 @@ class Message extends Component {
         }
     };
 
+    handleMarkAsRead = async event => {
+        const { chatId, messageId } = this.props;
+        this.handleCloseContextMenu(event);
+        try {
+            await TdLibController.send({
+                '@type': 'viewMessages',
+                chat_id: chatId,
+                message_ids: [messageId],
+                force_read: true,
+            });
+        } catch {}
+    };
+
     handleSaveToSavedMessages = async event => {
         const { chatId, messageId } = this.props;
         this.handleCloseContextMenu(event);
@@ -716,6 +729,17 @@ class Message extends Component {
         const canShowInChat = !!forwardOriginType && forwardOriginType === 'messageForwardOriginChannel';
         const canReplyInPrivate = !message.is_outgoing && !!message.sender_user_id && isGroupChat(chatId);
         const canBeSaved = message.can_be_forwarded;
+        const canBeMarkedAsRead = !message.is_outgoing && message.id > 0 && message.contains_unread_mention;
+        const firstUrl = (() => {
+            const entities = message.content?.text?.entities || message.content?.caption?.entities || [];
+            const urlEntity = entities.find(e => e.type?.['@type'] === 'textEntityTypeUrl');
+            if (urlEntity) {
+                const txt = message.content?.text?.text || message.content?.caption?.text || '';
+                return txt.slice(urlEntity.offset, urlEntity.offset + urlEntity.length);
+            }
+            return null;
+        })();
+        const isScheduled = !!message.scheduling_state;
         const showQuickReactions = hovered && !selected && !contextMenu && message.can_be_forwarded;
         const withBubble = contentType !== 'messageSticker' && contentType !== 'messageVideoNote';
 
@@ -773,6 +797,7 @@ class Message extends Component {
                             <div className='message-translation message-translation-loading'>{t('Translate')}…</div>
                         )}
                         {translationText && <div className='message-translation'>{translationText}</div>}
+                        {isScheduled && <div className='message-scheduled-badge'>🕐 Programado</div>}
                         {message.fact_check && <FactCheck factCheck={message.fact_check} />}
                         <Reactions chatId={chatId} messageId={messageId} />
                         {isOutgoingGroup && <SeenBy chatId={chatId} messageId={messageId} />}
@@ -828,6 +853,25 @@ class Message extends Component {
                         {canShowInChat && <MenuItem onClick={this.handleShowInChat}>{t('ShowInChat')}</MenuItem>}
                         {canBeSaved && (
                             <MenuItem onClick={this.handleSaveToSavedMessages}>Guardar en Mensajes Guardados</MenuItem>
+                        )}
+                        {canBeMarkedAsRead && <MenuItem onClick={this.handleMarkAsRead}>Marcar como leído</MenuItem>}
+                        {firstUrl && (
+                            <MenuItem
+                                onClick={() => {
+                                    navigator.clipboard.writeText(firstUrl);
+                                    this.setState({ copiedToast: true, contextMenu: false });
+                                }}>
+                                Copiar enlace
+                            </MenuItem>
+                        )}
+                        {firstUrl && (
+                            <MenuItem
+                                onClick={() => {
+                                    window.open(firstUrl, '_blank', 'noopener,noreferrer');
+                                    this.handleCloseContextMenu();
+                                }}>
+                                Abrir enlace en nueva pestaña
+                            </MenuItem>
                         )}
                     </MenuList>
                 </Popover>

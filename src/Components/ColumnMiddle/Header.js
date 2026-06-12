@@ -32,6 +32,14 @@ import AutoDeleteTimer from './AutoDeleteTimer';
 import ChannelStatsDialog from './ChannelStatsDialog';
 import TimerIcon from '@material-ui/icons/Timer';
 import BarChartIcon from '@material-ui/icons/BarChart';
+import VolumeOffIcon from '@material-ui/icons/VolumeOff';
+import VolumeUpIcon from '@material-ui/icons/VolumeUp';
+import Brightness4Icon from '@material-ui/icons/Brightness4';
+import Brightness7Icon from '@material-ui/icons/Brightness7';
+import ArchiveIcon from '@material-ui/icons/Archive';
+import UnarchiveIcon from '@material-ui/icons/Unarchive';
+import LinkIcon from '@material-ui/icons/Link';
+import Snackbar from '@material-ui/core/Snackbar';
 import { borderStyle } from '../Theme';
 import LockIcon from '@material-ui/icons/Lock';
 import {
@@ -87,6 +95,7 @@ class Header extends Component {
             openDeleteDialog: false,
             openJumpToDate: false,
             showChatSearch: false,
+            inviteLinkCopied: false,
         };
     }
 
@@ -219,6 +228,60 @@ class Header extends Component {
         import('../../Controllers/CallController').then(({ default: callController }) => {
             callController.requestCall(userId, true);
         });
+    };
+
+    handleMuteToggle = async () => {
+        const chatId = AppStore.getChatId();
+        const chat = ChatStore.get(chatId);
+        if (!chat) return;
+        const isMuted = chat.notification_settings && chat.notification_settings.mute_for > 0;
+        try {
+            await TdLibController.send({
+                '@type': 'setChatNotificationSettings',
+                chat_id: chatId,
+                notification_settings: {
+                    '@type': 'chatNotificationSettings',
+                    use_default_mute_for: false,
+                    mute_for: isMuted ? 0 : 2147483647,
+                    use_default_sound: true,
+                    use_default_show_preview: true,
+                },
+            });
+            this.forceUpdate();
+        } catch {}
+    };
+
+    handleArchiveToggle = async () => {
+        const chatId = AppStore.getChatId();
+        const chat = ChatStore.get(chatId);
+        if (!chat) return;
+        const isArchived = chat.positions && chat.positions.some(p => p.list && p.list['@type'] === 'chatListArchive');
+        try {
+            await TdLibController.send({
+                '@type': 'addChatToList',
+                chat_id: chatId,
+                chat_list: isArchived ? { '@type': 'chatListMain' } : { '@type': 'chatListArchive' },
+            });
+            this.forceUpdate();
+        } catch {}
+    };
+
+    handleThemeToggle = () => {
+        const isDark = AppStore.getNightMode ? AppStore.getNightMode() : document.body.classList.contains('night');
+        TdLibController.clientUpdate({ '@type': 'clientUpdateThemeChanging', night: !isDark });
+    };
+
+    handleCopyInviteLink = async () => {
+        const chatId = AppStore.getChatId();
+        const chat = ChatStore.get(chatId);
+        if (!chat) return;
+        try {
+            const result = await TdLibController.send({ '@type': 'getGroupInviteLink', chat_id: chatId });
+            if (result && result.invite_link) {
+                await navigator.clipboard.writeText(result.invite_link);
+                this.setState({ inviteLinkCopied: true });
+            }
+        } catch {}
     };
 
     handleCloseJumpToDate = () => {
@@ -648,6 +711,66 @@ class Header extends Component {
                                 </IconButton>
                             );
                         })()}
+                        {(() => {
+                            const isNight = document.body.classList.contains('night');
+                            return (
+                                <IconButton
+                                    className={classes.messageSearchIconButton}
+                                    aria-label={isNight ? 'Modo claro' : 'Modo oscuro'}
+                                    title={isNight ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
+                                    onClick={this.handleThemeToggle}>
+                                    {isNight ? <Brightness7Icon /> : <Brightness4Icon />}
+                                </IconButton>
+                            );
+                        })()}
+                        {(() => {
+                            const _cid2 = AppStore.getChatId();
+                            const _chat2 = ChatStore.get(_cid2);
+                            if (!_chat2) return null;
+                            const isMuted = _chat2.notification_settings && _chat2.notification_settings.mute_for > 0;
+                            return (
+                                <IconButton
+                                    className={classes.messageSearchIconButton}
+                                    aria-label={isMuted ? 'Activar notificaciones' : 'Silenciar chat'}
+                                    title={isMuted ? 'Activar notificaciones' : 'Silenciar chat'}
+                                    onClick={this.handleMuteToggle}>
+                                    {isMuted ? <VolumeOffIcon /> : <VolumeUpIcon />}
+                                </IconButton>
+                            );
+                        })()}
+                        {(() => {
+                            const _cid3 = AppStore.getChatId();
+                            const _chat3 = ChatStore.get(_cid3);
+                            if (!_chat3) return null;
+                            const isArchived =
+                                _chat3.positions &&
+                                _chat3.positions.some(p => p.list && p.list['@type'] === 'chatListArchive');
+                            return (
+                                <IconButton
+                                    className={classes.messageSearchIconButton}
+                                    aria-label={isArchived ? 'Desarchivar' : 'Archivar chat'}
+                                    title={isArchived ? 'Desarchivar' : 'Archivar chat'}
+                                    onClick={this.handleArchiveToggle}>
+                                    {isArchived ? <UnarchiveIcon /> : <ArchiveIcon />}
+                                </IconButton>
+                            );
+                        })()}
+                        {(() => {
+                            const _cid4 = AppStore.getChatId();
+                            const _chat4 = ChatStore.get(_cid4);
+                            if (!_chat4 || !_chat4.type) return null;
+                            const t4 = _chat4.type['@type'];
+                            if (t4 !== 'chatTypeSupergroup' && t4 !== 'chatTypeBasicGroup') return null;
+                            return (
+                                <IconButton
+                                    className={classes.messageSearchIconButton}
+                                    aria-label='Copiar enlace de invitación'
+                                    title='Copiar enlace de invitación'
+                                    onClick={this.handleCopyInviteLink}>
+                                    <LinkIcon />
+                                </IconButton>
+                            );
+                        })()}
                         <MainMenuButton openChatDetails={this.openChatDetails} />
                     </>
                 )}
@@ -660,6 +783,13 @@ class Header extends Component {
                 {showChatSearch && <ChatSearch chatId={AppStore.getChatId()} onClose={this.handleCloseChatSearch} />}
                 <AutoDeleteTimer ref={r => (this.autoDeleteRef = r)} />
                 <ChannelStatsDialog chatId={AppStore.getChatId()} ref={r => (this.channelStatsRef = r)} />
+                <Snackbar
+                    open={this.state.inviteLinkCopied}
+                    autoHideDuration={2000}
+                    onClose={() => this.setState({ inviteLinkCopied: false })}
+                    message='Enlace de invitación copiado'
+                    anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+                />
                 <Dialog
                     transitionDuration={0}
                     open={openDeleteDialog}

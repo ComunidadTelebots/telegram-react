@@ -21,7 +21,7 @@ class Photo extends React.Component {
     constructor(props) {
         super(props);
 
-        this.state = { spoilerRevealed: false };
+        this.state = { spoilerRevealed: false, zoomed: false };
     }
 
     static getDerivedStateFromProps(props, state) {
@@ -31,7 +31,7 @@ class Photo extends React.Component {
                 prevPhoto: photo,
                 photoSize: photo ? getSize(photo.sizes, size) : null,
                 thumbSize: photo ? getSize(photo.sizes, thumbnailSize) : null,
-                minithumbnail: photo ? photo.minithumbnail : null
+                minithumbnail: photo ? photo.minithumbnail : null,
             };
         }
 
@@ -62,9 +62,14 @@ class Photo extends React.Component {
         this.setState({ spoilerRevealed: true });
     };
 
+    handleDoubleClick = e => {
+        e.stopPropagation();
+        this.setState(prev => ({ zoomed: !prev.zoomed }));
+    };
+
     render() {
         const { className, displaySize, openMedia, showProgress, title, caption, type, style, hasSpoiler } = this.props;
-        const { thumbSize, photoSize, minithumbnail, spoilerRevealed } = this.state;
+        const { thumbSize, photoSize, minithumbnail, spoilerRevealed, zoomed } = this.state;
 
         if (!photoSize) return null;
 
@@ -80,7 +85,7 @@ class Photo extends React.Component {
         const photoStyle = {
             width: fitPhotoSize.width,
             height: fitPhotoSize.height,
-            ...style
+            ...style,
         };
 
         const hasSrc = Boolean(src || thumbSrc || miniSrc);
@@ -92,7 +97,7 @@ class Photo extends React.Component {
                     'photo-title': title,
                     'photo-caption': caption,
                     'photo-spoiler': showSpoiler,
-                    pointer: openMedia && !showSpoiler
+                    pointer: openMedia && !showSpoiler,
                 })}
                 style={photoStyle}
                 onClick={showSpoiler ? null : openMedia}>
@@ -100,11 +105,18 @@ class Photo extends React.Component {
                     <img
                         className={classNames('photo-image', {
                             'media-blurred': !src && isBlurred,
-                            'media-mini-blurred': !src && !thumbSrc && isBlurred
+                            'media-mini-blurred': !src && !thumbSrc && isBlurred,
+                            'photo-image-zoomed': zoomed,
                         })}
                         draggable={false}
                         src={src || thumbSrc || miniSrc}
                         alt=''
+                        onDoubleClick={!showSpoiler ? this.handleDoubleClick : undefined}
+                        style={
+                            zoomed
+                                ? { transform: 'scale(1.5)', cursor: 'zoom-out', transition: 'transform 0.2s ease' }
+                                : { cursor: openMedia ? 'pointer' : 'default', transition: 'transform 0.2s ease' }
+                        }
                     />
                 )}
                 {showSpoiler && (
@@ -128,14 +140,14 @@ Photo.propTypes = {
     size: PropTypes.number,
     thumbnailSize: PropTypes.number,
     displaySize: PropTypes.number,
-    style: PropTypes.object
+    style: PropTypes.object,
 };
 
 Photo.defaultProps = {
     size: PHOTO_SIZE,
     thumbnailSize: PHOTO_THUMBNAIL_SIZE,
     displaySize: PHOTO_DISPLAY_SIZE,
-    showProgress: true
+    showProgress: true,
 };
 
 export default Photo;

@@ -12,6 +12,12 @@ import { withTranslation } from 'react-i18next';
 import { getDate, getDateHint } from '../../Utils/Message';
 import './Meta.css';
 
+function formatViews(n) {
+    if (n >= 1_000_000) return (n / 1_000_000).toFixed(1).replace(/\.0$/, '') + 'M';
+    if (n >= 1_000) return (n / 1_000).toFixed(1).replace(/\.0$/, '') + 'K';
+    return String(n);
+}
+
 class Meta extends React.Component {
     render() {
         const { date, editDate, onDateClick, t, views } = this.props;
@@ -27,7 +33,7 @@ class Meta extends React.Component {
                         <VisibilityIcon fontSize='inherit' className='meta-views-icon' />
                         <span className='meta-views'>
                             &nbsp;
-                            {views}
+                            {formatViews(views)}
                             &nbsp; &nbsp;
                         </span>
                     </>
@@ -45,7 +51,7 @@ Meta.propTypes = {
     views: PropTypes.number,
     date: PropTypes.number.isRequired,
     editDate: PropTypes.number,
-    onDateClick: PropTypes.func
+    onDateClick: PropTypes.func,
 };
 
 export default withTranslation()(Meta);

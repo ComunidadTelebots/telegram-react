@@ -37,6 +37,7 @@ import './TelegramApp.css';
 
 import MainPage from './Components/MainPage';
 import TutorialDialog from './Components/Popup/TutorialDialog';
+import NightModeAuto from './Components/NightModeAuto';
 // const MainPage = React.lazy(() => import('./Components/MainPage'));
 
 const styles = theme => ({
@@ -93,6 +94,7 @@ class TelegramApp extends Component {
         ApplicationStore.on('updateAuthorizationState', this.onUpdateAuthorizationState);
         ApplicationStore.on('updateFatalError', this.onUpdateFatalError);
         TdLibController.on('clientUpdate', this.onClientUpdate);
+        ChatStore.on('updateUnreadChatCount', this.onUpdateUnreadChatCount);
         NotificationManager.init();
     }
 
@@ -104,8 +106,15 @@ class TelegramApp extends Component {
         ApplicationStore.off('updateAuthorizationState', this.onUpdateAuthorizationState);
         ApplicationStore.off('updateFatalError', this.onUpdateFatalError);
         TdLibController.off('clientUpdate', this.onClientUpdate);
+        ChatStore.off('updateUnreadChatCount', this.onUpdateUnreadChatCount);
         NotificationManager.destroy();
     }
+
+    onUpdateUnreadChatCount = update => {
+        const mainCounters = ChatStore.counters.get('chatListMain');
+        const total = mainCounters ? mainCounters.unread_count || 0 : 0;
+        document.title = total > 0 ? `(${total}) Telegram` : 'Telegram';
+    };
 
     onClientUpdate = update => {
         if (update['@type'] === 'clientUpdateForceWebVersion') {
@@ -282,6 +291,7 @@ class TelegramApp extends Component {
         return (
             <div id='app' onDragOver={this.handleDragOver} onDrop={this.handleDrop} onKeyDown={this.handleKeyDown}>
                 {page}
+                <NightModeAuto />
                 <TutorialDialog />
                 <Dialog
                     transitionDuration={0}

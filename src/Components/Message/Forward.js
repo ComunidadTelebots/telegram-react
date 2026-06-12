@@ -26,8 +26,8 @@ function arrowGenerator(color) {
             height: '1em',
             '&::before': {
                 borderWidth: '0 1em 1em 1em',
-                borderColor: `transparent transparent ${color} transparent`
-            }
+                borderColor: `transparent transparent ${color} transparent`,
+            },
         },
         '&[x-placement*="top"] $arrow': {
             bottom: 0,
@@ -37,8 +37,8 @@ function arrowGenerator(color) {
             height: '1em',
             '&::before': {
                 borderWidth: '1em 1em 0 1em',
-                borderColor: `${color} transparent transparent transparent`
-            }
+                borderColor: `${color} transparent transparent transparent`,
+            },
         },
         '&[x-placement*="right"] $arrow': {
             left: 0,
@@ -47,8 +47,8 @@ function arrowGenerator(color) {
             width: '1em',
             '&::before': {
                 borderWidth: '1em 1em 1em 0',
-                borderColor: `transparent ${color} transparent transparent`
-            }
+                borderColor: `transparent ${color} transparent transparent`,
+            },
         },
         '&[x-placement*="left"] $arrow': {
             right: 0,
@@ -57,15 +57,15 @@ function arrowGenerator(color) {
             width: '1em',
             '&::before': {
                 borderWidth: '1em 0 1em 1em',
-                borderColor: `transparent transparent transparent ${color}`
-            }
-        }
+                borderColor: `transparent transparent transparent ${color}`,
+            },
+        },
     };
 }
 
 const styles = theme => ({
     forwardColor: {
-        color: theme.palette.primary.main
+        color: theme.palette.primary.main,
     },
     arrowPopper: arrowGenerator(theme.palette.grey[700]),
     arrow: {
@@ -79,22 +79,22 @@ const styles = theme => ({
             display: 'block',
             width: 0,
             height: 0,
-            borderStyle: 'solid'
-        }
+            borderStyle: 'solid',
+        },
     },
     tooltip: {
-        margin: '6px 0 26px 0'
-    }
+        margin: '6px 0 26px 0',
+    },
 });
 
 class Forward extends React.Component {
     state = {
-        arrowRef: null
+        arrowRef: null,
     };
 
     handleArrowRef = node => {
         this.setState({
-            arrowRef: node
+            arrowRef: node,
         });
     };
 
@@ -140,6 +140,9 @@ class Forward extends React.Component {
             ''
         );
 
+        const isChannel =
+            forwardInfo && forwardInfo.origin && forwardInfo.origin['@type'] === 'messageForwardOriginChannel';
+
         return (
             <div className={classNames('message-author', classes.forwardColor, 'forward')}>
                 {`${t('ForwardedMessage')}\n${t('From')} `}
@@ -151,13 +154,16 @@ class Forward extends React.Component {
                             modifiers: {
                                 arrow: {
                                     enabled: Boolean(arrowRef),
-                                    element: arrowRef
-                                }
-                            }
-                        }
+                                    element: arrowRef,
+                                },
+                            },
+                        },
                     }}
                     placement='top'>
-                    <a onClick={this.openForward}>{title}</a>
+                    <a onClick={this.openForward} style={isChannel ? { fontWeight: 'bold' } : undefined}>
+                        {'↗ '}
+                        {title}
+                    </a>
                 </Tooltip>
             </div>
         );
@@ -165,7 +171,7 @@ class Forward extends React.Component {
 }
 
 Forward.propTypes = {
-    forwardInfo: PropTypes.object.isRequired
+    forwardInfo: PropTypes.object.isRequired,
 };
 
 const enhance = compose(withStyles(styles, { withTheme: true }), withTranslation());

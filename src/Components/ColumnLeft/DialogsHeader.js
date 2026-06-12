@@ -26,6 +26,7 @@ import CloseIcon from '@material-ui/icons/Close';
 import HelpOutlineIcon from '@material-ui/icons/HelpOutline';
 import Brightness4Icon from '@material-ui/icons/Brightness4';
 import Brightness7Icon from '@material-ui/icons/Brightness7';
+import ViewHeadlineIcon from '@material-ui/icons/ViewHeadline';
 import SpeedDialIcon from '@material-ui/lab/SpeedDialIcon';
 import AndroidVersionSelector from './AndroidVersionSelector';
 import MainMenuButton from './MainMenuButton';
@@ -35,6 +36,7 @@ import { ANIMATION_DURATION_100MS } from '../../Constants';
 import AppStore from '../../Stores/ApplicationStore';
 import TdLibController from '../../Controllers/TdLibController';
 import '../ColumnMiddle/Header.css';
+import './DialogsHeader.css';
 
 class DialogsHeader extends React.Component {
     constructor(props) {
@@ -42,10 +44,16 @@ class DialogsHeader extends React.Component {
 
         this.searchInputRef = React.createRef();
 
+        const compactMode = localStorage.getItem('compactMode') === 'true';
+        if (compactMode) {
+            document.body.classList.add('compact-dialogs');
+        }
+
         this.state = {
             authorizationState: AppStore.getAuthorizationState(),
             open: false,
             isDark: false,
+            compactMode: compactMode,
         };
     }
 
@@ -129,6 +137,19 @@ class DialogsHeader extends React.Component {
         this.setState({ open: false });
     };
 
+    handleToggleCompact = () => {
+        const { compactMode } = this.state;
+        const next = !compactMode;
+        this.setState({ compactMode: next });
+        if (next) {
+            document.body.classList.add('compact-dialogs');
+            localStorage.setItem('compactMode', 'true');
+        } else {
+            document.body.classList.remove('compact-dialogs');
+            localStorage.setItem('compactMode', 'false');
+        }
+    };
+
     handleSearch = () => {
         const { onSearch, openSearch } = this.props;
         const { authorizationState } = this.state;
@@ -174,7 +195,7 @@ class DialogsHeader extends React.Component {
 
     render() {
         const { onClick, openArchive, openSearch, t } = this.props;
-        const { open, isDark } = this.state;
+        const { open, isDark, compactMode } = this.state;
 
         const confirmLogoutDialog = open ? (
             <Dialog transitionDuration={0} open={open} onClose={this.handleClose} aria-labelledby='form-dialog-title'>
@@ -235,6 +256,14 @@ class DialogsHeader extends React.Component {
                         title={isDark ? 'Modo claro' : 'Modo oscuro'}
                         onClick={this.handleToggleDark}>
                         {isDark ? <Brightness7Icon /> : <Brightness4Icon />}
+                    </IconButton>
+                    <IconButton
+                        className='header-left-button'
+                        aria-label='Modo compacto'
+                        title={compactMode ? 'Desactivar modo compacto' : 'Activar modo compacto'}
+                        onClick={this.handleToggleCompact}
+                        style={{ opacity: compactMode ? 1 : 0.5 }}>
+                        <ViewHeadlineIcon />
                     </IconButton>
                     {confirmLogoutDialog}
                     <div className='header-status grow cursor-pointer' onClick={onClick}>

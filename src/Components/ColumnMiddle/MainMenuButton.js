@@ -138,6 +138,47 @@ class ClearHistoryDialog extends React.Component {
     }
 }
 
+class KeyboardShortcutsDialog extends React.Component {
+    render() {
+        const { open, onClose } = this.props;
+        const shortcuts = [
+            { keys: 'Ctrl+B', description: 'Negrita' },
+            { keys: 'Ctrl+I', description: 'Cursiva' },
+            { keys: 'Ctrl+K', description: 'Enlace' },
+            { keys: 'Ctrl+Z', description: 'Deshacer' },
+            { keys: 'Enter', description: 'Enviar mensaje' },
+            { keys: 'Ctrl+Enter', description: 'Salto de línea' },
+            { keys: 'Esc', description: 'Cancelar acción' },
+            { keys: '↑', description: 'Editar último mensaje' },
+        ];
+
+        return (
+            <Dialog transitionDuration={0} open={open} onClose={onClose} aria-labelledby='shortcuts-dialog-title'>
+                <DialogTitle id='shortcuts-dialog-title'>Atajos de teclado</DialogTitle>
+                <DialogContent>
+                    <table style={{ borderCollapse: 'collapse', width: '100%' }}>
+                        <tbody>
+                            {shortcuts.map(({ keys, description }) => (
+                                <tr key={keys}>
+                                    <td style={{ padding: '6px 16px 6px 0', fontWeight: 'bold', whiteSpace: 'nowrap' }}>
+                                        {keys}
+                                    </td>
+                                    <td style={{ padding: '6px 0' }}>{description}</td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={onClose} color='primary'>
+                        Cerrar
+                    </Button>
+                </DialogActions>
+            </Dialog>
+        );
+    }
+}
+
 class MainMenuButton extends React.Component {
     constructor(props) {
         super(props);
@@ -146,6 +187,7 @@ class MainMenuButton extends React.Component {
             anchorEl: null,
             openDelete: false,
             openClearHistory: false,
+            showShortcuts: false,
         };
     }
 
@@ -188,6 +230,15 @@ class MainMenuButton extends React.Component {
         };
 
         this.handleScheduledAction(chatId, 'clientUpdateClearHistory', message, request);
+    };
+
+    handleShortcuts = () => {
+        this.handleMenuClose();
+        this.setState({ showShortcuts: true });
+    };
+
+    handleShortcutsClose = () => {
+        this.setState({ showShortcuts: false });
     };
 
     handleLeave = () => {
@@ -303,7 +354,7 @@ class MainMenuButton extends React.Component {
 
     render() {
         const { classes } = this.props;
-        const { anchorEl, openDelete, openClearHistory } = this.state;
+        const { anchorEl, openDelete, openClearHistory, showShortcuts } = this.state;
 
         const chatId = ApplicationStore.getChatId();
         const clearHistory = canClearHistory(chatId);
@@ -334,10 +385,12 @@ class MainMenuButton extends React.Component {
                     <MenuItem onClick={this.handleScheduledMessages}>Mensajes programados</MenuItem>
                     {clearHistory && <MenuItem onClick={this.handleClearHistory}>Clear history</MenuItem>}
                     {deleteChat && leaveChatTitle && <MenuItem onClick={this.handleLeave}>{leaveChatTitle}</MenuItem>}
+                    <MenuItem onClick={this.handleShortcuts}>Atajos de teclado</MenuItem>
                 </Menu>
                 <LeaveChatDialog chatId={chatId} open={openDelete} onClose={this.handleLeaveContinue} />
                 <ClearHistoryDialog chatId={chatId} open={openClearHistory} onClose={this.handleClearHistoryContinue} />
                 <ScheduledMessages ref={ref => (this.scheduledMessagesRef = ref)} />
+                <KeyboardShortcutsDialog open={showShortcuts} onClose={this.handleShortcutsClose} />
             </>
         );
     }

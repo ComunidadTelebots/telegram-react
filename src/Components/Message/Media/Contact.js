@@ -8,7 +8,10 @@
 import React from 'react';
 import classNames from 'classnames';
 import PropTypes from 'prop-types';
+import IconButton from '@material-ui/core/IconButton';
+import Snackbar from '@material-ui/core/Snackbar';
 import withStyles from '@material-ui/core/styles/withStyles';
+import FileCopyOutlined from '@material-ui/icons/FileCopyOutlined';
 import UserTile from '../../Tile/UserTile';
 import { formatPhoneNumber } from '../../../Utils/Common';
 import { getUserFullName } from '../../../Utils/User';
@@ -17,13 +20,37 @@ import './Contact.css';
 
 const styles = theme => ({
     contactPhone: {
-        color: theme.palette.text.secondary
-    }
+        color: theme.palette.text.secondary,
+    },
+    copyButton: {
+        padding: 4,
+        marginLeft: 4,
+    },
+    copyIcon: {
+        fontSize: 16,
+    },
 });
 
 class Contact extends React.Component {
+    state = {
+        phoneCopied: false,
+    };
+
+    handleCopyPhone = () => {
+        const { contact } = this.props;
+        if (!contact) return;
+        navigator.clipboard.writeText(contact.phone_number).then(() => {
+            this.setState({ phoneCopied: true });
+        });
+    };
+
+    handleSnackbarClose = () => {
+        this.setState({ phoneCopied: false });
+    };
+
     render() {
         const { classes, contact, openMedia } = this.props;
+        const { phoneCopied } = this.state;
         if (!contact) return null;
 
         const { user_id, first_name, last_name, phone_number } = contact;
@@ -33,24 +60,41 @@ class Contact extends React.Component {
             type: { '@type': 'userTypeRegular' },
             id: user_id,
             first_name,
-            last_name
+            last_name,
         };
 
         const fullName = getUserFullName(user);
         const number = formatPhoneNumber(phone_number);
 
         return (
-            <div className='contact'>
-                <div className='contact-tile'>
-                    <UserTile userId={user_id} firstName={first_name} lastName={last_name} />
-                </div>
-                <div className='contact-content'>
-                    <div className='contact-name'>
-                        {user_id > 0 ? <a onClick={openMedia}>{fullName}</a> : <span>{fullName}</span>}
+            <>
+                <div className='contact'>
+                    <div className='contact-tile'>
+                        <UserTile userId={user_id} firstName={first_name} lastName={last_name} />
                     </div>
-                    <div className={classNames('contact-phone', classes.contactPhone)}>{number}</div>
+                    <div className='contact-content'>
+                        <div className='contact-name'>
+                            {user_id > 0 ? <a onClick={openMedia}>{fullName}</a> : <span>{fullName}</span>}
+                        </div>
+                        <div className={classNames('contact-phone', classes.contactPhone)}>
+                            {number}
+                            <IconButton
+                                className={classes.copyButton}
+                                onClick={this.handleCopyPhone}
+                                title='Copiar número'>
+                                <FileCopyOutlined className={classes.copyIcon} />
+                            </IconButton>
+                        </div>
+                    </div>
                 </div>
-            </div>
+                <Snackbar
+                    anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+                    open={phoneCopied}
+                    autoHideDuration={2000}
+                    onClose={this.handleSnackbarClose}
+                    message='Número copiado'
+                />
+            </>
         );
     }
 }
@@ -59,7 +103,7 @@ Contact.propTypes = {
     chatId: PropTypes.number.isRequired,
     messageId: PropTypes.number.isRequired,
     contact: PropTypes.object.isRequired,
-    openMedia: PropTypes.func
+    openMedia: PropTypes.func,
 };
 
 export default withStyles(styles, { withTheme: true })(Contact);
