@@ -190,10 +190,33 @@ function withTheme(WrappedComponent) {
 
         componentDidMount() {
             ApplicationStore.on('clientUpdateThemeChanging', this.onClientUpdateThemeChanging);
+            this._mq = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)');
+            if (this._mq) {
+                this._mqHandler = e => {
+                    const cookies = new Cookies();
+                    const saved = cookies.get('themeOptions');
+                    if (saved && saved.type) return; // user has explicit preference, don't override
+                    const type = e.matches ? 'dark' : 'light';
+                    const theme = createTheme(type, null);
+                    this.setState({ theme }, () => ApplicationStore.emit('clientUpdateThemeChange'));
+                };
+                this._mq.addEventListener('change', this._mqHandler);
+                // Apply system preference on first load if no explicit cookie set
+                const cookies = new Cookies();
+                const saved = cookies.get('themeOptions');
+                if (!saved || !saved.type) {
+                    const type = this._mq.matches ? 'dark' : 'light';
+                    const theme = createTheme(type, null);
+                    this.setState({ theme });
+                }
+            }
         }
 
         componentWillUnmount() {
             ApplicationStore.off('clientUpdateThemeChanging', this.onClientUpdateThemeChanging);
+            if (this._mq && this._mqHandler) {
+                this._mq.removeEventListener('change', this._mqHandler);
+            }
         }
 
         onClientUpdateThemeChanging = update => {
