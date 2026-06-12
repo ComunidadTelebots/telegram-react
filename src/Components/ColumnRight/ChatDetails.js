@@ -15,6 +15,7 @@ import { withSnackbar } from 'notistack';
 import { withTranslation } from 'react-i18next';
 import MenuItem from '@material-ui/core/MenuItem';
 import Select from '@material-ui/core/Select';
+import Switch from '@material-ui/core/Switch';
 import AlternateEmailIcon from '@material-ui/icons/AlternateEmail';
 import BlockIcon from '@material-ui/icons/Block';
 import TimerIcon from '@material-ui/icons/Timer';
@@ -448,6 +449,15 @@ class ChatDetails extends React.Component {
         await TdLibController.send({ '@type': 'setChatMessageTtl', chat_id: chatId, ttl });
     };
 
+    handleProtectedContentChange = async event => {
+        const { chatId } = this.props;
+        await TdLibController.send({
+            '@type': 'setChatProtectedContent',
+            chat_id: chatId,
+            has_protected_content: event.target.checked,
+        });
+    };
+
     handleCopyInviteLink = async () => {
         const { chatId } = this.props;
         try {
@@ -711,6 +721,27 @@ class ChatDetails extends React.Component {
                                         />
                                     </ListItem>
                                 )}
+                                {isAdmin &&
+                                    isGroup &&
+                                    (() => {
+                                        const chat = ChatStore.get(chatId);
+                                        const supergroupId = chat && chat.type && chat.type.supergroup_id;
+                                        if (!supergroupId) return null;
+                                        const full = SupergroupStore.getFullInfo(supergroupId);
+                                        return (
+                                            <ListItem className={classes.listItem}>
+                                                <ListItemIcon>
+                                                    <LockIcon />
+                                                </ListItemIcon>
+                                                <ListItemText primary='Protected Content' />
+                                                <Switch
+                                                    color='primary'
+                                                    checked={!!(full && full.has_protected_content)}
+                                                    onChange={this.handleProtectedContentChange}
+                                                />
+                                            </ListItem>
+                                        );
+                                    })()}
                                 {isAdmin &&
                                     isGroup &&
                                     (() => {

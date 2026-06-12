@@ -78,7 +78,7 @@ class SupergroupStore extends EventEmitter {
     }
 
     setFullInfo(id, fullInfo) {
-        this.fullInfoItems.set(id, fullInfo);
+        this.fullInfoItems.set(id, { ...(this.fullInfoItems.get(id) || {}), ...fullInfo });
     }
 }
 

@@ -875,6 +875,8 @@ class GramJsController extends EventEmitter {
                 return this._banGroupMember(req);
             case 'setChatDescription':
                 return this._setChatDescription(req);
+            case 'setChatProtectedContent':
+                return this._setChatProtectedContent(req);
             case 'leaveChat':
                 return this._leaveChat(req);
             case 'getInviteLink':
@@ -2723,6 +2725,7 @@ class GramJsController extends EventEmitter {
             sticker_set_id: '0',
             invite_link: '',
             upgraded_from_basic_group_id: 0,
+            has_protected_content: false,
         };
         try {
             const inputPeer = tdlibChatIdToInputPeer(chatId, this._entityCache);
@@ -2742,6 +2745,7 @@ class GramJsController extends EventEmitter {
                 sticker_set_id: full.stickerset ? String(full.stickerset.id) : '0',
                 invite_link: full.exportedInvite?.link || '',
                 upgraded_from_basic_group_id: 0,
+                has_protected_content: !!full.noforwards,
                 slow_mode_delay: full.slowmodeSeconds || 0,
                 slow_mode_delay_expires_in: full.slowmodeNextSendDate
                     ? full.slowmodeNextSendDate - Math.floor(Date.now() / 1000)
@@ -3856,6 +3860,35 @@ class GramJsController extends EventEmitter {
             return { '@type': 'ok' };
         } catch (e) {
             console.error('[GramJs] setChatDescription error', e);
+        }
+        return null;
+    };
+
+    _setChatProtectedContent = async req => {
+        const { chat_id, has_protected_content } = req;
+        try {
+            const inputPeer = tdlibChatIdToInputPeer(chat_id, this._entityCache);
+            if (!(inputPeer instanceof Api.InputPeerChannel)) return null;
+
+            await this.client.invoke(
+                new Api.messages.ToggleNoForwards({
+                    peer: inputPeer,
+                    enabled: !!has_protected_content,
+                }),
+            );
+
+            const chat = this._chatCache.get(chat_id);
+            const supergroupId = chat && chat.type && chat.type.supergroup_id;
+            if (supergroupId) {
+                this._emitUpdate({
+                    '@type': 'updateSupergroupFullInfo',
+                    supergroup_id: supergroupId,
+                    supergroup_full_info: { has_protected_content: !!has_protected_content },
+                });
+            }
+            return { '@type': 'ok' };
+        } catch (e) {
+            console.error('[GramJs] setChatProtectedContent error', e);
         }
         return null;
     };
