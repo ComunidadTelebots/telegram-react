@@ -9,6 +9,7 @@ import UserStore from '../Stores/UserStore';
 import ApplicationStore from '../Stores/ApplicationStore';
 import FileStore from '../Stores/FileStore';
 import { getChatTitle } from './Chat';
+import { openChat } from '../Actions/Client';
 
 class NotificationManager {
     constructor() {
@@ -82,20 +83,42 @@ class NotificationManager {
             }
         }
 
+        // Use chat photo blob as notification icon if available
+        let icon = '/favicon.ico';
         try {
-            const n = new Notification(chatTitle, {
+            const chat = ChatStore.get(chat_id);
+            const photoFile = chat?.photo?.small;
+            if (photoFile) {
+                const blob = FileStore.getBlob(photoFile.id);
+                if (blob) icon = URL.createObjectURL(blob);
+            }
+        } catch {}
+
+        // Show sender name for group chats
+        let title = chatTitle;
+        if (sender_user_id) {
+            const user = UserStore.get(sender_user_id);
+            if (user) {
+                const name = [user.first_name, user.last_name].filter(Boolean).join(' ');
+                if (name && name !== chatTitle) title = `${name} → ${chatTitle}`;
+            }
+        }
+
+        try {
+            const n = new Notification(title, {
                 body: body.substring(0, 120),
-                icon: '/favicon.ico',
+                icon,
                 tag: `tg_msg_${chat_id}`,
-                silent: false
+                silent: false,
             });
 
             n.onclick = () => {
                 window.focus();
+                openChat(chat_id);
                 n.close();
             };
 
-            setTimeout(() => n.close(), 5000);
+            setTimeout(() => n.close(), 6000);
         } catch (e) {
             /* ignore */
         }
