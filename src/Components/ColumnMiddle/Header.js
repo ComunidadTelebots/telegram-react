@@ -30,7 +30,9 @@ import HeaderProgress from './HeaderProgress';
 import ChatSearch from './ChatSearch';
 import AutoDeleteTimer from './AutoDeleteTimer';
 import ChannelStatsDialog from './ChannelStatsDialog';
+import ChannelBoostDialog from './ChannelBoostDialog';
 import TimerIcon from '@material-ui/icons/Timer';
+import FlashOnIcon from '@material-ui/icons/FlashOn';
 import BarChartIcon from '@material-ui/icons/BarChart';
 import VolumeOffIcon from '@material-ui/icons/VolumeOff';
 import VolumeUpIcon from '@material-ui/icons/VolumeUp';
@@ -97,6 +99,7 @@ class Header extends Component {
             openJumpToDate: false,
             showChatSearch: false,
             inviteLinkCopied: false,
+            boostDialogOpen: false,
         };
     }
 
@@ -703,13 +706,22 @@ class Header extends Component {
                             const _sg = SupergroupStore.get(_type.supergroup_id);
                             if (!_sg || !_sg.is_broadcast) return null;
                             return (
-                                <IconButton
-                                    className={classes.messageSearchIconButton}
-                                    aria-label='Estadísticas del canal'
-                                    title='Estadísticas del canal'
-                                    onClick={() => this.channelStatsRef && this.channelStatsRef.open()}>
-                                    <BarChartIcon />
-                                </IconButton>
+                                <>
+                                    <IconButton
+                                        className={classes.messageSearchIconButton}
+                                        aria-label='Estadísticas del canal'
+                                        title='Estadísticas del canal'
+                                        onClick={() => this.channelStatsRef && this.channelStatsRef.open()}>
+                                        <BarChartIcon />
+                                    </IconButton>
+                                    <IconButton
+                                        className={classes.messageSearchIconButton}
+                                        aria-label='Boostear canal'
+                                        title='Boostear canal'
+                                        onClick={() => this.setState({ boostDialogOpen: true })}>
+                                        <FlashOnIcon />
+                                    </IconButton>
+                                </>
                             );
                         })()}
                         {(() => {
@@ -822,6 +834,11 @@ class Header extends Component {
                 {showChatSearch && <ChatSearch chatId={AppStore.getChatId()} onClose={this.handleCloseChatSearch} />}
                 <AutoDeleteTimer ref={r => (this.autoDeleteRef = r)} />
                 <ChannelStatsDialog chatId={AppStore.getChatId()} ref={r => (this.channelStatsRef = r)} />
+                <ChannelBoostDialog
+                    open={!!this.state.boostDialogOpen}
+                    chatId={AppStore.getChatId()}
+                    onClose={() => this.setState({ boostDialogOpen: false })}
+                />
                 <Snackbar
                     open={this.state.inviteLinkCopied}
                     autoHideDuration={2000}

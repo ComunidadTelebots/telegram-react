@@ -1,0 +1,66 @@
+.boost-dialog-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.boost-dialog-icon {
+    font-size: 20px;
+}
+
+.boost-dialog-loading {
+    display: flex;
+    justify-content: center;
+    padding: 24px 0;
+}
+
+.boost-dialog-error {
+    color: #e53935;
+    font-size: 14px;
+}
+
+.boost-dialog-success {
+    color: var(--badge-green, #4dcd5e);
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.boost-level-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.boost-level-label {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--fg1, #000);
+}
+
+.boost-level-next {
+    font-size: 13px;
+    color: var(--fg3, #888);
+}
+
+.boost-progress {
+    height: 6px !important;
+    border-radius: 3px !important;
+    margin-bottom: 8px !important;
+}
+
+.boost-count-text {
+    font-size: 13px;
+    color: var(--fg2, #666);
+    margin: 0 0 12px;
+}
+
+.boost-link-text {
+    font-size: 13px;
+    margin: 0;
+}
+
+.boost-link-text a {
+    color: var(--color-accent-main, #2196f3);
+    text-decoration: none;
+}

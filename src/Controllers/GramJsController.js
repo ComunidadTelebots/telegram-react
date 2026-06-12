@@ -1036,6 +1036,34 @@ class GramJsController extends EventEmitter {
             case 'answerWebAppQuery':
                 return this._answerWebAppQuery(req);
 
+            // ── Channel Boosts ────────────────────────────────────────────────
+            case 'getBoostsStatus':
+                return this._getBoostsStatus(req);
+            case 'getMyBoosts':
+                return this._getMyBoosts(req);
+            case 'applyBoost':
+                return this._applyBoost(req);
+            case 'getBoostsList':
+                return this._getBoostsList(req);
+
+            // ── Stars / Payments ──────────────────────────────────────────────
+            case 'getStarsBalance':
+                return this._getStarsBalance(req);
+            case 'getStarsTransactions':
+                return this._getStarsTransactions(req);
+            case 'sendStarGift':
+                return this._sendStarGift(req);
+
+            // ── Premium ───────────────────────────────────────────────────────
+            case 'getPremiumFeatures':
+                return this._getPremiumFeatures(req);
+            case 'getPremiumLimit':
+                return this._getPremiumLimit(req);
+
+            // ── Business ─────────────────────────────────────────────────────
+            case 'getBusinessInfo':
+                return this._getBusinessInfo(req);
+
             // ── Archivos ──────────────────────────────────────────────────────
             case 'downloadFile':
                 return this._downloadFile(req);
@@ -2551,6 +2579,176 @@ class GramJsController extends EventEmitter {
             );
         } catch (e) {
             console.warn('[GramJs] answerWebAppQuery error', e);
+        }
+    };
+
+    // ── Channel Boosts ────────────────────────────────────────────────────────
+
+    _getBoostsStatus = async ({ chat_id }) => {
+        try {
+            const peer = tdlibChatIdToInputPeer(chat_id, this._entityCache);
+            const result = await this.client.invoke(new Api.premium.GetBoostsStatus({ peer }));
+            return {
+                level: result.level || 0,
+                boost_count: Number(result.boosts || 0),
+                current_level_boost_count: Number(result.currentLevelBoosts || 0),
+                next_level_boost_count: Number(result.nextLevelBoosts || 0),
+                premium_subscriber_count: Number(result.premiumSubscribers || 0),
+                prepaid_giveaways: result.prepaidGiveaways || [],
+                boost_url: result.boostUrl || '',
+                my_boost_slots: result.myBoostSlots || [],
+            };
+        } catch (e) {
+            console.warn('[GramJs] getBoostsStatus error', e);
+            return { level: 0, boost_count: 0 };
+        }
+    };
+
+    _getMyBoosts = async () => {
+        try {
+            const result = await this.client.invoke(new Api.premium.GetMyBoosts());
+            return {
+                my_boosts: (result.myBoosts || []).map(b => ({
+                    slot: b.slot,
+                    peer: b.peer,
+                    date: Number(b.date || 0),
+                    expires: Number(b.expires || 0),
+                    cooldown_until_date: Number(b.cooldownUntilDate || 0),
+                })),
+            };
+        } catch (e) {
+            console.warn('[GramJs] getMyBoosts error', e);
+            return { my_boosts: [] };
+        }
+    };
+
+    _applyBoost = async ({ chat_id, slots }) => {
+        try {
+            const peer = tdlibChatIdToInputPeer(chat_id, this._entityCache);
+            await this.client.invoke(new Api.premium.ApplyBoost({ peer, slots: slots || [] }));
+            return { ok: true };
+        } catch (e) {
+            console.warn('[GramJs] applyBoost error', e);
+            return { ok: false, error: e.message };
+        }
+    };
+
+    _getBoostsList = async ({ chat_id, gifts = false, offset = '', limit = 50 }) => {
+        try {
+            const peer = tdlibChatIdToInputPeer(chat_id, this._entityCache);
+            const result = await this.client.invoke(new Api.premium.GetBoostsList({ peer, gifts, offset, limit }));
+            return {
+                count: Number(result.count || 0),
+                boosts: (result.boosts || []).map(b => ({
+                    user_id: b.userId ? Number(b.userId) : null,
+                    giveaway: !!b.giveaway,
+                    unclaimed: !!b.unclaimed,
+                    date: Number(b.date || 0),
+                    expires: Number(b.expires || 0),
+                    multiplier: b.multiplier || 1,
+                })),
+                next_offset: result.nextOffset || '',
+            };
+        } catch (e) {
+            console.warn('[GramJs] getBoostsList error', e);
+            return { count: 0, boosts: [] };
+        }
+    };
+
+    // ── Stars ─────────────────────────────────────────────────────────────────
+
+    _getStarsBalance = async () => {
+        try {
+            const result = await this.client.invoke(new Api.payments.GetStarsStatus({ peer: new Api.InputPeerSelf() }));
+            return { balance: Number(result.balance?.amount || 0) };
+        } catch (e) {
+            console.warn('[GramJs] getStarsBalance error', e);
+            return { balance: 0 };
+        }
+    };
+
+    _getStarsTransactions = async ({ peer_id, offset = '', limit = 25 }) => {
+        try {
+            const peer = peer_id ? tdlibChatIdToInputPeer(peer_id, this._entityCache) : new Api.InputPeerSelf();
+            const result = await this.client.invoke(new Api.payments.GetStarsTransactions({ peer, offset, limit }));
+            return {
+                balance: Number(result.balance?.amount || 0),
+                transactions: (result.history || []).map(t => ({
+                    id: String(t.id || ''),
+                    stars: Number(t.stars?.amount || 0),
+                    date: Number(t.date || 0),
+                    description: t.description || '',
+                    peer: t.peer,
+                })),
+                next_offset: result.nextOffset || '',
+            };
+        } catch (e) {
+            console.warn('[GramJs] getStarsTransactions error', e);
+            return { balance: 0, transactions: [] };
+        }
+    };
+
+    _sendStarGift = async ({ user_id, gift_id, message }) => {
+        try {
+            const userInput = await this.client.getInputEntity(user_id);
+            await this.client.invoke(
+                new Api.payments.SendStarGift({
+                    userId: userInput,
+                    gift: new Api.InputSavedStarGiftUser({ userId: userInput, msgId: 0 }),
+                    message: message ? { text: message } : undefined,
+                    hideName: false,
+                }),
+            );
+            return { ok: true };
+        } catch (e) {
+            console.warn('[GramJs] sendStarGift error', e);
+            return { ok: false, error: e.message };
+        }
+    };
+
+    // ── Premium ───────────────────────────────────────────────────────────────
+
+    _getPremiumFeatures = async () => {
+        try {
+            const result = await this.client.invoke(new Api.help.GetPremiumPromo({ langCode: 'es' }));
+            return {
+                features: result.videoSections || [],
+                monthly_amount: result.monthlyAmount ? Number(result.monthlyAmount.amount) : null,
+                currency: result.monthlyAmount?.currency || 'USD',
+            };
+        } catch (e) {
+            console.warn('[GramJs] getPremiumFeatures error', e);
+            return { features: [] };
+        }
+    };
+
+    _getPremiumLimit = async ({ type }) => {
+        try {
+            const result = await this.client.invoke(new Api.help.GetAppConfig({ hash: 0 }));
+            const cfg = result?.config?.value || [];
+            return { limits: cfg };
+        } catch (e) {
+            console.warn('[GramJs] getPremiumLimit error', e);
+            return { limits: [] };
+        }
+    };
+
+    // ── Business ─────────────────────────────────────────────────────────────
+
+    _getBusinessInfo = async ({ user_id }) => {
+        try {
+            const userInput = await this.client.getInputEntity(user_id);
+            const result = await this.client.invoke(new Api.account.GetBusinessInfo({ peer: userInput }));
+            return {
+                location: result.location ? { address: result.location.address, geo: result.location.geoPoint } : null,
+                work_hours: result.workHours || null,
+                greeting_message: result.greetingMessage || null,
+                away_message: result.awayMessage || null,
+                intro: result.intro || null,
+            };
+        } catch (e) {
+            console.warn('[GramJs] getBusinessInfo error', e);
+            return {};
         }
     };
 
