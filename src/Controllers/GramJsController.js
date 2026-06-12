@@ -1013,6 +1013,8 @@ class GramJsController extends EventEmitter {
                 return this._sendReaction(req);
             case 'readAllMessageReactions':
                 return this._readAllMessageReactions(req);
+            case 'getAvailableReactions':
+                return this._getAvailableReactions();
             case 'sendGifByUrl':
                 return this._sendGifByUrl(req);
             case 'setChatMessageAutoDeleteTime':
@@ -3067,6 +3069,25 @@ class GramJsController extends EventEmitter {
             console.error('[GramJs] readAllMessageReactions error', err);
         }
         return {};
+    };
+
+    _getAvailableReactions = async () => {
+        try {
+            if (this._availableReactions?.length) {
+                return { '@type': 'availableReactions', reactions: this._availableReactions };
+            }
+
+            const result = await this.client.invoke(new Api.messages.GetAvailableReactions({ hash: 0 }));
+            const reactions = (result?.reactions || [])
+                .filter(r => !r.inactive && !r.premium && r.reaction)
+                .map(r => r.reaction)
+                .slice(0, 24);
+            this._availableReactions = reactions;
+            return { '@type': 'availableReactions', reactions };
+        } catch (err) {
+            console.error('[GramJs] getAvailableReactions error', err);
+            return { '@type': 'availableReactions', reactions: [] };
+        }
     };
 
     _translateText = async req => {

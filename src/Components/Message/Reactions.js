@@ -14,13 +14,14 @@ const readReactionChats = new Set();
 class Reactions extends Component {
     constructor(props) {
         super(props);
-        this.state = { showPicker: false, reactorsModal: null };
+        this.state = { showPicker: false, reactorsModal: null, availableReactions: QUICK_REACTIONS };
     }
 
     componentDidMount() {
         this._isMounted = true;
         MessageStore.on('updateMessageReactions', this.onUpdateReactions);
         this.markUnreadReactionsAsRead();
+        this.loadAvailableReactions();
     }
 
     componentDidUpdate() {
@@ -68,6 +69,18 @@ class Reactions extends Component {
         this.setState({ reactorsModal: null });
     };
 
+    loadAvailableReactions = async () => {
+        try {
+            const result = await TdLibController.send({ '@type': 'getAvailableReactions' });
+            const reactions = result?.reactions || [];
+            if (this._isMounted && reactions.length) {
+                this.setState({ availableReactions: reactions.slice(0, 12) });
+            }
+        } catch (e) {
+            console.warn('[Reactions] getAvailableReactions error', e);
+        }
+    };
+
     markUnreadReactionsAsRead = () => {
         const { chatId, messageId } = this.props;
         const message = MessageStore.get(chatId, messageId);
@@ -86,7 +99,7 @@ class Reactions extends Component {
 
     render() {
         const { chatId, messageId } = this.props;
-        const { showPicker, reactorsModal } = this.state;
+        const { showPicker, reactorsModal, availableReactions } = this.state;
         const message = MessageStore.get(chatId, messageId);
         const reactions = message && message.reactions;
         const list = reactions ? reactions.reactions : [];
@@ -116,7 +129,7 @@ class Reactions extends Component {
                 </button>
                 {showPicker && (
                     <div className='reaction-picker'>
-                        {QUICK_REACTIONS.map(emoji => (
+                        {availableReactions.map(emoji => (
                             <button
                                 key={emoji}
                                 className='reaction-picker-item'
