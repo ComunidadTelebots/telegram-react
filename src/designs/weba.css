@@ -1,0 +1,366 @@
+/*
+ * Telegram Web A — web.telegram.org/a/
+ * El cliente web React de Telegram. Accent #2CA5E0, sidebar con gradiente sutil en header,
+ * burbujas salientes verdes, estilo más compacto y densidad visual media.
+ */
+
+body.design-weba {
+    font: 14px/19px -apple-system, 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+
+    --font-body: -apple-system, 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+    --font-display: -apple-system, 'Roboto', sans-serif;
+    --font-mono: 'Roboto Mono', 'SF Mono', 'Courier New', monospace;
+    --text-body: 14px;
+    --line-body: 19px;
+
+    --weba-accent: #2ca5e0;
+    --weba-accent-hover: #1a93ce;
+    --weba-sidebar: #ffffff;
+    --weba-sidebar-border: rgba(0, 0, 0, 0.1);
+    --weba-chat-bg: #e6ebee;
+    --weba-separator: rgba(0, 0, 0, 0.09);
+    --weba-text-secondary: #70777e;
+    --weba-row-hover: rgba(0, 0, 0, 0.045);
+    --weba-header-bg: #2ca5e0;
+    --weba-header-color: #ffffff;
+
+    --message-out-background: #efffde;
+    --message-out-color: #1a1a1a;
+    --message-out-link: #2ca5e0;
+    --message-out-author: #2ca5e0;
+    --message-out-meta-color: rgba(0, 0, 0, 0.42);
+    --message-out-reply-title: #2ca5e0;
+    --message-out-reply-border: #2ca5e0;
+
+    --message-in-background: #ffffff;
+    --message-in-color: #1a1a1a;
+    --message-in-link: #2ca5e0;
+    --message-in-author: #2ca5e0;
+    --message-in-meta-color: rgba(0, 0, 0, 0.42);
+    --message-in-reply-title: #2ca5e0;
+    --message-in-reply-border: #2ca5e0;
+
+    --badge-green: #3db64e;
+    --indicator-green: #3db64e;
+    --day-background: rgba(0, 0, 0, 0.22);
+    --day-color: #ffffff;
+    --color-accent-main: #2ca5e0;
+    --shadow-bubble: 0 1px 2px rgba(0, 0, 0, 0.14);
+
+    --design-page-background: #ffffff;
+    --design-page-color: #000000;
+    --design-sidebar-background: var(--weba-sidebar);
+    --design-middle-background: var(--weba-chat-bg);
+    --design-panel-background: #ffffff;
+    --design-header-background: var(--weba-header-bg);
+    --design-header-color: var(--weba-header-color);
+    --design-header-muted-color: rgba(255, 255, 255, 0.8);
+    --design-input-background: #e6ebee;
+    --design-input-surface: #ffffff;
+    --design-border-color: var(--weba-sidebar-border);
+    --design-muted-color: var(--weba-text-secondary);
+    --design-hover-background: var(--weba-row-hover);
+    --design-active-background: rgba(44, 165, 224, 0.12);
+    --design-dialog-radius: 0;
+    --design-control-radius: 10px;
+    --design-message-wrapper-max-width: 900px;
+    --design-message-wrapper-padding: 4px 16px;
+    --design-message-content-max-width: 548px;
+    --design-message-radius-in: 10px 10px 10px 3px;
+    --design-message-radius-out: 10px 10px 3px 10px;
+    --design-message-radius-short: 10px;
+    --design-message-padding: 6px 9px;
+    --design-message-shadow: 0 1px 2px rgba(0, 0, 0, 0.13);
+    --design-message-tail-display: block;
+}
+
+body.design-weba .dialogs {
+    width: 380px;
+    min-width: 280px;
+    max-width: 480px;
+    flex: none;
+    background: var(--weba-sidebar);
+    border-right: 1px solid var(--weba-sidebar-border);
+}
+
+body.design-weba .dialog-details {
+    flex: 1;
+}
+
+body.design-weba .messages-list,
+body.design-weba .messages-list-wrapper {
+    background: var(--weba-chat-bg);
+}
+
+/* Header con color de acento (característica de Web A) */
+body.design-weba .header-details,
+body.design-weba .header-master {
+    min-height: 56px;
+    background: var(--weba-header-bg);
+    color: var(--weba-header-color);
+    border-bottom: none;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.14);
+}
+
+body.design-weba .header-status-title,
+body.design-weba .header-status-subtitle {
+    color: rgba(255, 255, 255, 0.85) !important;
+}
+
+body.design-weba .header-left-button,
+body.design-weba .header-right-button {
+    color: rgba(255, 255, 255, 0.9) !important;
+}
+
+/* Sidebar header también azul */
+body.design-weba .header-master {
+    background: var(--weba-header-bg);
+}
+
+body.design-weba .search-input {
+    background: rgba(255, 255, 255, 0.18);
+    border-color: transparent;
+    color: #ffffff;
+    border-radius: 22px;
+}
+
+body.design-weba .search-input::placeholder {
+    color: rgba(255, 255, 255, 0.65);
+}
+
+body.design-weba .dialog-wrapper {
+    min-height: 60px;
+    padding: 8px 10px;
+    border-radius: 0;
+    box-sizing: border-box;
+}
+
+body.design-weba .dialog-wrapper:hover {
+    background: var(--weba-row-hover);
+}
+
+body.design-weba .dialog-active .dialog-wrapper,
+body.design-weba .dialog-active .dialog-wrapper:hover {
+    background: rgba(44, 165, 224, 0.1);
+}
+
+body.design-weba .dialog-title {
+    font-size: 15px;
+    font-weight: 500;
+}
+
+body.design-weba .dialog-content,
+body.design-weba .dialog-meta {
+    font-size: 13px;
+    color: var(--weba-text-secondary);
+}
+
+body.design-weba .folder-tabs {
+    padding: 0 8px;
+    gap: 0;
+    border-bottom: 1px solid var(--weba-sidebar-border);
+}
+
+body.design-weba .folder-tab {
+    border-radius: 0;
+    padding: 8px 12px;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--weba-text-secondary);
+    border-bottom: 2px solid transparent;
+}
+
+body.design-weba .folder-tab-active {
+    color: var(--weba-accent);
+    border-bottom-color: var(--weba-accent);
+    background: transparent;
+}
+
+body.design-weba .message-bubble {
+    border-radius: 10px 10px 10px 3px;
+    padding: 6px 9px;
+    background: var(--message-in-background);
+    color: var(--message-in-color);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.13);
+}
+
+body.design-weba .message-bubble-out {
+    border-radius: 10px 10px 3px 10px;
+    background: var(--message-out-background);
+    color: var(--message-out-color);
+}
+
+body.design-weba .message-short .message-bubble {
+    border-radius: 10px;
+}
+
+body.design-weba .message-wrapper {
+    max-width: 900px;
+    padding: 4px 16px;
+}
+
+body.design-weba .message-content {
+    max-width: 548px;
+}
+
+body.design-weba .day-meta-wrapper {
+    border-radius: 9px;
+    padding: 3px 10px;
+    font-size: 13px;
+    font-weight: 500;
+    background: rgba(0, 0, 0, 0.2);
+    color: #ffffff;
+}
+
+body.design-weba .inputbox-background {
+    background: var(--weba-sidebar);
+    border-top: 1px solid var(--weba-sidebar-border);
+}
+
+body.design-weba .inputbox {
+    width: calc(100% - 20px);
+    max-width: 800px;
+    padding: 7px 0 9px;
+}
+
+body.design-weba .inputbox-bubble {
+    min-height: 40px;
+    border-radius: 20px;
+    background: #f5f5f5;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    box-shadow: none;
+}
+
+body.design-weba .inputbox-send-button {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--weba-accent);
+    color: #ffffff;
+    box-shadow: 0 2px 5px rgba(44, 165, 224, 0.35);
+}
+
+body.design-weba .inputbox-send-button:hover {
+    background: var(--weba-accent-hover);
+}
+
+body.design-weba .dialog-badge {
+    border-radius: 10px;
+    font-size: 12px;
+    font-weight: 500;
+    background: var(--weba-accent);
+}
+
+body.design-weba ::selection {
+    background: rgba(44, 165, 224, 0.25);
+}
+
+/* ── Dark mode ──────────────────────────────────────────────────────────── */
+body.theme-dark.design-weba {
+    --weba-accent: #2ca5e0;
+    --weba-accent-hover: #3fb5f0;
+    --weba-sidebar: #1c1c1d;
+    --weba-sidebar-border: rgba(255, 255, 255, 0.07);
+    --weba-chat-bg: #0f0f0f;
+    --weba-separator: rgba(255, 255, 255, 0.07);
+    --weba-text-secondary: rgba(255, 255, 255, 0.5);
+    --weba-row-hover: rgba(255, 255, 255, 0.05);
+    --weba-header-bg: #1a2836;
+    --weba-header-color: #ffffff;
+
+    --message-out-background: #2b4d67;
+    --message-out-color: #ffffff;
+    --message-out-link: #7ac8ff;
+    --message-out-meta-color: rgba(255, 255, 255, 0.52);
+    --message-out-reply-title: rgba(255, 255, 255, 0.85);
+    --message-out-reply-border: rgba(255, 255, 255, 0.4);
+
+    --message-in-background: #1c1c1d;
+    --message-in-color: #ffffff;
+    --message-in-link: #5bbfec;
+    --message-in-author: #5bbfec;
+    --message-in-meta-color: rgba(255, 255, 255, 0.5);
+    --message-in-reply-title: #5bbfec;
+    --message-in-reply-border: #5bbfec;
+
+    --badge-green: #3db64e;
+    --indicator-green: #3db64e;
+    --day-background: rgba(0, 0, 0, 0.38);
+    --day-color: rgba(255, 255, 255, 0.82);
+    --color-accent-main: #2ca5e0;
+
+    --design-page-background: #0f0f0f;
+    --design-page-color: #ffffff;
+    --design-sidebar-background: var(--weba-sidebar);
+    --design-middle-background: var(--weba-chat-bg);
+    --design-panel-background: #1c1c1d;
+    --design-header-background: var(--weba-header-bg);
+    --design-header-color: #ffffff;
+    --design-input-background: #0f0f0f;
+    --design-input-surface: #252525;
+    --design-border-color: var(--weba-sidebar-border);
+    --design-muted-color: var(--weba-text-secondary);
+    --design-hover-background: var(--weba-row-hover);
+    --design-active-background: rgba(44, 165, 224, 0.14);
+}
+
+body.theme-dark.design-weba .dialogs {
+    background: var(--weba-sidebar);
+}
+
+body.theme-dark.design-weba .messages-list,
+body.theme-dark.design-weba .messages-list-wrapper {
+    background: var(--weba-chat-bg);
+}
+
+body.theme-dark.design-weba .header-details,
+body.theme-dark.design-weba .header-master {
+    background: var(--weba-header-bg);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+}
+
+body.theme-dark.design-weba .inputbox-background {
+    background: #1c1c1d;
+    border-top: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+body.theme-dark.design-weba .inputbox-bubble {
+    background: #252525;
+    border-color: rgba(255, 255, 255, 0.08);
+}
+
+body.theme-dark.design-weba .day-meta-wrapper {
+    background: rgba(0, 0, 0, 0.45);
+    color: rgba(255, 255, 255, 0.8);
+}
+
+body.theme-dark.design-weba .search-input {
+    background: rgba(255, 255, 255, 0.1);
+    color: #ffffff;
+}
+
+/* ── Reactions / Features ───────────────────────────────────────────────── */
+body.design-weba .reaction-bubble {
+    border-radius: 10px;
+    border-color: #2ca5e0;
+    background: rgba(44, 165, 224, 0.07);
+}
+body.design-weba .reaction-chosen {
+    background: rgba(44, 165, 224, 0.18);
+    border-color: #2ca5e0;
+    color: #2ca5e0;
+}
+body.design-weba .spoiler-text {
+    background: #2ca5e0;
+    color: transparent;
+    border-radius: 3px;
+    cursor: pointer;
+    filter: blur(4px);
+    transition: filter 0.25s, color 0.25s;
+}
+body.design-weba .spoiler-text.spoiler-revealed {
+    filter: none;
+    color: inherit;
+    background: rgba(44, 165, 224, 0.12);
+}
