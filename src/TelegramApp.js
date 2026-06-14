@@ -176,9 +176,10 @@ class TelegramApp extends Component {
     };
 
     handleChangePhone = () => {
-        this.setState({
-            authorizationState: { '@type': 'authorizationStateWaitPhoneNumber' },
-        });
+        // Cancela el polling del QR en el controlador antes de cambiar de pantalla.
+        // El controlador emitirá WaitPhoneNumber, que llegará a onUpdateAuthorizationState
+        // y actualizará el estado sin que el loop del QR lo revierta.
+        TdLibController.send({ '@type': 'cancelQrCodeAuthentication' });
     };
 
     handleDragOver = event => {

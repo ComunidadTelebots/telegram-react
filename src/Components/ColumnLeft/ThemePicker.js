@@ -190,6 +190,34 @@ class ThemePicker extends React.Component {
                 },
             },
             {
+                value: 'webk',
+                label: 'Telegram Web K',
+                preview: {
+                    sidebar: '#ffffff',
+                    chatBg: '#f1f1f1',
+                    bubble: '#eeffde',
+                    bubbleTextOut: '#222222',
+                    bubbleIn: '#ffffff',
+                    radius: '12px 12px 12px 3px',
+                    radiusOut: '12px 12px 3px 12px',
+                    font: 'Roboto',
+                },
+            },
+            {
+                value: 'weba',
+                label: 'Telegram Web A',
+                preview: {
+                    sidebar: '#ffffff',
+                    chatBg: '#e6ebee',
+                    bubble: '#efffde',
+                    bubbleTextOut: '#1a1a1a',
+                    bubbleIn: '#ffffff',
+                    radius: '10px 10px 10px 3px',
+                    radiusOut: '10px 10px 3px 10px',
+                    font: 'Roboto',
+                },
+            },
+            {
                 value: 'android',
                 label: 'Android v16',
                 preview: {

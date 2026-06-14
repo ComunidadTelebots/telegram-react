@@ -14,12 +14,12 @@ body.design-tdesktop {
     /* Verde clásico de TDesktop saliente */
     --message-out-background: #effdde;
     --message-out-color: #000000;
-    --color-accent-main: #3a9ad0;
-    --message-out-link: #3a9ad0;
-    --message-out-author: #3a9ad0;
+    --color-accent-main: #40a7e3;
+    --message-out-link: #40a7e3;
+    --message-out-author: #40a7e3;
     --message-out-meta-color: #6cc264;
-    --message-out-reply-title: #3a9ad0;
-    --message-out-reply-border: #3a9ad0;
+    --message-out-reply-title: #40a7e3;
+    --message-out-reply-border: #40a7e3;
 
     /* Entrantes: blanco puro */
     --message-in-background: #ffffff;
@@ -285,13 +285,13 @@ body.design-tdesktop .search-caption {
 body.design-tdesktop .search-caption-title {
     font-size: 13px;
     font-weight: 600;
-    color: var(--color-accent-main, #3a9ad0);
+    color: var(--color-accent-main, #40a7e3);
 }
 
 body.design-tdesktop .search-caption-command {
     font-size: 13px;
     font-weight: 500;
-    color: var(--color-accent-main, #3a9ad0);
+    color: var(--color-accent-main, #40a7e3);
 }
 
 body.design-tdesktop .top-chat-title {

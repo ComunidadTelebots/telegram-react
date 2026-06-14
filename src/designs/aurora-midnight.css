@@ -1,0 +1,57 @@
+/*
+ * aurora-midnight — Aurora con fondo más oscuro y accent más saturado.
+ * Hereda de design-aurora (siempre modo oscuro).
+ */
+body.design-aurora-midnight {
+    --aurora-accent: #00e5c8;
+    --aurora-accent-hover: #00cdb3;
+    --color-accent-main: #00e5c8;
+    --design-page-background: #060a0e;
+    --design-sidebar-background: #0a0f14;
+    --design-middle-background: #060a0e;
+    --design-panel-background: #0a0f14;
+    --design-header-background: #0a0f14;
+    --design-active-background: rgba(0, 229, 200, 0.14);
+    --design-hover-background: rgba(255, 255, 255, 0.04);
+
+    --message-out-background: #002e29;
+    --message-out-color: #e0fff9;
+    --message-out-link: #00e5c8;
+    --message-out-author: #00e5c8;
+    --message-out-meta-color: rgba(224, 255, 249, 0.55);
+    --message-out-reply-title: #00e5c8;
+    --message-out-reply-border: #00e5c8;
+
+    --message-in-background: #0e1620;
+    --message-in-color: #e6edf3;
+    --message-in-link: #00e5c8;
+    --message-in-author: #00e5c8;
+    --message-in-meta-color: rgba(255, 255, 255, 0.45);
+
+    --badge-green: #00e5c8;
+    --indicator-green: #00e5c8;
+}
+
+body.design-aurora-midnight .dialogs {
+    background: #0a0f14;
+}
+
+body.design-aurora-midnight .messages-list,
+body.design-aurora-midnight .messages-list-wrapper {
+    background: #060a0e;
+}
+
+body.design-aurora-midnight .header-details {
+    background: #0a0f14;
+    border-bottom: 1px solid rgba(0, 229, 200, 0.1);
+}
+
+body.design-aurora-midnight .inputbox-background {
+    background: #0a0f14;
+    border-top: 1px solid rgba(0, 229, 200, 0.1);
+}
+
+body.design-aurora-midnight .inputbox-send-button {
+    background: #00e5c8;
+    color: #060a0e;
+}

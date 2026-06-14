@@ -1,0 +1,63 @@
+/*
+ * tdesktop-classic — TDesktop clásico: header azul oscuro, sidebar estrecha.
+ * Hereda de design-tdesktop.
+ */
+body.design-tdesktop-classic {
+    --tdesktop-header: #2b5278;
+    --tdesktop-header-color: #ffffff;
+    --design-header-background: #2b5278;
+    --design-header-color: #ffffff;
+    --design-header-muted-color: rgba(255, 255, 255, 0.72);
+    --design-dialog-radius: 0;
+    --design-message-radius-in: 4px 4px 4px 0;
+    --design-message-radius-out: 4px 4px 0 4px;
+    --design-message-radius-short: 4px;
+}
+
+body.design-tdesktop-classic .dialogs {
+    width: 280px;
+    min-width: 240px;
+    max-width: 320px;
+}
+
+body.design-tdesktop-classic .header-details,
+body.design-tdesktop-classic .header-master {
+    background: #2b5278;
+    color: #ffffff;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+body.design-tdesktop-classic .header-status-title,
+body.design-tdesktop-classic .header-status-subtitle {
+    color: rgba(255, 255, 255, 0.72) !important;
+}
+
+body.design-tdesktop-classic .header-left-button,
+body.design-tdesktop-classic .header-right-button {
+    color: rgba(255, 255, 255, 0.9) !important;
+}
+
+body.design-tdesktop-classic .message-bubble {
+    border-radius: 4px 4px 4px 0;
+}
+body.design-tdesktop-classic .message-bubble-out {
+    border-radius: 4px 4px 0 4px;
+}
+body.design-tdesktop-classic .message-short .message-bubble {
+    border-radius: 4px;
+}
+
+body.design-tdesktop-classic .dialog-wrapper {
+    min-height: 56px;
+    padding: 7px 10px;
+}
+
+body.theme-dark.design-tdesktop-classic {
+    --tdesktop-header: #17212b;
+    --design-header-background: #17212b;
+}
+
+body.theme-dark.design-tdesktop-classic .header-details,
+body.theme-dark.design-tdesktop-classic .header-master {
+    background: #17212b;
+}

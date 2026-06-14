@@ -1,0 +1,53 @@
+/*
+ * weba-classic — Web A con header de color azul (variante estilística).
+ * Hereda de design-weba (header blanco) y añade el header de color.
+ */
+
+body.design-weba-classic {
+    --weba-header-bg: #2ca5e0;
+    --weba-header-color: #ffffff;
+    --design-header-background: #2ca5e0;
+    --design-header-color: #ffffff;
+    --design-header-muted-color: rgba(255, 255, 255, 0.8);
+}
+
+body.design-weba-classic .header-details,
+body.design-weba-classic .header-master {
+    background: #2ca5e0;
+    color: #ffffff;
+    border-bottom: none;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.14);
+}
+
+body.design-weba-classic .header-status-title,
+body.design-weba-classic .header-status-subtitle {
+    color: rgba(255, 255, 255, 0.85) !important;
+}
+
+body.design-weba-classic .header-left-button,
+body.design-weba-classic .header-right-button {
+    color: rgba(255, 255, 255, 0.9) !important;
+}
+
+body.design-weba-classic .search-input {
+    background: rgba(255, 255, 255, 0.18);
+    border-color: transparent;
+    color: #ffffff;
+}
+
+body.design-weba-classic .search-input::placeholder {
+    color: rgba(255, 255, 255, 0.65);
+}
+
+body.theme-dark.design-weba-classic {
+    --weba-header-bg: #1a3d5c;
+    --design-header-background: #1a3d5c;
+    --design-header-color: #ffffff;
+}
+
+body.theme-dark.design-weba-classic .header-details,
+body.theme-dark.design-weba-classic .header-master {
+    background: #1a3d5c;
+    border-bottom: none;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}

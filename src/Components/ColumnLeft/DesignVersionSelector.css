@@ -1,0 +1,249 @@
+.dv-selector {
+    position: relative;
+    flex: 0 0 auto;
+    margin-left: 6px;
+    margin-right: 8px;
+    z-index: 3200;
+}
+
+/* ── Trigger pill ───────────────────────────────────────────────────────── */
+.dv-trigger {
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+    height: 30px;
+    max-width: 148px;
+    padding: 0 8px 0 12px;
+    border: 1px solid color-mix(in srgb, var(--dv-accent, var(--color-accent-main)) 40%, transparent);
+    border-radius: 16px;
+    background: color-mix(in srgb, var(--dv-accent, var(--color-accent-main)) 8%, transparent);
+    color: var(--dv-accent, var(--color-accent-main));
+    white-space: nowrap;
+    font: inherit;
+    cursor: pointer;
+    transition: background 0.15s;
+}
+
+/* Fallback for browsers without color-mix (Firefox < 113, Safari < 16.2) */
+@supports not (background: color-mix(in srgb, red 10%, transparent)) {
+    .dv-trigger {
+        border-color: rgba(0, 0, 0, 0.18);
+        background: rgba(0, 0, 0, 0.06);
+        color: var(--color-accent-main);
+    }
+}
+
+.dv-trigger:hover {
+    background: color-mix(in srgb, var(--dv-accent, var(--color-accent-main)) 14%, transparent);
+}
+
+.dv-trigger-text {
+    overflow: hidden;
+    font-size: 12px;
+    font-weight: 700;
+    text-overflow: ellipsis;
+}
+
+.dv-chevron {
+    width: 16px !important;
+    height: 16px !important;
+    flex: 0 0 auto;
+}
+
+/* ── Dropdown menu ──────────────────────────────────────────────────────── */
+.dv-menu {
+    position: absolute;
+    top: calc(100% + 10px);
+    left: 50%;
+    z-index: 3200;
+    width: 172px;
+    padding: 7px 0 8px;
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.97);
+    color: var(--design-page-color, #111);
+    box-shadow: 0 10px 26px rgba(15, 23, 42, 0.14), 0 1px 4px rgba(15, 23, 42, 0.12);
+    transform: translateX(-50%);
+}
+
+/* ── Option row ─────────────────────────────────────────────────────────── */
+.dv-option {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto 16px;
+    align-items: center;
+    column-gap: 7px;
+    width: 100%;
+    min-height: 36px;
+    padding: 4px 8px 4px 13px;
+    background: transparent;
+    border: 0;
+    color: inherit;
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+}
+
+.dv-option:hover {
+    background: var(--design-hover-background, rgba(0, 0, 0, 0.04));
+}
+
+.dv-copy {
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+    justify-content: center;
+    line-height: 1.1;
+}
+
+.dv-detail,
+.dv-label {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.dv-detail {
+    font-size: 11px;
+    font-weight: 700;
+    color: #111827;
+}
+
+.dv-label {
+    margin-top: 2px;
+    font-size: 13px;
+    font-weight: 800;
+    color: var(--dv-accent, var(--color-accent-main));
+}
+
+.dv-tag {
+    max-width: 58px;
+    overflow: hidden;
+    padding: 4px 6px 3px;
+    border-radius: 7px;
+    background: var(--dv-accent, var(--color-accent-main));
+    color: #ffffff;
+    font-size: 8px;
+    font-weight: 800;
+    line-height: 1;
+    text-overflow: ellipsis;
+    text-transform: uppercase;
+    white-space: nowrap;
+    opacity: 0.85;
+}
+
+.dv-check {
+    width: 16px !important;
+    height: 16px !important;
+    color: var(--dv-accent, var(--color-accent-main));
+}
+
+/* ── Make header overflow-visible so dropdown isn't clipped ─────────────── */
+.header-master {
+    position: relative;
+    z-index: 3100;
+    overflow: visible;
+}
+
+.folder-tabs {
+    position: relative;
+    z-index: 1;
+}
+
+/* ── Dark mode menu ─────────────────────────────────────────────────────── */
+body.theme-dark .dv-menu {
+    border-color: rgba(255, 255, 255, 0.08);
+    background: rgba(28, 28, 30, 0.97);
+}
+
+body.theme-dark .dv-detail {
+    color: #f5f7fa;
+}
+
+/* ── Per-design trigger overrides (colored headers) ─────────────────────── */
+
+/* Web A: colored header → white pill */
+body.design-weba .dv-trigger {
+    border-color: rgba(255, 255, 255, 0.38);
+    background: rgba(255, 255, 255, 0.14);
+    color: #ffffff;
+}
+body.design-weba .dv-trigger:hover {
+    background: rgba(255, 255, 255, 0.22);
+}
+
+/* Android classic: colored header → white pill */
+body.design-android-classic .dv-trigger {
+    height: 26px;
+    border-radius: 14px;
+    border-color: rgba(255, 255, 255, 0.34);
+    background: rgba(255, 255, 255, 0.12);
+    color: #ffffff;
+}
+body.design-android-classic .dv-trigger:hover {
+    background: rgba(255, 255, 255, 0.18);
+}
+body.design-android-classic .dv-trigger-text {
+    font-size: 11px;
+    font-weight: 800;
+}
+body.design-android-classic .dv-menu {
+    border-radius: 4px;
+}
+
+/* Android glass: frosted trigger */
+body.design-android-glass .dv-trigger,
+body.design-android-glass .dv-menu {
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+}
+body.design-android-glass .dv-trigger {
+    border-color: rgba(40, 201, 183, 0.34);
+    background: rgba(40, 201, 183, 0.12);
+    color: #1f9e88;
+}
+
+/* TDesktop classic: dark blue header → white pill */
+body.design-tdesktop-classic .dv-trigger {
+    border-color: rgba(255, 255, 255, 0.34);
+    background: rgba(255, 255, 255, 0.12);
+    color: #ffffff;
+}
+body.design-tdesktop-classic .dv-trigger:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+/* Aurora: dark background → adjust menu */
+body.design-aurora .dv-menu,
+body.design-aurora-midnight .dv-menu {
+    border-color: rgba(255, 255, 255, 0.1);
+    background: rgba(22, 27, 34, 0.97);
+    color: #e6edf3;
+}
+body.design-aurora .dv-detail,
+body.design-aurora-midnight .dv-detail {
+    color: #c9d1d9;
+}
+
+/* Telegram X: gradient header → white pill */
+body.design-telegramx .dv-trigger,
+body.design-telegramx-red .dv-trigger {
+    border-color: rgba(255, 255, 255, 0.38);
+    background: rgba(255, 255, 255, 0.14);
+    color: #ffffff;
+}
+body.design-telegramx .dv-trigger:hover,
+body.design-telegramx-red .dv-trigger:hover {
+    background: rgba(255, 255, 255, 0.22);
+}
+
+@media (max-width: 520px) {
+    .dv-trigger-text {
+        max-width: 80px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .dv-menu {
+        width: 160px;
+    }
+}

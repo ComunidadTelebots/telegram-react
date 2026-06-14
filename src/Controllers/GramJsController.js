@@ -762,6 +762,8 @@ class GramJsController extends EventEmitter {
                 return this._resendCode();
             case 'requestQrCodeAuthentication':
                 return this._requestQrCodeAuthentication(req);
+            case 'cancelQrCodeAuthentication':
+                return this._cancelQrCodeAuthentication();
             case 'logOut':
                 return this._logOut();
             case 'destroy':
@@ -4487,6 +4489,18 @@ class GramJsController extends EventEmitter {
         } finally {
             this._qrLoginCompleting = false;
         }
+    };
+
+    _cancelQrCodeAuthentication = () => {
+        // Incrementar la generación cancela cualquier _pollQrToken en vuelo
+        // (el guard `if (generation !== this._qrPollGeneration) return` lo detiene).
+        this._qrPollGeneration += 1;
+        this._qrLoginCompleting = false;
+        this._emitUpdate({
+            '@type': 'updateAuthorizationState',
+            authorization_state: { '@type': 'authorizationStateWaitPhoneNumber' },
+        });
+        return {};
     };
 
     _requestQrCodeAuthentication = async req => {

@@ -4,39 +4,85 @@
  */
 
 import './designs/current.css';
+import './designs/current-compact.css';
 import './designs/android.css';
 import './designs/ios.css';
+import './designs/ios-ipad.css';
 import './designs/macos.css';
+import './designs/macos-monterey.css';
 import './designs/tdesktop.css';
+import './designs/tdesktop-classic.css';
 import './designs/unigram.css';
+import './designs/unigram-fluent.css';
 import './designs/aurora.css';
+import './designs/aurora-midnight.css';
 import './designs/shell.css';
 import './designs/telegramx.css';
+import './designs/telegramx-red.css';
 import './designs/webogram.css';
+import './designs/webogram-blue.css';
+import './designs/webk.css';
+import './designs/webk-2025.css';
+import './designs/weba.css';
+import './designs/weba-classic.css';
 
 const DESIGN_KEY = 'tg_design';
 
-// Variantes de Android: válidas y funcionales, pero ocultas del menú principal.
-// AndroidVersionSelector las aplica directamente; DesignSwitcher solo expone DESIGNS.
-const ANDROID_SUB_VARIANTS = [
+// Entradas visibles en el selector principal (DesignSwitcher).
+const DESIGNS = [
+    'current',
+    'webk',
+    'weba',
+    'android',
+    'webogram',
+    'unigram',
+    'ios',
+    'macos',
+    'tdesktop',
+    'aurora',
+    'telegramx',
+];
+
+// Sub-variantes de cada familia (ocultas del menú principal; DesignVersionSelector las gestiona).
+const DESIGN_SUB_VARIANTS = [
+    // current
+    'current-compact',
+    // webk
+    'webk-2025',
+    // weba
+    'weba-classic',
+    // android
     'android-holo',
     'android-v9',
     'android-v11',
     'android-classic',
     'android-redesign',
     'android-glass',
+    // ios
+    'ios-ipad',
+    // macos
+    'macos-monterey',
+    // tdesktop
+    'tdesktop-classic',
+    // unigram
+    'unigram-fluent',
+    // webogram
+    'webogram-blue',
+    // aurora
+    'aurora-midnight',
+    // telegramx
+    'telegramx-red',
 ];
 
-// Entradas visibles en el selector principal (DesignSwitcher)
-const DESIGNS = ['current', 'android', 'webogram', 'unigram', 'ios', 'macos', 'tdesktop', 'aurora', 'telegramx'];
-
-// Conjunto completo de nombres válidos (menú + sub-variantes Android)
-const ALL_DESIGNS = [...DESIGNS, ...ANDROID_SUB_VARIANTS];
+// Conjunto completo de nombres válidos
+const ALL_DESIGNS = [...DESIGNS, ...DESIGN_SUB_VARIANTS];
 
 const DEFAULT_DESIGN = 'current';
 
 export const DESIGN_LABELS = {
     current: 'Web (react)',
+    webk: 'Telegram Web K',
+    weba: 'Telegram Web A',
     android: 'Android',
     webogram: 'Webogram',
     unigram: 'Unigram',
@@ -49,30 +95,62 @@ export const DESIGN_LABELS = {
 
 export const DESIGN_ACCENTS = {
     current: '#5b8af1',
+    'current-compact': '#5b8af1',
+    webk: '#3390ec',
+    'webk-2025': '#3390ec',
+    weba: '#2ca5e0',
+    'weba-classic': '#2ca5e0',
     android: '#229af0',
-    webogram: '#5682a3',
-    unigram: '#2b7fe0',
-    ios: '#007aff',
-    macos: '#248bf2',
+    'android-glass': '#28c9b7',
+    'android-redesign': '#229af0',
+    'android-classic': '#527da3',
+    'android-v11': '#229af0',
+    'android-v9': '#229af0',
+    'android-holo': '#33b5e5',
+    ios: '#0088ff',
+    'ios-ipad': '#0088ff',
+    macos: '#2481cc',
+    'macos-monterey': '#5b5ea6',
     tdesktop: '#40a7e3',
+    'tdesktop-classic': '#2b5278',
+    unigram: '#40a7e3',
+    'unigram-fluent': '#0078d4',
+    webogram: '#5682a3',
+    'webogram-blue': '#1d7cba',
     aurora: '#34d9a8',
-    telegramx: '#50a8eb',
+    'aurora-midnight': '#00e5c8',
+    telegramx: '#35b7f3',
+    'telegramx-red': '#e85050',
 };
 
 export function getDesign() {
     const saved = localStorage.getItem(DESIGN_KEY) || DEFAULT_DESIGN;
-    // Acepta tanto las entradas del menú como las sub-variantes Android
     return ALL_DESIGNS.includes(saved) ? saved : DEFAULT_DESIGN;
+}
+
+/**
+ * Devuelve la familia base de un diseño.
+ * 'android-glass' → 'android', 'ios-ipad' → 'ios', 'current' → 'current'.
+ */
+export function getDesignFamily(design) {
+    const dashIdx = design.indexOf('-');
+    if (dashIdx === -1) return design;
+    const prefix = design.slice(0, dashIdx);
+    return DESIGNS.includes(prefix) ? prefix : design;
 }
 
 export function setDesign(name) {
     if (!ALL_DESIGNS.includes(name)) return;
 
+    // Quitar todas las clases de diseño existentes
     ALL_DESIGNS.forEach(d => document.body.classList.remove(`design-${d}`));
-    document.body.classList.remove('design-android');
+    DESIGNS.forEach(d => document.body.classList.remove(`design-${d}`));
 
-    if (name.startsWith('android-')) {
-        document.body.classList.add('design-android');
+    // Para sub-variantes, añadir también la clase de la familia base
+    // (p.ej. 'ios-ipad' agrega 'design-ios' + 'design-ios-ipad')
+    const family = getDesignFamily(name);
+    if (family !== name) {
+        document.body.classList.add(`design-${family}`);
     }
 
     document.body.classList.add(`design-${name}`);

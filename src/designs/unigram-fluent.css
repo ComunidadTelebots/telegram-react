@@ -1,0 +1,62 @@
+/*
+ * unigram-fluent — Unigram con Fluent Design (Windows 11): items redondeados,
+ * sidebar con fondo translúcido tipo Mica, accent más vibrante.
+ * Hereda de design-unigram.
+ */
+body.design-unigram-fluent {
+    --unigram-accent: #0078d4;
+    --color-accent-main: #0078d4;
+    --design-active-background: rgba(0, 120, 212, 0.14);
+    --design-hover-background: rgba(0, 0, 0, 0.04);
+    --design-dialog-radius: 6px;
+    --design-message-radius-in: 8px 8px 8px 2px;
+    --design-message-radius-out: 8px 8px 2px 8px;
+    --design-message-radius-short: 8px;
+    --message-out-background: #0078d4;
+    --message-out-color: #ffffff;
+    --message-in-link: #0078d4;
+    --message-in-author: #0078d4;
+}
+
+body.design-unigram-fluent .dialog-wrapper {
+    border-radius: 6px;
+    margin: 1px 4px;
+    padding: 8px 10px;
+    width: calc(100% - 8px);
+    box-sizing: border-box;
+}
+
+body.design-unigram-fluent .dialog-active .dialog-wrapper {
+    background: rgba(0, 120, 212, 0.14);
+}
+
+body.design-unigram-fluent .message-bubble {
+    border-radius: 8px 8px 8px 2px;
+}
+body.design-unigram-fluent .message-bubble-out {
+    border-radius: 8px 8px 2px 8px;
+    background: #0078d4;
+}
+body.design-unigram-fluent .message-short .message-bubble {
+    border-radius: 8px;
+}
+
+body.design-unigram-fluent .dialogs {
+    background: rgba(243, 243, 243, 0.88);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+}
+
+body.theme-dark.design-unigram-fluent {
+    --unigram-accent: #4cc2ff;
+    --color-accent-main: #4cc2ff;
+    --message-out-background: #004c87;
+    --message-in-link: #4cc2ff;
+    --message-in-author: #4cc2ff;
+}
+
+body.theme-dark.design-unigram-fluent .dialogs {
+    background: rgba(28, 28, 28, 0.88);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+}

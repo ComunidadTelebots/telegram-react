@@ -1,0 +1,37 @@
+/*
+ * webogram-blue — Webogram con accent azul más vibrante (#1d7cba).
+ * Hereda de design-webogram.
+ */
+body.design-webogram-blue {
+    --webogram-accent: #1d7cba;
+    --color-accent-main: #1d7cba;
+    --design-active-background: rgba(29, 124, 186, 0.14);
+    --message-out-background: #dcf8ff;
+    --message-out-color: #1a1a1a;
+    --message-out-link: #1d7cba;
+    --message-in-link: #1d7cba;
+    --message-in-author: #1d7cba;
+    --message-in-reply-title: #1d7cba;
+    --message-in-reply-border: #1d7cba;
+    --message-out-reply-title: #1d7cba;
+    --message-out-reply-border: #1d7cba;
+}
+
+body.design-webogram-blue .message-bubble-out {
+    background: #dcf8ff;
+    color: #1a1a1a;
+}
+
+body.theme-dark.design-webogram-blue {
+    --webogram-accent: #3a9fd1;
+    --color-accent-main: #3a9fd1;
+    --message-out-background: #1a3a4f;
+    --message-out-color: #ffffff;
+    --message-in-link: #3a9fd1;
+    --message-in-author: #3a9fd1;
+}
+
+body.theme-dark.design-webogram-blue .message-bubble-out {
+    background: #1a3a4f;
+    color: #ffffff;
+}

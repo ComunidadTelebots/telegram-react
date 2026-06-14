@@ -1,0 +1,40 @@
+/*
+ * macos-monterey — macOS Monterey: sidebar items redondeados, accent violáceo.
+ * Hereda de design-macos.
+ */
+body.design-macos-monterey {
+    --macos-accent: #5b5ea6;
+    --macos-accent-hover: #4a4d8f;
+    --color-accent-main: #5b5ea6;
+    --design-active-background: rgba(91, 94, 166, 0.14);
+    --design-hover-background: rgba(0, 0, 0, 0.05);
+    --design-dialog-radius: 8px;
+    --message-out-background: #5b5ea6;
+    --message-out-color: #ffffff;
+    --message-in-link: #5b5ea6;
+    --message-in-author: #5b5ea6;
+}
+
+body.design-macos-monterey .dialog-wrapper {
+    border-radius: 8px;
+    margin: 1px 6px;
+    padding: 8px 10px;
+    width: calc(100% - 12px);
+    box-sizing: border-box;
+}
+
+body.design-macos-monterey .dialog-active .dialog-wrapper {
+    background: rgba(91, 94, 166, 0.14);
+}
+
+body.design-macos-monterey .message-bubble-out {
+    background: #5b5ea6;
+}
+
+body.theme-dark.design-macos-monterey {
+    --macos-accent: #7b7ee8;
+    --color-accent-main: #7b7ee8;
+    --message-out-background: #3d3f7a;
+    --message-in-link: #7b7ee8;
+    --message-in-author: #7b7ee8;
+}

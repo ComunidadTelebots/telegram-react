@@ -1,0 +1,39 @@
+/*
+ * webk-2025 — Web K layout 2025: sidebar más ancha, mensajes más espaciados.
+ * Hereda de design-webk.
+ */
+body.design-webk-2025 {
+    --webk-chat-bg: #e8eaed;
+    --design-message-wrapper-padding: 4px 28px;
+    --design-message-content-max-width: 640px;
+    --design-message-radius-in: 14px 14px 14px 4px;
+    --design-message-radius-out: 14px 14px 4px 14px;
+    --design-message-radius-short: 14px;
+}
+
+body.design-webk-2025 .dialogs {
+    width: 420px;
+    min-width: 320px;
+    max-width: 520px;
+}
+
+body.design-webk-2025 .dialog-wrapper {
+    min-height: 68px;
+    padding: 10px 14px;
+}
+
+body.design-webk-2025 .message-bubble {
+    border-radius: 14px 14px 14px 4px;
+}
+
+body.design-webk-2025 .message-bubble-out {
+    border-radius: 14px 14px 4px 14px;
+}
+
+body.design-webk-2025 .message-short .message-bubble {
+    border-radius: 14px;
+}
+
+body.theme-dark.design-webk-2025 {
+    --webk-chat-bg: #141414;
+}
