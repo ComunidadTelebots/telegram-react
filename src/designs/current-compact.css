@@ -1,0 +1,42 @@
+/*
+ * current-compact — Web React con layout compacto.
+ * Hereda todo de design-current, solo reduce alturas y espaciados.
+ */
+body.design-current-compact {
+    --design-message-wrapper-padding: 2px 30px 2px 6px;
+    --design-message-padding: 4px 8px;
+}
+
+body.design-current-compact .dialog-wrapper {
+    min-height: 52px;
+    padding: 5px 10px;
+}
+
+body.design-current-compact .dialog-title {
+    font-size: 14px;
+}
+
+body.design-current-compact .dialog-content,
+body.design-current-compact .dialog-meta {
+    font-size: 12px;
+}
+
+body.design-current-compact .message-wrapper {
+    padding: 2px 30px 2px 6px;
+}
+
+body.design-current-compact .message-bubble {
+    padding: 4px 8px;
+}
+
+body.design-current-compact .header-details {
+    min-height: 48px;
+}
+
+body.design-current-compact .inputbox {
+    padding: 5px 0 7px;
+}
+
+body.design-current-compact .inputbox-bubble {
+    min-height: 36px;
+}

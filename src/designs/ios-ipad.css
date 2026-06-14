@@ -1,0 +1,58 @@
+/*
+ * ios-ipad — iOS en iPad: sidebar más ancha, layout split-view.
+ * Hereda de design-ios.
+ */
+body.design-ios-ipad {
+    --design-message-content-max-width: 600px;
+    --design-message-wrapper-max-width: 1000px;
+}
+
+body.design-ios-ipad .dialogs {
+    width: 420px;
+    min-width: 380px;
+    max-width: 520px;
+}
+
+body.design-ios-ipad .dialog-details {
+    width: calc(100% - 420px);
+}
+
+body.design-ios-ipad .dialog-wrapper {
+    min-height: 64px;
+    padding: 10px 14px;
+}
+
+body.design-ios-ipad .dialog-title {
+    font-size: 16px;
+}
+
+body.design-ios-ipad .dialog-content {
+    font-size: 14px;
+}
+
+body.design-ios-ipad .message-wrapper {
+    max-width: 1000px;
+    padding: 2px 24px;
+}
+
+body.design-ios-ipad .message-content {
+    max-width: 600px;
+}
+
+body.design-ios-ipad .inputbox {
+    max-width: 840px;
+}
+
+body.design-ios-ipad .folder-tabs {
+    padding: 4px 14px 5px;
+    gap: 4px;
+}
+
+body.design-ios-ipad .folder-tab {
+    padding: 6px 16px;
+    font-size: 14px;
+}
+
+body.theme-dark.design-ios-ipad .dialogs {
+    background: #1c1c1e;
+}

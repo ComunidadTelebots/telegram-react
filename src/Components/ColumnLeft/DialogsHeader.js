@@ -28,7 +28,7 @@ import Brightness4Icon from '@material-ui/icons/Brightness4';
 import Brightness7Icon from '@material-ui/icons/Brightness7';
 import ViewHeadlineIcon from '@material-ui/icons/ViewHeadline';
 import SpeedDialIcon from '@material-ui/lab/SpeedDialIcon';
-import AndroidVersionSelector from './AndroidVersionSelector';
+import DesignVersionSelector from './DesignVersionSelector';
 import MainMenuButton from './MainMenuButton';
 import { openTutorial } from '../../Actions/Client';
 import { isAuthorizationReady } from '../../Utils/Common';
@@ -269,7 +269,7 @@ class DialogsHeader extends React.Component {
                     <div className='header-status grow cursor-pointer' onClick={onClick}>
                         <span className='header-status-content'>{t('AppName')}</span>
                     </div>
-                    <AndroidVersionSelector />
+                    <DesignVersionSelector />
                 </>
             );
         }

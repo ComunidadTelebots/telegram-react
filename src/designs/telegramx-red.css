@@ -1,0 +1,40 @@
+/*
+ * telegramx-red — Telegram X con degradado rojo/coral.
+ * Hereda de design-telegramx.
+ */
+body.design-telegramx-red {
+    --tgx-accent: #e85050;
+    --tgx-accent-dark: #c93c3c;
+    --tgx-gradient-start: #f07070;
+    --tgx-gradient-end: #c93c3c;
+    --tgx-ripple: rgba(232, 80, 80, 0.14);
+    --color-accent-main: #e85050;
+    --design-header-background: linear-gradient(180deg, #f07070 0%, #c93c3c 100%);
+    --design-active-background: rgba(232, 80, 80, 0.14);
+    --design-hover-background: rgba(232, 80, 80, 0.07);
+    --message-in-link: #c93c3c;
+    --message-in-author: #e85050;
+    --message-in-reply-title: #e85050;
+    --message-in-reply-border: #e85050;
+    --day-background: rgba(150, 40, 40, 0.55);
+    --badge-green: #e85050;
+}
+
+body.design-telegramx-red .message-bubble-out {
+    background: linear-gradient(135deg, #f07070 0%, #c93c3c 100%);
+}
+
+body.design-telegramx-red .inputbox-send-button {
+    background: linear-gradient(135deg, #f07070 0%, #c93c3c 100%);
+    box-shadow: 0 2px 8px rgba(232, 80, 80, 0.4);
+}
+
+body.theme-dark.design-telegramx-red {
+    --tgx-accent: #ff6b6b;
+    --tgx-gradient-start: #ff8080;
+    --tgx-gradient-end: #e04040;
+    --color-accent-main: #ff6b6b;
+    --design-header-background: linear-gradient(180deg, #ff8080 0%, #e04040 100%);
+    --message-in-link: #ff6b6b;
+    --message-in-author: #ff6b6b;
+}
