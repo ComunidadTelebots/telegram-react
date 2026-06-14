@@ -28,8 +28,14 @@ const DESIGN_VERSION_REGISTRY = {
         { value: 'webk-2025', label: '2025', detail: 'Web K 2025 layout', tag: '2025', trigger: '2025' },
     ],
     weba: [
-        { value: 'weba', label: 'Current', detail: 'Web A with color header', tag: 'Current', trigger: 'Current' },
-        { value: 'weba-classic', label: 'Classic', detail: 'Web A white header', tag: 'Classic', trigger: 'Classic' },
+        { value: 'weba', label: 'Standard', detail: 'Web A (header blanco)', tag: 'Standard', trigger: 'Standard' },
+        {
+            value: 'weba-classic',
+            label: 'Color',
+            detail: 'Web A header azul',
+            tag: 'Color',
+            trigger: 'Color',
+        },
     ],
     android: [
         { value: 'android', label: '12.6.4', detail: 'Beta 12.6.4', tag: 'Glass', trigger: 'Beta 12.6.4' },

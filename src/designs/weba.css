@@ -22,8 +22,8 @@ body.design-weba {
     --weba-separator: rgba(0, 0, 0, 0.09);
     --weba-text-secondary: #70777e;
     --weba-row-hover: rgba(0, 0, 0, 0.045);
-    --weba-header-bg: #2ca5e0;
-    --weba-header-color: #ffffff;
+    --weba-header-bg: #ffffff;
+    --weba-header-color: #000000;
 
     --message-out-background: #efffde;
     --message-out-color: #1a1a1a;
@@ -55,7 +55,7 @@ body.design-weba {
     --design-panel-background: #ffffff;
     --design-header-background: var(--weba-header-bg);
     --design-header-color: var(--weba-header-color);
-    --design-header-muted-color: rgba(255, 255, 255, 0.8);
+    --design-header-muted-color: rgba(0, 0, 0, 0.5);
     --design-input-background: #e6ebee;
     --design-input-surface: #ffffff;
     --design-border-color: var(--weba-sidebar-border);
@@ -93,40 +93,14 @@ body.design-weba .messages-list-wrapper {
     background: var(--weba-chat-bg);
 }
 
-/* Header con color de acento (característica de Web A) */
+/* Header blanco — estilo real de Web A */
 body.design-weba .header-details,
 body.design-weba .header-master {
     min-height: 56px;
     background: var(--weba-header-bg);
     color: var(--weba-header-color);
-    border-bottom: none;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.14);
-}
-
-body.design-weba .header-status-title,
-body.design-weba .header-status-subtitle {
-    color: rgba(255, 255, 255, 0.85) !important;
-}
-
-body.design-weba .header-left-button,
-body.design-weba .header-right-button {
-    color: rgba(255, 255, 255, 0.9) !important;
-}
-
-/* Sidebar header también azul */
-body.design-weba .header-master {
-    background: var(--weba-header-bg);
-}
-
-body.design-weba .search-input {
-    background: rgba(255, 255, 255, 0.18);
-    border-color: transparent;
-    color: #ffffff;
-    border-radius: 22px;
-}
-
-body.design-weba .search-input::placeholder {
-    color: rgba(255, 255, 255, 0.65);
+    border-bottom: 1px solid var(--weba-sidebar-border);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
 }
 
 body.design-weba .dialog-wrapper {
@@ -256,53 +230,55 @@ body.design-weba ::selection {
     background: rgba(44, 165, 224, 0.25);
 }
 
-/* ── Dark mode ──────────────────────────────────────────────────────────── */
+/* ── Dark mode — Night mode con acento PÚRPURA (igual que Web K night) ─── */
+/* Source: telegram-tt Night theme: accent #8774E1, out bubble #766AC8      */
 body.theme-dark.design-weba {
-    --weba-accent: #2ca5e0;
-    --weba-accent-hover: #3fb5f0;
-    --weba-sidebar: #1c1c1d;
+    --weba-accent: #8774e1;
+    --weba-accent-hover: #9b88f0;
+    --weba-sidebar: #212121;
     --weba-sidebar-border: rgba(255, 255, 255, 0.07);
     --weba-chat-bg: #0f0f0f;
     --weba-separator: rgba(255, 255, 255, 0.07);
     --weba-text-secondary: rgba(255, 255, 255, 0.5);
     --weba-row-hover: rgba(255, 255, 255, 0.05);
-    --weba-header-bg: #1a2836;
+    --weba-header-bg: #212121;
     --weba-header-color: #ffffff;
 
-    --message-out-background: #2b4d67;
+    --message-out-background: #766ac8;
     --message-out-color: #ffffff;
-    --message-out-link: #7ac8ff;
+    --message-out-link: rgba(255, 255, 255, 0.85);
     --message-out-meta-color: rgba(255, 255, 255, 0.52);
     --message-out-reply-title: rgba(255, 255, 255, 0.85);
     --message-out-reply-border: rgba(255, 255, 255, 0.4);
 
-    --message-in-background: #1c1c1d;
+    --message-in-background: #212121;
     --message-in-color: #ffffff;
-    --message-in-link: #5bbfec;
-    --message-in-author: #5bbfec;
+    --message-in-link: #b99bf8;
+    --message-in-author: #b99bf8;
     --message-in-meta-color: rgba(255, 255, 255, 0.5);
-    --message-in-reply-title: #5bbfec;
-    --message-in-reply-border: #5bbfec;
+    --message-in-reply-title: #b99bf8;
+    --message-in-reply-border: #b99bf8;
 
     --badge-green: #3db64e;
     --indicator-green: #3db64e;
     --day-background: rgba(0, 0, 0, 0.38);
     --day-color: rgba(255, 255, 255, 0.82);
-    --color-accent-main: #2ca5e0;
+    --color-accent-main: #8774e1;
 
     --design-page-background: #0f0f0f;
     --design-page-color: #ffffff;
     --design-sidebar-background: var(--weba-sidebar);
     --design-middle-background: var(--weba-chat-bg);
-    --design-panel-background: #1c1c1d;
+    --design-panel-background: #212121;
     --design-header-background: var(--weba-header-bg);
     --design-header-color: #ffffff;
+    --design-header-muted-color: rgba(255, 255, 255, 0.55);
     --design-input-background: #0f0f0f;
-    --design-input-surface: #252525;
+    --design-input-surface: #2a2a2a;
     --design-border-color: var(--weba-sidebar-border);
     --design-muted-color: var(--weba-text-secondary);
     --design-hover-background: var(--weba-row-hover);
-    --design-active-background: rgba(44, 165, 224, 0.14);
+    --design-active-background: rgba(135, 116, 225, 0.18);
 }
 
 body.theme-dark.design-weba .dialogs {
@@ -317,7 +293,8 @@ body.theme-dark.design-weba .messages-list-wrapper {
 body.theme-dark.design-weba .header-details,
 body.theme-dark.design-weba .header-master {
     background: var(--weba-header-bg);
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+    border-bottom: 1px solid var(--weba-sidebar-border);
+    box-shadow: none;
 }
 
 body.theme-dark.design-weba .inputbox-background {

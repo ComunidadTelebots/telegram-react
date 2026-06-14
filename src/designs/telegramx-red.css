@@ -4,11 +4,11 @@
  */
 body.design-telegramx-red {
     --tgx-accent: #e85050;
-    --tgx-accent-dark: #c93c3c;
-    --tgx-gradient-start: #f07070;
-    --tgx-gradient-end: #c93c3c;
+    --tgx-header: #c93c3c;
+    --tgx-header-hover: #b03030;
     --tgx-ripple: rgba(232, 80, 80, 0.14);
     --color-accent-main: #e85050;
+    --message-out-background: linear-gradient(135deg, #f07070 0%, #c93c3c 100%);
     --design-header-background: linear-gradient(180deg, #f07070 0%, #c93c3c 100%);
     --design-active-background: rgba(232, 80, 80, 0.14);
     --design-hover-background: rgba(232, 80, 80, 0.07);

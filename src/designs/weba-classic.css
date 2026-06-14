@@ -1,57 +1,53 @@
 /*
- * weba-classic — Web A sin header de color (header blanco).
- * Hereda de design-weba, solo cancela el header azul.
+ * weba-classic — Web A con header de color azul (variante estilística).
+ * Hereda de design-weba (header blanco) y añade el header de color.
  */
+
 body.design-weba-classic {
-    --weba-header-bg: #ffffff;
-    --weba-header-color: #111111;
-    --design-header-background: #ffffff;
-    --design-header-color: #111111;
-    --design-header-muted-color: var(--weba-text-secondary);
+    --weba-header-bg: #2ca5e0;
+    --weba-header-color: #ffffff;
+    --design-header-background: #2ca5e0;
+    --design-header-color: #ffffff;
+    --design-header-muted-color: rgba(255, 255, 255, 0.8);
 }
 
 body.design-weba-classic .header-details,
 body.design-weba-classic .header-master {
-    background: #ffffff;
-    color: #111111;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    background: #2ca5e0;
+    color: #ffffff;
+    border-bottom: none;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.14);
 }
 
 body.design-weba-classic .header-status-title,
 body.design-weba-classic .header-status-subtitle {
-    color: var(--weba-text-secondary) !important;
+    color: rgba(255, 255, 255, 0.85) !important;
 }
 
 body.design-weba-classic .header-left-button,
 body.design-weba-classic .header-right-button {
-    color: var(--weba-accent) !important;
+    color: rgba(255, 255, 255, 0.9) !important;
 }
 
 body.design-weba-classic .search-input {
-    background: #f0f0f0;
-    color: #111111;
-    border: 1px solid rgba(0, 0, 0, 0.1);
+    background: rgba(255, 255, 255, 0.18);
+    border-color: transparent;
+    color: #ffffff;
 }
 
 body.design-weba-classic .search-input::placeholder {
-    color: var(--weba-text-secondary);
+    color: rgba(255, 255, 255, 0.65);
 }
 
 body.theme-dark.design-weba-classic {
-    --weba-header-bg: #1c1c1d;
-    --weba-header-color: #ffffff;
-    --design-header-background: #1c1c1d;
+    --weba-header-bg: #1a3d5c;
+    --design-header-background: #1a3d5c;
     --design-header-color: #ffffff;
 }
 
 body.theme-dark.design-weba-classic .header-details,
 body.theme-dark.design-weba-classic .header-master {
-    background: #1c1c1d;
-    box-shadow: none;
-}
-
-body.theme-dark.design-weba-classic .search-input {
-    background: #2a2a2a;
-    color: #ffffff;
-    border-color: rgba(255, 255, 255, 0.08);
+    background: #1a3d5c;
+    border-bottom: none;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }

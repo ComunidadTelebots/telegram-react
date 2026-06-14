@@ -66,9 +66,9 @@ body.design-webk {
     --design-message-wrapper-max-width: 960px;
     --design-message-wrapper-padding: 3px 20px;
     --design-message-content-max-width: 580px;
-    --design-message-radius-in: 12px 12px 12px 3px;
-    --design-message-radius-out: 12px 12px 3px 12px;
-    --design-message-radius-short: 12px;
+    --design-message-radius-in: 15px 15px 15px 5px;
+    --design-message-radius-out: 15px 15px 5px 15px;
+    --design-message-radius-short: 15px;
     --design-message-padding: 7px 10px;
     --design-message-shadow: 0 1px 2px rgba(0, 0, 0, 0.12);
     --design-message-tail-display: block;
@@ -148,7 +148,7 @@ body.design-webk .folder-tab-active {
 }
 
 body.design-webk .message-bubble {
-    border-radius: 12px 12px 12px 3px;
+    border-radius: 15px 15px 15px 5px;
     padding: 7px 10px;
     background: var(--message-in-background);
     color: var(--message-in-color);
@@ -156,13 +156,13 @@ body.design-webk .message-bubble {
 }
 
 body.design-webk .message-bubble-out {
-    border-radius: 12px 12px 3px 12px;
+    border-radius: 15px 15px 5px 15px;
     background: var(--message-out-background);
     color: var(--message-out-color);
 }
 
 body.design-webk .message-short .message-bubble {
-    border-radius: 12px;
+    border-radius: 15px;
 }
 
 body.design-webk .message-wrapper {
@@ -228,10 +228,11 @@ body.design-webk ::selection {
     background: rgba(51, 144, 236, 0.25);
 }
 
-/* ── Dark mode ──────────────────────────────────────────────────────────── */
+/* ── Dark mode — Night mode con acento PÚRPURA ─────────────────────────── */
+/* Source: tweb Night theme — accent #8774E1, out bubble #766AC8            */
 body.theme-dark.design-webk {
-    --webk-accent: #3390ec;
-    --webk-accent-hover: #4aa0f0;
+    --webk-accent: #8774e1;
+    --webk-accent-hover: #9b88f0;
     --webk-sidebar: #212121;
     --webk-sidebar-border: rgba(255, 255, 255, 0.07);
     --webk-chat-bg: #0e0e0e;
@@ -240,26 +241,26 @@ body.theme-dark.design-webk {
     --webk-row-hover: rgba(255, 255, 255, 0.05);
     --webk-header: #212121;
 
-    --message-out-background: #2b5278;
+    --message-out-background: #766ac8;
     --message-out-color: #ffffff;
-    --message-out-link: #7ac8ff;
+    --message-out-link: rgba(255, 255, 255, 0.85);
     --message-out-meta-color: rgba(255, 255, 255, 0.55);
     --message-out-reply-title: rgba(255, 255, 255, 0.85);
     --message-out-reply-border: rgba(255, 255, 255, 0.4);
 
     --message-in-background: #212121;
     --message-in-color: #ffffff;
-    --message-in-link: #7ac8ff;
-    --message-in-author: #7ac8ff;
+    --message-in-link: #b99bf8;
+    --message-in-author: #b99bf8;
     --message-in-meta-color: rgba(255, 255, 255, 0.55);
-    --message-in-reply-title: #7ac8ff;
-    --message-in-reply-border: #7ac8ff;
+    --message-in-reply-title: #b99bf8;
+    --message-in-reply-border: #b99bf8;
 
     --badge-green: #4dcd5e;
     --indicator-green: #4dcd5e;
     --day-background: rgba(0, 0, 0, 0.4);
     --day-color: rgba(255, 255, 255, 0.85);
-    --color-accent-main: #3390ec;
+    --color-accent-main: #8774e1;
     --shadow-bubble: 0 1px 2px rgba(0, 0, 0, 0.3);
 
     --design-page-background: #0e0e0e;
@@ -274,7 +275,7 @@ body.theme-dark.design-webk {
     --design-border-color: var(--webk-sidebar-border);
     --design-muted-color: var(--webk-text-secondary);
     --design-hover-background: var(--webk-row-hover);
-    --design-active-background: rgba(51, 144, 236, 0.15);
+    --design-active-background: rgba(135, 116, 225, 0.18);
 }
 
 body.theme-dark.design-webk .dialogs {

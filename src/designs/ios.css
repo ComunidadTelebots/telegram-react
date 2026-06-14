@@ -17,7 +17,7 @@ body.design-ios {
     --text-body: 15px;
     --line-body: 20px;
 
-    --ios-blue: #007aff;
+    --ios-blue: #0088ff;
     --ios-blue-active: #0a84ff;
     --ios-sidebar: #f2f2f7;
     --ios-sidebar-border: rgba(60, 60, 67, 0.16);
@@ -26,7 +26,7 @@ body.design-ios {
     --ios-text-secondary: rgba(60, 60, 67, 0.6);
     --ios-row-hover: rgba(0, 0, 0, 0.04);
 
-    --message-out-background: #007aff;
+    --message-out-background: linear-gradient(180deg, #57b2e0 0%, #0088ff 100%);
     --message-out-color: #ffffff;
     --message-out-link: rgba(255, 255, 255, 0.92);
     --message-out-author: rgba(255, 255, 255, 0.88);
@@ -36,17 +36,17 @@ body.design-ios {
 
     --message-in-background: #e9e9eb;
     --message-in-color: #000000;
-    --message-in-link: #007aff;
-    --message-in-author: #007aff;
+    --message-in-link: #0088ff;
+    --message-in-author: #0088ff;
     --message-in-meta-color: rgba(60, 60, 67, 0.56);
-    --message-in-reply-title: #007aff;
-    --message-in-reply-border: #007aff;
+    --message-in-reply-title: #0088ff;
+    --message-in-reply-border: #0088ff;
 
     --badge-green: #34c759;
     --indicator-green: #34c759;
     --day-background: rgba(120, 120, 128, 0.2);
     --day-color: rgba(60, 60, 67, 0.72);
-    --color-accent-main: #007aff;
+    --color-accent-main: #0088ff;
     --shadow-bubble: none;
 
     --design-page-background: #ffffff;
@@ -391,7 +391,7 @@ body.design-ios .search-caption-title {
 body.design-ios .search-caption-command {
     text-transform: none;
     font-size: 15px;
-    color: var(--color-accent-main, #007aff);
+    color: var(--color-accent-main, #0088ff);
 }
 
 body.design-ios .top-chat-title {
@@ -415,21 +415,21 @@ body.design-ios .search-local-chats .MuiListItem-root + .MuiListItem-root {
 /* ── Features sesión 21 ─────────────────────────────── */
 body.design-ios .reaction-bubble {
     border-radius: 14px;
-    border-color: #007aff;
+    border-color: #0088ff;
     background: rgba(0, 122, 255, 0.07);
     font-size: 13px;
 }
 body.design-ios .reaction-chosen {
     background: rgba(0, 122, 255, 0.18);
-    border-color: #007aff;
-    color: #007aff;
+    border-color: #0088ff;
+    color: #0088ff;
 }
 body.design-ios .reaction-add-btn {
-    border-color: #007aff;
-    color: #007aff;
+    border-color: #0088ff;
+    color: #0088ff;
 }
 body.design-ios .spoiler-text {
-    background: #007aff;
+    background: #0088ff;
     color: transparent;
     border-radius: 3px;
     cursor: pointer;
@@ -448,7 +448,7 @@ body.design-ios .format-toolbar {
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.14);
 }
 body.design-ios .fmt-btn {
-    color: #007aff;
+    color: #0088ff;
     font-size: 13px;
 }
 body.design-ios .fmt-btn:hover {
@@ -465,7 +465,7 @@ body.design-ios .fact-check-label {
     color: #ff3b30;
 }
 body.design-ios .similar-channels-title {
-    color: #007aff;
+    color: #0088ff;
 }
 body.design-ios .similar-channel-item:hover {
     background: rgba(0, 0, 0, 0.04);
@@ -475,8 +475,8 @@ body.design-ios .voice-transcribe-btn,
 body.design-ios .voice-speed-btn,
 body.design-ios .message-scheduled-badge {
     border-radius: 14px;
-    border-color: #007aff;
-    color: #007aff;
+    border-color: #0088ff;
+    color: #0088ff;
     background: rgba(0, 122, 255, 0.08);
 }
 

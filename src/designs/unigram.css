@@ -14,8 +14,8 @@ body.design-unigram {
     --text-body: 14px;
     --line-body: 20px;
 
-    --unigram-accent: #2b7fe0;
-    --unigram-accent-hover: #1e6ecf;
+    --unigram-accent: #40a7e3;
+    --unigram-accent-hover: #2d9ad8;
     --unigram-sidebar: #f7f9fb;
     --unigram-surface: #ffffff;
     --unigram-chat-background: #eef3f8;
@@ -24,27 +24,29 @@ body.design-unigram {
     --unigram-border: rgba(0, 0, 0, 0.08);
     --unigram-text-secondary: #5f6b76;
 
-    --message-in-background: #ffffff;
+    --message-in-background: #e8f5fc;
     --message-in-color: #202020;
-    --message-in-link: #2b7fe0;
-    --message-in-author: #2b7fe0;
+    --message-in-link: #40a7e3;
+    --message-in-author: #40a7e3;
     --message-in-meta-color: #69737d;
-    --message-in-reply-title: #2b7fe0;
-    --message-in-reply-border: #2b7fe0;
+    --message-in-reply-title: #40a7e3;
+    --message-in-reply-border: #40a7e3;
 
-    --message-out-background: #d7ecff;
+    --message-out-background: #def1fd;
     --message-out-color: #202020;
     --message-out-link: #005a9e;
     --message-out-author: #005a9e;
     --message-out-meta-color: #4d87b8;
     --message-out-reply-title: #005a9e;
-    --message-out-reply-border: #2b7fe0;
+    --message-out-reply-border: #40a7e3;
 
     --badge-green: #16c60c;
     --indicator-green: #16c60c;
     --day-background: rgba(75, 105, 130, 0.72);
     --day-color: #ffffff;
-    --color-accent-main: #2b7fe0;
+    --color-accent-main: #40a7e3;
+    --unigram-card-hover: rgba(64, 167, 227, 0.08);
+    --unigram-card-active: rgba(64, 167, 227, 0.16);
 
     --design-page-background: #ffffff;
     --design-page-color: #202020;
@@ -270,38 +272,39 @@ body.design-unigram ::-webkit-scrollbar-thumb {
     background-clip: padding-box;
 }
 
+/* Dark mode: TDesktop/Unigram Night — accent #5288C1, in #1C2733, out #456A93 */
 body.theme-dark.design-unigram {
-    --unigram-accent: #4cc2ff;
-    --unigram-accent-hover: #73d0ff;
-    --unigram-sidebar: #202020;
-    --unigram-surface: #1b1b1b;
-    --unigram-chat-background: #111827;
+    --unigram-accent: #5288c1;
+    --unigram-accent-hover: #6499d0;
+    --unigram-sidebar: #17212b;
+    --unigram-surface: #17212b;
+    --unigram-chat-background: #0e1621;
     --unigram-card-hover: rgba(255, 255, 255, 0.06);
-    --unigram-card-active: rgba(76, 194, 255, 0.18);
-    --unigram-border: rgba(255, 255, 255, 0.1);
-    --unigram-text-secondary: #a7b0b8;
+    --unigram-card-active: rgba(82, 136, 193, 0.22);
+    --unigram-border: rgba(255, 255, 255, 0.08);
+    --unigram-text-secondary: #8796a5;
 
-    --message-in-background: #252525;
+    --message-in-background: #1c2733;
     --message-in-color: #ffffff;
-    --message-in-link: #4cc2ff;
-    --message-in-author: #4cc2ff;
-    --message-in-meta-color: #a7b0b8;
-    --message-in-reply-title: #4cc2ff;
-    --message-in-reply-border: #4cc2ff;
+    --message-in-link: #6ca8d4;
+    --message-in-author: #6ca8d4;
+    --message-in-meta-color: #8796a5;
+    --message-in-reply-title: #6ca8d4;
+    --message-in-reply-border: #6ca8d4;
 
-    --message-out-background: #1f4e79;
+    --message-out-background: #456a93;
     --message-out-color: #ffffff;
-    --message-out-link: #b8e8ff;
-    --message-out-author: #b8e8ff;
-    --message-out-meta-color: #b2c9dc;
-    --message-out-reply-title: #b8e8ff;
-    --message-out-reply-border: #4cc2ff;
+    --message-out-link: #b8d4ed;
+    --message-out-author: #b8d4ed;
+    --message-out-meta-color: #91afc8;
+    --message-out-reply-title: #b8d4ed;
+    --message-out-reply-border: rgba(255, 255, 255, 0.4);
 
-    --day-background: rgba(80, 96, 112, 0.78);
+    --day-background: rgba(30, 56, 80, 0.72);
     --day-color: #ffffff;
-    --color-accent-main: #4cc2ff;
+    --color-accent-main: #5288c1;
 
-    --design-page-background: #1b1b1b;
+    --design-page-background: #0e1621;
     --design-page-color: #ffffff;
     --design-sidebar-background: var(--unigram-sidebar);
     --design-middle-background: var(--unigram-chat-background);
@@ -309,7 +312,7 @@ body.theme-dark.design-unigram {
     --design-header-background: var(--unigram-surface);
     --design-header-color: #ffffff;
     --design-input-background: var(--unigram-surface);
-    --design-input-surface: #252525;
+    --design-input-surface: #1c2733;
     --design-border-color: var(--unigram-border);
     --design-muted-color: var(--unigram-text-secondary);
     --design-hover-background: var(--unigram-card-hover);
@@ -328,11 +331,11 @@ body.theme-dark.design-unigram .dialogs {
 
 body.theme-dark.design-unigram .messages-list,
 body.theme-dark.design-unigram .messages-list-wrapper {
-    background: linear-gradient(180deg, #141c29 0%, var(--unigram-chat-background) 100%);
+    background: linear-gradient(180deg, #111d2a 0%, var(--unigram-chat-background) 100%);
 }
 
 body.theme-dark.design-unigram .inputbox-bubble {
-    background: #252525;
+    background: #1c2733;
     border-color: var(--unigram-border);
 }
 

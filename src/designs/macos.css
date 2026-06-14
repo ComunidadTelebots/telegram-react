@@ -18,17 +18,17 @@ body.design-macos {
     --text-dialog: 13px;
     --line-body: 19px;
 
-    --macos-accent: #248bf2;
+    --macos-accent: #2481cc;
     --macos-accent-active: #0a84ff;
     --macos-sidebar: #f5f5f7;
     --macos-sidebar-border: rgba(60, 60, 67, 0.18);
     --macos-chat-background: #ffffff;
     --macos-row-hover: rgba(0, 0, 0, 0.045);
-    --macos-row-active: #248bf2;
+    --macos-row-active: #2481cc;
     --macos-separator: rgba(60, 60, 67, 0.16);
     --macos-text-secondary: rgba(60, 60, 67, 0.62);
 
-    --message-out-background: #248bf2;
+    --message-out-background: #4c91c7;
     --message-out-color: #ffffff;
     --message-out-link: rgba(255, 255, 255, 0.92);
     --message-out-author: rgba(255, 255, 255, 0.88);
@@ -36,19 +36,19 @@ body.design-macos {
     --message-out-reply-title: rgba(255, 255, 255, 0.92);
     --message-out-reply-border: rgba(255, 255, 255, 0.52);
 
-    --message-in-background: #f1f1f3;
+    --message-in-background: #f4f4f4;
     --message-in-color: #111111;
-    --message-in-link: #248bf2;
-    --message-in-author: #248bf2;
+    --message-in-link: #2481cc;
+    --message-in-author: #2481cc;
     --message-in-meta-color: rgba(60, 60, 67, 0.56);
-    --message-in-reply-title: #248bf2;
-    --message-in-reply-border: #248bf2;
+    --message-in-reply-title: #2481cc;
+    --message-in-reply-border: #2481cc;
 
     --badge-green: #34c759;
     --indicator-green: #34c759;
     --day-background: rgba(120, 120, 128, 0.2);
     --day-color: rgba(60, 60, 67, 0.72);
-    --color-accent-main: #248bf2;
+    --color-accent-main: #2481cc;
 
     --design-page-background: #ffffff;
     --design-page-color: #111111;
@@ -414,7 +414,7 @@ body.design-macos .search-caption-title {
 body.design-macos .search-caption-command {
     font-size: 12px;
     font-weight: 500;
-    color: var(--color-accent-main, #248bf2);
+    color: var(--color-accent-main, #2481cc);
 }
 
 body.design-macos .top-chat {
