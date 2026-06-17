@@ -25,6 +25,7 @@ import './designs/webk.css';
 import './designs/webk-2025.css';
 import './designs/weba.css';
 import './designs/weba-classic.css';
+import './designs/palettes.css';
 
 const DESIGN_KEY = 'tg_design';
 
@@ -200,6 +201,47 @@ export function setDesign(name) {
 
 export function initDesign() {
     setDesign(getDesign());
+    initPalette();
+}
+
+const PALETTE_KEY = 'tg_palette';
+export const PALETTES = ['night', 'sepia', 'forest', 'ocean', 'sunset', 'lavender', 'monochrome'];
+export const PALETTE_LABELS = {
+    night: 'Noche',
+    sepia: 'Sepia',
+    forest: 'Bosque',
+    ocean: 'Océano',
+    sunset: 'Atardecer',
+    lavender: 'Lavanda',
+    monochrome: 'Monocromático',
+};
+export const PALETTE_COLORS = {
+    night: '#7c83fd',
+    sepia: '#8b6914',
+    forest: '#2e7d32',
+    ocean: '#0288d1',
+    sunset: '#e64a19',
+    lavender: '#7b1fa2',
+    monochrome: '#424242',
+};
+
+export function getPalette() {
+    return localStorage.getItem(PALETTE_KEY) || '';
+}
+
+export function setPalette(name) {
+    PALETTES.forEach(p => document.body.classList.remove(`palette-${p}`));
+    if (name && PALETTES.includes(name)) {
+        document.body.classList.add(`palette-${name}`);
+        localStorage.setItem(PALETTE_KEY, name);
+    } else {
+        localStorage.removeItem(PALETTE_KEY);
+    }
+}
+
+function initPalette() {
+    const saved = getPalette();
+    if (saved) setPalette(saved);
 }
 
 export { DESIGNS };

@@ -1,0 +1,89 @@
+/*
+ * palettes.css — Paletas de color predefinidas aplicables sobre cualquier diseño.
+ * Se activan añadiendo la clase body.palette-XXX.
+ */
+
+body.palette-night {
+    --color-accent-main: #7c83fd;
+    --color-accent-light: #a0a5ff;
+    --message-out-background: #2d2d5a;
+    --message-out-color: #e8e8ff;
+    --design-page-background: #12121e;
+    --design-middle-background: #1a1a2e;
+    --design-sidebar-background: #16213e;
+    --design-panel-background: #1a1a2e;
+    --text-primary: #e0e0ff;
+    --text-secondary: rgba(224, 224, 255, 0.6);
+}
+
+body.palette-sepia {
+    --color-accent-main: #8b6914;
+    --color-accent-light: #b8882a;
+    --message-out-background: #e8d5a3;
+    --message-out-color: #3d2b00;
+    --design-page-background: #f4ead0;
+    --design-middle-background: #f0e6c8;
+    --design-panel-background: #fdf6e3;
+    --text-primary: #3d2b00;
+    --text-secondary: rgba(61, 43, 0, 0.6);
+}
+
+body.palette-forest {
+    --color-accent-main: #2e7d32;
+    --color-accent-light: #4caf50;
+    --message-out-background: #c8e6c9;
+    --message-out-color: #1b5e20;
+    --design-page-background: #e8f5e9;
+    --design-middle-background: #f1f8e9;
+    --design-panel-background: #ffffff;
+    --text-primary: #1b5e20;
+    --text-secondary: rgba(27, 94, 32, 0.65);
+}
+
+body.palette-ocean {
+    --color-accent-main: #0288d1;
+    --color-accent-light: #29b6f6;
+    --message-out-background: #b3e5fc;
+    --message-out-color: #01579b;
+    --design-page-background: #e1f5fe;
+    --design-middle-background: #e8f4fd;
+    --design-panel-background: #ffffff;
+    --text-primary: #01579b;
+    --text-secondary: rgba(1, 87, 155, 0.65);
+}
+
+body.palette-sunset {
+    --color-accent-main: #e64a19;
+    --color-accent-light: #ff7043;
+    --message-out-background: #ffe0b2;
+    --message-out-color: #bf360c;
+    --design-page-background: #fff3e0;
+    --design-middle-background: #fff8f0;
+    --design-panel-background: #ffffff;
+    --text-primary: #bf360c;
+    --text-secondary: rgba(191, 54, 12, 0.65);
+}
+
+body.palette-lavender {
+    --color-accent-main: #7b1fa2;
+    --color-accent-light: #ab47bc;
+    --message-out-background: #e1bee7;
+    --message-out-color: #4a148c;
+    --design-page-background: #f3e5f5;
+    --design-middle-background: #f8f0fa;
+    --design-panel-background: #ffffff;
+    --text-primary: #4a148c;
+    --text-secondary: rgba(74, 20, 140, 0.65);
+}
+
+body.palette-monochrome {
+    --color-accent-main: #424242;
+    --color-accent-light: #757575;
+    --message-out-background: #e0e0e0;
+    --message-out-color: #212121;
+    --design-page-background: #fafafa;
+    --design-middle-background: #f5f5f5;
+    --design-panel-background: #ffffff;
+    --text-primary: #212121;
+    --text-secondary: rgba(33, 33, 33, 0.6);
+}

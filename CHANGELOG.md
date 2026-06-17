@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.0.583] - 2026-06-17
+### Añadido
+- **Paletas de color predefinidas**: 7 paletas CSS (`night`, `sepia`, `forest`, `ocean`, `sunset`, `lavender`, `monochrome`) aplicables sobre cualquier diseño via `body.palette-XXX`. `setPalette()`/`getPalette()` en Design.js con persistencia localStorage. `palettes.css` con variables CSS para cada paleta.
+
 ## [0.0.582] - 2026-06-17
 ### Añadido
 - **Webogram épocas (0.0.581-582)**: registry actualizado con 2 entradas cronológicas: `webogram` (2013, accent #5682a3) y `webogram-blue` (2016, accent #1d7cba). Ambas variantes ya existían; solo se actualizaron labels/details para reflejar cronología correcta.
