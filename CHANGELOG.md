@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.0.587] - 2026-06-17
+### Añadido
+- **Export/Import tema CSS (0.0.586-587)**: `ThemeIO` component con botones "Exportar tema (.css)" (descarga `tg-theme-DESIGN-PALETTE.css` con bloque `:root { variables }`) e "Importar tema (.css)" (lee archivo, parsea propiedades CSS, aplica en tiempo real + persiste). Integrado en ThemePicker.
+
 ## [0.0.585] - 2026-06-17
 ### Añadido
 - **Design Editor**: panel de edición de variables CSS en vivo. 6 campos editables: acento, burbuja saliente/entrante, sidebar, chat bg, tamaño fuente. Persistencia en localStorage (`tg_design_editor`). Botón "Restablecer" cuando hay overrides. Integrado al final de ThemePicker.

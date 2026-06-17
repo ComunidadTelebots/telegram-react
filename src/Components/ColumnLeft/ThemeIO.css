@@ -1,0 +1,30 @@
+.theme-io {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    padding: 4px 0;
+}
+
+.theme-io-btn {
+    padding: 7px 14px;
+    border-radius: 8px;
+    border: 1px solid var(--color-accent-main, #5b8af1);
+    background: transparent;
+    color: var(--color-accent-main, #5b8af1);
+    font-size: 13px;
+    cursor: pointer;
+    transition: background 0.15s;
+}
+
+.theme-io-btn:hover {
+    background: rgba(91, 138, 241, 0.08);
+}
+
+.theme-io-btn--import {
+    background: var(--color-accent-main, #5b8af1);
+    color: #fff;
+}
+
+.theme-io-btn--import:hover {
+    background: var(--color-accent-dark, #4a70d0);
+}
