@@ -1010,6 +1010,14 @@ class GramJsController extends EventEmitter {
             case 'sendStory':
                 return this._sendStory(req);
 
+            // ── Forum Topics ──────────────────────────────────────────────────
+            case 'getForumTopics':
+                return this._getForumTopics(req);
+            case 'createForumTopic':
+                return this._createForumTopic(req);
+            case 'editForumTopic':
+                return this._editForumTopic(req);
+
             // ── Notificaciones ────────────────────────────────────────────────
             case 'setNotificationGroup':
                 return {};
@@ -4941,6 +4949,67 @@ class GramJsController extends EventEmitter {
             console.warn('[GramJs] sendCallSignalingData error', e.message);
         }
         return {};
+    };
+
+    // ── Forum Topics ─────────────────────────────────────────────────────────
+
+    _getForumTopics = async req => {
+        const { chat_id, offset_date = 0, offset_id = 0, offset_topic = 0, limit = 50 } = req;
+        const peer = await this.getInputPeer(chat_id);
+        const result = await this.client.invoke(
+            new Api.channels.GetForumTopics({
+                channel: peer,
+                offsetDate: offset_date,
+                offsetId: offset_id,
+                offsetTopic: offset_topic,
+                limit,
+            }),
+        );
+        const topics = (result.topics || []).map(t => ({
+            id: t.id,
+            title: t.title,
+            icon_color: t.iconColor || 0,
+            icon_custom_emoji_id: t.iconEmojiId ? String(t.iconEmojiId) : null,
+            unread_count: t.unreadCount || 0,
+            unread_mentions_count: t.unreadMentionsCount || 0,
+            last_message_id: t.topMessage || 0,
+            is_closed: !!t.closed,
+            is_pinned: !!t.pinned,
+            is_hidden: !!t.hidden,
+            creation_date: t.date || 0,
+        }));
+        return { topics, count: result.count || topics.length };
+    };
+
+    _createForumTopic = async req => {
+        const { chat_id, title, icon_color = 0, icon_custom_emoji_id = null } = req;
+        const peer = await this.getInputPeer(chat_id);
+        const result = await this.client.invoke(
+            new Api.channels.CreateForumTopic({
+                channel: peer,
+                title,
+                iconColor: icon_color,
+                iconEmojiId: icon_custom_emoji_id ? BigInt(icon_custom_emoji_id) : undefined,
+                randomId: BigInt(Math.floor(Math.random() * Number.MAX_SAFE_INTEGER)),
+            }),
+        );
+        return result;
+    };
+
+    _editForumTopic = async req => {
+        const { chat_id, topic_id, title, icon_custom_emoji_id, is_closed, is_hidden } = req;
+        const peer = await this.getInputPeer(chat_id);
+        const result = await this.client.invoke(
+            new Api.channels.EditForumTopic({
+                channel: peer,
+                topicId: topic_id,
+                title,
+                iconEmojiId: icon_custom_emoji_id != null ? BigInt(icon_custom_emoji_id) : undefined,
+                closed: is_closed,
+                hidden: is_hidden,
+            }),
+        );
+        return result;
     };
 }
 

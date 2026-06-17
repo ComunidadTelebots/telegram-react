@@ -15,6 +15,7 @@ import DialogsList from './DialogsList';
 import FolderDialogsList from './FolderDialogsList';
 import StoriesTray from '../Stories/StoriesTray';
 import StoryViewer from '../Stories/StoryViewer';
+import TopicsList from './TopicsList';
 import UpdatePanel from './UpdatePanel';
 import AndroidBottomNav from './AndroidBottomNav';
 import { borderStyle } from '../Theme';
@@ -63,6 +64,7 @@ class Dialogs extends Component {
             activeFilter: null,
 
             storyViewerChatId: null,
+            forumChatId: null,
         };
     }
 
@@ -95,6 +97,7 @@ class Dialogs extends Component {
         if (nextState.chatFilters !== chatFilters) return true;
         if (nextState.activeFilter !== activeFilter) return true;
         if (nextState.storyViewerChatId !== this.state.storyViewerChatId) return true;
+        if (nextState.forumChatId !== this.state.forumChatId) return true;
 
         return false;
     }
@@ -149,6 +152,16 @@ class Dialogs extends Component {
         }
         if (update['@type'] === 'clientUpdateOpenStoryViewer') {
             this.setState({ storyViewerChatId: update.chatId });
+        }
+        if (update['@type'] === 'clientUpdateChatId') {
+            const { chatId } = update;
+            if (!chatId) {
+                this.setState({ forumChatId: null });
+                return;
+            }
+            const chat = ChatStore.get(chatId);
+            const isForum = chat && chat.type && chat.type.is_forum;
+            this.setState({ forumChatId: isForum ? chatId : null });
         }
     };
 
@@ -376,6 +389,7 @@ class Dialogs extends Component {
             chatFilters,
             activeFilter,
             storyViewerChatId,
+            forumChatId,
         } = this.state;
 
         const mainCacheItems = cache ? cache.chats || [] : null;
@@ -413,7 +427,15 @@ class Dialogs extends Component {
                     </div>
                 )}
                 <div className='dialogs-content'>
-                    {activeFilter !== null ? (
+                    {forumChatId && !openSearch ? (
+                        <TopicsList
+                            chatId={forumChatId}
+                            onClose={() => {
+                                this.setState({ forumChatId: null });
+                                TdLibController.setChatId(0);
+                            }}
+                        />
+                    ) : activeFilter !== null ? (
                         <FolderDialogsList filterId={activeFilter} />
                     ) : (
                         <>

@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.0.546] - 2026-06-17
+### Añadido
+- **Forum Topics**: detección de grupos-foro (`Channel.forum == true`) propagada como `is_forum` en `translateChat`. En `Dialogs.js`, cuando se selecciona un chat-foro se muestra `TopicsList` en el panel izquierdo en lugar de la lista de chats. `TopicsList.js`: lista de temas con icono de color, badge de mensajes no leídos, pin/cerrado, botón `+` para crear tema. Modal `CreateTopicModal` con campo de título. GramJsController: métodos `_getForumTopics` (`channels.GetForumTopics`), `_createForumTopic` (`channels.CreateForumTopic`), `_editForumTopic` (`channels.EditForumTopic`). CSS con variables del design system y skin overrides para 10 diseños.
+
 ## [0.0.545] - 2026-06-17
 ### Añadido
 - **Story Publishing**: botón "Mi historia" (+) en StoriesTray. StoryComposer.js: modal con selector de foto/vídeo, caption, privacy (Todos/Contactos/Amigos cercanos), duración (6h/12h/24h/48h). GramJsController `_sendStory` sube el archivo con `uploadFile` y llama `stories.SendStory` con `InputPrivacyValueAllowAll/Contacts/CloseFriends`. Skin overrides en StoryComposer.css para 10 diseños.

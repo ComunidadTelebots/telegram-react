@@ -443,8 +443,13 @@ export function translateChat(entity, dialog) {
         title = entity.title || '';
     } else if (cls === 'Channel' || cls === 'ChannelForbidden') {
         type = entity.megagroup
-            ? { '@type': 'chatTypeSupergroup', supergroup_id: Number(entity.id), is_channel: false }
-            : { '@type': 'chatTypeSupergroup', supergroup_id: Number(entity.id), is_channel: true };
+            ? {
+                  '@type': 'chatTypeSupergroup',
+                  supergroup_id: Number(entity.id),
+                  is_channel: false,
+                  is_forum: !!entity.forum,
+              }
+            : { '@type': 'chatTypeSupergroup', supergroup_id: Number(entity.id), is_channel: true, is_forum: false };
         title = entity.title || '';
     } else {
         return null;
