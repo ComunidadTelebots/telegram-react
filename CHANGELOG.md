@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.0.580] - 2026-06-17
+### Añadido
+- **TDesktop épocas (0.0.578-580)**: reorganización del registry en 3 épocas cronológicas. `tdesktop-classic` (2015, sidebar azul #2b5278), `tdesktop-2019` (transición 2019, sidebar #2b4f6e, burbujas 6px, verde para salientes), `tdesktop` (actual 2020+). CSS de `tdesktop-2019` añadido con dark mode.
+
 ## [0.0.577] - 2026-06-17
 ### Añadido
 - **Telegram X épocas (0.0.576-577)**: `telegramx-2018` (sidebar oscuro #1a2234, acento verde agua #00bfa5, primera versión TGX). Registry con 3 entradas: 2018, Actual y Red.

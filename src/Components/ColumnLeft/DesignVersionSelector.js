@@ -86,8 +86,21 @@ const DESIGN_VERSION_REGISTRY = {
         { value: 'macos', label: 'Sonoma', detail: 'macOS Sonoma actual 2024', tag: 'Actual', trigger: 'Sonoma' },
     ],
     tdesktop: [
-        { value: 'tdesktop', label: 'Modern', detail: 'TDesktop modern', tag: 'Modern', trigger: 'Modern' },
-        { value: 'tdesktop-classic', label: 'Classic', detail: 'TDesktop classic', tag: 'Classic', trigger: 'Classic' },
+        {
+            value: 'tdesktop-classic',
+            label: 'Classic',
+            detail: 'TDesktop Classic 2015 — sidebar azul oscuro',
+            tag: '2015',
+            trigger: 'Classic',
+        },
+        {
+            value: 'tdesktop-2019',
+            label: '2019',
+            detail: 'TDesktop 2019 — sidebar #2b4f6e, burbujas 6px',
+            tag: '2019',
+            trigger: '2019',
+        },
+        { value: 'tdesktop', label: 'Actual', detail: 'TDesktop moderno 2020+', tag: 'Actual', trigger: 'Actual' },
     ],
     unigram: [
         { value: 'unigram-wp', label: 'WP 2016', detail: 'Windows Phone tiles 2016', tag: 'WP', trigger: 'WP 2016' },

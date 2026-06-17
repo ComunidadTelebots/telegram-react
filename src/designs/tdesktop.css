@@ -385,3 +385,57 @@ body.design-tdesktop .video-note-transcription {
 body.design-tdesktop .reaction-unread {
     box-shadow: 0 0 0 2px rgba(58, 154, 208, 0.34);
 }
+
+/* tdesktop-2019 — era transición 2019: sidebar azul, burbujas con radio 6px */
+body.design-tdesktop-2019 {
+    --color-accent-main: #2481cc;
+    --design-sidebar-background: #2b4f6e;
+    --design-header-background: #2b4f6e;
+    --design-header-color: #fff;
+    --design-page-background: #f5f5f5;
+    --design-panel-background: #fff;
+    --design-dialog-radius: 0;
+    --design-message-radius-in: 6px 6px 6px 0;
+    --design-message-radius-out: 6px 6px 0 6px;
+    --design-message-radius-short: 6px;
+    --message-out-background: #effdde;
+    --message-out-color: #000;
+    --message-in-background: #fff;
+    --message-in-color: #000;
+    --shadow-bubble: 0 1px 2px rgba(0, 0, 0, 0.18);
+}
+body.design-tdesktop-2019 .header-details,
+body.design-tdesktop-2019 .header-master {
+    background: #2b4f6e;
+    color: #fff;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+body.design-tdesktop-2019 .message-bubble {
+    border-radius: 6px;
+}
+body.design-tdesktop-2019 .message-bubble-out {
+    border-radius: 6px 6px 0 6px;
+}
+body.design-tdesktop-2019 .message-bubble-in {
+    border-radius: 0 6px 6px 6px;
+}
+body.design-tdesktop-2019 .dialog-list-item:hover {
+    background: rgba(36, 129, 204, 0.08);
+}
+
+@media (prefers-color-scheme: dark) {
+    body.design-tdesktop-2019 {
+        --design-sidebar-background: #17212b;
+        --design-header-background: #17212b;
+        --design-page-background: #0d1117;
+        --design-panel-background: #1c2733;
+        --message-out-background: #2b5278;
+        --message-out-color: #fff;
+        --message-in-background: #1c2733;
+        --message-in-color: #e8e8e8;
+    }
+    body.design-tdesktop-2019 .header-details,
+    body.design-tdesktop-2019 .header-master {
+        background: #17212b;
+    }
+}

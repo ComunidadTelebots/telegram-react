@@ -79,8 +79,9 @@ const DESIGN_SUB_VARIANTS = [
     'macos-yosemite',
     'macos-bigsur',
     'macos-monterey',
-    // tdesktop
+    // tdesktop eras
     'tdesktop-classic',
+    'tdesktop-2019',
     // unigram eras
     'unigram-wp',
     'unigram-fluent',
@@ -150,6 +151,7 @@ export const DESIGN_ACCENTS = {
     'macos-monterey': '#5b5ea6',
     tdesktop: '#40a7e3',
     'tdesktop-classic': '#2b5278',
+    'tdesktop-2019': '#2481cc',
     unigram: '#40a7e3',
     'unigram-wp': '#0050ef',
     'unigram-fluent': '#0078d4',
