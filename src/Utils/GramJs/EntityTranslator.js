@@ -782,6 +782,7 @@ export function translateMessage(msg, chatId) {
         via_bot_user_id: msg.viaBotId ? Number(msg.viaBotId) : 0,
         reactions: translateReactions(msg.reactions),
         fact_check: translateFactCheck(msg.factcheck),
+        effect_id: msg.effect ? String(msg.effect) : null,
     };
 }
 

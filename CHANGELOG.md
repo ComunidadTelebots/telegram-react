@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.0.541] - 2026-06-17
+### Añadido
+- **Message Effects**: propaga `effect_id` desde GramJS (`msg.effect`) en EntityTranslator. Si el mensaje tiene efecto, muestra indicador ✨ con animación CSS `effect-sparkle` (pulse + rotate). Sin selector de efectos, solo render.
+
 ## [0.0.540] - 2026-06-17
 ### Añadido
 - **Custom Emoji**: caché compartida a nivel de módulo (`stickerCache`) en CustomEmoji.js para evitar llamadas duplicadas a `getCustomEmojiDocuments` por el mismo emoji ID. Render ya existente: Lottie animado, video webm, imagen estática; IntersectionObserver para lazy load; fallback a texto plano.

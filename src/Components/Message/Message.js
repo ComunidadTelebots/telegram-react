@@ -1118,6 +1118,11 @@ class Message extends Component {
                             </button>
                         )}
                         {isScheduled && <div className='message-scheduled-badge'>🕐 Programado</div>}
+                        {message.effect_id && (
+                            <span className='message-effect-indicator' title={`Effect: ${message.effect_id}`}>
+                                ✨
+                            </span>
+                        )}
                         {message.fact_check && <FactCheck factCheck={message.fact_check} />}
                         <Reactions chatId={chatId} messageId={messageId} />
                         {isOutgoingGroup && <SeenBy chatId={chatId} messageId={messageId} />}

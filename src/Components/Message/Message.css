@@ -356,6 +356,33 @@ body.design-android-classic .message-translation-toggle {
     white-space: nowrap;
 }
 
+/* Message effect indicator */
+.message-effect-indicator {
+    display: inline-block;
+    font-size: 13px;
+    margin-right: 4px;
+    vertical-align: middle;
+    animation: effect-sparkle 1.8s ease-in-out infinite;
+    cursor: default;
+    user-select: none;
+}
+
+@keyframes effect-sparkle {
+    0%,
+    100% {
+        transform: scale(1) rotate(0deg);
+        opacity: 0.75;
+    }
+    25% {
+        transform: scale(1.25) rotate(-10deg);
+        opacity: 1;
+    }
+    75% {
+        transform: scale(1.15) rotate(8deg);
+        opacity: 0.9;
+    }
+}
+
 .lang-picker-code {
     margin-left: 8px;
     font-size: 0.75em;
