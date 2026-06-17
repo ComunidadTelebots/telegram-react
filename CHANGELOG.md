@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.0.569] - 2026-06-17
+### Añadido
+- **macOS épocas (0.0.567-569)**: `macos-yosemite` (Helvetica Neue 2014, gradient header), `macos-bigsur` (translucency 2020, 14px radius), más el ya existente `macos-monterey` como tercera época. Dark mode via prefers-color-scheme. Registry actualizado con 4 entradas cronológicas.
+
 ## [0.0.566] - 2026-06-17
 ### Añadido
 - **iOS épocas (0.0.563-566)**: 3 variantes nuevas en ios.css: `ios-7` (flat 2013, bubbles 18px sin cola), `ios-10` (3D Touch 2016, bubbles con cola suavizada), `ios-14` (widgets 2020, 20px radius). Dark mode via `prefers-color-scheme`. Registry en DesignVersionSelector con 5 entradas iOS. DESIGN_ACCENTS y DESIGN_SUB_VARIANTS actualizados en Design.js.

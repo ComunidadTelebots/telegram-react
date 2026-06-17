@@ -73,7 +73,9 @@ const DESIGN_SUB_VARIANTS = [
     'ios-10',
     'ios-14',
     'ios-ipad',
-    // macos
+    // macos eras
+    'macos-yosemite',
+    'macos-bigsur',
     'macos-monterey',
     // tdesktop
     'tdesktop-classic',
@@ -137,6 +139,8 @@ export const DESIGN_ACCENTS = {
     'ios-14': '#0a84ff',
     'ios-ipad': '#0088ff',
     macos: '#2481cc',
+    'macos-yosemite': '#147efb',
+    'macos-bigsur': '#0a84ff',
     'macos-monterey': '#5b5ea6',
     tdesktop: '#40a7e3',
     'tdesktop-classic': '#2b5278',

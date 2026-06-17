@@ -60,8 +60,22 @@ const DESIGN_VERSION_REGISTRY = {
         { value: 'ios-ipad', label: 'iPad', detail: 'iPad wide layout', tag: 'iPad', trigger: 'iPad' },
     ],
     macos: [
-        { value: 'macos', label: 'Sonoma', detail: 'macOS Sonoma', tag: 'Sonoma', trigger: 'Sonoma' },
-        { value: 'macos-monterey', label: 'Monterey', detail: 'macOS Monterey', tag: 'Monterey', trigger: 'Monterey' },
+        {
+            value: 'macos-yosemite',
+            label: 'Yosemite',
+            detail: 'Primer flat macOS 2014',
+            tag: 'Yosemite',
+            trigger: 'Yosemite',
+        },
+        { value: 'macos-bigsur', label: 'Big Sur', detail: 'Translucency 2020', tag: 'Big Sur', trigger: 'Big Sur' },
+        {
+            value: 'macos-monterey',
+            label: 'Monterey',
+            detail: 'macOS Monterey 2021',
+            tag: 'Monterey',
+            trigger: 'Monterey',
+        },
+        { value: 'macos', label: 'Sonoma', detail: 'macOS Sonoma actual 2024', tag: 'Actual', trigger: 'Sonoma' },
     ],
     tdesktop: [
         { value: 'tdesktop', label: 'Modern', detail: 'TDesktop modern', tag: 'Modern', trigger: 'Modern' },

@@ -512,3 +512,95 @@ body.design-macos .video-note-transcription {
 body.design-macos .reaction-unread {
     box-shadow: 0 0 0 2px rgba(36, 139, 242, 0.35);
 }
+
+/* ══════════════════════════════════════════════════════════════════════════════
+   macOS Yosemite era (2014–2015) — first flat macOS, Lucida Grande → Helvetica
+   ══════════════════════════════════════════════════════════════════════════════ */
+body.design-macos-yosemite {
+    font: 13px/18px 'Helvetica Neue', Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    --color-accent-main: #147efb;
+    --message-out-background: #147efb;
+    --message-out-color: #fff;
+    --message-in-background: #e8e8ed;
+    --message-in-color: #000;
+    --design-sidebar-background: #f0f0f0;
+    --design-header-background: rgba(238, 238, 238, 0.96);
+    --design-header-color: #333;
+    --design-page-background: #ebebeb;
+    --design-page-color: #000;
+    --design-middle-background: #fff;
+    --design-panel-background: #f0f0f0;
+    --design-border-color: rgba(0, 0, 0, 0.14);
+    --design-muted-color: rgba(0, 0, 0, 0.45);
+    --shadow-bubble: none;
+}
+
+body.design-macos-yosemite .message-bubble {
+    border-radius: 8px;
+}
+body.design-macos-yosemite .message-bubble::after {
+    content: none;
+}
+body.design-macos-yosemite .dialogs-header {
+    background: linear-gradient(to bottom, #e0e0e0, #d0d0d0);
+}
+
+/* ══════════════════════════════════════════════════════════════════════════════
+   macOS Big Sur (2020) — new translucency, rounded corners, SF Symbols
+   ══════════════════════════════════════════════════════════════════════════════ */
+body.design-macos-bigsur {
+    font: 14px/19px -apple-system, 'SF Pro Text', 'Helvetica Neue', Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    --color-accent-main: #0a84ff;
+    --message-out-background: #0a84ff;
+    --message-out-color: #fff;
+    --message-in-background: #f0f0f3;
+    --message-in-color: #000;
+    --design-sidebar-background: rgba(246, 246, 248, 0.88);
+    --design-header-background: rgba(246, 246, 248, 0.9);
+    --design-header-color: #000;
+    --design-page-background: #f6f6f8;
+    --design-page-color: #000;
+    --design-middle-background: #fff;
+    --design-panel-background: rgba(246, 246, 248, 0.88);
+    --design-border-color: rgba(60, 60, 67, 0.14);
+    --design-muted-color: rgba(60, 60, 67, 0.56);
+    --shadow-bubble: none;
+}
+
+body.design-macos-bigsur .message-bubble {
+    border-radius: 14px;
+}
+body.design-macos-bigsur .message-bubble::after {
+    content: none;
+}
+
+/* Dark mode */
+@media (prefers-color-scheme: dark) {
+    body.design-macos-yosemite {
+        --message-in-background: #3a3a3c;
+        --message-in-color: #fff;
+        --design-sidebar-background: #2b2b2b;
+        --design-header-background: rgba(43, 43, 43, 0.96);
+        --design-header-color: #e5e5e5;
+        --design-page-background: #1e1e1e;
+        --design-page-color: #fff;
+        --design-middle-background: #262626;
+        --design-border-color: rgba(255, 255, 255, 0.1);
+        --design-muted-color: rgba(235, 235, 245, 0.55);
+    }
+
+    body.design-macos-bigsur {
+        --message-in-background: #3a3a3c;
+        --message-in-color: #fff;
+        --design-sidebar-background: rgba(30, 30, 32, 0.92);
+        --design-header-background: rgba(30, 30, 32, 0.9);
+        --design-header-color: #fff;
+        --design-page-background: #1c1c1e;
+        --design-page-color: #fff;
+        --design-middle-background: #2c2c2e;
+        --design-border-color: rgba(255, 255, 255, 0.1);
+        --design-muted-color: rgba(235, 235, 245, 0.6);
+    }
+}
