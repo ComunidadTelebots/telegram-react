@@ -21,10 +21,85 @@ import { getExtension } from '../../../Utils/File';
 import FileStore from '../../../Stores/FileStore';
 import './Document.css';
 
+function parseMarkdown(md) {
+    const escape = s =>
+        s
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;');
+    const inlineFormat = raw => {
+        let s = escape(raw);
+        s = s.replace(/`([^`]+)`/g, '<code>$1</code>');
+        s = s.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+        s = s.replace(/\*([^*]+)\*/g, '<em>$1</em>');
+        s = s.replace(/~~([^~]+)~~/g, '<del>$1</del>');
+        s = s.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>');
+        return s;
+    };
+    const lines = md.split('\n');
+    let html = '';
+    let inCode = false;
+    let inList = false;
+    for (let i = 0; i < lines.length; i++) {
+        const line = lines[i];
+        if (/^```/.test(line)) {
+            if (inList) {
+                html += '</ul>';
+                inList = false;
+            }
+            inCode = !inCode;
+            html += inCode ? '<pre><code>' : '</code></pre>';
+            continue;
+        }
+        if (inCode) {
+            html += escape(line) + '\n';
+            continue;
+        }
+        const h = line.match(/^(#{1,6})\s+(.*)/);
+        if (h) {
+            if (inList) {
+                html += '</ul>';
+                inList = false;
+            }
+            const lvl = h[1].length;
+            html += `<h${lvl}>${inlineFormat(h[2])}</h${lvl}>`;
+            continue;
+        }
+        if (/^>\s?(.*)/.test(line)) {
+            if (inList) {
+                html += '</ul>';
+                inList = false;
+            }
+            html += `<blockquote>${inlineFormat(line.replace(/^>\s?/, ''))}</blockquote>`;
+            continue;
+        }
+        if (/^[-*]\s+(.*)/.test(line)) {
+            if (!inList) {
+                html += '<ul>';
+                inList = true;
+            }
+            html += `<li>${inlineFormat(line.replace(/^[-*]\s+/, ''))}</li>`;
+            continue;
+        }
+        if (inList) {
+            html += '</ul>';
+            inList = false;
+        }
+        if (line.trim() === '') {
+            html += '<br>';
+            continue;
+        }
+        html += `<p>${inlineFormat(line)}</p>`;
+    }
+    if (inList) html += '</ul>';
+    if (inCode) html += '</code></pre>';
+    return html;
+}
+
 class Document extends React.Component {
     constructor(props) {
         super(props);
-        this.state = { pdfOpen: false, blobUrl: null };
+        this.state = { pdfOpen: false, blobUrl: null, mdOpen: false, mdContent: null };
     }
 
     componentWillUnmount() {
@@ -59,6 +134,25 @@ class Document extends React.Component {
         this.props.openMedia && this.props.openMedia(e);
     };
 
+    handleMdPreview = async e => {
+        e.stopPropagation();
+        const { document } = this.props;
+        if (!document) return;
+        const file = document.document;
+        if (!file) return;
+        if (this.state.mdContent !== null) {
+            this.setState({ mdOpen: true });
+            return;
+        }
+        const blob = FileStore.getBlob(file.id) || FileStore.getBlob(file.remote && file.remote.id);
+        if (blob) {
+            const text = await blob.text();
+            this.setState({ mdContent: parseMarkdown(text), mdOpen: true });
+        } else {
+            this.props.openMedia && this.props.openMedia(e);
+        }
+    };
+
     render() {
         const { document, openMedia, width, height } = this.props;
         if (!document) return null;
@@ -67,9 +161,10 @@ class Document extends React.Component {
         const file = document.document;
         const ext = getExtension(file_name || '').toLowerCase();
         const isPdf = ext === 'pdf';
+        const isMd = ext === 'md';
 
         const style = width && height ? { width, height } : null;
-        const { pdfOpen, blobUrl } = this.state;
+        const { pdfOpen, blobUrl, mdOpen, mdContent } = this.state;
 
         return (
             <div className='document' style={style}>
@@ -100,9 +195,37 @@ class Document extends React.Component {
                                 <VisibilityIcon fontSize='small' />
                             </IconButton>
                         )}
+                        {isMd && (
+                            <IconButton
+                                size='small'
+                                title='Vista previa Markdown'
+                                onClick={this.handleMdPreview}
+                                style={{ marginLeft: 4, padding: 2 }}>
+                                <VisibilityIcon fontSize='small' />
+                            </IconButton>
+                        )}
                     </div>
                     <DocumentAction file={file} />
                 </div>
+                {isMd && mdOpen && mdContent !== null && (
+                    <Dialog open maxWidth='md' fullWidth onClose={() => this.setState({ mdOpen: false })}>
+                        <DialogTitle
+                            style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'space-between',
+                                paddingBottom: 0,
+                            }}>
+                            <span>{file_name}</span>
+                            <IconButton size='small' onClick={() => this.setState({ mdOpen: false })}>
+                                <CloseIcon />
+                            </IconButton>
+                        </DialogTitle>
+                        <DialogContent style={{ padding: '16px 24px', overflowY: 'auto', maxHeight: '70vh' }}>
+                            <div className='md-viewer-content' dangerouslySetInnerHTML={{ __html: mdContent }} />
+                        </DialogContent>
+                    </Dialog>
+                )}
                 {isPdf && pdfOpen && blobUrl && (
                     <Dialog open maxWidth='lg' fullWidth onClose={() => this.setState({ pdfOpen: false })}>
                         <DialogTitle

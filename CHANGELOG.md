@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.0.555] - 2026-06-17
+### Añadido
+- **Viewer .md inline**: documentos `.md` muestran icono ojo en `Document.js`. Al pulsar, se lee el blob del FileStore, se parsea con `parseMarkdown()` (headings, bold, italic, code, blockquote, listas, links; sin dependencias externas) y se renderiza en Dialog Material-UI. Estilos en `Document.css` con variables CSS del design system.
+
 ## [0.0.554] - 2026-06-17
 ### Añadido
 - **Paid Media**: render de mensajes `messagePaidMedia` (stars-gated). Translator convierte `MessageMediaPaidMedia` → `{ '@type': 'messagePaidMedia', stars_amount, previews[] }`. Componente `PaidMedia.js` muestra grid de previews borrosos con overlay ⭐ + cantidad + botón "Desbloquear" (sin flujo de pago real). Soporta 1–4+ elementos en grid responsive.
