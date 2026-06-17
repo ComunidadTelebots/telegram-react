@@ -282,7 +282,8 @@ pre code {
 .message-translation {
     margin-top: 6px;
     padding: 6px 8px;
-    border-left: 3px solid var(--message-in-reply-title, #4a9fd5);
+    border-left: 3px solid
+        var(--accent, var(--accent-color, var(--color-accent-main, var(--message-in-reply-title, #4a9fd5))));
     font-size: 0.9em;
     opacity: 0.85;
     white-space: pre-wrap;
@@ -292,6 +293,44 @@ pre code {
 .message-translation-loading {
     opacity: 0.5;
     font-style: italic;
+}
+
+.message-translation-toggle {
+    display: block;
+    margin-top: 4px;
+    padding: 0;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 0.8em;
+    color: var(--accent, var(--accent-color, var(--color-accent-main, #4a9fd5)));
+    opacity: 0.8;
+    text-align: left;
+}
+
+.message-translation-toggle:hover {
+    opacity: 1;
+    text-decoration: underline;
+}
+
+.message-translation-show {
+    margin-top: 4px;
+}
+
+body.design-android-holo .message-translation {
+    border-left-color: #33b5e5;
+}
+
+body.design-android-holo .message-translation-toggle {
+    color: #33b5e5;
+}
+
+body.design-android-classic .message-translation {
+    border-left-color: #527da3;
+}
+
+body.design-android-classic .message-translation-toggle {
+    color: #527da3;
 }
 
 /* Service card (Story, Giveaway, etc.) */

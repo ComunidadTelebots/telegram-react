@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.0.535] - 2026-06-17
+### Añadido
+- **Translation inline**: traducción de mensajes con `messages.translateText` usando `peer+id` (cache server-side). Botón "Show original / Show translation" para alternar sin re-traducir gracias a cache en memoria por `chatId:messageId:langCode`.
+- Strings i18n: `ShowOriginal` y `Translate` en EN/RU/ES.
+
+### Cambiado
+- `Message.css`: border-left de `.message-translation` ahora usa cascada `--accent → --accent-color → --color-accent-main → --message-in-reply-title` para soportar todos los skins. Overrides específicos para `design-android-holo` y `design-android-classic`.
+
 ## [2026-06-12] (sesión 28)
 
 ### Added

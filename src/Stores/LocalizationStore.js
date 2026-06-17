@@ -61,6 +61,7 @@ i18n.use(initReactI18next).init({
                 Translate: 'Translate',
                 TranslateMessage: 'Translate message',
                 TranslationUnavailable: 'Translation not available',
+                ShowOriginal: 'Show original',
                 ReportMessage: 'Report',
                 BlockUser: 'Block User',
                 UnblockUser: 'Unblock User',
@@ -80,7 +81,7 @@ i18n.use(initReactI18next).init({
                 PhotosTitle: 'Photos',
                 VideosTitle: 'Videos',
                 VoiceTitle: 'Voice messages',
-                UpdateDraftConfirmation: 'Are you sure you want to update draft?'
+                UpdateDraftConfirmation: 'Are you sure you want to update draft?',
             },
             emoji: {
                 Search: 'Search',
@@ -96,7 +97,7 @@ i18n.use(initReactI18next).init({
                 Objects: 'Objects',
                 Symbols: 'Symbols',
                 Flags: 'Flags',
-                Custom: 'Custom'
+                Custom: 'Custom',
             },
             translation: {
                 AppName: 'Telegram',
@@ -105,8 +106,16 @@ i18n.use(initReactI18next).init({
                 Loading: 'Loading...',
                 Updating: 'Updating...',
                 WaitingForNetwork: 'Waiting for network...',
-                ContinueOnThisLanguage: 'Continue in English'
-            }
+                ContinueOnThisLanguage: 'Continue in English',
+            },
+        },
+        es: {
+            local: {
+                Translate: 'Traducir',
+                TranslateMessage: 'Traducir mensaje',
+                TranslationUnavailable: 'Traducción no disponible',
+                ShowOriginal: 'Mostrar original',
+            },
         },
         ru: {
             local: {
@@ -131,6 +140,7 @@ i18n.use(initReactI18next).init({
                 Translate: 'Перевести',
                 TranslateMessage: 'Перевести сообщение',
                 TranslationUnavailable: 'Перевод недоступен',
+                ShowOriginal: 'Показать оригинал',
                 ReportMessage: 'Пожаловаться',
                 BlockUser: 'Заблокировать',
                 UnblockUser: 'Разблокировать',
@@ -150,7 +160,7 @@ i18n.use(initReactI18next).init({
                 PhotosTitle: 'Фотографии',
                 VideosTitle: 'Видеозаписи',
                 VoiceTitle: 'Голосовые сообщения',
-                UpdateDraftConfirmation: 'Вы действительно хотите обновить черновик сообщения?'
+                UpdateDraftConfirmation: 'Вы действительно хотите обновить черновик сообщения?',
             },
             emoji: {
                 Search: 'Поиск',
@@ -166,7 +176,7 @@ i18n.use(initReactI18next).init({
                 Objects: 'Предметы',
                 Symbols: 'Символы',
                 Flags: 'Флаги',
-                Custom: 'Пользовательские'
+                Custom: 'Пользовательские',
             },
             translation: {
                 AppName: 'Telegram',
@@ -175,24 +185,24 @@ i18n.use(initReactI18next).init({
                 Loading: 'Загрузка...',
                 Updating: 'Обновление...',
                 WaitingForNetwork: 'Ожидание сети...',
-                ContinueOnThisLanguage: 'Продолжить на русском'
-            }
-        }
+                ContinueOnThisLanguage: 'Продолжить на русском',
+            },
+        },
     },
     lng: language,
     fallbackLng: defaultLanguage,
     interpolation: {
-        escapeValue: false
+        escapeValue: false,
     },
     react: {
-        wait: false
-    }
+        wait: false,
+    },
 });
 
 const cache = new LocalStorageBackend(null, {
     enabled: true,
     prefix: 'i18next_res_',
-    expirationTime: Infinity
+    expirationTime: Infinity,
 });
 
 const translationDefaultLng = cache.read(defaultLanguage, defaultNamespace, (err, data) => {
@@ -234,22 +244,22 @@ class LocalizationStore extends EventEmitter {
                         TdLibController.send({
                             '@type': 'setOption',
                             name: 'localization_target',
-                            value: { '@type': 'optionValueString', value: 'android' }
+                            value: { '@type': 'optionValueString', value: 'android' },
                         });
                         TdLibController.send({
                             '@type': 'setOption',
                             name: 'language_pack_id',
-                            value: { '@type': 'optionValueString', value: language }
+                            value: { '@type': 'optionValueString', value: language },
                         });
                         TdLibController.send({
                             '@type': 'getLocalizationTargetInfo',
-                            only_local: false
+                            only_local: false,
                         }).then(result => {
                             this.info = result;
 
                             TdLibController.clientUpdate({
                                 '@type': 'clientUpdateLanguageChange',
-                                language: language
+                                language: language,
                             });
                         });
                         break;
@@ -273,7 +283,7 @@ class LocalizationStore extends EventEmitter {
                 TdLibController.send({
                     '@type': 'getLanguagePackStrings',
                     language_pack_id: language,
-                    keys: []
+                    keys: [],
                 }).then(async result => {
                     const cookies = new Cookies();
                     cookies.set('i18next', language);
@@ -289,7 +299,7 @@ class LocalizationStore extends EventEmitter {
                     TdLibController.send({
                         '@type': 'setOption',
                         name: 'language_pack_id',
-                        value: { '@type': 'optionValueString', value: language }
+                        value: { '@type': 'optionValueString', value: language },
                     });
 
                     this.emit('clientUpdateLanguageChange', update);
@@ -329,7 +339,7 @@ class LocalizationStore extends EventEmitter {
         const result = await TdLibController.send({
             '@type': 'getLanguagePackStrings',
             language_pack_id: language,
-            keys: []
+            keys: [],
         });
 
         const resources = this.processStrings(language, result);

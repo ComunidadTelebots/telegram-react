@@ -87,6 +87,9 @@ const styles = theme => ({
     },
 });
 
+// Cache en memoria: `${chatId}:${messageId}:${langCode}` → texto traducido
+const translationCache = new Map();
+
 class Message extends Component {
     constructor(props) {
         super(props);
@@ -103,6 +106,7 @@ class Message extends Component {
                 top: 0,
                 translationText: null,
                 translating: false,
+                translationVisible: true,
                 langMenu: false,
                 hovered: false,
                 copiedToast: false,
@@ -117,6 +121,7 @@ class Message extends Component {
                 top: 0,
                 translationText: null,
                 translating: false,
+                translationVisible: true,
                 langMenu: false,
                 hovered: false,
                 copiedToast: false,
@@ -142,6 +147,7 @@ class Message extends Component {
             emojiMatches,
             translationText,
             translating,
+            translationVisible,
             langMenu,
             hovered,
         } = this.state;
@@ -207,6 +213,7 @@ class Message extends Component {
 
         if (nextState.translationText !== translationText) return true;
         if (nextState.translating !== translating) return true;
+        if (nextState.translationVisible !== translationVisible) return true;
         if (nextState.hovered !== hovered) return true;
 
         // console.log('Message.shouldComponentUpdate false');
@@ -509,31 +516,48 @@ class Message extends Component {
         this.setState({ langMenu: false });
         const { chatId, messageId, t } = this.props;
 
+        const cacheKey = `${chatId}:${messageId}:${langCode}`;
+        if (translationCache.has(cacheKey)) {
+            this.setState({ translationText: translationCache.get(cacheKey), translationVisible: true });
+            return;
+        }
+
         const message = MessageStore.get(chatId, messageId);
         if (!message) return;
 
-        const { content } = message;
-        if (!content) return;
-        let text = '';
-        if (content['@type'] === 'messageText') {
-            text = content.text?.text || '';
-        } else if (content.caption) {
-            text = content.caption.text || '';
-        }
-        if (!text) return;
-
-        this.setState({ translating: true, translationText: null });
+        this.setState({ translating: true, translationText: null, translationVisible: true });
         try {
-            const result = await TdLibController.send({
-                '@type': 'translateText',
-                text,
-                to_language_code: langCode,
-            });
-            const translated = result && (result.text || result);
-            this.setState({
-                translating: false,
-                translationText: typeof translated === 'string' ? translated : translated.text || String(translated),
-            });
+            let result;
+            const hasValidId = message.id && message.id > 0 && chatId;
+            if (hasValidId) {
+                result = await TdLibController.send({
+                    '@type': 'translateText',
+                    chat_id: chatId,
+                    message_ids: [messageId],
+                    to_language_code: langCode,
+                });
+            } else {
+                const { content } = message;
+                let text = '';
+                if (content?.['@type'] === 'messageText') {
+                    text = content.text?.text || '';
+                } else if (content?.caption) {
+                    text = content.caption.text || '';
+                }
+                if (!text) {
+                    this.setState({ translating: false });
+                    return;
+                }
+                result = await TdLibController.send({
+                    '@type': 'translateText',
+                    text,
+                    to_language_code: langCode,
+                });
+            }
+            const translated = result?.text?.[0]?.text?.text || result?.text?.text || result?.text || result;
+            const translationText = typeof translated === 'string' ? translated : String(translated ?? '');
+            translationCache.set(cacheKey, translationText);
+            this.setState({ translating: false, translationText });
         } catch (e) {
             this.setState({ translating: false, translationText: t('TranslationUnavailable') });
         }
@@ -746,6 +770,7 @@ class Message extends Component {
             top,
             translationText,
             translating,
+            translationVisible,
             langMenu,
             hovered,
             copiedToast,
@@ -894,7 +919,25 @@ class Message extends Component {
                         {translating && (
                             <div className='message-translation message-translation-loading'>{t('Translate')}…</div>
                         )}
-                        {translationText && <div className='message-translation'>{translationText}</div>}
+                        {translationText && translationVisible && (
+                            <div className='message-translation'>
+                                <span className='message-translation-text'>{translationText}</span>
+                                <button
+                                    type='button'
+                                    className='message-translation-toggle'
+                                    onClick={() => this.setState({ translationVisible: false })}>
+                                    {t('ShowOriginal')}
+                                </button>
+                            </div>
+                        )}
+                        {translationText && !translationVisible && (
+                            <button
+                                type='button'
+                                className='message-translation-toggle message-translation-show'
+                                onClick={() => this.setState({ translationVisible: true })}>
+                                {t('Translate')} ↩
+                            </button>
+                        )}
                         {isScheduled && <div className='message-scheduled-badge'>🕐 Programado</div>}
                         {message.fact_check && <FactCheck factCheck={message.fact_check} />}
                         <Reactions chatId={chatId} messageId={messageId} />
