@@ -1432,6 +1432,17 @@ function isChatVerified(chatId) {
     return false;
 }
 
+function isChatPremium(chatId) {
+    const chat = ChatStore.get(chatId);
+    if (!chat || !chat.type) return false;
+    const t = chat.type['@type'];
+    if (t === 'chatTypePrivate' || t === 'chatTypeSecret') {
+        const user = UserStore.get(chat.type.user_id);
+        return !!(user && user.is_premium);
+    }
+    return false;
+}
+
 function isChatSecret(chatId) {
     const chat = ChatStore.get(chatId);
     if (!chat) return false;
@@ -1487,6 +1498,7 @@ export {
     isChatUnread,
     isChatMember,
     isChatVerified,
+    isChatPremium,
     isChatSecret,
     getChatTitle,
     getGroupChatMembers,

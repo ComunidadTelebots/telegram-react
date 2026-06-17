@@ -13,16 +13,16 @@ import withStyles from '@material-ui/core/styles/withStyles';
 import { withTranslation } from 'react-i18next';
 import LockIcon from '@material-ui/icons/Lock';
 import CheckDecagramIcon from '../../Assets/Icons/Verified';
-import { getChatTitle, isChatVerified, isChatSecret } from '../../Utils/Chat';
+import { getChatTitle, isChatVerified, isChatSecret, isChatPremium } from '../../Utils/Chat';
 import ChatStore from '../../Stores/ChatStore';
 import './DialogTitle.css';
 
 const styles = theme => ({
     icon: {
         height: 16,
-        color: theme.palette.primary.main
+        color: theme.palette.primary.main,
     },
-    verifiedIcon: {}
+    verifiedIcon: {},
 });
 
 class DialogTitle extends React.Component {
@@ -69,12 +69,18 @@ class DialogTitle extends React.Component {
 
         const isVerified = isChatVerified(chatId);
         const isSecret = isChatSecret(chatId);
+        const isPremium = isChatPremium(chatId);
         const title = getChatTitle(chatId, showSavedMessages, t);
 
         return (
             <div className='dialog-title'>
                 {isSecret && <LockIcon className={classNames(classes.icon, 'dialog-title-icon')} />}
                 <span className='dialog-title-span'>{title}</span>
+                {isPremium && (
+                    <span className='dialog-title-premium' title='Premium'>
+                        ⭐
+                    </span>
+                )}
                 {isVerified && (
                     <CheckDecagramIcon
                         className={classNames(classes.icon, classes.verifiedIcon, 'dialog-title-icon')}
@@ -87,11 +93,11 @@ class DialogTitle extends React.Component {
 
 DialogTitle.propTypes = {
     chatId: PropTypes.number.isRequired,
-    showSavedMessages: PropTypes.bool
+    showSavedMessages: PropTypes.bool,
 };
 
 DialogTitle.defaultProps = {
-    showSavedMessages: true
+    showSavedMessages: true,
 };
 
 const enhance = compose(withTranslation(), withStyles(styles, { withTheme: true }));

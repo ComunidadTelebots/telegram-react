@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.0.547] - 2026-06-17
+### Añadido
+- **Premium UI**: badge ⭐ para usuarios con `user.premium == true` en tres ubicaciones: lista de diálogos (`DialogTitle`), cabecera del chat (`Header`), nombre del remitente en mensajes (`MessageAuthor`). `is_premium` propagado desde GramJS en `translateUser`. Función `isChatPremium(chatId)` en Chat.js. CSS con `filter: drop-shadow` dorado, sin hex hardcoded fuera del efecto decorativo.
+
 ## [0.0.546] - 2026-06-17
 ### Añadido
 - **Forum Topics**: detección de grupos-foro (`Channel.forum == true`) propagada como `is_forum` en `translateChat`. En `Dialogs.js`, cuando se selecciona un chat-foro se muestra `TopicsList` en el panel izquierdo en lugar de la lista de chats. `TopicsList.js`: lista de temas con icono de color, badge de mensajes no leídos, pin/cerrado, botón `+` para crear tema. Modal `CreateTopicModal` con campo de título. GramJsController: métodos `_getForumTopics` (`channels.GetForumTopics`), `_createForumTopic` (`channels.CreateForumTopic`), `_editForumTopic` (`channels.EditForumTopic`). CSS con variables del design system y skin overrides para 10 diseños.

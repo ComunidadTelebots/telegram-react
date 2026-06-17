@@ -50,3 +50,11 @@
 .user_color_8:hover {
     color: var(--user-color-8);
 }
+
+.message-author-premium {
+    font-size: 11px;
+    margin-left: 2px;
+    vertical-align: middle;
+    line-height: 1;
+    filter: drop-shadow(0 0 2px rgba(255, 193, 7, 0.5));
+}

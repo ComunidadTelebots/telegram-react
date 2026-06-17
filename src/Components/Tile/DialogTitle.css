@@ -31,3 +31,11 @@
 .dialog-title-icon {
     height: 16px;
 }
+
+.dialog-title-premium {
+    font-size: 13px;
+    line-height: 1;
+    margin-left: 3px;
+    flex-shrink: 0;
+    filter: drop-shadow(0 0 2px rgba(255, 193, 7, 0.6));
+}

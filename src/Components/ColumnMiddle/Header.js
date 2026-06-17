@@ -52,6 +52,7 @@ import {
     isAccentChatSubtitle,
     isPrivateChat,
     isChatSecret,
+    isChatPremium,
 } from '../../Utils/Chat';
 import { clearSelection, searchChat } from '../../Actions/Client';
 import ChatStore from '../../Stores/ChatStore';
@@ -540,6 +541,7 @@ class Header extends Component {
 
         const isAccentSubtitle = isAccentChatSubtitle(chatId);
         const isSecret = isChatSecret(chatId);
+        const isPremium = isChatPremium(chatId);
         let title = getChatTitle(chatId, true, t);
         let subtitle = getChatSubtitle(chatId, true);
         let isTyping = false;
@@ -661,6 +663,11 @@ class Header extends Component {
                     <span className='header-status-content'>
                         {isSecret && <LockIcon style={{ fontSize: 15, verticalAlign: 'middle', marginRight: 3 }} />}
                         {title}
+                        {isPremium && (
+                            <span className='header-premium-badge' title='Premium'>
+                                ⭐
+                            </span>
+                        )}
                     </span>
                     {showProgressAnimation && <HeaderProgress />}
                     <span

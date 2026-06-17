@@ -46,13 +46,18 @@ class MessageAuthor extends React.Component {
             const className = classNames([tileColor], 'message-author');
 
             const fullName = getUserFullName(user);
+            const premiumBadge = user.is_premium ? <span className='message-author-premium'>⭐</span> : null;
 
             return openUser ? (
                 <a className={className} onClick={this.handleSelect}>
                     {fullName}
+                    {premiumBadge}
                 </a>
             ) : (
-                <>{fullName}</>
+                <>
+                    {fullName}
+                    {premiumBadge}
+                </>
             );
         }
 
@@ -79,12 +84,12 @@ MessageAuthor.propTypes = {
     chatId: PropTypes.number,
     userId: PropTypes.number,
     openUser: PropTypes.bool,
-    openChat: PropTypes.bool
+    openChat: PropTypes.bool,
 };
 
 MessageAuthor.defaultProps = {
     openUser: false,
-    openChat: false
+    openChat: false,
 };
 
 export default withTranslation()(MessageAuthor);

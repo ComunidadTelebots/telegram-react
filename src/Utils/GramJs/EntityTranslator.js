@@ -405,6 +405,7 @@ export function translateUser(user) {
         language_code: '',
         accent_color_id:
             user.color != null ? (typeof user.color === 'object' ? user.color.color ?? null : user.color) : null,
+        is_premium: !!user.premium,
     };
 }
 
