@@ -125,6 +125,14 @@ function searchCurrentChat(event, text) {
     searchChat(chatId, text);
 }
 
+function getFormattedSubtext(text, entities, start, end) {
+    const sub = text.substring(start, end);
+    const subEntities = (entities || [])
+        .filter(e => e.offset >= start && e.offset + e.length <= end)
+        .map(e => ({ ...e, offset: e.offset - start }));
+    return getFormattedText({ '@type': 'formattedText', text: sub, entities: subEntities });
+}
+
 function getFormattedText(formattedText) {
     if (formattedText['@type'] !== 'formattedText') return null;
 
@@ -309,10 +317,40 @@ function getFormattedText(formattedText) {
                 break;
             }
             case 'textEntityTypeBlockQuote': {
+                const innerContent = getFormattedSubtext(text, entities, offset, offset + length);
                 result.push(
                     <CollapsibleBlockquote key={entityKey} initialCollapsed={type.is_collapsed}>
-                        {entityText}
+                        {innerContent}
                     </CollapsibleBlockquote>,
+                );
+                break;
+            }
+            case 'textEntityTypeHeading': {
+                const lvl = type.level >= 1 && type.level <= 6 ? type.level : 3;
+                const HeadingTag = `h${lvl}`;
+                const innerH = getFormattedSubtext(text, entities, offset, offset + length);
+                result.push(
+                    <HeadingTag key={entityKey} className={`msg-heading msg-heading-${lvl}`}>
+                        {innerH}
+                    </HeadingTag>,
+                );
+                break;
+            }
+            case 'textEntityTypeBulletedList': {
+                const innerLi = getFormattedSubtext(text, entities, offset, offset + length);
+                result.push(
+                    <li key={entityKey} className='msg-list-item msg-bulleted-item'>
+                        {innerLi}
+                    </li>,
+                );
+                break;
+            }
+            case 'textEntityTypeOrderedList': {
+                const innerOli = getFormattedSubtext(text, entities, offset, offset + length);
+                result.push(
+                    <li key={entityKey} className='msg-list-item msg-ordered-item' value={type.number || undefined}>
+                        {innerOli}
+                    </li>,
                 );
                 break;
             }

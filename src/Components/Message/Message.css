@@ -278,6 +278,61 @@ pre code {
     vertical-align: middle;
 }
 
+/* Nested blockquote */
+.message-blockquote .message-blockquote {
+    margin-left: 4px;
+    border-left-color: var(--color-accent-main, #2196f3);
+    opacity: 0.85;
+}
+
+/* Bot rich text: headings */
+.msg-heading {
+    display: block;
+    font-weight: 700;
+    line-height: 1.25;
+    margin: 0.5em 0 0.2em;
+    color: var(--color-text-primary, #000);
+}
+
+.msg-heading-1 {
+    font-size: 1.4em;
+}
+.msg-heading-2 {
+    font-size: 1.25em;
+}
+.msg-heading-3 {
+    font-size: 1.1em;
+}
+.msg-heading-4 {
+    font-size: 1em;
+}
+.msg-heading-5 {
+    font-size: 0.9em;
+}
+.msg-heading-6 {
+    font-size: 0.85em;
+    font-weight: 600;
+    opacity: 0.75;
+}
+
+/* Bot rich text: lists */
+.msg-list-item {
+    display: list-item;
+    margin-left: 16px;
+    padding-left: 2px;
+    color: var(--color-text-primary, #000);
+    font-size: inherit;
+    line-height: 1.45;
+}
+
+.msg-bulleted-item {
+    list-style-type: disc;
+}
+
+.msg-ordered-item {
+    list-style-type: decimal;
+}
+
 /* Message translation */
 .message-translation {
     margin-top: 6px;

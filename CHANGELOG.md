@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.0.558] - 2026-06-17
+### Añadido
+- **Rich text bots**: `getFormattedText` maneja `textEntityTypeHeading` (h1-h6), `textEntityTypeBulletedList` (li.msg-bulleted-item), `textEntityTypeOrderedList` (li.msg-ordered-item). `textEntityTypeBlockQuote` ahora recursivo via `getFormattedSubtext` para renderizar entities anidadas. CSS en Message.css: `.msg-heading-{1-6}`, `.msg-list-item`, nested blockquote visual.
+
 ## [0.0.557] - 2026-06-17
 ### Añadido
 - **Stargifts detalle**: `GiftDetailModal` expandido con secciones Mejorar/Transferir/Vender/Convertir. Lee campos `can_upgrade`, `upgrade_stars`, `transfer_stars`, `can_export_at`, `refunded`, `name_hidden`, `unsaved` del objeto regalo. Muestra badges (Reembolsado, Anónimo, No guardado) y 4 action rows read-only. Sin flujo de pago/acción real.
