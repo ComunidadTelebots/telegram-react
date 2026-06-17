@@ -114,8 +114,20 @@ const DESIGN_VERSION_REGISTRY = {
         { value: 'unigram', label: 'WinUI 3', detail: 'WinUI 3 actual 2022+', tag: 'WinUI3', trigger: 'WinUI3' },
     ],
     webogram: [
-        { value: 'webogram', label: 'Legacy', detail: 'Webogram legacy', tag: 'Legacy', trigger: 'Legacy' },
-        { value: 'webogram-blue', label: 'Blue', detail: 'Webogram blue accent', tag: 'Blue', trigger: 'Blue' },
+        {
+            value: 'webogram',
+            label: '2013',
+            detail: 'Webogram clásico 2013 — accent #5682a3',
+            tag: '2013',
+            trigger: '2013',
+        },
+        {
+            value: 'webogram-blue',
+            label: '2016',
+            detail: 'Webogram 2016 — accent azul vibrante #1d7cba',
+            tag: '2016',
+            trigger: '2016',
+        },
     ],
     aurora: [
         { value: 'aurora', label: 'Default', detail: 'Aurora default', tag: 'Default', trigger: 'Default' },

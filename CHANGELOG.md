@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.0.582] - 2026-06-17
+### Añadido
+- **Webogram épocas (0.0.581-582)**: registry actualizado con 2 entradas cronológicas: `webogram` (2013, accent #5682a3) y `webogram-blue` (2016, accent #1d7cba). Ambas variantes ya existían; solo se actualizaron labels/details para reflejar cronología correcta.
+
 ## [0.0.580] - 2026-06-17
 ### Añadido
 - **TDesktop épocas (0.0.578-580)**: reorganización del registry en 3 épocas cronológicas. `tdesktop-classic` (2015, sidebar azul #2b5278), `tdesktop-2019` (transición 2019, sidebar #2b4f6e, burbujas 6px, verde para salientes), `tdesktop` (actual 2020+). CSS de `tdesktop-2019` añadido con dark mode.
