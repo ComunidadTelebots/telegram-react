@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.0.557] - 2026-06-17
+### Añadido
+- **Stargifts detalle**: `GiftDetailModal` expandido con secciones Mejorar/Transferir/Vender/Convertir. Lee campos `can_upgrade`, `upgrade_stars`, `transfer_stars`, `can_export_at`, `refunded`, `name_hidden`, `unsaved` del objeto regalo. Muestra badges (Reembolsado, Anónimo, No guardado) y 4 action rows read-only. Sin flujo de pago/acción real.
+
 ## [0.0.556] - 2026-06-17
 ### Añadido
 - **Story albums**: StoryViewer muestra tira de puntos (dots) + contador "X de N" cuando el peer tiene 2+ historias. Cada punto es clickable para saltar directamente a esa historia del álbum. Visible solo cuando no hay reply/viewers panel activo. CSS con transición suave y escalado del punto activo.
