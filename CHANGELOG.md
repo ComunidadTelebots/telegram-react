@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.0.544] - 2026-06-17
+### Añadido
+- **Stories completas**: vista de stories de contactos con tray + viewer full-screen.
+  - Tray horizontal sticky en la lista de chats con anillo accent (unread gradient, read gris).
+  - Viewer con barra de progreso segmentada, auto-avanzar, tap-nav (izq/der), ArrowKey nav.
+  - Swipe down → cerrar; swipe up → abrir campo de respuesta a la story.
+  - Marcado automático como leídas al visualizar (`readStories`).
+  - Lista de viewers en stories propias (botón 👁 en header → panel deslizable).
+  - `getStoryViewers` en GramJsController usando `Api.stories.GetStoryViewsList`.
+  - Skin overrides del anillo para todos los 12 diseños. Safe-area en móvil.
+
 ## [0.0.543] - 2026-06-17
 ### Añadido
 - **Paid Reactions**: detecta `ReactionPaid` en `translateReactions` y propaga `paid_total_count`. Reactions.js muestra badge ⭐ + total de estrellas si `paid_total_count > 0`. CSS con fondo amarillo semitransparente. Sin envío, solo render.

@@ -1,10 +1,13 @@
 import React, { Component } from 'react';
 import CloseIcon from '@material-ui/icons/Close';
+import SendIcon from '@material-ui/icons/Send';
+import VisibilityIcon from '@material-ui/icons/Visibility';
 import { getFormattedText } from '../../Utils/Message';
 import { getSrc } from '../../Utils/File';
-import { getPhotoSize, getSize } from '../../Utils/Common';
+import { getPhotoSize } from '../../Utils/Common';
 import StoryStore from '../../Stores/StoryStore';
 import ChatStore from '../../Stores/ChatStore';
+import UserStore from '../../Stores/UserStore';
 import FileStore from '../../Stores/FileStore';
 import TdLibController from '../../Controllers/TdLibController';
 import ChatTile from '../Tile/ChatTile';
@@ -25,7 +28,6 @@ function formatRelativeTime(timestamp) {
 class StoryViewer extends Component {
     constructor(props) {
         super(props);
-        // Build ordered peers list (unread first)
         const allPeers = StoryStore.getActivePeers();
         const peers = this._sortPeers(allPeers);
 
@@ -39,14 +41,22 @@ class StoryViewer extends Component {
             peerIdx: startPeerIdx,
             storyIdx: this._firstUnreadIdx(peers[startPeerIdx]),
             paused: false,
-            // media resolved from FileStore
             mediaSrc: '',
             mediaLoaded: false,
-            progressKey: 0, // increment to restart CSS animation
+            progressKey: 0,
+            // reply
+            replyText: '',
+            showReply: false,
+            // viewers panel
+            showViewers: false,
+            viewers: [],
+            viewersTotal: 0,
+            viewersLoading: false,
         };
 
         this._timer = null;
         this._videoRef = React.createRef();
+        this._replyRef = React.createRef();
         this._touchStartX = null;
         this._touchStartY = null;
         this._touchStartTime = null;
@@ -62,8 +72,7 @@ class StoryViewer extends Component {
     }
 
     _peerHasUnread(peer) {
-        const maxId = this._peerMaxStoryId(peer);
-        return maxId > (peer.max_read_id || 0);
+        return this._peerMaxStoryId(peer) > (peer.max_read_id || 0);
     }
 
     _peerMaxStoryId(peer) {
@@ -93,8 +102,7 @@ class StoryViewer extends Component {
     _currentStory() {
         const peer = this._currentPeer();
         if (!peer) return null;
-        const stories = this._peerStories(peer);
-        return stories[this.state.storyIdx] || null;
+        return this._peerStories(peer)[this.state.storyIdx] || null;
     }
 
     _storyDurationMs(story) {
@@ -104,6 +112,13 @@ class StoryViewer extends Component {
             return dur ? dur * 1000 : PHOTO_DURATION_MS;
         }
         return PHOTO_DURATION_MS;
+    }
+
+    _isOwnStory() {
+        const peer = this._currentPeer();
+        if (!peer) return false;
+        const me = UserStore.getMyId ? UserStore.getMyId() : null;
+        return me && peer.sender_chat_id === me;
     }
 
     // ── Lifecycle ────────────────────────────────────────────────────────────
@@ -127,25 +142,33 @@ class StoryViewer extends Component {
     }
 
     _onKeyDown = e => {
-        if (e.key === 'Escape') this.props.onClose();
-        if (e.key === 'ArrowRight') this._advance(1);
-        if (e.key === 'ArrowLeft') this._advance(-1);
+        if (e.key === 'Escape') {
+            if (this.state.showViewers) {
+                this.setState({ showViewers: false });
+            } else if (this.state.showReply) {
+                this._hideReply();
+            } else {
+                this.props.onClose();
+            }
+        }
+        if (!this.state.showReply && !this.state.showViewers) {
+            if (e.key === 'ArrowRight') this._advance(1);
+            if (e.key === 'ArrowLeft') this._advance(-1);
+        }
     };
 
     _onStoreUpdate = () => {
-        const peers = this._sortPeers(StoryStore.getActivePeers());
-        this.setState({ peers });
+        this.setState({ peers: this._sortPeers(StoryStore.getActivePeers()) });
     };
 
     _onFileUpdate = () => {
-        // Re-resolve src in case a blob just arrived
         const src = this._resolveSrc();
         if (src && src !== this.state.mediaSrc) {
             this.setState({ mediaSrc: src });
         }
     };
 
-    // ── Media loading ─────────────────────────────────────────────────────────
+    // ── Media loading ──────────────────────────────────────────────────────
 
     _resolveSrc() {
         const story = this._currentStory();
@@ -158,8 +181,7 @@ class StoryViewer extends Component {
             return getSrc(best?.photo) || '';
         }
         if (content['@type'] === 'storyContentVideo') {
-            const file = content.video?.video;
-            return getSrc(file) || '';
+            return getSrc(content.video?.video) || '';
         }
         return '';
     }
@@ -178,7 +200,7 @@ class StoryViewer extends Component {
         }
         if (!file?.id) return;
         const resolved = FileStore.get(file.id) || file;
-        if (FileStore.getBlob(resolved.id)) return; // already downloaded
+        if (FileStore.getBlob(resolved.id)) return;
         TdLibController.send({
             '@type': 'downloadFile',
             file_id: resolved.id,
@@ -192,13 +214,9 @@ class StoryViewer extends Component {
         const story = this._currentStory();
         if (!story) return;
 
-        // Fetch from server if not in StoryStore yet
         const peer = this._currentPeer();
         if (!story.content && peer) {
-            TdLibController.send({
-                '@type': 'getChatActiveStories',
-                chat_id: peer.sender_chat_id,
-            })
+            TdLibController.send({ '@type': 'getChatActiveStories', chat_id: peer.sender_chat_id })
                 .then(result => {
                     if (result?.stories) {
                         for (const s of result.stories) {
@@ -217,7 +235,6 @@ class StoryViewer extends Component {
             if (src) this._startTimer(story);
         });
 
-        // Mark as read
         if (peer && story.id > (peer.max_read_id || 0)) {
             TdLibController.send({
                 '@type': 'readStories',
@@ -229,7 +246,7 @@ class StoryViewer extends Component {
 
     _startTimer(story) {
         this._clearTimer();
-        if (this.state.paused) return;
+        if (this.state.paused || this.state.showReply || this.state.showViewers) return;
         const dur = this._storyDurationMs(story);
         this._timer = setTimeout(() => this._advance(1), dur);
     }
@@ -241,7 +258,7 @@ class StoryViewer extends Component {
         }
     }
 
-    // ── Navigation ────────────────────────────────────────────────────────────
+    // ── Navigation ────────────────────────────────────────────────────────
 
     _advance(dir) {
         const { peerIdx, storyIdx, peers } = this.state;
@@ -251,21 +268,19 @@ class StoryViewer extends Component {
         const nextStoryIdx = storyIdx + dir;
 
         if (nextStoryIdx >= 0 && nextStoryIdx < stories.length) {
-            this.setState({ storyIdx: nextStoryIdx }, () => this._loadCurrentStory());
+            this.setState({ storyIdx: nextStoryIdx, showReply: false, replyText: '' }, () => this._loadCurrentStory());
             return;
         }
-        // Move to next/previous peer
         const nextPeerIdx = peerIdx + dir;
         if (nextPeerIdx >= 0 && nextPeerIdx < peers.length) {
             const nextStory = dir > 0 ? 0 : this._peerStories(peers[nextPeerIdx]).length - 1;
-            this.setState({ peerIdx: nextPeerIdx, storyIdx: Math.max(0, nextStory) }, () => this._loadCurrentStory());
+            this.setState(
+                { peerIdx: nextPeerIdx, storyIdx: Math.max(0, nextStory), showReply: false, replyText: '' },
+                () => this._loadCurrentStory(),
+            );
             return;
         }
-        // End of all stories
         if (dir > 0) this.props.onClose();
-        else if (peerIdx === 0 && storyIdx === 0) {
-            /* already first */
-        }
     }
 
     _setPaused(paused) {
@@ -282,34 +297,115 @@ class StoryViewer extends Component {
         });
     }
 
-    // ── Touch / click handlers ────────────────────────────────────────────────
+    // ── Reply ────────────────────────────────────────────────────────────
+
+    _showReply = () => {
+        this._clearTimer();
+        this.setState({ showReply: true, paused: true }, () => {
+            if (this._replyRef.current) this._replyRef.current.focus();
+        });
+    };
+
+    _hideReply = () => {
+        this.setState({ showReply: false, replyText: '', paused: false }, () => {
+            this._startTimer(this._currentStory());
+        });
+    };
+
+    _handleReplySend = async () => {
+        const { replyText } = this.state;
+        if (!replyText.trim()) return;
+        const story = this._currentStory();
+        const peer = this._currentPeer();
+        if (!story || !peer) return;
+        try {
+            await TdLibController.send({
+                '@type': 'sendMessage',
+                chat_id: peer.sender_chat_id,
+                input_message_content: {
+                    '@type': 'inputMessageText',
+                    text: { '@type': 'formattedText', text: replyText.trim(), entities: [] },
+                },
+                reply_to: {
+                    '@type': 'inputMessageReplyToStory',
+                    story_sender_chat_id: peer.sender_chat_id,
+                    story_id: story.id,
+                },
+            });
+        } catch (e) {
+            console.warn('[StoryViewer] reply send error', e);
+        }
+        this._hideReply();
+    };
+
+    // ── Viewers ────────────────────────────────────────────────────────────
+
+    _loadViewers = async () => {
+        const story = this._currentStory();
+        const peer = this._currentPeer();
+        if (!story || !peer) return;
+        this.setState({ showViewers: true, viewersLoading: true, viewers: [], viewersTotal: 0 });
+        this._clearTimer();
+        try {
+            const result = await TdLibController.send({
+                '@type': 'getStoryViewers',
+                chat_id: peer.sender_chat_id,
+                story_id: story.id,
+                limit: 100,
+            });
+            this.setState({
+                viewers: result.viewers || [],
+                viewersTotal: result.total_count || 0,
+                viewersLoading: false,
+            });
+        } catch (e) {
+            this.setState({ viewersLoading: false });
+        }
+    };
+
+    _closeViewers = () => {
+        this.setState({ showViewers: false }, () => {
+            this._startTimer(this._currentStory());
+        });
+    };
+
+    // ── Touch / click handlers ────────────────────────────────────────────
 
     _onMediaClick = e => {
+        if (this.state.showReply || this.state.showViewers) return;
         const w = e.currentTarget.offsetWidth;
         const x = e.clientX - e.currentTarget.getBoundingClientRect().left;
         this._advance(x < w / 2 ? -1 : 1);
     };
 
-    _onMediaPointerDown = () => this._setPaused(true);
-    _onMediaPointerUp = () => this._setPaused(false);
+    _onMediaPointerDown = () => {
+        if (!this.state.showReply && !this.state.showViewers) this._setPaused(true);
+    };
+
+    _onMediaPointerUp = () => {
+        if (!this.state.showReply && !this.state.showViewers) this._setPaused(false);
+    };
 
     _onTouchStart = e => {
         const t = e.touches[0];
         this._touchStartX = t.clientX;
         this._touchStartY = t.clientY;
         this._touchStartTime = Date.now();
-        this._setPaused(true);
+        if (!this.state.showReply && !this.state.showViewers) this._setPaused(true);
     };
 
     _onTouchEnd = e => {
-        this._setPaused(false);
+        if (!this.state.showReply && !this.state.showViewers) this._setPaused(false);
         const t = e.changedTouches[0];
         const dx = t.clientX - (this._touchStartX || 0);
         const dy = t.clientY - (this._touchStartY || 0);
         const dt = Date.now() - (this._touchStartTime || 0);
-        // Swipe down to close
         if (dy > 60 && Math.abs(dx) < 60 && dt < 400) {
+            // swipe down → close
             this.props.onClose();
+        } else if (dy < -60 && Math.abs(dx) < 60 && dt < 400) {
+            // swipe up → reply
+            if (!this.state.showReply) this._showReply();
         }
         this._touchStartX = this._touchStartY = this._touchStartTime = null;
     };
@@ -320,20 +416,31 @@ class StoryViewer extends Component {
 
     _onVideoLoaded = () => {
         this.setState({ mediaLoaded: true });
-        const story = this._currentStory();
-        if (story) this._startTimer(story);
+        this._startTimer(this._currentStory());
     };
 
     _onImgLoaded = () => {
         this.setState({ mediaLoaded: true });
-        const story = this._currentStory();
-        if (story) this._startTimer(story);
+        this._startTimer(this._currentStory());
     };
 
-    // ── Render ────────────────────────────────────────────────────────────────
+    // ── Render ────────────────────────────────────────────────────────────
 
     render() {
-        const { peerIdx, storyIdx, peers, paused, mediaSrc, progressKey } = this.state;
+        const {
+            peerIdx,
+            storyIdx,
+            peers,
+            paused,
+            mediaSrc,
+            progressKey,
+            showReply,
+            replyText,
+            showViewers,
+            viewers,
+            viewersTotal,
+            viewersLoading,
+        } = this.state;
         const peer = peers[peerIdx];
         if (!peer) return null;
         const stories = this._peerStories(peer);
@@ -344,6 +451,7 @@ class StoryViewer extends Component {
         const durationMs = this._storyDurationMs(story);
         const isVideo = story?.content?.['@type'] === 'storyContentVideo';
         const caption = story?.caption;
+        const isOwn = this._isOwnStory();
 
         return (
             <div className='story-viewer-backdrop' onClick={this._onBackdropClick}>
@@ -384,9 +492,22 @@ class StoryViewer extends Component {
                                 <span className='story-header-time'>{formatRelativeTime(story?.date)}</span>
                             </div>
                         </div>
-                        <button className='story-close-btn' onClick={this.props.onClose}>
-                            <CloseIcon />
-                        </button>
+                        <div className='story-header-right'>
+                            {isOwn && story && (
+                                <button
+                                    className='story-viewers-btn'
+                                    onClick={this._loadViewers}
+                                    title='Ver quién lo vio'>
+                                    <VisibilityIcon style={{ fontSize: 18 }} />
+                                    {story.view_count > 0 && (
+                                        <span className='story-viewers-count'>{story.view_count}</span>
+                                    )}
+                                </button>
+                            )}
+                            <button className='story-close-btn' onClick={this.props.onClose}>
+                                <CloseIcon />
+                            </button>
+                        </div>
                     </div>
 
                     {/* Media */}
@@ -423,6 +544,72 @@ class StoryViewer extends Component {
 
                     {/* Caption */}
                     {caption?.text && <div className='story-caption'>{getFormattedText(caption) || caption.text}</div>}
+
+                    {/* Reply bar */}
+                    {!isOwn && (
+                        <div className={`story-reply-bar${showReply ? ' story-reply-bar--open' : ''}`}>
+                            {showReply ? (
+                                <>
+                                    <input
+                                        ref={this._replyRef}
+                                        className='story-reply-input'
+                                        placeholder='Responder a la historia...'
+                                        value={replyText}
+                                        onChange={e => this.setState({ replyText: e.target.value })}
+                                        onKeyDown={e => {
+                                            if (e.key === 'Enter') this._handleReplySend();
+                                            if (e.key === 'Escape') this._hideReply();
+                                        }}
+                                    />
+                                    <button
+                                        className='story-reply-send-btn'
+                                        onClick={this._handleReplySend}
+                                        disabled={!replyText.trim()}>
+                                        <SendIcon style={{ fontSize: 18 }} />
+                                    </button>
+                                    <button className='story-reply-cancel-btn' onClick={this._hideReply}>
+                                        ✕
+                                    </button>
+                                </>
+                            ) : (
+                                <button className='story-reply-hint' onClick={this._showReply}>
+                                    Responder...
+                                </button>
+                            )}
+                        </div>
+                    )}
+
+                    {/* Viewers panel */}
+                    {showViewers && (
+                        <div className='story-viewers-panel'>
+                            <div className='story-viewers-panel-header'>
+                                <span className='story-viewers-panel-title'>
+                                    Visto por {viewersTotal > 0 ? viewersTotal : ''}
+                                </span>
+                                <button className='story-viewers-close' onClick={this._closeViewers}>
+                                    <CloseIcon style={{ fontSize: 18 }} />
+                                </button>
+                            </div>
+                            <div className='story-viewers-list'>
+                                {viewersLoading && <div className='story-viewers-loading'>Cargando...</div>}
+                                {!viewersLoading && viewers.length === 0 && (
+                                    <div className='story-viewers-empty'>Nadie ha visto esta historia aún.</div>
+                                )}
+                                {viewers.map((v, i) => {
+                                    const user = UserStore.get(v.user_id);
+                                    const name = user
+                                        ? `${user.first_name || ''} ${user.last_name || ''}`.trim() || String(v.user_id)
+                                        : String(v.user_id);
+                                    return (
+                                        <div key={i} className='story-viewer-row'>
+                                            <span className='story-viewer-name'>{name}</span>
+                                            <span className='story-viewer-time'>{formatRelativeTime(v.date)}</span>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </div>
+                    )}
                 </div>
             </div>
         );

@@ -48,14 +48,14 @@
 }
 
 .stories-tray-ring--unread {
-    background: conic-gradient(#4fb6e3 0deg, #9c48e8 180deg, #e8486e 360deg);
+    background: var(--story-ring-unread, conic-gradient(#4fb6e3 0deg, #9c48e8 180deg, #e8486e 360deg));
 }
 
 .stories-tray-ring--read {
-    background: rgba(128, 128, 128, 0.4);
+    background: var(--story-ring-read, rgba(128, 128, 128, 0.4));
 }
 
-/* Fondo interior que separa el anillo del avatar — usa el color del sidebar del skin activo */
+/* Fondo interior que separa el anillo del avatar */
 .stories-tray-avatar-wrap {
     width: 100%;
     height: 100%;
@@ -85,4 +85,64 @@
     text-align: center;
     color: var(--design-muted-color, rgba(0, 0, 0, 0.6));
     user-select: none;
+}
+
+/* ── Skin overrides — anillo sin leer ── */
+
+body.design-android-holo .stories-tray-ring--unread {
+    background: conic-gradient(#33b5e5 0deg, #1a7fa3 180deg, #33b5e5 360deg);
+}
+
+body.design-android-classic .stories-tray-ring--unread {
+    background: conic-gradient(#527da3 0deg, #2e4e73 180deg, #527da3 360deg);
+}
+
+body.design-ios .stories-tray-ring--unread,
+body.design-ios-ipad .stories-tray-ring--unread {
+    background: conic-gradient(#0088ff 0deg, #5ac8fa 180deg, #0088ff 360deg);
+}
+
+body.design-macos .stories-tray-ring--unread,
+body.design-macos-monterey .stories-tray-ring--unread {
+    background: conic-gradient(#2481cc 0deg, #64b5f6 180deg, #2481cc 360deg);
+}
+
+body.design-aurora .stories-tray-ring--unread,
+body.design-aurora-midnight .stories-tray-ring--unread {
+    background: conic-gradient(#34d9a8 0deg, #1a8a6a 180deg, #34d9a8 360deg);
+}
+
+body.design-telegramx .stories-tray-ring--unread,
+body.design-telegramx-red .stories-tray-ring--unread {
+    background: conic-gradient(#35b7f3 0deg, #1a7ab0 180deg, #35b7f3 360deg);
+}
+
+body.design-tdesktop .stories-tray-ring--unread,
+body.design-tdesktop-classic .stories-tray-ring--unread {
+    background: conic-gradient(#40a7e3 0deg, #1a6ea8 180deg, #40a7e3 360deg);
+}
+
+body.design-unigram .stories-tray-ring--unread,
+body.design-unigram-fluent .stories-tray-ring--unread {
+    background: conic-gradient(#0078d4 0deg, #004a8c 180deg, #0078d4 360deg);
+}
+
+body.design-webk .stories-tray-ring--unread {
+    background: conic-gradient(#3390ec 0deg, #1a5ea8 180deg, #3390ec 360deg);
+}
+
+body.design-weba .stories-tray-ring--unread,
+body.design-weba-classic .stories-tray-ring--unread {
+    background: conic-gradient(#2ca5e0 0deg, #1a6a93 180deg, #2ca5e0 360deg);
+}
+
+body.design-webogram .stories-tray-ring--unread,
+body.design-webogram-blue .stories-tray-ring--unread {
+    background: conic-gradient(#5682a3 0deg, #2e4e6e 180deg, #5682a3 360deg);
+}
+
+/* Skins oscuros — leer badge más visible */
+body.design-aurora-midnight .stories-tray-ring--read,
+body.design-tdesktop-classic .stories-tray-ring--read {
+    background: rgba(200, 200, 200, 0.25);
 }

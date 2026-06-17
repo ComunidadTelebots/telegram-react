@@ -1005,6 +1005,8 @@ class GramJsController extends EventEmitter {
                 return this._getStory(req);
             case 'readStories':
                 return this._readStories(req);
+            case 'getStoryViewers':
+                return this._getStoryViewers(req);
 
             // ── Notificaciones ────────────────────────────────────────────────
             case 'setNotificationGroup':
@@ -3612,6 +3614,32 @@ class GramJsController extends EventEmitter {
         } catch (e) {
             console.warn('[GramJs] readStories error', e);
             return {};
+        }
+    };
+
+    _getStoryViewers = async req => {
+        try {
+            const { chat_id, story_id, offset = '', limit = 50 } = req;
+            const peer = tdlibChatIdToInputPeer(chat_id, this._entityCache);
+            const result = await this.client.invoke(
+                new Api.stories.GetStoryViewsList({
+                    peer,
+                    id: story_id,
+                    offset,
+                    limit,
+                    justContacts: false,
+                    reactionsFirst: false,
+                }),
+            );
+            const viewers = (result.views || []).map(v => ({
+                '@type': 'storyViewer',
+                user_id: Number(v.userId || 0),
+                date: v.date || 0,
+            }));
+            return { '@type': 'storyViewers', viewers, total_count: result.count || viewers.length };
+        } catch (e) {
+            console.warn('[GramJs] getStoryViewers error', e);
+            return { '@type': 'storyViewers', viewers: [], total_count: 0 };
         }
     };
 
