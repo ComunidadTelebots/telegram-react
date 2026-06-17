@@ -7,6 +7,9 @@ import './CustomEmoji.css';
 
 const FILE_PRIORITY = 1;
 
+// Shared cache: emojiId → sticker object (avoids duplicate API calls)
+const stickerCache = new Map();
+
 class CustomEmoji extends React.PureComponent {
     constructor(props) {
         super(props);
@@ -99,6 +102,12 @@ class CustomEmoji extends React.PureComponent {
             return;
         }
 
+        if (stickerCache.has(emojiId)) {
+            const sticker = stickerCache.get(emojiId);
+            this._safeSetState({ sticker }, () => this._loadFile(sticker));
+            return;
+        }
+
         try {
             const result = await TdLibController.send({
                 '@type': 'getCustomEmojiDocuments',
@@ -110,6 +119,7 @@ class CustomEmoji extends React.PureComponent {
                 this._safeSetState({ error: true });
                 return;
             }
+            stickerCache.set(emojiId, sticker);
             this._safeSetState({ sticker }, () => this._loadFile(sticker));
         } catch {
             this._safeSetState({ error: true });

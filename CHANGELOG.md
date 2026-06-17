@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.0.540] - 2026-06-17
+### Añadido
+- **Custom Emoji**: caché compartida a nivel de módulo (`stickerCache`) en CustomEmoji.js para evitar llamadas duplicadas a `getCustomEmojiDocuments` por el mismo emoji ID. Render ya existente: Lottie animado, video webm, imagen estática; IntersectionObserver para lazy load; fallback a texto plano.
+
 ## [0.0.539] - 2026-06-17
 ### Añadido
 - **Voice Transcription CSS polish**: skin overrides para los 12 diseños en `.voice-speed-active` y `.voice-transcription-rate-btn`. Variable `--message-error-color` para el color de error. Variable `--accent` añadida al fallback chain de `.voice-speed-active`.
