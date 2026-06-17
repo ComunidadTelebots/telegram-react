@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.0.542] - 2026-06-17
+### Añadido
+- **Profile Colors**: propaga `accent_color_id` (0-6) desde GramJS `user.color` en EntityTranslator. En Header.js, el chat header de chats privados muestra un borde inferior de 2px con el color de acento del peer (paleta de 7 colores Telegram). Sin editor, solo render.
+
 ## [0.0.541] - 2026-06-17
 ### Añadido
 - **Message Effects**: propaga `effect_id` desde GramJS (`msg.effect`) en EntityTranslator. Si el mensaje tiene efecto, muestra indicador ✨ con animación CSS `effect-sparkle` (pulse + rotate). Sin selector de efectos, solo render.

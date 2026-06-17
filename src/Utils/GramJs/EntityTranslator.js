@@ -403,6 +403,8 @@ export function translateUser(user) {
         have_access: true,
         profile_photo: translateProfilePhoto(user, userId),
         language_code: '',
+        accent_color_id:
+            user.color != null ? (typeof user.color === 'object' ? user.color.color ?? null : user.color) : null,
     };
 }
 

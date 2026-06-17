@@ -525,6 +525,19 @@ class Header extends Component {
         const chatId = AppStore.getChatId();
         const chat = ChatStore.get(chatId);
 
+        // Peer color accent (0-6 palette)
+        const PEER_COLORS = ['#e17076', '#eda86c', '#a695e7', '#7bc862', '#6ec9cb', '#65aadd', '#ee7aae'];
+        let peerAccentColor = null;
+        if (chat && chat.type) {
+            const userId = chat.type['@type'] === 'chatTypePrivate' ? chat.type.user_id : null;
+            if (userId) {
+                const user = UserStore.get(userId);
+                if (user && user.accent_color_id != null && user.accent_color_id >= 0) {
+                    peerAccentColor = PEER_COLORS[user.accent_color_id % PEER_COLORS.length] || null;
+                }
+            }
+        }
+
         const isAccentSubtitle = isAccentChatSubtitle(chatId);
         const isSecret = isChatSecret(chatId);
         let title = getChatTitle(chatId, true, t);
@@ -633,7 +646,9 @@ class Header extends Component {
         }
 
         control = control || (
-            <div className={classNames(classes.borderColor, 'header-details')}>
+            <div
+                className={classNames(classes.borderColor, 'header-details')}
+                style={peerAccentColor ? { borderBottom: `2px solid ${peerAccentColor}` } : undefined}>
                 <IconButton
                     className='header-mobile-back'
                     aria-label='Back'
