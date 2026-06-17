@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.0.589] - 2026-06-17
+### Añadido
+- **Share link de tema (0.0.588-589)**: `ThemeShare` component genera URL con `#tgtheme=BASE64` que codifica diseño + paleta + overrides. `applyThemeFromUrl()` detecta el hash al inicio y aplica el tema automáticamente. Botón "Copiar enlace" con feedback "¡Copiado!" 2s.
+
 ## [0.0.587] - 2026-06-17
 ### Añadido
 - **Export/Import tema CSS (0.0.586-587)**: `ThemeIO` component con botones "Exportar tema (.css)" (descarga `tg-theme-DESIGN-PALETTE.css` con bloque `:root { variables }`) e "Importar tema (.css)" (lee archivo, parsea propiedades CSS, aplica en tiempo real + persiste). Integrado en ThemePicker.

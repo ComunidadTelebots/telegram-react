@@ -29,6 +29,7 @@ import { getDesign, setDesign } from '../../Design';
 import PalettePicker from './PalettePicker';
 import DesignEditor from './DesignEditor';
 import ThemeIO from './ThemeIO';
+import ThemeShare from './ThemeShare';
 
 const styles = theme => ({
     formControl: {
@@ -620,6 +621,9 @@ class ThemePicker extends React.Component {
                     </FormControl>
                     <FormControl component='fieldset' className={classes.formControl}>
                         <ThemeIO />
+                    </FormControl>
+                    <FormControl component='fieldset' className={classes.formControl}>
+                        <ThemeShare />
                     </FormControl>
                 </DialogContent>
             </Dialog>
