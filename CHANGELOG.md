@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.0.584] - 2026-06-17
+### Añadido
+- **UI selector de paleta**: `PalettePicker` component con swatches visuales integrado en ThemePicker. Muestra las 7 paletas + "Ninguna" con dot de color + label. Selección persistida en localStorage.
+
 ## [0.0.583] - 2026-06-17
 ### Añadido
 - **Paletas de color predefinidas**: 7 paletas CSS (`night`, `sepia`, `forest`, `ocean`, `sunset`, `lavender`, `monochrome`) aplicables sobre cualquier diseño via `body.palette-XXX`. `setPalette()`/`getPalette()` en Design.js con persistencia localStorage. `palettes.css` con variables CSS para cada paleta.

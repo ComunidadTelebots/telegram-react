@@ -26,6 +26,7 @@ import indigo from '@material-ui/core/colors/indigo';
 import deepPurple from '@material-ui/core/colors/deepPurple';
 import ApplicationStore from '../../Stores/ApplicationStore';
 import { getDesign, setDesign } from '../../Design';
+import PalettePicker from './PalettePicker';
 
 const styles = theme => ({
     formControl: {
@@ -484,6 +485,12 @@ class ThemePicker extends React.Component {
                                 label='Deep Purple'
                             />
                         </RadioGroup>
+                    </FormControl>
+                    <FormControl component='fieldset' className={classes.formControl}>
+                        <FormLabel focused component='legend'>
+                            Paleta de color
+                        </FormLabel>
+                        <PalettePicker />
                     </FormControl>
                     <FormControl component='fieldset' className={classes.formControl}>
                         <FormLabel focused component='legend'>
