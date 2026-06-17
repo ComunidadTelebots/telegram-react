@@ -122,6 +122,7 @@ class Photo extends React.Component {
                 {showSpoiler && (
                     <div className='photo-spoiler-overlay' onClick={this.handleRevealSpoiler}>
                         <VisibilityIcon className='photo-spoiler-icon' />
+                        <span className='photo-spoiler-label'>Tap to reveal</span>
                     </div>
                 )}
                 {showProgress && <FileProgress file={photoSize.photo} download upload cancelButton />}

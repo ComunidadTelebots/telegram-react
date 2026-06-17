@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.0.537] - 2026-06-17
+### Añadido
+- **Media Spoiler**: fotos y vídeos con `has_spoiler` se muestran con blur fuerte (20px) + animación shimmer CSS + overlay "Tap to reveal". Click revela el contenido. Skins aurora/iOS/macOS con overrides de backdrop-filter. Video.js ahora recibe `hasSpoiler` desde `getMedia`.
+
 ## [0.0.536] - 2026-06-17
 ### Añadido
 - **Translation lang picker v2**: lista completa de ~80 idiomas (paridad con Web A) usando `Intl.DisplayNames` para nombres nativos. Campo de búsqueda con autoFocus filtra por nombre o código. Lista ordenada alfabéticamente según locale del navegador. Cache de labels en memoria.

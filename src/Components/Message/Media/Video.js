@@ -9,6 +9,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import classNames from 'classnames';
 import PlayArrowIcon from '@material-ui/icons/PlayArrow';
+import VisibilityIcon from '@material-ui/icons/Visibility';
 import { getFitSize, getDurationString } from '../../../Utils/Common';
 import { getFileSize, getSrc } from '../../../Utils/File';
 import { isBlurredThumbnail } from '../../../Utils/Media';
@@ -17,6 +18,11 @@ import FileStore from '../../../Stores/FileStore';
 import './Video.css';
 
 class Video extends React.Component {
+    constructor(props) {
+        super(props);
+        this.state = { spoilerRevealed: false };
+    }
+
     componentDidMount() {
         FileStore.on('clientUpdateVideoThumbnailBlob', this.onClientUpdateVideoThumbnailBlob);
     }
@@ -36,9 +42,16 @@ class Video extends React.Component {
         }
     };
 
+    handleRevealSpoiler = e => {
+        e.stopPropagation();
+        this.setState({ spoilerRevealed: true });
+    };
+
     render() {
-        const { displaySize, openMedia, title, caption, type, style } = this.props;
+        const { displaySize, openMedia, title, caption, type, style, hasSpoiler } = this.props;
         const { minithumbnail, thumbnail, video, width, height, duration } = this.props.video;
+        const { spoilerRevealed } = this.state;
+        const showSpoiler = hasSpoiler && !spoilerRevealed;
 
         const fitPhotoSize = getFitSize(thumbnail || { width: width, height: height }, displaySize);
         if (!fitPhotoSize) return null;
@@ -59,23 +72,37 @@ class Video extends React.Component {
                     'video-big': type === 'message',
                     'video-title': title,
                     'video-caption': caption,
-                    pointer: openMedia,
+                    'video-spoiler': showSpoiler,
+                    pointer: showSpoiler || openMedia,
                 })}
                 style={videoStyle}
-                onClick={openMedia}>
+                onClick={showSpoiler ? null : openMedia}>
                 <img
                     className={classNames('video-preview', {
-                        'media-blurred': isBlurred,
+                        'media-blurred': isBlurred || showSpoiler,
                         'media-mini-blurred': !thumbnailSrc && isBlurred,
+                        'video-preview-spoiler': showSpoiler,
                     })}
                     src={thumbnailSrc || miniSrc}
                     alt=''
                 />
-                <div className='video-play'>
-                    <PlayArrowIcon />
-                </div>
-                <div className='video-meta'>{getDurationString(duration) + ' ' + getFileSize(video)}</div>
-                {duration > 0 && <div className='video-duration-overlay'>{getDurationString(duration)}</div>}
+                {!showSpoiler && (
+                    <div className='video-play'>
+                        <PlayArrowIcon />
+                    </div>
+                )}
+                {!showSpoiler && (
+                    <div className='video-meta'>{getDurationString(duration) + ' ' + getFileSize(video)}</div>
+                )}
+                {!showSpoiler && duration > 0 && (
+                    <div className='video-duration-overlay'>{getDurationString(duration)}</div>
+                )}
+                {showSpoiler && (
+                    <div className='video-spoiler-overlay' onClick={this.handleRevealSpoiler}>
+                        <VisibilityIcon className='video-spoiler-icon' />
+                        <span className='video-spoiler-label'>Tap to reveal</span>
+                    </div>
+                )}
             </div>
         );
     }
@@ -88,6 +115,7 @@ Video.propTypes = {
     openMedia: PropTypes.func,
     size: PropTypes.number,
     displaySize: PropTypes.number,
+    hasSpoiler: PropTypes.bool,
 };
 
 Video.defaultProps = {

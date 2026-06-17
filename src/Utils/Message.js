@@ -483,6 +483,7 @@ function getMedia(message, openMedia, hasTitle = false, hasCaption = false) {
                     chatId={chat_id}
                     messageId={id}
                     video={content.video}
+                    hasSpoiler={Boolean(content.has_spoiler)}
                     openMedia={openMedia}
                 />
             );

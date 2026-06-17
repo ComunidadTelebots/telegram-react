@@ -86,3 +86,69 @@
     user-select: none;
     color: #ffffff;
 }
+
+/* Video media spoiler */
+.video-spoiler {
+    cursor: pointer;
+}
+
+.video-preview-spoiler {
+    filter: blur(20px) !important;
+    transform: scale(1.08);
+    transition: filter 0.3s ease, transform 0.3s ease;
+}
+
+.video-spoiler-overlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    background: rgba(0, 0, 0, 0.35);
+    border-radius: inherit;
+    overflow: hidden;
+}
+
+.video-spoiler-overlay::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(110deg, transparent 30%, rgba(255, 255, 255, 0.12) 50%, transparent 70%);
+    background-size: 200% 100%;
+    animation: spoiler-shimmer 2.4s ease-in-out infinite;
+    pointer-events: none;
+}
+
+.video-spoiler-icon {
+    color: rgba(255, 255, 255, 0.95);
+    font-size: 2.2rem !important;
+    filter: drop-shadow(0 1px 4px rgba(0, 0, 0, 0.6));
+    position: relative;
+    z-index: 1;
+}
+
+.video-spoiler-label {
+    color: rgba(255, 255, 255, 0.88);
+    font-size: 0.75rem;
+    font-weight: 500;
+    letter-spacing: 0.03em;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
+    position: relative;
+    z-index: 1;
+    user-select: none;
+}
+
+body.design-aurora .video-spoiler-overlay,
+body.design-aurora-midnight .video-spoiler-overlay {
+    background: rgba(0, 30, 40, 0.45);
+}
+
+body.design-ios .video-spoiler-overlay,
+body.design-ios-ipad .video-spoiler-overlay,
+body.design-macos .video-spoiler-overlay,
+body.design-macos-monterey .video-spoiler-overlay {
+    background: rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(2px);
+}
