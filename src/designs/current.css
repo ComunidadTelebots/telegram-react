@@ -96,3 +96,11 @@ body.design-current .top-chat-title {
     font-size: 12px;
     color: var(--design-muted-color, #8096a8);
 }
+
+/* Chat background image support */
+:root[style*='--chat-bg-image'] .messages-list,
+:root[style*='--chat-bg-image'] .history {
+    background-image: var(--chat-bg-image);
+    background-size: cover;
+    background-position: center;
+}

@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.0.590] - 2026-06-17
+### Añadido
+- **Fondo de chat personalizado**: `ChatBackground` component con 8 colores preset + color picker personalizado + selector de imagen (FileReader → dataURL). Persiste en localStorage. Aplica `--design-middle-background` y `--chat-bg-image`. CSS support en current.css para imagen de fondo.
+
 ## [0.0.589] - 2026-06-17
 ### Añadido
 - **Share link de tema (0.0.588-589)**: `ThemeShare` component genera URL con `#tgtheme=BASE64` que codifica diseño + paleta + overrides. `applyThemeFromUrl()` detecta el hash al inicio y aplica el tema automáticamente. Botón "Copiar enlace" con feedback "¡Copiado!" 2s.
