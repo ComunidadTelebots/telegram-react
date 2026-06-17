@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.0.552] - 2026-06-17
+### Añadido
+- **Bots 32k + "Show more"**: mensajes de bots con más de 1024 caracteres muestran las primeras 20 líneas con botón "Mostrar más / Mostrar menos". `MessageShowMore.js` + `MessageShowMore.css`. Detección de bot via `UserStore.get(senderId).type.userTypeBot`.
+
 ## [0.0.551] - 2026-06-17
 ### Añadido
 - **Polls con links en opciones**: `PollOption` ahora renderiza `text_entities` (links, bold, italic, code) usando `getFormattedText` de Message.js. `Poll` también renderiza entidades en la pregunta via `question_entities`. `EntityTranslator` ampliado para traducir `poll.question.entities` al campo `question_entities`.

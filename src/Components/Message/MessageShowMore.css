@@ -1,0 +1,29 @@
+.msg-show-more-wrapper {
+    display: block;
+}
+
+.msg-show-more-clamp {
+    display: -webkit-box;
+    -webkit-line-clamp: 20;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.msg-show-more-btn {
+    display: inline-block;
+    margin-top: 4px;
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    color: var(--color-accent-main, var(--accent, #2196f3));
+    font-size: 13px;
+    font-weight: 500;
+    font-family: inherit;
+    line-height: 1.4;
+    text-decoration: none;
+}
+
+.msg-show-more-btn:hover {
+    text-decoration: underline;
+}

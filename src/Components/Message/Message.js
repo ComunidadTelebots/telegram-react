@@ -50,8 +50,10 @@ import {
     deleteMessages,
 } from '../../Actions/Client';
 import MessageStore from '../../Stores/MessageStore';
+import UserStore from '../../Stores/UserStore';
 import TdLibController from '../../Controllers/TdLibController';
 import { saveMedia } from '../../Utils/File';
+import MessageShowMore from './MessageShowMore';
 import './Message.css';
 import Popover from '@material-ui/core/Popover';
 import Snackbar from '@material-ui/core/Snackbar';
@@ -965,7 +967,17 @@ class Message extends Component {
         } = message;
 
         const showForward = showMessageForward(chatId, messageId);
-        const text = getText(message);
+        const textNodes = getText(message);
+        const rawText = message.content?.text?.text || message.content?.caption?.text || '';
+        const senderUserId = message.sender_id?.user_id || message.sender_user_id;
+        const senderUser = senderUserId ? UserStore.get(senderUserId) : null;
+        const isBot = !!(senderUser && senderUser.type && senderUser.type['@type'] === 'userTypeBot');
+        const text =
+            isBot && rawText.length > 1024 ? (
+                <MessageShowMore rawText={rawText}>{textNodes}</MessageShowMore>
+            ) : (
+                textNodes
+            );
         const hasTitle = showTitle || showAuthor || showForward || Boolean(reply_to_message_id);
         const hasCaption = text !== null && text.length > 0;
         const webPage = getWebPage(message);
