@@ -25,6 +25,7 @@ import Venue from '../Components/Message/Media/Venue';
 import Video from '../Components/Message/Media/Video';
 import VideoNote from '../Components/Message/Media/VideoNote';
 import VoiceNote from '../Components/Message/Media/VoiceNote';
+import PaidMedia from '../Components/Message/Media/PaidMedia';
 import { searchChat, setMediaViewerContent } from '../Actions/Client';
 import {
     getChatDisableMentionNotifications,
@@ -415,6 +416,8 @@ function getMedia(message, openMedia, hasTitle = false, hasCaption = false) {
             return <Contact chatId={chat_id} messageId={id} contact={content.contact} openMedia={openMedia} />;
         case 'messageDice':
             return <Dice chatId={chat_id} messageId={id} dice={content.dice} />;
+        case 'messagePaidMedia':
+            return <PaidMedia content={content} />;
         case 'messageInvoice':
             return <Invoice chatId={chat_id} messageId={id} invoice={content} />;
         case 'messageDocument':

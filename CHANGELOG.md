@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.0.554] - 2026-06-17
+### Añadido
+- **Paid Media**: render de mensajes `messagePaidMedia` (stars-gated). Translator convierte `MessageMediaPaidMedia` → `{ '@type': 'messagePaidMedia', stars_amount, previews[] }`. Componente `PaidMedia.js` muestra grid de previews borrosos con overlay ⭐ + cantidad + botón "Desbloquear" (sin flujo de pago real). Soporta 1–4+ elementos en grid responsive.
+
 ## [0.0.553] - 2026-06-17
 ### Añadido
 - **Premium UI fase 2**: (a) Partículas CSS en reacciones: al elegir una reacción se emiten 8 partículas radiales animadas via `spawnParticles()` con `--px`/`--py` CSS vars y keyframe `reaction-particle`. (b) Glow shimmer en stickers de video (premium): clase `sticker-premium-glow` con keyframe `premium-shimmer` aplicada a `<video>` cuando el sticker tiene `set_id`. Stickers animados TGS ya reproducen con Lottie (sin cambio necesario).

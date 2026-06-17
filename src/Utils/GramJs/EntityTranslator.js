@@ -1205,6 +1205,24 @@ function translateMessageContent(msg) {
         };
     }
 
+    // Paid media (stars-gated photos/videos)
+    if (mediaClass === 'MessageMediaPaidMedia' || mediaClass === 'messageMediaPaidMedia') {
+        const extendedMedia = Array.isArray(media.extendedMedia) ? media.extendedMedia : [];
+        const previews = extendedMedia
+            .filter(em => em.className === 'MessageExtendedMediaPreview')
+            .map(em => ({
+                '@type': 'paidMediaPreview',
+                width: em.w || 0,
+                height: em.h || 0,
+                duration: em.videoDuration || 0,
+            }));
+        return {
+            '@type': 'messagePaidMedia',
+            stars_amount: media.starsAmount ? Number(media.starsAmount) : 0,
+            previews,
+        };
+    }
+
     // Dado / emoji animado
     if (mediaClass === 'MessageMediaDice' || mediaClass === 'messageMediaDice') {
         return {
