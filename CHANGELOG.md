@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.0.585] - 2026-06-17
+### Añadido
+- **Design Editor**: panel de edición de variables CSS en vivo. 6 campos editables: acento, burbuja saliente/entrante, sidebar, chat bg, tamaño fuente. Persistencia en localStorage (`tg_design_editor`). Botón "Restablecer" cuando hay overrides. Integrado al final de ThemePicker.
+
 ## [0.0.584] - 2026-06-17
 ### Añadido
 - **UI selector de paleta**: `PalettePicker` component con swatches visuales integrado en ThemePicker. Muestra las 7 paletas + "Ninguna" con dot de color + label. Selección persistida en localStorage.

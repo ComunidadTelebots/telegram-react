@@ -27,6 +27,7 @@ import deepPurple from '@material-ui/core/colors/deepPurple';
 import ApplicationStore from '../../Stores/ApplicationStore';
 import { getDesign, setDesign } from '../../Design';
 import PalettePicker from './PalettePicker';
+import DesignEditor from './DesignEditor';
 
 const styles = theme => ({
     formControl: {
@@ -612,6 +613,9 @@ class ThemePicker extends React.Component {
                                 );
                             })}
                         </div>
+                    </FormControl>
+                    <FormControl component='fieldset' className={classes.formControl}>
+                        <DesignEditor />
                     </FormControl>
                 </DialogContent>
             </Dialog>
