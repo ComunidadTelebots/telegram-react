@@ -579,6 +579,33 @@ class StoryViewer extends Component {
                         </div>
                     )}
 
+                    {/* Album strip — only when peer has 2+ stories */}
+                    {stories.length > 1 && !showReply && !showViewers && (
+                        <div className='story-album-strip'>
+                            <span className='story-album-counter'>
+                                {storyIdx + 1} / {stories.length}
+                            </span>
+                            <div className='story-album-dots'>
+                                {stories.map((s, idx) => (
+                                    <button
+                                        key={s.id}
+                                        className={`story-album-dot${
+                                            idx === storyIdx ? ' story-album-dot--active' : ''
+                                        }`}
+                                        onClick={e => {
+                                            e.stopPropagation();
+                                            if (idx !== storyIdx)
+                                                this.setState({ storyIdx: idx, showReply: false, replyText: '' }, () =>
+                                                    this._loadCurrentStory(),
+                                                );
+                                        }}
+                                        title={`Historia ${idx + 1}`}
+                                    />
+                                ))}
+                            </div>
+                        </div>
+                    )}
+
                     {/* Viewers panel */}
                     {showViewers && (
                         <div className='story-viewers-panel'>

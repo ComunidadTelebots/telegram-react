@@ -363,3 +363,51 @@
         align-items: flex-start;
     }
 }
+
+/* ── Story album strip (dots + counter) ── */
+.story-album-strip {
+    position: absolute;
+    bottom: 72px;
+    left: 0;
+    right: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    pointer-events: none;
+    z-index: 12;
+}
+
+.story-album-counter {
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.7);
+    font-weight: 500;
+    letter-spacing: 0.03em;
+}
+
+.story-album-dots {
+    display: flex;
+    gap: 5px;
+    pointer-events: all;
+}
+
+.story-album-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    border: none;
+    background: rgba(255, 255, 255, 0.4);
+    cursor: pointer;
+    padding: 0;
+    transition: background 0.15s, transform 0.15s;
+    flex-shrink: 0;
+}
+
+.story-album-dot:hover {
+    background: rgba(255, 255, 255, 0.7);
+}
+
+.story-album-dot--active {
+    background: #fff;
+    transform: scale(1.3);
+}

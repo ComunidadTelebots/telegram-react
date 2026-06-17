@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.0.556] - 2026-06-17
+### Añadido
+- **Story albums**: StoryViewer muestra tira de puntos (dots) + contador "X de N" cuando el peer tiene 2+ historias. Cada punto es clickable para saltar directamente a esa historia del álbum. Visible solo cuando no hay reply/viewers panel activo. CSS con transición suave y escalado del punto activo.
+
 ## [0.0.555] - 2026-06-17
 ### Añadido
 - **Viewer .md inline**: documentos `.md` muestran icono ojo en `Document.js`. Al pulsar, se lee el blob del FileStore, se parsea con `parseMarkdown()` (headings, bold, italic, code, blockquote, listas, links; sin dependencias externas) y se renderiza en Dialog Material-UI. Estilos en `Document.css` con variables CSS del design system.
