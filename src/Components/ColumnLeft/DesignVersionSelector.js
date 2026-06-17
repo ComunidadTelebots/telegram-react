@@ -82,8 +82,15 @@ const DESIGN_VERSION_REGISTRY = {
         { value: 'tdesktop-classic', label: 'Classic', detail: 'TDesktop classic', tag: 'Classic', trigger: 'Classic' },
     ],
     unigram: [
-        { value: 'unigram', label: 'WinUI 3', detail: 'Unigram WinUI 3', tag: 'WinUI3', trigger: 'WinUI3' },
-        { value: 'unigram-fluent', label: 'Fluent', detail: 'Unigram Fluent Design', tag: 'Fluent', trigger: 'Fluent' },
+        { value: 'unigram-wp', label: 'WP 2016', detail: 'Windows Phone tiles 2016', tag: 'WP', trigger: 'WP 2016' },
+        {
+            value: 'unigram-fluent',
+            label: 'Fluent 2018',
+            detail: 'Fluent Design System 2018',
+            tag: 'Fluent',
+            trigger: 'Fluent',
+        },
+        { value: 'unigram', label: 'WinUI 3', detail: 'WinUI 3 actual 2022+', tag: 'WinUI3', trigger: 'WinUI3' },
     ],
     webogram: [
         { value: 'webogram', label: 'Legacy', detail: 'Webogram legacy', tag: 'Legacy', trigger: 'Legacy' },

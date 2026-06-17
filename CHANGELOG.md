@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.0.572] - 2026-06-17
+### Añadido
+- **Unigram épocas (0.0.570-572)**: `unigram-wp` (WP tiles 2016, acento #0050ef, burbujas cuadradas), `unigram-fluent` ya existía (Fluent 2018), `unigram` como WinUI3 actual. Registry con 3 entradas cronológicas.
+
 ## [0.0.569] - 2026-06-17
 ### Añadido
 - **macOS épocas (0.0.567-569)**: `macos-yosemite` (Helvetica Neue 2014, gradient header), `macos-bigsur` (translucency 2020, 14px radius), más el ya existente `macos-monterey` como tercera época. Dark mode via prefers-color-scheme. Registry actualizado con 4 entradas cronológicas.

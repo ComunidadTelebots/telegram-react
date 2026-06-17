@@ -79,7 +79,8 @@ const DESIGN_SUB_VARIANTS = [
     'macos-monterey',
     // tdesktop
     'tdesktop-classic',
-    // unigram
+    // unigram eras
+    'unigram-wp',
     'unigram-fluent',
     // webogram
     'webogram-blue',
@@ -145,6 +146,7 @@ export const DESIGN_ACCENTS = {
     tdesktop: '#40a7e3',
     'tdesktop-classic': '#2b5278',
     unigram: '#40a7e3',
+    'unigram-wp': '#0050ef',
     'unigram-fluent': '#0078d4',
     webogram: '#5682a3',
     'webogram-blue': '#1d7cba',

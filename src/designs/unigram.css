@@ -423,3 +423,56 @@ body.design-unigram .video-note-transcription {
 body.design-unigram .reaction-unread {
     box-shadow: 0 0 0 2px rgba(43, 127, 224, 0.34);
 }
+
+/* ══════════════════════════════════════════════════════════════════════════════
+   Unigram WP era (2016) — Windows Phone tiles, Accent color, Pivot headers
+   ══════════════════════════════════════════════════════════════════════════════ */
+body.design-unigram-wp {
+    font: 15px/20px 'Segoe UI', 'Segoe WP', Tahoma, Arial, sans-serif;
+    --color-accent-main: #0050ef;
+    --message-out-background: #0050ef;
+    --message-out-color: #fff;
+    --message-in-background: #f0f0f0;
+    --message-in-color: #000;
+    --design-sidebar-background: #fff;
+    --design-header-background: #0050ef;
+    --design-header-color: #fff;
+    --design-page-background: #f5f5f5;
+    --design-page-color: #000;
+    --design-middle-background: #fff;
+    --design-panel-background: #fff;
+    --design-border-color: rgba(0, 0, 0, 0.12);
+    --design-muted-color: rgba(0, 0, 0, 0.5);
+    --shadow-bubble: none;
+}
+
+body.design-unigram-wp .message-bubble {
+    border-radius: 0;
+}
+body.design-unigram-wp .message-bubble::after {
+    content: none;
+}
+body.design-unigram-wp .dialogs-header {
+    background: #0050ef;
+    color: #fff;
+}
+body.design-unigram-wp .chat-header {
+    background: #0050ef;
+    color: #fff;
+}
+body.design-unigram-wp .dialog-list-item:hover {
+    background: rgba(0, 80, 239, 0.07);
+}
+
+@media (prefers-color-scheme: dark) {
+    body.design-unigram-wp {
+        --message-in-background: #2e2e2e;
+        --message-in-color: #fff;
+        --design-sidebar-background: #1a1a1a;
+        --design-page-background: #1a1a1a;
+        --design-page-color: #fff;
+        --design-middle-background: #222;
+        --design-border-color: rgba(255, 255, 255, 0.1);
+        --design-muted-color: rgba(255, 255, 255, 0.5);
+    }
+}
