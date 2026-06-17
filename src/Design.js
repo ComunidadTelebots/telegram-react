@@ -47,7 +47,9 @@ const DESIGNS = [
 const DESIGN_SUB_VARIANTS = [
     // current
     'current-compact',
-    // webk
+    // webk eras
+    'webk-2020',
+    'webk-2022',
     'webk-2025',
     // weba
     'weba-classic',
@@ -113,6 +115,8 @@ export const DESIGN_ACCENTS = {
     current: '#5b8af1',
     'current-compact': '#5b8af1',
     webk: '#3390ec',
+    'webk-2020': '#2481cc',
+    'webk-2022': '#3390ec',
     'webk-2025': '#3390ec',
     weba: '#2ca5e0',
     'weba-classic': '#2ca5e0',

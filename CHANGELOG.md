@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.0.575] - 2026-06-17
+### Añadido
+- **Web K épocas (0.0.573-575)**: `webk-2020` (sidebar azul oscuro, bubbles 6px) y `webk-2022` (sidebar claro #3390ec, 12px sin cola). Registry con 4 entradas incluyendo Actual y 2025.
+
 ## [0.0.572] - 2026-06-17
 ### Añadido
 - **Unigram épocas (0.0.570-572)**: `unigram-wp` (WP tiles 2016, acento #0050ef, burbujas cuadradas), `unigram-fluent` ya existía (Fluent 2018), `unigram` como WinUI3 actual. Registry con 3 entradas cronológicas.

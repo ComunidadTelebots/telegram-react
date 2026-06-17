@@ -24,7 +24,15 @@ const DESIGN_VERSION_REGISTRY = {
         { value: 'current-compact', label: 'Compact', detail: 'Web React compact', tag: 'Compact', trigger: 'Compact' },
     ],
     webk: [
-        { value: 'webk', label: 'Standard', detail: 'Web K standard', tag: 'Standard', trigger: 'Standard' },
+        {
+            value: 'webk-2020',
+            label: '2020',
+            detail: 'Web K primera versión — sidebar azul',
+            tag: '2020',
+            trigger: '2020',
+        },
+        { value: 'webk-2022', label: '2022', detail: 'Rediseño sidebar claro #3390ec', tag: '2022', trigger: '2022' },
+        { value: 'webk', label: 'Actual', detail: 'Web K standard 2023+', tag: 'Actual', trigger: 'Actual' },
         { value: 'webk-2025', label: '2025', detail: 'Web K 2025 layout', tag: '2025', trigger: '2025' },
     ],
     weba: [
