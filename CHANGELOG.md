@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.0.539] - 2026-06-17
+### Añadido
+- **Voice Transcription CSS polish**: skin overrides para los 12 diseños en `.voice-speed-active` y `.voice-transcription-rate-btn`. Variable `--message-error-color` para el color de error. Variable `--accent` añadida al fallback chain de `.voice-speed-active`.
+
 ## [0.0.538] - 2026-06-17
 ### Añadido
 - **Quote Reply**: lee `reply_to.quote.text` de mensajes entrantes y muestra la cita con `<mark>` resaltado en el componente Reply. Menú contextual muestra "Reply with quote" cuando hay texto seleccionado. Al enviar, usa `inputMessageReplyToMessage` con `inputTextQuote`. EntityTranslator propaga `quoteText`/`quoteOffset` de GramJS. Strings i18n EN/RU/ES.

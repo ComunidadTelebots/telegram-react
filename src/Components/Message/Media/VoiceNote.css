@@ -41,8 +41,8 @@
 
 .voice-speed-active {
     opacity: 1;
-    color: var(--color-primary, #2196f3);
-    border-color: var(--color-primary, #2196f3);
+    color: var(--accent, var(--color-primary, #2196f3));
+    border-color: var(--accent, var(--color-primary, #2196f3));
 }
 
 .voice-transcribe-btn {
@@ -80,7 +80,7 @@
 }
 
 .voice-transcription-error {
-    color: #e53935;
+    color: var(--message-error-color, #e53935);
 }
 
 .voice-transcription-rating {
@@ -107,4 +107,128 @@
 .voice-transcription-rate-selected {
     opacity: 1;
     background: var(--reaction-chosen-bg, rgba(33, 150, 243, 0.1));
+}
+
+/* skin overrides */
+body.design-android-holo .voice-speed-active {
+    color: #33b5e5;
+    border-color: #33b5e5;
+}
+body.design-android-holo .voice-transcription-rate-btn:hover,
+body.design-android-holo .voice-transcription-rate-selected {
+    background: rgba(51, 181, 229, 0.15);
+}
+
+body.design-android-classic .voice-speed-active {
+    color: #527da3;
+    border-color: #527da3;
+}
+body.design-android-classic .voice-transcription-rate-btn:hover,
+body.design-android-classic .voice-transcription-rate-selected {
+    background: rgba(82, 125, 163, 0.15);
+}
+
+body.design-ios .voice-speed-active,
+body.design-ios-ipad .voice-speed-active {
+    color: #0088ff;
+    border-color: #0088ff;
+}
+body.design-ios .voice-transcription-rate-btn:hover,
+body.design-ios .voice-transcription-rate-selected,
+body.design-ios-ipad .voice-transcription-rate-btn:hover,
+body.design-ios-ipad .voice-transcription-rate-selected {
+    background: rgba(0, 136, 255, 0.12);
+}
+
+body.design-macos .voice-speed-active,
+body.design-macos-monterey .voice-speed-active {
+    color: #2481cc;
+    border-color: #2481cc;
+}
+body.design-macos .voice-transcription-rate-btn:hover,
+body.design-macos .voice-transcription-rate-selected,
+body.design-macos-monterey .voice-transcription-rate-btn:hover,
+body.design-macos-monterey .voice-transcription-rate-selected {
+    background: rgba(36, 129, 204, 0.12);
+}
+
+body.design-aurora .voice-speed-active,
+body.design-aurora-midnight .voice-speed-active {
+    color: #34d9a8;
+    border-color: #34d9a8;
+}
+body.design-aurora .voice-transcription-rate-btn:hover,
+body.design-aurora .voice-transcription-rate-selected,
+body.design-aurora-midnight .voice-transcription-rate-btn:hover,
+body.design-aurora-midnight .voice-transcription-rate-selected {
+    background: rgba(52, 217, 168, 0.15);
+}
+
+body.design-telegramx .voice-speed-active,
+body.design-telegramx-red .voice-speed-active {
+    color: #35b7f3;
+    border-color: #35b7f3;
+}
+body.design-telegramx .voice-transcription-rate-btn:hover,
+body.design-telegramx .voice-transcription-rate-selected,
+body.design-telegramx-red .voice-transcription-rate-btn:hover,
+body.design-telegramx-red .voice-transcription-rate-selected {
+    background: rgba(53, 183, 243, 0.12);
+}
+
+body.design-tdesktop .voice-speed-active,
+body.design-tdesktop-classic .voice-speed-active {
+    color: #40a7e3;
+    border-color: #40a7e3;
+}
+body.design-tdesktop .voice-transcription-rate-btn:hover,
+body.design-tdesktop .voice-transcription-rate-selected,
+body.design-tdesktop-classic .voice-transcription-rate-btn:hover,
+body.design-tdesktop-classic .voice-transcription-rate-selected {
+    background: rgba(64, 167, 227, 0.12);
+}
+
+body.design-unigram .voice-speed-active,
+body.design-unigram-fluent .voice-speed-active {
+    color: #0078d4;
+    border-color: #0078d4;
+}
+body.design-unigram .voice-transcription-rate-btn:hover,
+body.design-unigram .voice-transcription-rate-selected,
+body.design-unigram-fluent .voice-transcription-rate-btn:hover,
+body.design-unigram-fluent .voice-transcription-rate-selected {
+    background: rgba(0, 120, 212, 0.12);
+}
+
+body.design-webk .voice-speed-active {
+    color: #3390ec;
+    border-color: #3390ec;
+}
+body.design-webk .voice-transcription-rate-btn:hover,
+body.design-webk .voice-transcription-rate-selected {
+    background: rgba(51, 144, 236, 0.12);
+}
+
+body.design-weba .voice-speed-active,
+body.design-weba-classic .voice-speed-active {
+    color: #2ca5e0;
+    border-color: #2ca5e0;
+}
+body.design-weba .voice-transcription-rate-btn:hover,
+body.design-weba .voice-transcription-rate-selected,
+body.design-weba-classic .voice-transcription-rate-btn:hover,
+body.design-weba-classic .voice-transcription-rate-selected {
+    background: rgba(44, 165, 224, 0.12);
+}
+
+body.design-webogram .voice-speed-active,
+body.design-webogram-blue .voice-speed-active {
+    color: #5682a3;
+    border-color: #5682a3;
+}
+body.design-webogram .voice-transcription-rate-btn:hover,
+body.design-webogram .voice-transcription-rate-selected,
+body.design-webogram-blue .voice-transcription-rate-btn:hover,
+body.design-webogram-blue .voice-transcription-rate-selected {
+    background: rgba(86, 130, 163, 0.12);
 }
