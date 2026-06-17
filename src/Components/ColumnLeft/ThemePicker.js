@@ -32,6 +32,7 @@ import ThemeIO from './ThemeIO';
 import ThemeShare from './ThemeShare';
 import ChatBackground from './ChatBackground';
 import ChatPatternPicker from './ChatPatternPicker';
+import DisplaySettings from './DisplaySettings';
 
 const styles = theme => ({
     formControl: {
@@ -632,6 +633,9 @@ class ThemePicker extends React.Component {
                     </FormControl>
                     <FormControl component='fieldset' className={classes.formControl}>
                         <ChatPatternPicker />
+                    </FormControl>
+                    <FormControl component='fieldset' className={classes.formControl}>
+                        <DisplaySettings />
                     </FormControl>
                 </DialogContent>
             </Dialog>

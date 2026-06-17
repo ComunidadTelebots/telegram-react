@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.0.594] - 2026-06-17
+### Añadido
+- **DisplaySettings (0.0.592-594)**: panel unificado con: slider tamaño de fuente (11-20px, aplica `--text-body`+`--text-dialog`), toggle modo compacto (`body.display-compact` con diálogos/mensajes más pequeños), selector velocidad animaciones (Sin/Rápida/Normal/Lenta via `--anim-speed`). Todo persistido en localStorage e iniciado en arranque.
+
 ## [0.0.591] - 2026-06-17
 ### Añadido
 - **Patrones de fondo del chat**: 6 patrones CSS (`dots`, `grid`, `diagonal`, `waves`, `diamonds`, `hexagons`) vía `body.chat-pattern-XXX`. `ChatPatternPicker` con preview visual. `setChatPattern`/`getChatPattern` en Design.js con persistencia.

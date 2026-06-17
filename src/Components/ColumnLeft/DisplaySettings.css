@@ -1,0 +1,152 @@
+.display-settings {
+    padding: 4px 0;
+}
+
+.display-settings-title {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-secondary, #666);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 12px;
+}
+
+.display-settings-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+    flex-wrap: wrap;
+}
+
+.display-settings-label {
+    min-width: 130px;
+    font-size: 13px;
+    color: var(--text-primary, #333);
+}
+
+.display-settings-range-wrap {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex: 1;
+}
+
+.display-settings-range {
+    flex: 1;
+    max-width: 120px;
+    accent-color: var(--color-accent-main, #5b8af1);
+}
+
+.display-settings-range-hint {
+    font-size: 11px;
+    color: var(--text-secondary, #888);
+}
+
+.display-settings-range-hint--lg {
+    font-size: 16px;
+}
+
+.display-settings-range-val {
+    font-size: 11px;
+    color: var(--text-secondary, #888);
+    min-width: 28px;
+}
+
+/* Toggle switch */
+.display-settings-toggle {
+    position: relative;
+    display: inline-block;
+    width: 40px;
+    height: 22px;
+    cursor: pointer;
+}
+
+.display-settings-toggle input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+    position: absolute;
+}
+
+.display-settings-toggle-track {
+    position: absolute;
+    inset: 0;
+    border-radius: 11px;
+    background: #ccc;
+    transition: background 0.2s;
+}
+
+.display-settings-toggle input:checked + .display-settings-toggle-track {
+    background: var(--color-accent-main, #5b8af1);
+}
+
+.display-settings-toggle-track::after {
+    content: '';
+    position: absolute;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: #fff;
+    top: 3px;
+    left: 3px;
+    transition: left 0.2s;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+.display-settings-toggle input:checked + .display-settings-toggle-track::after {
+    left: 21px;
+}
+
+/* Speed buttons */
+.display-settings-speeds {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+.display-settings-speed-btn {
+    padding: 4px 10px;
+    border-radius: 6px;
+    border: 1px solid var(--design-border-color, #e0e0e0);
+    background: transparent;
+    font-size: 12px;
+    color: var(--text-primary, #333);
+    cursor: pointer;
+    transition: border-color 0.15s, background 0.15s;
+}
+
+.display-settings-speed-btn:hover {
+    border-color: var(--color-accent-main, #5b8af1);
+}
+
+.display-settings-speed-btn.selected {
+    border-color: var(--color-accent-main, #5b8af1);
+    background: var(--color-accent-main, #5b8af1);
+    color: #fff;
+}
+
+/* compact mode global CSS */
+body.display-compact .dialog-list-item {
+    min-height: 48px !important;
+    padding-top: 4px !important;
+    padding-bottom: 4px !important;
+}
+
+body.display-compact .dialog-avatar {
+    width: 36px !important;
+    height: 36px !important;
+}
+
+body.display-compact .message-bubble {
+    padding: 4px 8px !important;
+}
+
+/* animation speed via CSS custom property */
+:root {
+    --anim-speed: 1;
+}
+
+* {
+    transition-duration: calc(var(--transition-base, 200ms) * var(--anim-speed));
+}
