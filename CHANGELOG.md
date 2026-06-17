@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.0.538] - 2026-06-17
+### Añadido
+- **Quote Reply**: lee `reply_to.quote.text` de mensajes entrantes y muestra la cita con `<mark>` resaltado en el componente Reply. Menú contextual muestra "Reply with quote" cuando hay texto seleccionado. Al enviar, usa `inputMessageReplyToMessage` con `inputTextQuote`. EntityTranslator propaga `quoteText`/`quoteOffset` de GramJS. Strings i18n EN/RU/ES.
+
 ## [0.0.537] - 2026-06-17
 ### Añadido
 - **Media Spoiler**: fotos y vídeos con `has_spoiler` se muestran con blur fuerte (20px) + animación shimmer CSS + overlay "Tap to reveal". Click revela el contenido. Skins aurora/iOS/macOS con overrides de backdrop-filter. Video.js ahora recibe `hasSpoiler` desde `getMedia`.

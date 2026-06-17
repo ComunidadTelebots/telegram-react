@@ -354,13 +354,17 @@ class InputBoxControl extends Component {
 
     onClientUpdateReply = update => {
         const { chatId: currentChatId } = this.state;
-        const { chatId, messageId } = update;
+        const { chatId, messageId, quoteText, quoteOffset } = update;
 
         if (currentChatId !== chatId) {
             return;
         }
 
-        this.setState({ replyToMessageId: messageId });
+        this.setState({
+            replyToMessageId: messageId,
+            replyQuoteText: quoteText || null,
+            replyQuoteOffset: quoteOffset || 0,
+        });
 
         if (messageId) {
             this.setInputFocus();
@@ -1135,7 +1139,14 @@ class InputBoxControl extends Component {
     };
 
     sendMessage = async (content, clearDraft, callback, scheduleDate = 0) => {
-        const { chatId, replyToMessageId, silentSend, disableLinkPreview } = this.state;
+        const {
+            chatId,
+            replyToMessageId,
+            replyQuoteText,
+            replyQuoteOffset,
+            silentSend,
+            disableLinkPreview,
+        } = this.state;
 
         if (!chatId) return;
         if (!content) return;
@@ -1143,17 +1154,32 @@ class InputBoxControl extends Component {
         try {
             await AppStore.invokeScheduledAction(`clientUpdateClearHistory chatId=${chatId}`);
 
+            const replyTo = replyToMessageId
+                ? replyQuoteText
+                    ? {
+                          '@type': 'inputMessageReplyToMessage',
+                          message_id: replyToMessageId,
+                          quote: {
+                              '@type': 'inputTextQuote',
+                              text: { '@type': 'formattedText', text: replyQuoteText, entities: [] },
+                              position: replyQuoteOffset || 0,
+                          },
+                      }
+                    : { '@type': 'inputMessageReplyToMessage', message_id: replyToMessageId }
+                : undefined;
+
             const result = await TdLibController.send({
                 '@type': 'sendMessage',
                 chat_id: chatId,
-                reply_to_message_id: replyToMessageId,
+                reply_to: replyTo,
+                reply_to_message_id: replyQuoteText ? undefined : replyToMessageId,
                 input_message_content: content,
                 schedule_date: scheduleDate || undefined,
                 disable_notification: silentSend || undefined,
                 disable_web_page_preview: disableLinkPreview || undefined,
             });
 
-            this.setState({ replyToMessageId: 0 }, () => {
+            this.setState({ replyToMessageId: 0, replyQuoteText: null, replyQuoteOffset: 0 }, () => {
                 if (clearDraft) {
                     this.saveDraft();
                 }

@@ -23,11 +23,13 @@ export function deleteMessages(chatId, messageIds) {
     });
 }
 
-export function replyMessage(chatId, messageId) {
+export function replyMessage(chatId, messageId, quoteText, quoteOffset) {
     TdLibController.clientUpdate({
         '@type': 'clientUpdateReply',
         chatId,
         messageId,
+        quoteText: quoteText || null,
+        quoteOffset: quoteOffset || 0,
     });
 }
 

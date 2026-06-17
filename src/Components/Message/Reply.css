@@ -62,3 +62,67 @@
     white-space: nowrap;
     text-overflow: ellipsis;
 }
+
+/* Quote highlight */
+.reply-quote-mark {
+    background: var(--accent, var(--color-accent-main, #229af0));
+    color: #fff;
+    border-radius: 2px;
+    padding: 0 2px;
+    font-style: normal;
+}
+
+.message-bubble-out .reply-quote-mark {
+    background: var(--message-out-reply-title, rgba(255, 255, 255, 0.6));
+    color: var(--message-out-background, #effdde);
+}
+
+.reply-content-quoted {
+    white-space: normal;
+}
+
+/* skin overrides */
+body.design-android-holo .reply-quote-mark {
+    background: #33b5e5;
+}
+body.design-android-classic .reply-quote-mark {
+    background: #527da3;
+}
+body.design-ios .reply-quote-mark,
+body.design-ios-ipad .reply-quote-mark {
+    background: #0088ff;
+    border-radius: 3px;
+}
+body.design-macos .reply-quote-mark,
+body.design-macos-monterey .reply-quote-mark {
+    background: #2481cc;
+    border-radius: 3px;
+}
+body.design-aurora .reply-quote-mark,
+body.design-aurora-midnight .reply-quote-mark {
+    background: #34d9a8;
+    color: #000;
+}
+body.design-telegramx .reply-quote-mark,
+body.design-telegramx-red .reply-quote-mark {
+    background: #35b7f3;
+}
+body.design-tdesktop .reply-quote-mark,
+body.design-tdesktop-classic .reply-quote-mark {
+    background: #40a7e3;
+}
+body.design-unigram .reply-quote-mark,
+body.design-unigram-fluent .reply-quote-mark {
+    background: #0078d4;
+}
+body.design-webk .reply-quote-mark {
+    background: #3390ec;
+}
+body.design-weba .reply-quote-mark,
+body.design-weba-classic .reply-quote-mark {
+    background: #2ca5e0;
+}
+body.design-webogram .reply-quote-mark,
+body.design-webogram-blue .reply-quote-mark {
+    background: #5682a3;
+}

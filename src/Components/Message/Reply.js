@@ -54,7 +54,7 @@ class Reply extends React.Component {
     };
 
     render() {
-        const { t, chatId, messageId } = this.props;
+        const { t, chatId, messageId, quoteText } = this.props;
         let { title } = this.props;
 
         const message = MessageStore.get(chatId, messageId);
@@ -67,6 +67,21 @@ class Reply extends React.Component {
         if (isDeletedMessage(message)) {
             title = null;
             content = t('DeletedMessage');
+        }
+
+        // If there's a quote, highlight matching text inside content
+        let renderedContent = content;
+        if (quoteText && typeof content === 'string' && content.includes(quoteText)) {
+            const idx = content.indexOf(quoteText);
+            renderedContent = (
+                <>
+                    {content.slice(0, idx)}
+                    <mark className='reply-quote-mark'>{quoteText}</mark>
+                    {content.slice(idx + quoteText.length)}
+                </>
+            );
+        } else if (quoteText) {
+            renderedContent = <mark className='reply-quote-mark'>{quoteText}</mark>;
         }
 
         return (
@@ -83,7 +98,9 @@ class Reply extends React.Component {
                     )}
                     <div className='reply-content'>
                         {title && <div className='reply-content-title'>{title}</div>}
-                        <div className={classNames('reply-content-subtitle')}>{content}</div>
+                        <div className={classNames('reply-content-subtitle', { 'reply-content-quoted': !!quoteText })}>
+                            {renderedContent}
+                        </div>
                     </div>
                 </div>
             </div>
@@ -95,6 +112,7 @@ Reply.propTypes = {
     chatId: PropTypes.number.isRequired,
     messageId: PropTypes.number.isRequired,
     title: PropTypes.string,
+    quoteText: PropTypes.string,
     onClick: PropTypes.func,
 };
 

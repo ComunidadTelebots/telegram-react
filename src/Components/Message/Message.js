@@ -554,6 +554,19 @@ class Message extends Component {
             const left = event.clientX;
             const top = event.clientY;
 
+            // capture text selection for "Reply with quote"
+            const sel = window.getSelection();
+            const selText = sel ? sel.toString().trim() : '';
+            if (selText && sel.rangeCount > 0) {
+                this._selectionText = selText;
+                // estimate offset: characters before selection in the message text
+                const range = sel.getRangeAt(0);
+                this._selectionOffset = range.startOffset || 0;
+            } else {
+                this._selectionText = '';
+                this._selectionOffset = 0;
+            }
+
             this.setState({
                 contextMenu: true,
                 left,
@@ -577,6 +590,18 @@ class Message extends Component {
         this.handleCloseContextMenu(event);
 
         replyMessage(chatId, messageId);
+    };
+
+    handleReplyWithQuote = event => {
+        const { chatId, messageId } = this.props;
+        const sel = window.getSelection();
+        const quoteText = sel && sel.toString().trim();
+        const quoteOffset = quoteText ? this._selectionOffset || 0 : 0;
+
+        clearSelection();
+        this.handleCloseContextMenu(event);
+
+        replyMessage(chatId, messageId, quoteText || null, quoteOffset);
     };
 
     handlePin = event => {
@@ -1053,7 +1078,12 @@ class Message extends Component {
                             {showTitle && meta}
                         </div>
                         {Boolean(reply_to_message_id) && (
-                            <Reply chatId={chatId} messageId={reply_to_message_id} onClick={this.handleReplyClick} />
+                            <Reply
+                                chatId={chatId}
+                                messageId={reply_to_message_id}
+                                quoteText={message.reply_to?.quote?.text || null}
+                                onClick={this.handleReplyClick}
+                            />
                         )}
                         {media}
                         <div
@@ -1125,6 +1155,9 @@ class Message extends Component {
                     onMouseDown={e => e.stopPropagation()}>
                     <MenuList classes={{ root: classes.menuListRoot }} onClick={e => e.stopPropagation()}>
                         {canBeReplied && <MenuItem onClick={this.handleReply}>{t('Reply')}</MenuItem>}
+                        {canBeReplied && this._selectionText && (
+                            <MenuItem onClick={this.handleReplyWithQuote}>{t('ReplyWithQuote')}</MenuItem>
+                        )}
                         {canBeCopied && <MenuItem onClick={this.handleCopy}>{t('Copy')}</MenuItem>}
                         {canBePinned && (
                             <MenuItem onClick={this.handlePin}>{isPinned ? t('Unpin') : t('Pin')}</MenuItem>

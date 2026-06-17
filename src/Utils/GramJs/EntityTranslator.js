@@ -762,7 +762,15 @@ export function translateMessage(msg, chatId) {
                 : null,
         reply_to_message_id: msg.replyTo ? msg.replyTo.replyToMsgId || 0 : 0,
         reply_to: msg.replyTo
-            ? { '@type': 'messageReplyToMessage', chat_id: chatId, message_id: msg.replyTo.replyToMsgId || 0 }
+            ? {
+                  '@type': 'messageReplyToMessage',
+                  chat_id: chatId,
+                  message_id: msg.replyTo.replyToMsgId || 0,
+                  quote: msg.replyTo.quoteText
+                      ? { '@type': 'formattedText', text: msg.replyTo.quoteText, entities: [] }
+                      : null,
+                  quote_offset: msg.replyTo.quoteOffset || 0,
+              }
             : null,
         content,
         reply_markup: translateReplyMarkup(msg.replyMarkup),
