@@ -1025,7 +1025,6 @@ class Message extends Component {
         const canBeSaved = message.can_be_forwarded;
         const canBeMarkedAsRead = !message.is_outgoing && message.id > 0 && message.contains_unread_mention;
         const isAdmin = isAdminInChat(chatId);
-        const senderUserId = message.sender_id?.user_id || message.sender_user_id;
         const canBanUser = isAdmin && !message.is_outgoing && !!senderUserId && isGroupChat(chatId);
         const canDeleteAllFromUser = canBanUser;
         const canViewInfo = message.is_outgoing && isGroupChat(chatId);

@@ -11,6 +11,7 @@ import classNames from 'classnames';
 import withStyles from '@material-ui/core/styles/withStyles';
 import DayMeta from '../Message/DayMeta';
 import FilesDropTarget from './FilesDropTarget';
+import Album from '../Message/Album';
 import Message from '../Message/Message';
 import PinnedMessage from './PinnedMessage';
 import Placeholder from './Placeholder';
@@ -1290,11 +1291,49 @@ class MessagesList extends React.Component {
         const uniqueHistory = history.filter(
             (x, i, arr) => arr.findIndex(m => m.id === x.id && m.chat_id === x.chat_id) === i,
         );
+
+        // Group consecutive messages with the same media_album_id into album entries
+        const groupedHistory = [];
+        for (let i = 0; i < uniqueHistory.length; i++) {
+            const msg = uniqueHistory[i];
+            const albumId = msg.media_album_id && msg.media_album_id !== '0' ? msg.media_album_id : null;
+            if (albumId) {
+                const group = [msg];
+                while (i + 1 < uniqueHistory.length && uniqueHistory[i + 1].media_album_id === albumId) {
+                    i++;
+                    group.push(uniqueHistory[i]);
+                }
+                if (group.length > 1) {
+                    groupedHistory.push({ _isAlbum: true, albumId, messages: group, representative: group[0] });
+                    continue;
+                }
+            }
+            groupedHistory.push(msg);
+        }
+
         this.messages = clearHistory
             ? null
-            : uniqueHistory.map((x, i) => {
-                  const prevMessage = i > 0 ? uniqueHistory[i - 1] : null;
-                  const nextMessage = i < uniqueHistory.length - 1 ? uniqueHistory[i + 1] : null;
+            : groupedHistory.map((x, i) => {
+                  if (x._isAlbum) {
+                      const prev = i > 0 ? groupedHistory[i - 1] : null;
+                      const prevMsg = prev && prev._isAlbum ? prev.representative : prev;
+                      const showDate = this.showMessageDate(x.representative, prevMsg, i === 0);
+                      const separatorMsg = x.messages.find(m => m.id === separatorMessageId);
+                      return (
+                          <div key={`album_${x.albumId}`}>
+                              {showDate && <DayMeta date={x.representative.date} />}
+                              <Album
+                                  chatId={x.representative.chat_id}
+                                  messageIds={x.messages.map(m => m.id)}
+                                  showUnreadSeparator={!!separatorMsg}
+                              />
+                          </div>
+                      );
+                  }
+                  const xPrev = i > 0 ? groupedHistory[i - 1] : null;
+                  const prevMessage = xPrev && xPrev._isAlbum ? xPrev.representative : xPrev;
+                  const xNext = i < groupedHistory.length - 1 ? groupedHistory[i + 1] : null;
+                  const nextMessage = xNext && xNext._isAlbum ? xNext.representative : xNext;
 
                   const showDate = this.showMessageDate(x, prevMessage, i === 0);
 

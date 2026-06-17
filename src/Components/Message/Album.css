@@ -1,0 +1,53 @@
+.album-wrapper {
+    max-width: var(--message-max-width, 420px);
+    margin: 2px 0;
+}
+
+.album-in {
+    margin-left: 44px;
+}
+
+.album-out {
+    margin-left: auto;
+}
+
+.album-grid {
+    display: grid;
+    gap: 3px;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.album-item {
+    position: relative;
+    overflow: hidden;
+    min-height: 120px;
+    background: var(--design-hover-background, rgba(0, 0, 0, 0.05));
+}
+
+.album-item .photo {
+    width: 100% !important;
+    height: 180px !important;
+}
+
+.album-item .photo .photo-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.album-caption {
+    font-size: 14px;
+    color: var(--fg1, #222);
+    padding: 4px 6px 2px;
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
+.album-unread-separator {
+    text-align: center;
+    font-size: 12px;
+    color: var(--fg3, #8d969c);
+    padding: 4px 0;
+}

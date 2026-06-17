@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import ArrowBackIcon from '@material-ui/icons/ArrowBack';
-import PushPinIcon from '@material-ui/icons/PushPin';
+import PushPinIcon from '@material-ui/icons/Bookmark';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import ChatTile from '../Tile/ChatTile';
 import TdLibController from '../../Controllers/TdLibController';

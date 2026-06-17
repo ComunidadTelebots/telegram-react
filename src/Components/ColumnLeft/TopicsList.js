@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import ArrowBackIcon from '@material-ui/icons/ArrowBack';
 import AddIcon from '@material-ui/icons/Add';
 import LockIcon from '@material-ui/icons/Lock';
-import PushPinIcon from '@material-ui/icons/PushPin';
+import PushPinIcon from '@material-ui/icons/Bookmark';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import TdLibController from '../../Controllers/TdLibController';
 import ChatStore from '../../Stores/ChatStore';

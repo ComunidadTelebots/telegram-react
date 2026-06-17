@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.0.601] - 2026-06-17
+### Añadido
+- **Media Albums (rescate feat/media-albums)**: `Album.js/.css` integrado en `MessagesList`. Mensajes consecutivos con el mismo `media_album_id` se agrupan automáticamente en un grid (1–3 columnas según cantidad). Muestra caption del último mensaje con texto, meta de fecha. Props: `chatId`, `messageIds[]`, `showUnreadSeparator`.
+### Corregido
+- `PushPinIcon` (MUI v5) sustituido por `Bookmark` (MUI v4) en `TopicsList.js` y `SavedFolders.js` — el build estaba roto en master.
+- `senderUserId` declarado dos veces en `Message.js` (línea 1028) — eliminada la declaración duplicada.
+
 ## [0.0.600] - 2026-06-17
 ### Añadido
 - **Auditoría Android (0.0.598)**: selectores `[class*='design-android']` para paid-media, story-album-dots, stargift-actions y business-hours-badge con colores del diseño.
