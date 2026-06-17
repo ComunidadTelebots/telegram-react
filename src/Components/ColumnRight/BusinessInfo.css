@@ -1,0 +1,103 @@
+.business-info {
+    padding: 12px 16px 4px;
+}
+
+.business-section {
+    margin-bottom: 12px;
+}
+
+.business-section-title {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--color-accent-main, #2196f3);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 6px;
+}
+
+/* Hours */
+.business-hours-grid {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 2px 10px;
+    font-size: 13px;
+    color: var(--color-text-primary, #222);
+}
+
+.business-hours-day {
+    font-weight: 500;
+    color: var(--design-muted-color, rgba(0, 0, 0, 0.55));
+    min-width: 30px;
+}
+
+.business-hours-range {
+    color: var(--color-text-primary, #222);
+}
+
+.business-hours-closed {
+    color: var(--design-muted-color, rgba(0, 0, 0, 0.4));
+    font-style: italic;
+}
+
+.business-hours-open-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 12px;
+    font-weight: 600;
+    margin-bottom: 6px;
+}
+
+.business-hours-open-badge .dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #4caf50;
+    flex-shrink: 0;
+}
+
+.business-hours-open-badge.closed .dot {
+    background: #f44336;
+}
+
+/* Quick replies */
+.business-quick-replies {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.business-quick-reply {
+    background: var(--color-code-bg, rgba(0, 0, 0, 0.05));
+    border-radius: 8px;
+    padding: 6px 10px;
+    font-size: 13px;
+    color: var(--color-text-primary, #222);
+}
+
+.business-quick-reply-shortcut {
+    font-weight: 600;
+    color: var(--color-accent-main, #2196f3);
+    margin-right: 6px;
+    font-size: 12px;
+}
+
+/* Intro / greeting / away */
+.business-text-block {
+    background: var(--color-code-bg, rgba(0, 0, 0, 0.04));
+    border-left: 3px solid var(--color-accent-main, #2196f3);
+    border-radius: 0 8px 8px 0;
+    padding: 6px 10px;
+    font-size: 13px;
+    color: var(--color-text-primary, #222);
+    line-height: 1.45;
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
+.business-intro-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--color-text-primary, #111);
+    margin-bottom: 2px;
+}

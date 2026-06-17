@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.0.562] - 2026-06-17
+### Añadido
+- **Business features (0.0.559-562)**: componente `BusinessInfo.js` cargado en perfil privado via `getBusinessInfo`. Renderiza: (559) Horario semanal con indicador "Abierto/Cerrado ahora", (560) Respuestas rápidas `/shortcut`, (561) Presentación (título + descripción) y Mensaje de bienvenida, (562) Mensaje de ausencia. Solo render del estado del servidor. CSS en `BusinessInfo.css` con variables del design system.
+
 ## [0.0.558] - 2026-06-17
 ### Añadido
 - **Rich text bots**: `getFormattedText` maneja `textEntityTypeHeading` (h1-h6), `textEntityTypeBulletedList` (li.msg-bulleted-item), `textEntityTypeOrderedList` (li.msg-ordered-item). `textEntityTypeBlockQuote` ahora recursivo via `getFormattedSubtext` para renderizar entities anidadas. CSS en Message.css: `.msg-heading-{1-6}`, `.msg-list-item`, nested blockquote visual.

@@ -79,6 +79,7 @@ import ApplicationStore from '../../Stores/ApplicationStore';
 import TdLibController from '../../Controllers/TdLibController';
 import SimilarChannels from './SimilarChannels';
 import StarGiftsGallery from './StarGiftsGallery';
+import BusinessInfo from './BusinessInfo';
 import './ChatDetails.css';
 
 const styles = theme => ({
@@ -849,6 +850,7 @@ class ChatDetails extends React.Component {
                     {isPrivateChat(chatId) && !isMe && (
                         <>
                             <Divider />
+                            <BusinessInfo userId={getChatUserId(chatId)} />
                             <StarGiftsGallery chatId={chatId} />
                         </>
                     )}
