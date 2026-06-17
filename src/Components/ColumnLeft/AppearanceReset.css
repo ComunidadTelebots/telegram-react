@@ -1,0 +1,35 @@
+.appearance-reset {
+    padding: 4px 0;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.appearance-reset-btn {
+    align-self: flex-start;
+    padding: 7px 14px;
+    border-radius: 8px;
+    border: 1px solid #e57373;
+    background: transparent;
+    color: #e57373;
+    font-size: 13px;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s;
+}
+
+.appearance-reset-btn:hover {
+    background: rgba(229, 115, 115, 0.08);
+}
+
+.appearance-reset-btn--confirm {
+    border-color: #c62828;
+    color: #c62828;
+    background: rgba(198, 40, 40, 0.1);
+}
+
+.appearance-reset-hint {
+    font-size: 11px;
+    color: #c62828;
+    margin: 0;
+    line-height: 1.4;
+}

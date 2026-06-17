@@ -115,3 +115,15 @@ body.theme-dark {
 .notification-close-button {
     padding: 4px;
 }
+
+/* Split view layout — body.split-view keeps sidebar visible alongside chat */
+body.split-view .page-wrapper {
+    display: grid;
+    grid-template-columns: var(--dialogs-width, 360px) 1fr;
+}
+body.split-view .page-left {
+    display: flex !important;
+    position: relative !important;
+    height: 100% !important;
+    transform: none !important;
+}

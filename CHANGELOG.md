@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.0.597] - 2026-06-17
+### Añadido
+- **Split view layout (0.0.595)**: CSS `body.split-view` con `display: grid` que mantiene sidebar visible junto al chat en pantallas anchas.
+- **Reset apariencia (0.0.596-597)**: `AppearanceReset` component con doble confirmación (clic → "Confirmar" → reset). Borra todas las claves localStorage de apariencia y remueve CSS vars y clases de body. Integrado al final de ThemePicker.
+
 ## [0.0.594] - 2026-06-17
 ### Añadido
 - **DisplaySettings (0.0.592-594)**: panel unificado con: slider tamaño de fuente (11-20px, aplica `--text-body`+`--text-dialog`), toggle modo compacto (`body.display-compact` con diálogos/mensajes más pequeños), selector velocidad animaciones (Sin/Rápida/Normal/Lenta via `--anim-speed`). Todo persistido en localStorage e iniciado en arranque.
