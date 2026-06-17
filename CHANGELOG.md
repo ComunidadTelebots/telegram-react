@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.0.551] - 2026-06-17
+### Añadido
+- **Polls con links en opciones**: `PollOption` ahora renderiza `text_entities` (links, bold, italic, code) usando `getFormattedText` de Message.js. `Poll` también renderiza entidades en la pregunta via `question_entities`. `EntityTranslator` ampliado para traducir `poll.question.entities` al campo `question_entities`.
+
 ## [0.0.550] - 2026-06-17
 ### Añadido
 - **Android variants históricas**: 6 nuevos skins de época en `android.css`, todos heredando de `body.design-android` (cascada), sin tocar las 7 variantes existentes.

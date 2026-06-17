@@ -1092,6 +1092,9 @@ function translateMessageContent(msg) {
                 '@type': 'poll',
                 id: poll ? String(poll.id) : '0',
                 question: typeof poll?.question === 'string' ? poll.question : poll?.question?.text || '',
+                question_entities: Array.isArray(poll?.question?.entities)
+                    ? poll.question.entities.map(translateTextEntity).filter(Boolean)
+                    : [],
                 options: (() => {
                     const totalVoters = media.results?.totalVoters || 0;
                     const voterMap = new Map();

@@ -17,6 +17,7 @@ import LinearProgress from '@material-ui/core/LinearProgress';
 import PollRadio from './PollRadio';
 import PollPercentage from './PollPercentage';
 import { borderStyle } from '../../Theme';
+import { getFormattedText } from '../../../Utils/Message';
 import './PollOption.css';
 
 const styles = theme => ({
@@ -26,12 +27,12 @@ const styles = theme => ({
         position: 'absolute',
         left: 0,
         right: 0,
-        bottom: 0
+        bottom: 0,
     },
     progressBar: {
-        transition: 'transform .2s linear'
+        transition: 'transform .2s linear',
     },
-    ...borderStyle(theme)
+    ...borderStyle(theme),
 });
 
 class PollOption extends React.Component {
@@ -66,7 +67,12 @@ class PollOption extends React.Component {
         const { classes, option, onChange, canBeSelected, closed, maxVoterCount, isCorrect, isWrong, t } = this.props;
         if (!option) return null;
 
-        const { text, voter_count, vote_percentage, is_chosen, is_being_chosen } = option;
+        const { text, text_entities, voter_count, vote_percentage, is_chosen, is_being_chosen } = option;
+
+        const optionContent =
+            text_entities && text_entities.length > 0
+                ? getFormattedText({ '@type': 'formattedText', text, entities: text_entities })
+                : text;
 
         let value = 1.5;
         if (voter_count) {
@@ -78,7 +84,7 @@ class PollOption extends React.Component {
                 <div
                     className={classNames(
                         'poll-option-wrapper',
-                        canBeSelected ? 'poll-option-unselected' : 'poll-option-selected'
+                        canBeSelected ? 'poll-option-unselected' : 'poll-option-selected',
                     )}>
                     <div className='poll-option-text-wrapper' title={this.getTitleString(voter_count, t)}>
                         <PollPercentage
@@ -93,7 +99,7 @@ class PollOption extends React.Component {
                             beingChosen={is_being_chosen}
                             onChange={onChange}
                         />
-                        <div className='poll-option-text'>{text}</div>
+                        <div className='poll-option-text'>{optionContent}</div>
                         {isCorrect && (
                             <CheckCircleIcon style={{ color: '#4caf50', fontSize: 18, marginLeft: 4, flexShrink: 0 }} />
                         )}
@@ -120,7 +126,7 @@ PollOption.propTypes = {
     onUnvote: PropTypes.func.isRequired,
     canBeSelected: PropTypes.bool,
     closed: PropTypes.bool,
-    maxVoterCount: PropTypes.number
+    maxVoterCount: PropTypes.number,
 };
 
 const enhance = compose(withStyles(styles, { withTheme: true }), withTranslation());

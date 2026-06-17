@@ -20,6 +20,7 @@ import DialogTitle from '@material-ui/core/DialogTitle';
 import PollOption from './PollOption';
 import { cancelPollAnswer, setPollAnswer, stopPoll } from '../../../Actions/Poll';
 import MessageStore from './../../../Stores/MessageStore';
+import { getFormattedText } from '../../../Utils/Message';
 import './Poll.css';
 
 class Poll extends React.Component {
@@ -27,7 +28,7 @@ class Poll extends React.Component {
         dialog: false,
         contextMenu: false,
         left: 0,
-        top: 0
+        top: 0,
     };
 
     getTotalVoterCountString = (count, t = key => key) => {
@@ -80,7 +81,7 @@ class Poll extends React.Component {
 
         this.setState({
             dialog: true,
-            contextMenu: false
+            contextMenu: false,
         });
     };
 
@@ -110,7 +111,7 @@ class Poll extends React.Component {
             this.setState({
                 contextMenu: true,
                 left: event.clientX,
-                top: event.clientY
+                top: event.clientY,
             });
         }
     };
@@ -126,7 +127,12 @@ class Poll extends React.Component {
     render() {
         const { chatId, messageId, poll, t } = this.props;
         const { left, top, contextMenu, dialog } = this.state;
-        const { question, options, total_voter_count, is_closed, type } = poll;
+        const { question, question_entities, options, total_voter_count, is_closed, type } = poll;
+
+        const questionContent =
+            question_entities && question_entities.length > 0
+                ? getFormattedText({ '@type': 'formattedText', text: question, entities: question_entities })
+                : question;
 
         const message = MessageStore.get(chatId, messageId);
         if (!message) return null;
@@ -146,7 +152,7 @@ class Poll extends React.Component {
         return (
             <div className='poll' onContextMenu={this.handleContextMenu}>
                 <div className='poll-question'>
-                    <span className='poll-question-title'>{question}</span>
+                    <span className='poll-question-title'>{questionContent}</span>
                     <span className='subtitle'>{subtitle}</span>
                 </div>
                 <div className='poll-options'>
@@ -175,11 +181,11 @@ class Poll extends React.Component {
                     anchorPosition={{ top, left }}
                     anchorOrigin={{
                         vertical: 'bottom',
-                        horizontal: 'right'
+                        horizontal: 'right',
                     }}
                     transformOrigin={{
                         vertical: 'top',
-                        horizontal: 'left'
+                        horizontal: 'left',
                     }}>
                     <MenuList onClick={e => e.stopPropagation()}>
                         {canUnvote && <MenuItem onClick={this.handleUnvote}>{t('Unvote')}</MenuItem>}
@@ -213,7 +219,7 @@ Poll.propTypes = {
     chatId: PropTypes.number.isRequired,
     messageId: PropTypes.number.isRequired,
     poll: PropTypes.object.isRequired,
-    openMedia: PropTypes.func
+    openMedia: PropTypes.func,
 };
 
 export default withTranslation()(Poll);
