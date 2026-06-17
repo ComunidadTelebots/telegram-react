@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.0.549] - 2026-06-17
+### Añadido
+- **Saved Messages folders**: sub-secciones por remitente dentro de Mis Mensajes. `SavedFolders.js`: lista de diálogos guardados con toggle Todos/Fijados; al hacer clic en un remitente abre `SavedFolderMessages` con los últimos 30 mensajes. GramJsController: `_getSavedDialogs` (`messages.GetSavedDialogs`), `_getPinnedSavedDialogs` (`messages.GetPinnedSavedDialogs`), `_getSavedHistory` (`messages.GetSavedHistory`). Punto de entrada: botón "📁 Ver mensajes por remitente" visible solo en Saved Messages en `DialogDetails`. CSS con variables del design system + skin overrides para 10 diseños.
+
 ## [0.0.548] - 2026-06-17
 ### Añadido
 - **Stargifts**: galería de regalos de estrellas en el perfil de chats privados (`ChatDetails`). `StarGiftsGallery.js`: grid de 3 columnas con ícono ⭐ y cantidad de estrellas; `GiftDetailModal` con fecha, mensaje y valor de conversión. GramJsController `_getSavedStarGifts` usa `payments.GetSavedStarGifts(peer, offset, limit)`. CSS con variables del design system + skin overrides para iOS/Android/macOS.

@@ -12,8 +12,10 @@ import Footer from './Footer';
 import Header from './Header';
 import HeaderPlayer from '../Player/HeaderPlayer';
 import MessagesList from './MessagesList';
+import SavedFolders from './SavedFolders';
 import StickerSetDialog from '../Popup/StickerSetDialog';
 import AppStore from '../../Stores/ApplicationStore';
+import { isMeChat } from '../../Utils/Chat';
 import './DialogDetails.css';
 
 class DialogDetails extends Component {
@@ -23,7 +25,8 @@ class DialogDetails extends Component {
         this.state = {
             chatId: AppStore.getChatId(),
             messageId: AppStore.getMessageId(),
-            selectedCount: 0
+            selectedCount: 0,
+            showSavedFolders: false,
         };
     }
 
@@ -59,7 +62,8 @@ class DialogDetails extends Component {
     onClientUpdateChatId = update => {
         this.setState({
             chatId: update.nextChatId,
-            messageId: update.nextMessageId
+            messageId: update.nextMessageId,
+            showSavedFolders: false,
         });
     };
 
@@ -108,18 +112,33 @@ class DialogDetails extends Component {
         this.groups = groups.map(x => {
             return (<MessageGroup key={x.key} senderUserId={x.senderUserId} messages={x.messages} onSelectChat={this.props.onSelectChat}/>);
         });*/
-        const { chatId, messageId, selectedCount } = this.state;
+        const { chatId, messageId, showSavedFolders } = this.state;
         const { isChatDetailsVisible } = AppStore;
+        const isMe = isMeChat(chatId);
+
+        if (isMe && showSavedFolders) {
+            return (
+                <div className={classNames('dialog-details', { 'dialog-details-third-column': isChatDetailsVisible })}>
+                    <SavedFolders onClose={() => this.setState({ showSavedFolders: false })} />
+                </div>
+            );
+        }
 
         return (
             <div className={classNames('dialog-details', { 'dialog-details-third-column': isChatDetailsVisible })}>
                 <HeaderPlayer />
                 <Header chatId={chatId} />
+                {isMe && (
+                    <button
+                        className='saved-folders-entry-btn'
+                        onClick={() => this.setState({ showSavedFolders: true })}>
+                        📁 Ver mensajes por remitente
+                    </button>
+                )}
                 <MessagesList innerRef={ref => (this.messagesList = ref)} chatId={chatId} messageId={messageId} />
                 <Footer chatId={chatId} />
                 <StickerSetDialog />
                 <ChatInfoDialog />
-                {/*<Footer />*/}
             </div>
         );
     }

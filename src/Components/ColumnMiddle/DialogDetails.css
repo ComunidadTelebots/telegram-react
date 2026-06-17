@@ -32,3 +32,25 @@
         display: none;
     }
 }
+
+.saved-folders-entry-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    background: var(--design-hover-color, rgba(33, 150, 243, 0.06));
+    border: none;
+    border-bottom: 1px solid var(--design-border-color, var(--border-color, rgba(0, 0, 0, 0.08)));
+    padding: 10px 16px;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--accent, var(--color-primary, #2196f3));
+    cursor: pointer;
+    text-align: left;
+    transition: background 0.15s;
+    flex-shrink: 0;
+}
+
+.saved-folders-entry-btn:hover {
+    background: var(--design-hover-color, rgba(33, 150, 243, 0.12));
+}

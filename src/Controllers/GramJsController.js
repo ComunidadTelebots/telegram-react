@@ -1010,6 +1010,14 @@ class GramJsController extends EventEmitter {
             case 'sendStory':
                 return this._sendStory(req);
 
+            // ── Saved Messages folders ────────────────────────────────────────
+            case 'getSavedDialogs':
+                return this._getSavedDialogs(req);
+            case 'getPinnedSavedDialogs':
+                return this._getPinnedSavedDialogs(req);
+            case 'getSavedHistory':
+                return this._getSavedHistory(req);
+
             // ── Stargifts ─────────────────────────────────────────────────────
             case 'getSavedStarGifts':
                 return this._getSavedStarGifts(req);
@@ -4953,6 +4961,81 @@ class GramJsController extends EventEmitter {
             console.warn('[GramJs] sendCallSignalingData error', e.message);
         }
         return {};
+    };
+
+    // ── Saved Messages folders ───────────────────────────────────────────────
+
+    _translateSavedDialogs = result => {
+        const { dialogs = [], messages = [], chats = [], users = [] } = result;
+        const msgMap = new Map((messages || []).map(m => [m.id, m]));
+        return {
+            dialogs: dialogs.map(d => ({
+                peer: d.peer,
+                topMessage: msgMap.get(d.topMessage) || null,
+                isPinned: !!(d.flags && d.flags & 4),
+            })),
+        };
+    };
+
+    _getSavedDialogs = async req => {
+        const { offset_date = 0, offset_id = 0, limit = 100 } = req;
+        const result = await this.client.invoke(
+            new Api.messages.GetSavedDialogs({
+                offsetDate: offset_date,
+                offsetId: offset_id,
+                offsetPeer: new Api.InputPeerEmpty(),
+                limit,
+                hash: BigInt(0),
+            }),
+        );
+        return this._translateSavedDialogs(result);
+    };
+
+    _getPinnedSavedDialogs = async () => {
+        const result = await this.client.invoke(new Api.messages.GetPinnedSavedDialogs());
+        return this._translateSavedDialogs(result);
+    };
+
+    _getSavedHistory = async req => {
+        const { peer, offset_id = 0, offset_date = 0, limit = 30 } = req;
+        let inputPeer;
+        if (peer && peer.user_id) {
+            const u = this._entityCache.get(Number(peer.user_id));
+            inputPeer = new Api.InputPeerUser({ userId: BigInt(peer.user_id), accessHash: u?.accessHash || BigInt(0) });
+        } else if (peer && peer.chat_id) {
+            inputPeer = new Api.InputPeerChat({ chatId: BigInt(peer.chat_id) });
+        } else if (peer && peer.channel_id) {
+            const ch = this._entityCache.get(-1000000000000 - Number(peer.channel_id));
+            inputPeer = new Api.InputPeerChannel({
+                channelId: BigInt(peer.channel_id),
+                accessHash: ch?.accessHash || BigInt(0),
+            });
+        } else {
+            inputPeer = new Api.InputPeerEmpty();
+        }
+        const result = await this.client.invoke(
+            new Api.messages.GetSavedHistory({
+                peer: inputPeer,
+                offsetId: offset_id,
+                offsetDate: offset_date,
+                addOffset: 0,
+                limit,
+                maxId: 0,
+                minId: 0,
+                hash: BigInt(0),
+            }),
+        );
+        const { translateMessage } = require('../Utils/GramJs/EntityTranslator');
+        const messages = (result.messages || [])
+            .map(m => {
+                try {
+                    return translateMessage(m, null);
+                } catch {
+                    return null;
+                }
+            })
+            .filter(Boolean);
+        return { messages };
     };
 
     // ── Stargifts ────────────────────────────────────────────────────────────
