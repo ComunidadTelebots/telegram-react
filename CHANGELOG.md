@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.0.591] - 2026-06-17
+### Añadido
+- **Patrones de fondo del chat**: 6 patrones CSS (`dots`, `grid`, `diagonal`, `waves`, `diamonds`, `hexagons`) vía `body.chat-pattern-XXX`. `ChatPatternPicker` con preview visual. `setChatPattern`/`getChatPattern` en Design.js con persistencia.
+
 ## [0.0.590] - 2026-06-17
 ### Añadido
 - **Fondo de chat personalizado**: `ChatBackground` component con 8 colores preset + color picker personalizado + selector de imagen (FileReader → dataURL). Persiste en localStorage. Aplica `--design-middle-background` y `--chat-bg-image`. CSS support en current.css para imagen de fondo.

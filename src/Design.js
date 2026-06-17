@@ -26,6 +26,7 @@ import './designs/webk-2025.css';
 import './designs/weba.css';
 import './designs/weba-classic.css';
 import './designs/palettes.css';
+import './designs/chat-patterns.css';
 
 const DESIGN_KEY = 'tg_design';
 
@@ -202,6 +203,7 @@ export function setDesign(name) {
 export function initDesign() {
     setDesign(getDesign());
     initPalette();
+    initChatPattern();
 }
 
 const PALETTE_KEY = 'tg_palette';
@@ -242,6 +244,36 @@ export function setPalette(name) {
 function initPalette() {
     const saved = getPalette();
     if (saved) setPalette(saved);
+}
+
+const PATTERN_KEY = 'tg_chat_pattern';
+export const CHAT_PATTERNS = ['dots', 'grid', 'diagonal', 'waves', 'diamonds', 'hexagons'];
+export const CHAT_PATTERN_LABELS = {
+    dots: 'Puntos',
+    grid: 'Cuadrícula',
+    diagonal: 'Diagonal',
+    waves: 'Ondas',
+    diamonds: 'Rombos',
+    hexagons: 'Hexágonos',
+};
+
+export function getChatPattern() {
+    return localStorage.getItem(PATTERN_KEY) || '';
+}
+
+export function setChatPattern(name) {
+    CHAT_PATTERNS.forEach(p => document.body.classList.remove(`chat-pattern-${p}`));
+    if (name && CHAT_PATTERNS.includes(name)) {
+        document.body.classList.add(`chat-pattern-${name}`);
+        localStorage.setItem(PATTERN_KEY, name);
+    } else {
+        localStorage.removeItem(PATTERN_KEY);
+    }
+}
+
+function initChatPattern() {
+    const saved = getChatPattern();
+    if (saved) setChatPattern(saved);
 }
 
 export { DESIGNS };
