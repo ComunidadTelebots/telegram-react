@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.0.550] - 2026-06-17
+### Añadido
+- **Android variants históricas**: 6 nuevos skins de época en `android.css`, todos heredando de `body.design-android` (cascada), sin tocar las 7 variantes existentes.
+  - `android-v1` — 1.x Holo 2013: sidebar oscuro #1c2733, header #2f6ea5, acento neón #33b5e5, radio 2px, sin FAB.
+  - `android-v2` — 2.x Holo refinado 2014: sidebar #243040, header #3a7299, radio 3px, sin FAB.
+  - `android-v3` — 3.x Material 2015: sidebar blanco, header #527da3, acento #2196f3, FAB circular #5b9bd1, sombras elevación, radio 6px.
+  - `android-v35` — 3.5 Material 2016: header #5682a3, acento #2196f3, FAB circular azul, radio 8px, sombras Material.
+  - `android-matyou` — 11.x Material You 2024: paleta monet violeta (#9b8fc7/#6750a4), fondo #fef7ff, burbujas tonales, FAB rounded-rect (border-radius 14px), superficies tonales, dark mode monet.
+  - `android-v12` — 12.x Rediseño 2026: header grande 60px blanco "Chats", burbuja out azul sólido #3390ec, AndroidBottomNav visible, sin FAB, radio 16px.
+- Cada variante cubre: tiles de avatar, folder tabs, burbujas, reacciones, spoiler, story ring, menú hamburguesa, web preview, encuestas, audio, voz, forward, factura, dados, ubicación, emoji picker, scroll-down, separador de no leídos, mensajes de servicio, pinned bar, check marks, dark mode.
+- `DesignVersionSelector.js`: `DESIGN_VERSION_REGISTRY.android` reorganizado con 13 entradas cronológicas (1.x→2.x→3.x→3.5→4.x Holo→6.x→7.x→8.x→11.x MatY→12.x→12.5→12.6→12.6.4 Glass).
+- `Design.js`: `android-matyou` añadido a `DESIGN_SUB_VARIANTS`; accents `android-v12 #3390ec`, `android-matyou #9b8fc7`.
+
 ## [0.0.549] - 2026-06-17
 ### Añadido
 - **Saved Messages folders**: sub-secciones por remitente dentro de Mis Mensajes. `SavedFolders.js`: lista de diálogos guardados con toggle Todos/Fijados; al hacer clic en un remitente abre `SavedFolderMessages` con los últimos 30 mensajes. GramJsController: `_getSavedDialogs` (`messages.GetSavedDialogs`), `_getPinnedSavedDialogs` (`messages.GetPinnedSavedDialogs`), `_getSavedHistory` (`messages.GetSavedHistory`). Punto de entrada: botón "📁 Ver mensajes por remitente" visible solo en Saved Messages en `DialogDetails`. CSS con variables del design system + skin overrides para 10 diseños.
