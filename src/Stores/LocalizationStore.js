@@ -62,6 +62,7 @@ i18n.use(initReactI18next).init({
                 TranslateMessage: 'Translate message',
                 TranslationUnavailable: 'Translation not available',
                 ShowOriginal: 'Show original',
+                SearchLanguage: 'Search language',
                 ReportMessage: 'Report',
                 BlockUser: 'Block User',
                 UnblockUser: 'Unblock User',
@@ -115,6 +116,7 @@ i18n.use(initReactI18next).init({
                 TranslateMessage: 'Traducir mensaje',
                 TranslationUnavailable: 'Traducción no disponible',
                 ShowOriginal: 'Mostrar original',
+                SearchLanguage: 'Buscar idioma',
             },
         },
         ru: {
@@ -141,6 +143,7 @@ i18n.use(initReactI18next).init({
                 TranslateMessage: 'Перевести сообщение',
                 TranslationUnavailable: 'Перевод недоступен',
                 ShowOriginal: 'Показать оригинал',
+                SearchLanguage: 'Поиск языка',
                 ReportMessage: 'Пожаловаться',
                 BlockUser: 'Заблокировать',
                 UnblockUser: 'Разблокировать',

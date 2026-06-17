@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.0.536] - 2026-06-17
+### Añadido
+- **Translation lang picker v2**: lista completa de ~80 idiomas (paridad con Web A) usando `Intl.DisplayNames` para nombres nativos. Campo de búsqueda con autoFocus filtra por nombre o código. Lista ordenada alfabéticamente según locale del navegador. Cache de labels en memoria.
+
 ## [0.0.535] - 2026-06-17
 ### Añadido
 - **Translation inline**: traducción de mensajes con `messages.translateText` usando `peer+id` (cache server-side). Botón "Show original / Show translation" para alternar sin re-traducir gracias a cache en memoria por `chatId:messageId:langCode`.

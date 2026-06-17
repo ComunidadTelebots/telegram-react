@@ -57,6 +57,7 @@ import Popover from '@material-ui/core/Popover';
 import Snackbar from '@material-ui/core/Snackbar';
 import MenuList from '@material-ui/core/MenuList';
 import MenuItem from '@material-ui/core/MenuItem';
+import InputBase from '@material-ui/core/InputBase';
 import ChatStore from '../../Stores/ChatStore';
 import { pinMessage, unpinMessage } from '../../Actions/Message';
 import { withRestoreRef, withSaveRef } from '../../Utils/HOC';
@@ -90,6 +91,145 @@ const styles = theme => ({
 // Cache en memoria: `${chatId}:${messageId}:${langCode}` → texto traducido
 const translationCache = new Map();
 
+// Lista completa de idiomas soportados por messages.translateText (equivalente a Web A)
+const SUPPORTED_TRANSLATION_LANGUAGES = [
+    // Oficiales
+    'en',
+    'ar',
+    'be',
+    'ca',
+    'zh',
+    'nl',
+    'fr',
+    'de',
+    'id',
+    'it',
+    'ja',
+    'ko',
+    'pl',
+    'pt',
+    'ru',
+    'es',
+    'uk',
+    // No oficiales
+    'af',
+    'sq',
+    'am',
+    'hy',
+    'az',
+    'eu',
+    'bn',
+    'bs',
+    'bg',
+    'ceb',
+    'zh-CN',
+    'zh-TW',
+    'co',
+    'hr',
+    'cs',
+    'da',
+    'eo',
+    'et',
+    'fi',
+    'fy',
+    'gl',
+    'ka',
+    'el',
+    'gu',
+    'ht',
+    'ha',
+    'haw',
+    'he',
+    'hi',
+    'hmn',
+    'hu',
+    'is',
+    'ig',
+    'ga',
+    'jv',
+    'kn',
+    'kk',
+    'km',
+    'rw',
+    'ku',
+    'ky',
+    'lo',
+    'la',
+    'lv',
+    'lt',
+    'lb',
+    'mk',
+    'mg',
+    'ms',
+    'ml',
+    'mt',
+    'mi',
+    'mr',
+    'mn',
+    'my',
+    'ne',
+    'no',
+    'ny',
+    'or',
+    'ps',
+    'fa',
+    'pa',
+    'ro',
+    'sm',
+    'gd',
+    'sr',
+    'st',
+    'sn',
+    'sd',
+    'si',
+    'sk',
+    'sl',
+    'so',
+    'su',
+    'sw',
+    'sv',
+    'tl',
+    'tg',
+    'ta',
+    'tt',
+    'te',
+    'th',
+    'tr',
+    'tk',
+    'ur',
+    'ug',
+    'uz',
+    'vi',
+    'cy',
+    'xh',
+    'yi',
+    'yo',
+    'zu',
+];
+
+// Nombres de idioma usando Intl.DisplayNames con fallback a código
+const _displayNamesCache = new Map();
+function getLangLabel(code, uiLocale) {
+    const key = `${code}:${uiLocale}`;
+    if (_displayNamesCache.has(key)) return _displayNamesCache.get(key);
+    let label = code;
+    try {
+        const dn = new Intl.DisplayNames([uiLocale, 'en'], { type: 'language' });
+        const name = dn.of(code);
+        label = name && name !== code ? name : code;
+    } catch (_) {}
+    _displayNamesCache.set(key, label);
+    return label;
+}
+
+// Lista de idiomas precalculada (en locale UI del navegador) para el picker
+function buildLangList(uiLocale) {
+    return SUPPORTED_TRANSLATION_LANGUAGES.map(code => ({
+        code,
+        label: getLangLabel(code, uiLocale),
+    })).sort((a, b) => a.label.localeCompare(b.label, uiLocale));
+}
+
 class Message extends Component {
     constructor(props) {
         super(props);
@@ -108,6 +248,7 @@ class Message extends Component {
                 translating: false,
                 translationVisible: true,
                 langMenu: false,
+                langSearch: '',
                 hovered: false,
                 copiedToast: false,
             };
@@ -123,6 +264,7 @@ class Message extends Component {
                 translating: false,
                 translationVisible: true,
                 langMenu: false,
+                langSearch: '',
                 hovered: false,
                 copiedToast: false,
             };
@@ -149,6 +291,7 @@ class Message extends Component {
             translating,
             translationVisible,
             langMenu,
+            langSearch,
             hovered,
         } = this.state;
 
@@ -214,6 +357,7 @@ class Message extends Component {
         if (nextState.translationText !== translationText) return true;
         if (nextState.translating !== translating) return true;
         if (nextState.translationVisible !== translationVisible) return true;
+        if (nextState.langSearch !== langSearch) return true;
         if (nextState.hovered !== hovered) return true;
 
         // console.log('Message.shouldComponentUpdate false');
@@ -505,11 +649,15 @@ class Message extends Component {
 
     handleTranslate = event => {
         this.handleCloseContextMenu(event);
-        this.setState({ langMenu: true });
+        this.setState({ langMenu: true, langSearch: '' });
     };
 
     handleCloseLangMenu = () => {
-        this.setState({ langMenu: false });
+        this.setState({ langMenu: false, langSearch: '' });
+    };
+
+    handleLangSearchChange = event => {
+        this.setState({ langSearch: event.target.value });
     };
 
     handleTranslateTo = async langCode => {
@@ -772,6 +920,7 @@ class Message extends Component {
             translating,
             translationVisible,
             langMenu,
+            langSearch,
             hovered,
             copiedToast,
         } = this.state;
@@ -1037,23 +1186,32 @@ class Message extends Component {
                     anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
                     transformOrigin={{ vertical: 'top', horizontal: 'left' }}
                     onMouseDown={e => e.stopPropagation()}>
-                    <MenuList classes={{ root: classes.menuListRoot }} onClick={e => e.stopPropagation()}>
-                        {[
-                            { code: 'es', label: '🇪🇸 Español' },
-                            { code: 'en', label: '🇬🇧 English' },
-                            { code: 'fr', label: '🇫🇷 Français' },
-                            { code: 'de', label: '🇩🇪 Deutsch' },
-                            { code: 'pt', label: '🇵🇹 Português' },
-                            { code: 'it', label: '🇮🇹 Italiano' },
-                            { code: 'ru', label: '🇷🇺 Русский' },
-                            { code: 'zh', label: '🇨🇳 中文' },
-                            { code: 'ja', label: '🇯🇵 日本語' },
-                            { code: 'ar', label: '🇸🇦 العربية' },
-                        ].map(({ code, label }) => (
-                            <MenuItem key={code} onClick={() => this.handleTranslateTo(code)}>
-                                {label}
-                            </MenuItem>
-                        ))}
+                    <div className='lang-picker-search' onClick={e => e.stopPropagation()}>
+                        <InputBase
+                            autoFocus
+                            fullWidth
+                            placeholder={t('SearchLanguage')}
+                            value={langSearch}
+                            onChange={this.handleLangSearchChange}
+                            inputProps={{ 'aria-label': 'search language' }}
+                        />
+                    </div>
+                    <MenuList
+                        classes={{ root: classes.menuListRoot }}
+                        className='lang-picker-list'
+                        onClick={e => e.stopPropagation()}>
+                        {buildLangList(navigator.language || 'en')
+                            .filter(({ code, label }) => {
+                                if (!langSearch) return true;
+                                const q = langSearch.toLowerCase();
+                                return label.toLowerCase().includes(q) || code.toLowerCase().includes(q);
+                            })
+                            .map(({ code, label }) => (
+                                <MenuItem key={code} onClick={() => this.handleTranslateTo(code)}>
+                                    <span className='lang-picker-label'>{label}</span>
+                                    <span className='lang-picker-code'>{code}</span>
+                                </MenuItem>
+                            ))}
                     </MenuList>
                 </Popover>
             </div>

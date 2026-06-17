@@ -333,6 +333,36 @@ body.design-android-classic .message-translation-toggle {
     color: #527da3;
 }
 
+/* Language picker */
+.lang-picker-search {
+    padding: 8px 12px 4px;
+    border-bottom: 1px solid var(--border-color, rgba(0, 0, 0, 0.12));
+    position: sticky;
+    top: 0;
+    background: var(--background, #fff);
+    z-index: 1;
+}
+
+.lang-picker-list {
+    max-height: 280px;
+    overflow-y: auto;
+    min-width: 200px;
+}
+
+.lang-picker-label {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.lang-picker-code {
+    margin-left: 8px;
+    font-size: 0.75em;
+    opacity: 0.45;
+    flex-shrink: 0;
+}
+
 /* Service card (Story, Giveaway, etc.) */
 .message-service-card {
     display: flex;
