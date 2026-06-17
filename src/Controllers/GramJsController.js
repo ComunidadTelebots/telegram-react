@@ -1030,6 +1030,12 @@ class GramJsController extends EventEmitter {
             case 'editForumTopic':
                 return this._editForumTopic(req);
 
+            // ── Inline bots ───────────────────────────────────────────────────
+            case 'getInlineBotResults':
+                return this._getInlineBotResults(req);
+            case 'sendInlineBotResult':
+                return this._sendInlineBotResult(req);
+
             // ── Notificaciones ────────────────────────────────────────────────
             case 'setNotificationGroup':
                 return {};
@@ -5121,6 +5127,67 @@ class GramJsController extends EventEmitter {
             }),
         );
         return result;
+    };
+
+    // ── Inline bot results ───────────────────────────────────────────────────
+
+    _getInlineBotResults = async req => {
+        const { bot_username, query = '', offset = '', chat_id } = req;
+        try {
+            const botEntity = await this.client.getEntity(bot_username);
+            const peer = chat_id ? tdlibChatIdToInputPeer(chat_id, this._entityCache) : new Api.InputPeerEmpty();
+            const result = await this.client.invoke(
+                new Api.messages.GetInlineBotResults({
+                    bot: botEntity,
+                    peer,
+                    query,
+                    offset,
+                }),
+            );
+            const results = (result.results || []).map(r => ({
+                id: r.id,
+                type:
+                    r.className === 'BotInlineMediaResult'
+                        ? r.photo
+                            ? 'photo'
+                            : r.document
+                            ? 'document'
+                            : 'article'
+                        : r.type || 'article',
+                title: r.title || '',
+                description: r.description || '',
+                url: r.url || '',
+                thumb_url: r.thumb?.url || null,
+                content_url: r.content?.url || null,
+                send_message: r.sendMessage,
+            }));
+            return {
+                query_id: result.queryId ? String(result.queryId) : '',
+                results,
+                next_offset: result.nextOffset || '',
+                cache_time: result.cacheTime || 0,
+            };
+        } catch (e) {
+            console.warn('[GramJs] _getInlineBotResults error:', e);
+            return { results: [] };
+        }
+    };
+
+    _sendInlineBotResult = async req => {
+        const { chat_id, query_id, result_id, reply_to_message_id } = req;
+        const peer = tdlibChatIdToInputPeer(chat_id, this._entityCache);
+        await this.client.invoke(
+            new Api.messages.SendInlineBotResult({
+                peer,
+                queryId: BigInt(query_id),
+                id: result_id,
+                replyTo: reply_to_message_id
+                    ? new Api.InputReplyToMessage({ replyToMsgId: reply_to_message_id })
+                    : undefined,
+                randomId: BigInt(Math.floor(Math.random() * Number.MAX_SAFE_INTEGER)),
+            }),
+        );
+        return {};
     };
 }
 

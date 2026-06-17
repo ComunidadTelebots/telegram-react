@@ -33,6 +33,7 @@ import GifPicker from './GifPicker';
 import GifIcon from '@material-ui/icons/Gif';
 import MentionAutocomplete from './MentionAutocomplete';
 import BotCommandSuggestions from './BotCommandSuggestions';
+import InlineBotResults from './InlineBotResults';
 import EditUrlDialog from '../Popup/EditUrlDialog';
 import InputBoxHeader from './InputBoxHeader';
 import PasteFilesDialog from '../Popup/PasteFilesDialog';
@@ -95,6 +96,8 @@ class InputBoxControl extends Component {
             mentionMembers: [],
             botCommandQuery: null,
             botCommands: [],
+            inlineBotUsername: null,
+            inlineBotResults: null,
             charCount: 0,
             ctrlEnterMode: localStorage.getItem('ctrlEnterMode') === 'true',
         };
@@ -1324,6 +1327,65 @@ class InputBoxControl extends Component {
         this.setState({ botCommands: this._botCommandsCache.commands });
     };
 
+    detectInlineBot = () => {
+        const element = this.newMessageRef.current;
+        if (!element) return;
+
+        const text = (element.innerText || '').trimStart();
+        // Pattern: @username followed by a space and optional query
+        const match = text.match(/^@(\w{3,32}) (.*)$/s);
+        if (!match) {
+            if (this.state.inlineBotUsername !== null) {
+                this.setState({ inlineBotUsername: null, inlineBotResults: null });
+            }
+            return;
+        }
+
+        const username = match[1];
+        const query = match[2];
+
+        // Debounce via timeout stored on instance
+        clearTimeout(this._inlineBotDebounce);
+        this._inlineBotDebounce = setTimeout(() => {
+            const { chatId } = this.state;
+            this.setState({ inlineBotUsername: username, inlineBotResults: null });
+            TdLibController.send({
+                '@type': 'getInlineBotResults',
+                bot_username: username,
+                query,
+                offset: '',
+                chat_id: chatId,
+            })
+                .then(res => {
+                    if (this.state.inlineBotUsername === username) {
+                        this._lastInlineQueryId = res.query_id || '0';
+                        this.setState({ inlineBotResults: res.results || [] });
+                    }
+                })
+                .catch(() => {
+                    this.setState({ inlineBotResults: [] });
+                });
+        }, 300);
+    };
+
+    handleInlineBotSelect = result => {
+        const { chatId, replyToMessageId, inlineBotResults } = this.state;
+        // inlineBotResults carries query_id set during last fetch
+        const queryId = this._lastInlineQueryId || '0';
+        TdLibController.send({
+            '@type': 'sendInlineBotResult',
+            chat_id: chatId,
+            query_id: queryId,
+            result_id: result.id,
+            reply_to_message_id: replyToMessageId || 0,
+        }).catch(() => {});
+
+        // Clear input and panel
+        const element = this.newMessageRef.current;
+        if (element) element.innerText = '';
+        this.setState({ inlineBotUsername: null, inlineBotResults: null, replyToMessageId: 0 });
+    };
+
     handleBotCommandSelect = cmd => {
         const element = this.newMessageRef.current;
         if (!element) return;
@@ -1339,6 +1401,7 @@ class InputBoxControl extends Component {
         this.setHints();
         this.detectMention();
         this.detectBotCommand();
+        this.detectInlineBot();
         const el = this.newMessageRef.current;
         if (el) this.setState({ charCount: (el.innerText || '').length });
     };
@@ -1524,6 +1587,8 @@ class InputBoxControl extends Component {
             mentionMembers,
             botCommandQuery,
             botCommands,
+            inlineBotUsername,
+            inlineBotResults,
             charCount,
             ctrlEnterMode,
         } = this.state;
@@ -1583,6 +1648,13 @@ class InputBoxControl extends Component {
                                         members={mentionMembers}
                                         query={mentionQuery}
                                         onSelect={this.handleMentionSelect}
+                                    />
+                                )}
+                                {inlineBotUsername !== null && (
+                                    <InlineBotResults
+                                        results={inlineBotResults || []}
+                                        botUsername={inlineBotUsername}
+                                        onSelect={this.handleInlineBotSelect}
                                     />
                                 )}
                                 <div
