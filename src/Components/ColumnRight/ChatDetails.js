@@ -78,6 +78,7 @@ import FileStore from '../../Stores/FileStore';
 import ApplicationStore from '../../Stores/ApplicationStore';
 import TdLibController from '../../Controllers/TdLibController';
 import SimilarChannels from './SimilarChannels';
+import StarGiftsGallery from './StarGiftsGallery';
 import './ChatDetails.css';
 
 const styles = theme => ({
@@ -843,6 +844,12 @@ class ChatDetails extends React.Component {
                                     </ListItem>
                                 )}
                             </List>
+                        </>
+                    )}
+                    {isPrivateChat(chatId) && !isMe && (
+                        <>
+                            <Divider />
+                            <StarGiftsGallery chatId={chatId} />
                         </>
                     )}
                     {(photoCount > 0 ||

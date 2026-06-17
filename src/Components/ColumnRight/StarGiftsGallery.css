@@ -1,0 +1,162 @@
+.stargift-gallery {
+    padding: 12px 16px 4px;
+}
+
+.stargift-gallery-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--design-muted-color, rgba(0, 0, 0, 0.5));
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin-bottom: 10px;
+}
+
+.stargift-gallery-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+}
+
+.stargift-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    background: var(--design-hover-color, rgba(255, 193, 7, 0.08));
+    border: 1px solid rgba(255, 193, 7, 0.25);
+    border-radius: 12px;
+    padding: 12px 8px;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s;
+    aspect-ratio: 1;
+}
+
+.stargift-item:hover {
+    background: rgba(255, 193, 7, 0.16);
+    border-color: rgba(255, 193, 7, 0.5);
+}
+
+.stargift-item-icon {
+    font-size: 28px;
+    line-height: 1;
+    filter: drop-shadow(0 2px 4px rgba(255, 193, 7, 0.4));
+}
+
+.stargift-item-stars {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--color-text-primary, #222);
+}
+
+.stargift-gallery-loading {
+    display: flex;
+    justify-content: center;
+    padding: 16px 0;
+    color: var(--accent, var(--color-primary, #2196f3));
+}
+
+.stargift-gallery-error {
+    padding: 12px 16px;
+    font-size: 13px;
+    color: var(--message-error-color, #e53935);
+}
+
+/* ── Gift detail modal ── */
+
+.stargift-modal-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 2000;
+    background: rgba(0, 0, 0, 0.45);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.stargift-modal {
+    background: var(--background-color, #fff);
+    border-radius: 16px;
+    width: 300px;
+    max-width: 90vw;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+    overflow: hidden;
+}
+
+.stargift-modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 16px 10px;
+    border-bottom: 1px solid var(--design-border-color, var(--border-color, rgba(0, 0, 0, 0.08)));
+}
+
+.stargift-modal-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--color-text-primary, #000);
+}
+
+.stargift-modal-close {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 18px;
+    color: var(--design-muted-color, rgba(0, 0, 0, 0.45));
+    padding: 2px 4px;
+    line-height: 1;
+}
+
+.stargift-modal-body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    padding: 24px 16px 20px;
+}
+
+.stargift-modal-icon {
+    font-size: 52px;
+    line-height: 1;
+    filter: drop-shadow(0 4px 8px rgba(255, 193, 7, 0.5));
+}
+
+.stargift-modal-stars {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--color-text-primary, #000);
+}
+
+.stargift-modal-message {
+    font-size: 14px;
+    color: var(--color-text-primary, #222);
+    text-align: center;
+    max-width: 240px;
+}
+
+.stargift-modal-meta {
+    font-size: 12px;
+    color: var(--design-muted-color, rgba(0, 0, 0, 0.45));
+}
+
+.stargift-modal-convert {
+    font-size: 12px;
+    color: var(--design-muted-color, rgba(0, 0, 0, 0.5));
+    background: var(--design-hover-color, rgba(255, 193, 7, 0.08));
+    border-radius: 8px;
+    padding: 6px 12px;
+}
+
+/* ── Skin overrides ── */
+
+body.design-android-holo .stargift-item,
+body.design-android-classic .stargift-item {
+    border-radius: 4px;
+}
+
+body.design-ios .stargift-item,
+body.design-ios-ipad .stargift-item,
+body.design-macos .stargift-item,
+body.design-macos-monterey .stargift-item {
+    border-radius: 14px;
+}

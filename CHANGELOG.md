@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.0.548] - 2026-06-17
+### Añadido
+- **Stargifts**: galería de regalos de estrellas en el perfil de chats privados (`ChatDetails`). `StarGiftsGallery.js`: grid de 3 columnas con ícono ⭐ y cantidad de estrellas; `GiftDetailModal` con fecha, mensaje y valor de conversión. GramJsController `_getSavedStarGifts` usa `payments.GetSavedStarGifts(peer, offset, limit)`. CSS con variables del design system + skin overrides para iOS/Android/macOS.
+
 ## [0.0.547] - 2026-06-17
 ### Añadido
 - **Premium UI (fase 1: badge)**: badge ⭐ para usuarios con `user.premium == true` en tres ubicaciones: lista de diálogos (`DialogTitle`), cabecera del chat (`Header`), nombre del remitente en mensajes (`MessageAuthor`). `is_premium` propagado desde GramJS en `translateUser`. Función `isChatPremium(chatId)` en Chat.js. CSS con `filter: drop-shadow` dorado, sin hex hardcoded fuera del efecto decorativo.

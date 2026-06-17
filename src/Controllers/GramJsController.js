@@ -1010,6 +1010,10 @@ class GramJsController extends EventEmitter {
             case 'sendStory':
                 return this._sendStory(req);
 
+            // ── Stargifts ─────────────────────────────────────────────────────
+            case 'getSavedStarGifts':
+                return this._getSavedStarGifts(req);
+
             // ── Forum Topics ──────────────────────────────────────────────────
             case 'getForumTopics':
                 return this._getForumTopics(req);
@@ -4949,6 +4953,30 @@ class GramJsController extends EventEmitter {
             console.warn('[GramJs] sendCallSignalingData error', e.message);
         }
         return {};
+    };
+
+    // ── Stargifts ────────────────────────────────────────────────────────────
+
+    _getSavedStarGifts = async req => {
+        const { chat_id, offset = 0, limit = 100 } = req;
+        const peer = await this.getInputPeer(chat_id);
+        const result = await this.client.invoke(
+            new Api.payments.GetSavedStarGifts({
+                peer,
+                offset,
+                limit,
+            }),
+        );
+        const gifts = (result.gifts || []).map(g => ({
+            id: g.msgId != null ? Number(g.msgId) : null,
+            stars: g.gift?.stars != null ? Number(g.gift.stars) : null,
+            convert_stars: g.gift?.convertStars != null ? Number(g.gift.convertStars) : null,
+            message: g.message?.text || null,
+            date: g.date || null,
+            name_hidden: !!g.nameHidden,
+            unsaved: !!g.unsaved,
+        }));
+        return { gifts, count: result.count || gifts.length };
     };
 
     // ── Forum Topics ─────────────────────────────────────────────────────────
