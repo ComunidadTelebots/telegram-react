@@ -1007,6 +1007,8 @@ class GramJsController extends EventEmitter {
                 return this._readStories(req);
             case 'getStoryViewers':
                 return this._getStoryViewers(req);
+            case 'sendStory':
+                return this._sendStory(req);
 
             // ── Notificaciones ────────────────────────────────────────────────
             case 'setNotificationGroup':
@@ -3615,6 +3617,49 @@ class GramJsController extends EventEmitter {
             console.warn('[GramJs] readStories error', e);
             return {};
         }
+    };
+
+    _sendStory = async req => {
+        const { file, caption = '', privacy = 'everyone', period = 86400 } = req;
+        if (!file) throw new Error('No file provided');
+
+        const isVideo = file.type?.startsWith('video/');
+
+        // Upload the file
+        const uploaded = await this.client.uploadFile({ file, workers: 4 });
+
+        let media;
+        if (isVideo) {
+            media = new Api.InputMediaUploadedDocument({
+                file: uploaded,
+                mimeType: file.type || 'video/mp4',
+                attributes: [new Api.DocumentAttributeVideo({ duration: 0, w: 720, h: 1280, supportsStreaming: true })],
+                nosoundVideo: false,
+            });
+        } else {
+            media = new Api.InputMediaUploadedPhoto({ file: uploaded });
+        }
+
+        const privacyRules = {
+            everyone: [new Api.InputPrivacyValueAllowAll()],
+            contacts: [new Api.InputPrivacyValueAllowContacts()],
+            close_friends: [new Api.InputPrivacyValueAllowCloseFriends()],
+        }[privacy] || [new Api.InputPrivacyValueAllowAll()];
+
+        const me = await this.client.getMe();
+        const peer = new Api.InputPeerSelf();
+
+        await this.client.invoke(
+            new Api.stories.SendStory({
+                peer,
+                media,
+                caption: caption || undefined,
+                privacyRules,
+                period,
+                randomId: BigInt(Math.floor(Math.random() * Number.MAX_SAFE_INTEGER)),
+            }),
+        );
+        return { '@type': 'storySent' };
     };
 
     _getStoryViewers = async req => {

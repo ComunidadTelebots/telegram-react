@@ -87,6 +87,30 @@
     user-select: none;
 }
 
+/* Anillo para historia propia sin stories (estado "añadir") */
+.stories-tray-ring--add {
+    background: var(--accent, var(--color-primary, #2196f3));
+}
+
+/* Badge "+" sobre el avatar propio */
+.stories-tray-avatar-wrap {
+    position: relative;
+}
+
+.stories-tray-add-badge {
+    position: absolute;
+    bottom: -2px;
+    right: -2px;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: var(--accent, var(--color-primary, #2196f3));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid var(--design-sidebar-background, var(--background-color, #fff));
+}
+
 /* ── Skin overrides — anillo sin leer ── */
 
 body.design-android-holo .stories-tray-ring--unread {

@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.0.545] - 2026-06-17
+### Añadido
+- **Story Publishing**: botón "Mi historia" (+) en StoriesTray. StoryComposer.js: modal con selector de foto/vídeo, caption, privacy (Todos/Contactos/Amigos cercanos), duración (6h/12h/24h/48h). GramJsController `_sendStory` sube el archivo con `uploadFile` y llama `stories.SendStory` con `InputPrivacyValueAllowAll/Contacts/CloseFriends`. Skin overrides en StoryComposer.css para 10 diseños.
+
 ## [0.0.544] - 2026-06-17
 ### Añadido
 - **Stories completas**: vista de stories de contactos con tray + viewer full-screen.
