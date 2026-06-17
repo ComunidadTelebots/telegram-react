@@ -2,7 +2,8 @@
 
 ## [0.0.547] - 2026-06-17
 ### Añadido
-- **Premium UI**: badge ⭐ para usuarios con `user.premium == true` en tres ubicaciones: lista de diálogos (`DialogTitle`), cabecera del chat (`Header`), nombre del remitente en mensajes (`MessageAuthor`). `is_premium` propagado desde GramJS en `translateUser`. Función `isChatPremium(chatId)` en Chat.js. CSS con `filter: drop-shadow` dorado, sin hex hardcoded fuera del efecto decorativo.
+- **Premium UI (fase 1: badge)**: badge ⭐ para usuarios con `user.premium == true` en tres ubicaciones: lista de diálogos (`DialogTitle`), cabecera del chat (`Header`), nombre del remitente en mensajes (`MessageAuthor`). `is_premium` propagado desde GramJS en `translateUser`. Función `isChatPremium(chatId)` en Chat.js. CSS con `filter: drop-shadow` dorado, sin hex hardcoded fuera del efecto decorativo.
+- **Pendiente (fase 2)**: stickers premium animados (reproducción Lottie sin restricción de tipo), partículas en reacciones premium.
 
 ## [0.0.546] - 2026-06-17
 ### Añadido
