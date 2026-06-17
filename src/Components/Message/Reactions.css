@@ -92,3 +92,23 @@
     transform: scale(1.3);
     background: rgba(0, 0, 0, 0.06);
 }
+
+/* Paid reaction (stars) badge */
+.reaction-paid-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+    padding: 2px 7px;
+    border-radius: 12px;
+    background: rgba(255, 193, 7, 0.15);
+    border: 1px solid rgba(255, 193, 7, 0.4);
+    font-size: 13px;
+    cursor: default;
+    user-select: none;
+}
+
+.reaction-paid-count {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--color-text-primary, #222);
+}

@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.0.543] - 2026-06-17
+### Añadido
+- **Paid Reactions**: detecta `ReactionPaid` en `translateReactions` y propaga `paid_total_count`. Reactions.js muestra badge ⭐ + total de estrellas si `paid_total_count > 0`. CSS con fondo amarillo semitransparente. Sin envío, solo render.
+
 ## [0.0.542] - 2026-06-17
 ### Añadido
 - **Profile Colors**: propaga `accent_color_id` (0-6) desde GramJS `user.color` en EntityTranslator. En Header.js, el chat header de chats privados muestra un borde inferior de 2px con el color de acento del peer (paleta de 7 colores Telegram). Sin editor, solo render.

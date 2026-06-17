@@ -862,10 +862,16 @@ export function translateReactions(raw) {
             is_unread: Boolean(r.unread),
         }));
 
+    const paidResult = raw.results.find(r => {
+        const cls = r.reaction?.className || r.reaction?._;
+        return cls === 'ReactionPaid' || cls === 'reactionPaid';
+    });
+
     return {
         '@type': 'messageReactions',
         has_unread_reactions: recentReactions.some(r => r.is_unread),
         recent_reactions: recentReactions,
+        paid_total_count: paidResult ? paidResult.count || 0 : 0,
         reactions: raw.results
             .filter(r => r.reaction && (r.reaction.emoticon || r.reaction._ === 'reactionEmoji'))
             .map(r => ({

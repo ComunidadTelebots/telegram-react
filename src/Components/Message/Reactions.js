@@ -114,6 +114,7 @@ class Reactions extends Component {
         const message = MessageStore.get(chatId, messageId);
         const reactions = message && message.reactions;
         const list = reactions ? reactions.reactions : [];
+        const paidCount = reactions ? reactions.paid_total_count || 0 : 0;
         const unreadReactions = new Set(
             reactions && reactions.recent_reactions
                 ? reactions.recent_reactions.filter(r => r.is_unread).map(r => r.reaction)
@@ -122,6 +123,11 @@ class Reactions extends Component {
 
         return (
             <div className='reactions-wrap'>
+                {paidCount > 0 && (
+                    <span className='reaction-paid-badge' title={`${paidCount} paid reactions`}>
+                        ⭐ <span className='reaction-paid-count'>{paidCount}</span>
+                    </span>
+                )}
                 {list.map(r => (
                     <button
                         key={r.reaction}
