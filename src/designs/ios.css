@@ -495,3 +495,128 @@ body.design-ios .video-note-transcription {
 body.design-ios .reaction-unread {
     box-shadow: 0 0 0 2px rgba(0, 122, 255, 0.35);
 }
+
+/* ══════════════════════════════════════════════════════════════════════════════
+   iOS 7 flat (2013) — first flat design, white UI, thin fonts, colored buttons
+   ══════════════════════════════════════════════════════════════════════════════ */
+body.design-ios-7 {
+    font: 15px/20px -apple-system, 'Helvetica Neue', Arial, sans-serif;
+    --color-accent-main: #007aff;
+    --message-out-background: #007aff;
+    --message-out-color: #fff;
+    --message-in-background: #e5e5ea;
+    --message-in-color: #000;
+    --design-sidebar-background: #fff;
+    --design-header-background: rgba(249, 249, 249, 0.94);
+    --design-header-color: #000;
+    --design-page-background: #f2f2f7;
+    --design-page-color: #000;
+    --design-middle-background: #fff;
+    --design-panel-background: #fff;
+    --design-border-color: rgba(0, 0, 0, 0.12);
+    --design-muted-color: rgba(0, 0, 0, 0.4);
+    --shadow-bubble: none;
+}
+
+body.design-ios-7 .message-bubble {
+    border-radius: 18px;
+}
+body.design-ios-7 .message-bubble::after {
+    content: none;
+}
+body.design-ios-7 .dialogs-header,
+body.design-ios-7 .chat-header {
+    border-bottom: 0.5px solid rgba(0, 0, 0, 0.18);
+}
+
+/* ══════════════════════════════════════════════════════════════════════════════
+   iOS 10 (2016) — bubbles with tails, darker sidebar separator, 3D touch era
+   ══════════════════════════════════════════════════════════════════════════════ */
+body.design-ios-10 {
+    font: 15px/20px -apple-system, 'SF Pro Text', 'Helvetica Neue', Arial, sans-serif;
+    --color-accent-main: #007aff;
+    --message-out-background: #007aff;
+    --message-out-color: #fff;
+    --message-in-background: #e5e5ea;
+    --message-in-color: #000;
+    --design-sidebar-background: #efeff4;
+    --design-header-background: rgba(239, 239, 244, 0.94);
+    --design-header-color: #000;
+    --design-page-background: #efeff4;
+    --design-page-color: #000;
+    --design-middle-background: #fff;
+    --design-panel-background: #fff;
+    --design-border-color: rgba(0, 0, 0, 0.15);
+    --design-muted-color: rgba(0, 0, 0, 0.42);
+    --badge-green: #4cd964;
+    --shadow-bubble: none;
+}
+
+body.design-ios-10 .message-bubble {
+    border-radius: 18px 18px 4px 18px;
+}
+body.design-ios-10 .message-bubble-out {
+    border-radius: 18px 18px 18px 4px;
+}
+
+/* ══════════════════════════════════════════════════════════════════════════════
+   iOS 14 (2020) — widgets era, SF Rounded, compact interface
+   ══════════════════════════════════════════════════════════════════════════════ */
+body.design-ios-14 {
+    font: 15px/20px -apple-system, 'SF Pro Text', 'Helvetica Neue', Arial, sans-serif;
+    --color-accent-main: #0a84ff;
+    --message-out-background: #0a84ff;
+    --message-out-color: #fff;
+    --message-in-background: #e5e5ea;
+    --message-in-color: #000;
+    --design-sidebar-background: #f2f2f7;
+    --design-header-background: rgba(242, 242, 247, 0.94);
+    --design-header-color: #000;
+    --design-page-background: #f2f2f7;
+    --design-page-color: #000;
+    --design-middle-background: #fff;
+    --design-panel-background: #fff;
+    --design-border-color: rgba(60, 60, 67, 0.16);
+    --design-muted-color: rgba(60, 60, 67, 0.56);
+    --badge-green: #30d158;
+    --shadow-bubble: none;
+}
+
+body.design-ios-14 .message-bubble {
+    border-radius: 20px;
+}
+body.design-ios-14 .message-bubble::after {
+    content: none;
+}
+
+/* ══════════════════════════════════════════════════════════════════════════════
+   iOS Dark mode variants
+   ══════════════════════════════════════════════════════════════════════════════ */
+@media (prefers-color-scheme: dark) {
+    body.design-ios-7,
+    body.design-ios-10 {
+        --message-in-background: #3a3a3c;
+        --message-in-color: #fff;
+        --design-sidebar-background: #1c1c1e;
+        --design-header-background: rgba(28, 28, 30, 0.94);
+        --design-header-color: #fff;
+        --design-page-background: #000;
+        --design-page-color: #fff;
+        --design-middle-background: #1c1c1e;
+        --design-border-color: rgba(255, 255, 255, 0.12);
+        --design-muted-color: rgba(235, 235, 245, 0.6);
+    }
+
+    body.design-ios-14 {
+        --message-in-background: #3a3a3c;
+        --message-in-color: #fff;
+        --design-sidebar-background: #1c1c1e;
+        --design-header-background: rgba(28, 28, 30, 0.94);
+        --design-header-color: #fff;
+        --design-page-background: #000;
+        --design-page-color: #fff;
+        --design-middle-background: #1c1c1e;
+        --design-border-color: rgba(255, 255, 255, 0.12);
+        --design-muted-color: rgba(235, 235, 245, 0.6);
+    }
+}

@@ -53,7 +53,10 @@ const DESIGN_VERSION_REGISTRY = {
         { value: 'android-glass', label: '12.6.4', detail: 'Glass beta 2025', tag: 'Glass', trigger: 'Glass' },
     ],
     ios: [
-        { value: 'ios', label: 'iPhone', detail: 'iPhone layout', tag: 'Phone', trigger: 'iPhone' },
+        { value: 'ios-7', label: 'iOS 7', detail: 'Flat 2013 — primer diseño plano', tag: 'Flat', trigger: 'iOS 7' },
+        { value: 'ios-10', label: 'iOS 10', detail: '3D Touch 2016', tag: 'iOS 10', trigger: 'iOS 10' },
+        { value: 'ios-14', label: 'iOS 14', detail: 'Widgets 2020', tag: 'iOS 14', trigger: 'iOS 14' },
+        { value: 'ios', label: 'iOS actual', detail: 'iPhone moderno 2024', tag: 'Actual', trigger: 'iOS' },
         { value: 'ios-ipad', label: 'iPad', detail: 'iPad wide layout', tag: 'iPad', trigger: 'iPad' },
     ],
     macos: [

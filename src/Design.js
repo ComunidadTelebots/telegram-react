@@ -68,7 +68,10 @@ const DESIGN_SUB_VARIANTS = [
     'android-classic',
     'android-redesign',
     'android-glass',
-    // ios
+    // ios eras
+    'ios-7',
+    'ios-10',
+    'ios-14',
     'ios-ipad',
     // macos
     'macos-monterey',
@@ -129,6 +132,9 @@ export const DESIGN_ACCENTS = {
     'android-classic': '#527da3',
     'android-holo': '#33b5e5',
     ios: '#0088ff',
+    'ios-7': '#007aff',
+    'ios-10': '#007aff',
+    'ios-14': '#0a84ff',
     'ios-ipad': '#0088ff',
     macos: '#2481cc',
     'macos-monterey': '#5b5ea6',

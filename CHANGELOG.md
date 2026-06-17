@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.0.566] - 2026-06-17
+### Añadido
+- **iOS épocas (0.0.563-566)**: 3 variantes nuevas en ios.css: `ios-7` (flat 2013, bubbles 18px sin cola), `ios-10` (3D Touch 2016, bubbles con cola suavizada), `ios-14` (widgets 2020, 20px radius). Dark mode via `prefers-color-scheme`. Registry en DesignVersionSelector con 5 entradas iOS. DESIGN_ACCENTS y DESIGN_SUB_VARIANTS actualizados en Design.js.
+
 ## [0.0.562] - 2026-06-17
 ### Añadido
 - **Business features (0.0.559-562)**: componente `BusinessInfo.js` cargado en perfil privado via `getBusinessInfo`. Renderiza: (559) Horario semanal con indicador "Abierto/Cerrado ahora", (560) Respuestas rápidas `/shortcut`, (561) Presentación (título + descripción) y Mensaje de bienvenida, (562) Mensaje de ausencia. Solo render del estado del servidor. CSS en `BusinessInfo.css` con variables del design system.
