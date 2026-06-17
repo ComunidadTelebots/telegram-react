@@ -604,3 +604,16 @@ body.design-macos-bigsur .message-bubble::after {
         --design-muted-color: rgba(235, 235, 245, 0.6);
     }
 }
+
+/* Auditoría 0.0.599 — cobertura en variantes macOS nuevas */
+[class*='design-macos'] .paid-media-btn {
+    border-radius: 8px;
+    background: var(--color-accent-main);
+    color: #fff;
+}
+[class*='design-macos'] .story-album-dot--active {
+    background: var(--color-accent-main);
+}
+[class*='design-macos'] .business-section {
+    border-radius: 10px;
+}

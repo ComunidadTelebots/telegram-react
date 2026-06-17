@@ -127,3 +127,55 @@ body.split-view .page-left {
     height: 100% !important;
     transform: none !important;
 }
+
+/* Responsive móvil 0.0.600 — ajustes generales para pantallas pequeñas */
+@media (max-width: 600px) {
+    .paid-media-grid {
+        gap: 4px;
+    }
+    .story-album-dots {
+        gap: 4px;
+    }
+    .stargift-actions {
+        gap: 6px;
+    }
+    .business-hours-grid {
+        font-size: 12px;
+    }
+    .palette-picker {
+        gap: 4px;
+    }
+    .chat-pattern-list {
+        gap: 4px;
+    }
+    .chat-pattern-preview {
+        width: 32px;
+        height: 28px;
+    }
+    .design-editor-row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 4px;
+    }
+    .display-settings-row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 4px;
+    }
+    .theme-io {
+        flex-direction: column;
+    }
+    .dv-selector {
+        display: none;
+    } /* Hide version selector on very small screens */
+}
+
+@media (max-width: 480px) {
+    .palette-swatch {
+        padding: 4px 8px;
+        font-size: 11px;
+    }
+    .design-editor-range {
+        max-width: 80px;
+    }
+}

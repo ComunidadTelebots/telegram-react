@@ -5469,3 +5469,26 @@ body.theme-dark.design-android-v12 .scroll-down-button {
 body.theme-dark.design-android-v12 .jump-to-unread-button {
     background: #17212b !important;
 }
+
+/* Auditoría 0.0.598 — cobertura de componentes nuevos en variantes Android */
+/* paid-media, business-info, story-album, stargifts aplican colores del diseño */
+[class*='design-android'] .paid-media-btn {
+    background: var(--color-accent-main);
+    color: #fff;
+}
+[class*='design-android'] .paid-media-overlay {
+    background: rgba(0, 0, 0, 0.52);
+}
+[class*='design-android'] .story-album-dot--active {
+    background: var(--color-accent-main);
+}
+[class*='design-android'] .stargift-action {
+    border-color: var(--color-accent-main);
+    color: var(--color-accent-main);
+}
+[class*='design-android'] .business-hours-open-badge {
+    color: #43a047;
+}
+[class*='design-android'] .business-hours-open-badge.closed {
+    color: #e53935;
+}

@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.0.600] - 2026-06-17
+### Añadido
+- **Auditoría Android (0.0.598)**: selectores `[class*='design-android']` para paid-media, story-album-dots, stargift-actions y business-hours-badge con colores del diseño.
+- **Auditoría iOS/macOS (0.0.599)**: selectores `[class*='design-ios']` y `[class*='design-macos']` para componentes nuevos con radius y colores apropiados.
+- **Responsive móvil (0.0.600)**: media queries `@media (max-width: 600px/480px)` en index.css para todos los componentes nuevos: paid-media, story dots, stargifts, business, palette picker, pattern picker, design editor, display settings, theme IO, version selector.
+
 ## [0.0.597] - 2026-06-17
 ### Añadido
 - **Split view layout (0.0.595)**: CSS `body.split-view` con `display: grid` que mantiene sidebar visible junto al chat en pantallas anchas.
