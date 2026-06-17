@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.0.553] - 2026-06-17
+### Añadido
+- **Premium UI fase 2**: (a) Partículas CSS en reacciones: al elegir una reacción se emiten 8 partículas radiales animadas via `spawnParticles()` con `--px`/`--py` CSS vars y keyframe `reaction-particle`. (b) Glow shimmer en stickers de video (premium): clase `sticker-premium-glow` con keyframe `premium-shimmer` aplicada a `<video>` cuando el sticker tiene `set_id`. Stickers animados TGS ya reproducen con Lottie (sin cambio necesario).
+
 ## [0.0.552] - 2026-06-17
 ### Añadido
 - **Bots 32k + "Show more"**: mensajes de bots con más de 1024 caracteres muestran las primeras 20 líneas con botón "Mostrar más / Mostrar menos". `MessageShowMore.js` + `MessageShowMore.css`. Detección de bot via `UserStore.get(senderId).type.userTypeBot`.

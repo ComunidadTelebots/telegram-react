@@ -40,11 +40,16 @@ class Reactions extends Component {
         }
     };
 
-    handleReactionClick = emoji => {
+    handleReactionClick = (emoji, event) => {
         const { chatId, messageId } = this.props;
         const message = MessageStore.get(chatId, messageId);
         const reactions = message && message.reactions;
         const existing = reactions && reactions.reactions.find(r => r.reaction === emoji);
+
+        if (!(existing && existing.is_chosen) && event && event.currentTarget) {
+            this.spawnParticles(event.currentTarget);
+        }
+
         TdLibController.send({
             '@type': 'sendMessageReaction',
             chat_id: chatId,
@@ -52,6 +57,21 @@ class Reactions extends Component {
             reaction: existing && existing.is_chosen ? null : emoji,
         });
         this.setState({ showPicker: false });
+    };
+
+    spawnParticles = target => {
+        const COUNT = 8;
+        for (let i = 0; i < COUNT; i++) {
+            const el = document.createElement('span');
+            el.className = 'reaction-particle';
+            const angle = (i / COUNT) * 2 * Math.PI;
+            const dist = 18 + Math.random() * 12;
+            el.style.setProperty('--px', `${Math.cos(angle) * dist}px`);
+            el.style.setProperty('--py', `${Math.sin(angle) * dist}px`);
+            el.style.animationDelay = `${Math.random() * 0.08}s`;
+            target.appendChild(el);
+            setTimeout(() => el.remove(), 650);
+        }
     };
 
     handleReactionLongPress = (e, emoji) => {
@@ -134,7 +154,7 @@ class Reactions extends Component {
                         className={`reaction-bubble${r.is_chosen ? ' reaction-chosen' : ''}${
                             unreadReactions.has(r.reaction) ? ' reaction-unread' : ''
                         }`}
-                        onClick={() => this.handleReactionClick(r.reaction)}
+                        onClick={e => this.handleReactionClick(r.reaction, e)}
                         onContextMenu={e => this.handleReactionLongPress(e, r.reaction)}
                         title={r.reaction}>
                         <span className='reaction-emoji'>{r.reaction}</span>
@@ -150,7 +170,7 @@ class Reactions extends Component {
                             <button
                                 key={emoji}
                                 className='reaction-picker-item'
-                                onClick={() => this.handleReactionClick(emoji)}
+                                onClick={e => this.handleReactionClick(emoji, e)}
                                 onContextMenu={event => this.handleSetDefaultReaction(event, emoji)}
                                 title='Click para reaccionar; click derecho para predeterminada'>
                                 {emoji}

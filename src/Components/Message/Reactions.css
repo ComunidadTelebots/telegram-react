@@ -112,3 +112,52 @@
     font-weight: 600;
     color: var(--color-text-primary, #222);
 }
+
+/* ── Premium reaction particles ───────────────────────────────────────────── */
+
+/* Wrapper that positions particles relative to the reaction bubble */
+.reaction-bubble {
+    position: relative;
+    overflow: visible;
+}
+
+/* Keyframe: particle bursts outward and fades */
+@keyframes reaction-particle {
+    0% {
+        transform: translate(0, 0) scale(1);
+        opacity: 1;
+    }
+    100% {
+        transform: translate(var(--px), var(--py)) scale(0);
+        opacity: 0;
+    }
+}
+
+/* Each particle dot spawned via JS */
+.reaction-particle {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--color-accent-main, #2196f3);
+    pointer-events: none;
+    animation: reaction-particle 0.55s ease-out forwards;
+}
+
+/* Premium video sticker: glow shimmer */
+.sticker-premium-glow {
+    filter: drop-shadow(0 0 6px var(--color-accent-main, #2196f3));
+    animation: premium-shimmer 2.5s ease-in-out infinite;
+}
+
+@keyframes premium-shimmer {
+    0%,
+    100% {
+        filter: drop-shadow(0 0 4px rgba(51, 144, 236, 0.5));
+    }
+    50% {
+        filter: drop-shadow(0 0 10px rgba(51, 144, 236, 0.85));
+    }
+}

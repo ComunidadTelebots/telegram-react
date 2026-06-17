@@ -28,7 +28,7 @@ export const StickerSourceEnum = Object.freeze({
     PICKER: 'PICKER',
     PREVIEW: 'PREVIEW',
     STICKER_SET: 'STICKER_SET',
-    UNKNOWN: 'UNKNOWN'
+    UNKNOWN: 'UNKNOWN',
 });
 
 class Sticker extends React.Component {
@@ -46,7 +46,7 @@ class Sticker extends React.Component {
 
         this.state = {
             animationDate: null,
-            hasError: false
+            hasError: false,
         };
     }
 
@@ -340,7 +340,7 @@ class Sticker extends React.Component {
             sticker: source,
             style,
             openMedia,
-            preview
+            preview,
         } = this.props;
         const { thumbnail, sticker, width, height, is_video: isVideo } = source;
         const { animationData, hasError } = this.state;
@@ -354,7 +354,7 @@ class Sticker extends React.Component {
         if (hasError) {
             const style = {
                 width: displaySize,
-                height: displaySize
+                height: displaySize,
             };
 
             if (process.env.NODE_ENV !== 'production') {
@@ -391,14 +391,14 @@ class Sticker extends React.Component {
                                     clearCanvas: false,
                                     progressiveLoad: true, // Boolean, only svg renderer, loads dom elements when needed. Might speed up initialization for large number of elements.
                                     hideOnTransparent: true, //Boolean, only svg renderer, hides elements when opacity reaches 0 (defaults to true)
-                                    className: 'lottie-svg'
-                                }
+                                    className: 'lottie-svg',
+                                },
                             }}
                             eventListeners={[
                                 {
                                     eventName: 'loopComplete',
-                                    callback: this.handleAnimationLoopComplete
-                                }
+                                    callback: this.handleAnimationLoopComplete,
+                                },
                             ]}
                             onMouseOut={this.handleAnimationMouseOut}
                         />
@@ -414,7 +414,14 @@ class Sticker extends React.Component {
             ) : isVideo ? (
                 <>
                     {src && !preview ? (
-                        <video className='sticker-image' autoPlay loop muted playsInline src={src} />
+                        <video
+                            className={classNames('sticker-image', { 'sticker-premium-glow': source.set_id })}
+                            autoPlay
+                            loop
+                            muted
+                            playsInline
+                            src={src}
+                        />
                     ) : (
                         <img
                             className={classNames('sticker-image', { 'media-blurred': isBlurred && blur })}
@@ -443,7 +450,7 @@ class Sticker extends React.Component {
         const stickerStyle = {
             width: fitSize ? fitSize.width : 0,
             height: fitSize ? fitSize.height : 0,
-            ...style
+            ...style,
         };
 
         return (
@@ -469,7 +476,7 @@ Sticker.propTypes = {
     blur: PropTypes.bool,
     displaySize: PropTypes.number,
     preview: PropTypes.bool,
-    source: PropTypes.string
+    source: PropTypes.string,
 };
 
 Sticker.defaultProps = {
@@ -482,7 +489,7 @@ Sticker.defaultProps = {
     blur: true,
     displaySize: STICKER_DISPLAY_SIZE,
     preview: false,
-    source: StickerSourceEnum.UNKNOWN
+    source: StickerSourceEnum.UNKNOWN,
 };
 
 export default Sticker;
