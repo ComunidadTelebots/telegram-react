@@ -115,7 +115,14 @@ const DESIGN_VERSION_REGISTRY = {
         },
     ],
     telegramx: [
-        { value: 'telegramx', label: 'v8', detail: 'TGX v8 (current)', tag: 'v8', trigger: 'v8' },
+        {
+            value: 'telegramx-2018',
+            label: '2018',
+            detail: 'Primera versión — acento verde agua',
+            tag: '2018',
+            trigger: '2018',
+        },
+        { value: 'telegramx', label: 'Actual', detail: 'TGX v8 actual', tag: 'v8', trigger: 'v8' },
         { value: 'telegramx-red', label: 'Red', detail: 'TGX Red gradient', tag: 'Red', trigger: 'Red' },
     ],
 };

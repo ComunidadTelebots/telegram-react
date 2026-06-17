@@ -492,3 +492,35 @@ body.design-telegramx .video-note-transcription {
 body.design-telegramx .reaction-unread {
     box-shadow: 0 0 0 2px rgba(53, 183, 243, 0.34);
 }
+
+/* ══════════════════════════════════════════════════════════════════════════════
+   Telegram X 2018 — primera versión pública, acento verde agua, sidebar oscuro
+   ══════════════════════════════════════════════════════════════════════════════ */
+body.design-telegramx-2018 {
+    font: 15px/20px Roboto, 'Helvetica Neue', Arial, sans-serif;
+    --color-accent-main: #00bfa5;
+    --message-out-background: #00bfa5;
+    --message-out-color: #fff;
+    --message-in-background: #fff;
+    --message-in-color: #000;
+    --design-sidebar-background: #1a2234;
+    --design-header-background: #1a2234;
+    --design-header-color: #fff;
+    --design-page-background: #1a2234;
+    --design-page-color: #c5d0e0;
+    --design-middle-background: #c8d7d7;
+    --design-panel-background: #fff;
+    --design-border-color: rgba(255, 255, 255, 0.1);
+    --design-muted-color: rgba(197, 208, 224, 0.65);
+    --shadow-bubble: 0 1px 2px rgba(0, 0, 0, 0.18);
+}
+
+body.design-telegramx-2018 .message-bubble {
+    border-radius: 14px;
+}
+body.design-telegramx-2018 .message-bubble::after {
+    content: none;
+}
+body.design-telegramx-2018 .dialog-list-item:hover {
+    background: rgba(0, 191, 165, 0.08);
+}

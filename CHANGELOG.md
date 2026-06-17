@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.0.577] - 2026-06-17
+### Añadido
+- **Telegram X épocas (0.0.576-577)**: `telegramx-2018` (sidebar oscuro #1a2234, acento verde agua #00bfa5, primera versión TGX). Registry con 3 entradas: 2018, Actual y Red.
+
 ## [0.0.575] - 2026-06-17
 ### Añadido
 - **Web K épocas (0.0.573-575)**: `webk-2020` (sidebar azul oscuro, bubbles 6px) y `webk-2022` (sidebar claro #3390ec, 12px sin cola). Registry con 4 entradas incluyendo Actual y 2025.

@@ -88,7 +88,8 @@ const DESIGN_SUB_VARIANTS = [
     'webogram-blue',
     // aurora
     'aurora-midnight',
-    // telegramx
+    // telegramx eras
+    'telegramx-2018',
     'telegramx-red',
 ];
 
@@ -157,6 +158,7 @@ export const DESIGN_ACCENTS = {
     aurora: '#34d9a8',
     'aurora-midnight': '#00e5c8',
     telegramx: '#35b7f3',
+    'telegramx-2018': '#00bfa5',
     'telegramx-red': '#e85050',
 };
 
