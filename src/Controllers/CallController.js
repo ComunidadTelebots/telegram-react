@@ -503,18 +503,27 @@ class CallController extends EventEmitter {
         const conns = callObj.connections || callObj.connection;
         if (!conns) return null;
         const arr = Array.isArray(conns) ? conns : [conns];
-        return arr
-            .map(c => {
-                const urls = [];
-                if (c.ip || c.ipv4) urls.push(`turn:${c.ip || c.ipv4}:${c.port || 443}`);
-                if (c.ipv6) urls.push(`turn:[${c.ipv6}]:${c.port || 443}`);
-                return {
-                    urls: urls.length ? urls : 'stun:stun.l.google.com:19302',
-                    username: c.username || undefined,
-                    credential: c.password || undefined,
-                };
-            })
-            .filter(s => s.urls.length);
+        const servers = [];
+        for (const c of arr) {
+            const cls = c.className || c._;
+            if (cls === 'PhoneConnectionWebrtc') {
+                const ip = c.ip || '';
+                const ipv6 = c.ipv6 || '';
+                const port = c.port || 443;
+                if (c.turn && ip) {
+                    const urls = [`turn:${ip}:${port}`];
+                    if (ipv6) urls.push(`turn:[${ipv6}]:${port}`);
+                    servers.push({ urls, username: c.username || '', credential: c.password || '' });
+                } else if (c.stun && ip) {
+                    const urls = [`stun:${ip}:${port}`];
+                    if (ipv6) urls.push(`stun:[${ipv6}]:${port}`);
+                    servers.push({ urls });
+                }
+            }
+            // PhoneConnection (legacy UDP relay) — not usable as standard TURN/STUN for WebRTC
+        }
+        // Fallback public STUN if no servers extracted
+        return servers.length ? servers : [{ urls: 'stun:stun.l.google.com:19302' }];
     }
 
     _sendDiscardBusy(callObj) {

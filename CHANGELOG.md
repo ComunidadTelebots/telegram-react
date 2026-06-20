@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.0.622] - 2026-06-20 — W1 Calls: Fix doble dispatch + ICE servers
+### Fixed
+- **W1 Call bugs**: eliminado bloque de despacho directo que causaba que `UpdatePhoneCall` se procesara dos veces
+  - Segunda vuelta: estado ya era `INCOMING` → `_sendDiscardBusy()` se llamaba automáticamente → llamada descartada antes de mostrarse
+  - Eliminado `ReceivedCall` duplicado en `_acceptCall` (ya lo envía `_onCallRequested`)
+  - `_extractIceServers` ahora distingue `PhoneConnectionWebrtc` (TURN/STUN) de `PhoneConnection` (legacy UDP relay no usable en WebRTC estándar); fallback a Google STUN
+
 ## [0.0.621] - 2026-06-20 — B2 Admin Management Panel
 ### Added
 - **B2 Admin Management** — Panel de gestión de admins en ChatDetails (grupos/canales supergrupo)

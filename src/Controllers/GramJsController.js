@@ -323,11 +323,7 @@ class GramJsController extends EventEmitter {
             const raw = event.originalUpdate || event;
             if (!raw) return;
 
-            // Log phone call updates for debugging
             const rawCls = raw.className || raw._;
-            if (rawCls && rawCls.toLowerCase().includes('phone')) {
-                console.log('[GramJs] phoneCall raw update', rawCls, raw);
-            }
 
             if (raw instanceof Api.UpdateLoginToken || rawCls === 'UpdateLoginToken' || rawCls === 'updateLoginToken') {
                 this._completeQrLoginFromUpdate();
@@ -337,26 +333,6 @@ class GramJsController extends EventEmitter {
             // Actualizar usuarios/chats que vengan en el update
             if (raw.users) raw.users.forEach(u => this._cacheUser(u));
             if (raw.chats) raw.chats.forEach(c => this._cacheEntity(c));
-
-            // Manejo directo de UpdatePhoneCall y UpdatePhoneCallSignalingData
-            // (por si GramJS los entrega con className distinto al esperado)
-            if (rawCls === 'UpdatePhoneCall' || rawCls === 'updatePhoneCall') {
-                import('./CallController')
-                    .then(({ default: callController }) => {
-                        callController.onPhoneCallUpdate({
-                            '@type': 'updatePhoneCall',
-                            phone_call: raw.phoneCall || raw.phone_call || raw,
-                        });
-                    })
-                    .catch(() => {});
-            }
-            if (rawCls === 'UpdatePhoneCallSignalingData' || rawCls === 'updatePhoneCallSignalingData') {
-                import('./CallController')
-                    .then(({ default: callController }) => {
-                        callController.onSignalingData(raw.data);
-                    })
-                    .catch(() => {});
-            }
 
             const tdUpdate = translateUpdate(raw);
             if (tdUpdate) {
@@ -5784,20 +5760,6 @@ class GramJsController extends EventEmitter {
         const { default: callController } = await import('./CallController');
         const { callInfo } = callController;
         if (!callInfo) return {};
-
-        // Enviar ACK de recepción antes de aceptar (requerido por el protocolo)
-        try {
-            await this.client.invoke(
-                new Api.phone.ReceivedCall({
-                    peer: new Api.InputPhoneCall({
-                        id: BigInt(callInfo.callId),
-                        accessHash: BigInt(callInfo.accessHash),
-                    }),
-                }),
-            );
-        } catch (e) {
-            console.warn('[GramJs] ReceivedCall error (ignorado)', e.message);
-        }
 
         // Generate b, compute g^b
         const dhConfig = await this.client.invoke(new Api.messages.GetDhConfig({ version: 0, randomLength: 256 }));
