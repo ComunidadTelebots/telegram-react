@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.0.621] - 2026-06-20 — B2 Admin Management Panel
+### Added
+- **B2 Admin Management** — Panel de gestión de admins en ChatDetails (grupos/canales supergrupo)
+  - Nuevo item "Administradores" en la sección de acciones del chat
+  - `AdminManagement` panel lateral: lista todos los admins via `getChannelAdmins` (channels.GetParticipants con ChannelParticipantsAdmins)
+  - Click "Editar" abre subvista con toggles de 10 permisos individuales + campo de título
+  - Click "Quitar" revoca los privilegios admin vía `editAdmin` (rights vacíos)
+  - Botón Guardar aplica cambios via `editAdmin` con los rights seleccionados y rank
+  - CSS panel lateral derecho con `var(--)`, adaptado a todos los temas
+  - `_getChannelAdmins` nuevo método en GramJsController
+
 ## [0.0.620] - 2026-06-20 — J1 Sponsored Messages UI
 ### Added
 - **J1 Sponsored Messages** — Inyección en MessagesList para canales

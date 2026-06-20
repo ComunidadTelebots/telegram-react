@@ -973,6 +973,8 @@ class GramJsController extends EventEmitter {
                 return this._sendLiveLocation(req);
             case 'editLiveLocation':
                 return this._editLiveLocation(req);
+            case 'getChannelAdmins':
+                return this._getChannelAdmins(req);
             case 'getSearchCounters':
                 return this._getSearchCounters(req);
             case 'terminateSession':
@@ -1339,6 +1341,8 @@ class GramJsController extends EventEmitter {
                 return this._sendLiveLocation(req);
             case 'editLiveLocation':
                 return this._editLiveLocation(req);
+            case 'getChannelAdmins':
+                return this._getChannelAdmins(req);
             case 'getSearchCounters':
                 return this._getSearchCounters(req);
             case 'terminateSession':
@@ -1687,6 +1691,46 @@ class GramJsController extends EventEmitter {
             }),
         );
         return { success: true };
+    };
+
+    _getChannelAdmins = async ({ chat_id }) => {
+        const inputPeer = tdlibChatIdToInputPeer(chat_id, this._entityCache);
+        const result = await this.client.invoke(
+            new Api.channels.GetParticipants({
+                channel: inputPeer,
+                filter: new Api.ChannelParticipantsAdmins(),
+                offset: 0,
+                limit: 200,
+                hash: BigInt(0),
+            }),
+        );
+        return {
+            admins: (result.participants || []).map(p => ({
+                user_id: String(p.userId),
+                rank: p.rank || '',
+                is_self: p.isSelf || false,
+                admin_rights: p.adminRights
+                    ? {
+                          change_info: p.adminRights.changeInfo || false,
+                          post_messages: p.adminRights.postMessages || false,
+                          edit_messages: p.adminRights.editMessages || false,
+                          delete_messages: p.adminRights.deleteMessages || false,
+                          ban_users: p.adminRights.banUsers || false,
+                          invite_users: p.adminRights.inviteUsers || false,
+                          pin_messages: p.adminRights.pinMessages || false,
+                          add_admins: p.adminRights.addAdmins || false,
+                          anonymous: p.adminRights.anonymous || false,
+                          manage_call: p.adminRights.manageCall || false,
+                      }
+                    : null,
+            })),
+            users: (result.users || []).map(u => ({
+                id: String(u.id),
+                first_name: u.firstName || '',
+                last_name: u.lastName || '',
+                username: u.username || '',
+            })),
+        };
     };
 
     _getSearchCounters = async ({ chat_id, filters }) => {

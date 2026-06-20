@@ -83,6 +83,7 @@ import BusinessInfo from './BusinessInfo';
 import AdminLog from './AdminLog';
 import JoinRequests from './JoinRequests';
 import ChannelStats from './ChannelStats';
+import AdminManagement from './AdminManagement';
 import './ChatDetails.css';
 
 const styles = theme => ({
@@ -458,6 +459,11 @@ class ChatDetails extends React.Component {
     handleChannelStats = () => {
         const { chatId } = this.props;
         if (this.channelStatsRef) this.channelStatsRef.open(chatId);
+    };
+
+    handleAdminManagement = () => {
+        const { chatId } = this.props;
+        if (this.adminMgmtRef) this.adminMgmtRef.open(chatId);
     };
 
     handleSetSlowMode = async event => {
@@ -1015,6 +1021,9 @@ class ChatDetails extends React.Component {
                                 <ListItem button onClick={this.handleJoinRequests}>
                                     <ListItemText primary='Join Requests' secondary='Approve or reject' />
                                 </ListItem>
+                                <ListItem button onClick={this.handleAdminManagement}>
+                                    <ListItemText primary='Administradores' secondary='Gestionar permisos y roles' />
+                                </ListItem>
                             </List>
                         </>
                     )}
@@ -1028,6 +1037,7 @@ class ChatDetails extends React.Component {
                 <AdminLog ref={ref => (this.adminLogRef = ref)} />
                 <JoinRequests ref={ref => (this.joinRequestsRef = ref)} />
                 <ChannelStats ref={ref => (this.channelStatsRef = ref)} />
+                <AdminManagement ref={ref => (this.adminMgmtRef = ref)} />
             </>
         ) : (
             <div className={classNames('chat-details', className)}>
@@ -1035,6 +1045,7 @@ class ChatDetails extends React.Component {
                 <AdminLog ref={ref => (this.adminLogRef = ref)} />
                 <JoinRequests ref={ref => (this.joinRequestsRef = ref)} />
                 <ChannelStats ref={ref => (this.channelStatsRef = ref)} />
+                <AdminManagement ref={ref => (this.adminMgmtRef = ref)} />
             </div>
         );
     }
