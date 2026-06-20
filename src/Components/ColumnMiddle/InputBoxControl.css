@@ -175,3 +175,68 @@
     color: #999;
     font-size: 11px;
 }
+
+/* Send with Effect picker */
+.effect-picker-popup {
+    position: absolute;
+    bottom: calc(100% + 8px);
+    right: 0;
+    background: var(--color-background, #fff);
+    border: 1px solid rgba(0, 0, 0, 0.12);
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.18);
+    padding: 10px;
+    z-index: 1000;
+    min-width: 220px;
+}
+
+.effect-picker-title {
+    font-size: 11px;
+    color: var(--color-text-secondary, #888);
+    margin-bottom: 8px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.effect-picker-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin-bottom: 8px;
+}
+
+.effect-picker-item {
+    background: none;
+    border: 1.5px solid transparent;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 22px;
+    padding: 4px 6px;
+    line-height: 1;
+    transition: background 0.15s, border-color 0.15s;
+}
+
+.effect-picker-item:hover {
+    background: rgba(0, 0, 0, 0.06);
+}
+
+.effect-picker-item-selected {
+    border-color: var(--color-primary, #5b8af1);
+    background: rgba(91, 138, 241, 0.1);
+}
+
+.effect-picker-clear {
+    background: none;
+    border: none;
+    color: var(--color-text-secondary, #888);
+    font-size: 12px;
+    cursor: pointer;
+    padding: 0;
+    width: 100%;
+    text-align: center;
+}
+
+.effect-picker-clear:hover {
+    color: var(--color-primary, #5b8af1);
+}

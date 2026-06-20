@@ -9,6 +9,12 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import classNames from 'classnames';
 import withStyles from '@material-ui/core/styles/withStyles';
+import Dialog from '@material-ui/core/Dialog';
+import DialogTitle from '@material-ui/core/DialogTitle';
+import DialogContent from '@material-ui/core/DialogContent';
+import DialogActions from '@material-ui/core/DialogActions';
+import Button from '@material-ui/core/Button';
+import TextField from '@material-ui/core/TextField';
 import Search from './Search/Search';
 import DialogsHeader from './DialogsHeader';
 import DialogsList from './DialogsList';
@@ -32,6 +38,26 @@ import './Dialogs.css';
 const styles = theme => ({
     ...borderStyle(theme),
 });
+
+const FOLDER_ICONS = {
+    All: '💬',
+    Unmuted: '🔔',
+    Unread: '✉️',
+    Personal: '👤',
+    Work: '💼',
+    Groups: '👥',
+    Channels: '📢',
+    Bots: '🤖',
+    Contacts: '📋',
+    NonContacts: '👥',
+    NewChats: '🆕',
+    Existing: '📨',
+    Setup: '⚙️',
+};
+
+function getFolderIcon(name) {
+    return FOLDER_ICONS[name] || '📁';
+}
 
 class Dialogs extends Component {
     constructor(props) {
@@ -65,6 +91,8 @@ class Dialogs extends Component {
 
             storyViewerChatId: null,
             forumChatId: null,
+            createFolderOpen: false,
+            createFolderName: '',
         };
     }
 
@@ -167,6 +195,56 @@ class Dialogs extends Component {
 
     handleFolderSelect = filterId => {
         this.setState({ activeFilter: filterId });
+    };
+
+    handleOpenCreateFolder = () => {
+        this.setState({ createFolderOpen: true, createFolderName: '' });
+    };
+
+    handleCloseCreateFolder = () => {
+        this.setState({ createFolderOpen: false, createFolderName: '' });
+    };
+
+    handleCreateFolder = async () => {
+        const { createFolderName } = this.state;
+        if (!createFolderName.trim()) return;
+        try {
+            await TdLibController.send({
+                '@type': 'createChatFilter',
+                filter: {
+                    '@type': 'chatFilter',
+                    title: createFolderName.trim(),
+                    icon_name: 'All',
+                    pinned_chat_ids: [],
+                    included_chat_ids: [],
+                    excluded_chat_ids: [],
+                    include_contacts: false,
+                    include_non_contacts: false,
+                    include_bots: false,
+                    include_groups: false,
+                    include_channels: false,
+                    exclude_muted: false,
+                    exclude_read: false,
+                    exclude_archived: false,
+                },
+            });
+        } catch (e) {
+            console.warn('[Dialogs] createChatFilter error', e);
+        }
+        this.handleCloseCreateFolder();
+    };
+
+    handleDeleteFolder = async (e, filterId) => {
+        e.stopPropagation();
+        try {
+            await TdLibController.send({ '@type': 'deleteChatFilter', chat_filter_id: filterId });
+        } catch (e2) {
+            console.warn('[Dialogs] deleteChatFilter error', e2);
+        }
+        const { activeFilter } = this.state;
+        if (activeFilter === filterId) {
+            this.setState({ activeFilter: null });
+        }
     };
 
     async loadCache() {
@@ -390,6 +468,8 @@ class Dialogs extends Component {
             activeFilter,
             storyViewerChatId,
             forumChatId,
+            createFolderOpen,
+            createFolderName,
         } = this.state;
 
         const mainCacheItems = cache ? cache.chats || [] : null;
@@ -409,23 +489,65 @@ class Dialogs extends Component {
                     onSearchTextChange={this.handleSearchTextChange}
                 />
                 {!openSearch && <StoriesTray />}
-                {chatFilters.length > 0 && !openSearch && !openArchive && (
+                {!openSearch && !openArchive && (
                     <div className='folder-tabs'>
                         <button
                             className={classNames('folder-tab', { 'folder-tab-active': activeFilter === null })}
                             onClick={() => this.handleFolderSelect(null)}>
-                            All
+                            Todos
                         </button>
                         {chatFilters.map(f => (
                             <button
                                 key={f.id}
                                 className={classNames('folder-tab', { 'folder-tab-active': activeFilter === f.id })}
-                                onClick={() => this.handleFolderSelect(f.id)}>
+                                onClick={() => this.handleFolderSelect(f.id)}
+                                title={f.title}>
+                                {f.icon_name && f.icon_name !== 'All' && (
+                                    <span className='folder-tab-icon'>{getFolderIcon(f.icon_name)}</span>
+                                )}
                                 {f.title}
+                                <span
+                                    className='folder-tab-delete'
+                                    title='Eliminar carpeta'
+                                    onClick={e => this.handleDeleteFolder(e, f.id)}>
+                                    ×
+                                </span>
                             </button>
                         ))}
+                        <button
+                            className='folder-tab folder-tab-add'
+                            onClick={this.handleOpenCreateFolder}
+                            title='Nueva carpeta'>
+                            +
+                        </button>
                     </div>
                 )}
+                <Dialog open={createFolderOpen} onClose={this.handleCloseCreateFolder} maxWidth='xs' fullWidth>
+                    <DialogTitle>Nueva carpeta</DialogTitle>
+                    <DialogContent>
+                        <TextField
+                            autoFocus
+                            label='Nombre de la carpeta'
+                            fullWidth
+                            value={createFolderName}
+                            onChange={e => this.setState({ createFolderName: e.target.value })}
+                            onKeyDown={e => e.key === 'Enter' && this.handleCreateFolder()}
+                            inputProps={{ maxLength: 12 }}
+                        />
+                    </DialogContent>
+                    <DialogActions>
+                        <Button onClick={this.handleCloseCreateFolder} color='default'>
+                            Cancelar
+                        </Button>
+                        <Button
+                            onClick={this.handleCreateFolder}
+                            color='primary'
+                            variant='contained'
+                            disabled={!createFolderName.trim()}>
+                            Crear
+                        </Button>
+                    </DialogActions>
+                </Dialog>
                 <div className='dialogs-content'>
                     {forumChatId && !openSearch ? (
                         <TopicsList

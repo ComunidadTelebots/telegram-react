@@ -92,6 +92,9 @@ class InputBoxControl extends Component {
             formatBar: null,
             disableLinkPreview: false,
             showGifPicker: false,
+            showEffectPicker: false,
+            selectedEffectId: null,
+            availableEffects: [],
             mentionQuery: null,
             mentionMembers: [],
             botCommandQuery: null,
@@ -211,6 +214,7 @@ class InputBoxControl extends Component {
         StickerStore.on('clientUpdateStickerSend', this.onClientUpdateStickerSend);
 
         this.loadDraft();
+        this.loadAvailableEffects();
     }
 
     componentWillUnmount() {
@@ -1149,6 +1153,7 @@ class InputBoxControl extends Component {
             replyQuoteOffset,
             silentSend,
             disableLinkPreview,
+            selectedEffectId,
         } = this.state;
 
         if (!chatId) return;
@@ -1180,13 +1185,17 @@ class InputBoxControl extends Component {
                 schedule_date: scheduleDate || undefined,
                 disable_notification: silentSend || undefined,
                 disable_web_page_preview: disableLinkPreview || undefined,
+                effect_id: selectedEffectId || undefined,
             });
 
-            this.setState({ replyToMessageId: 0, replyQuoteText: null, replyQuoteOffset: 0 }, () => {
-                if (clearDraft) {
-                    this.saveDraft();
-                }
-            });
+            this.setState(
+                { replyToMessageId: 0, replyQuoteText: null, replyQuoteOffset: 0, selectedEffectId: null },
+                () => {
+                    if (clearDraft) {
+                        this.saveDraft();
+                    }
+                },
+            );
             //MessageStore.set(result);
 
             TdLibController.send({
@@ -1199,6 +1208,29 @@ class InputBoxControl extends Component {
         } catch (error) {
             alert('sendMessage error ' + JSON.stringify(error));
         }
+    };
+
+    loadAvailableEffects = async () => {
+        try {
+            const result = await TdLibController.send({ '@type': 'getAvailableMessageEffects' });
+            if (result && result.effects && result.effects.length > 0) {
+                this.setState({ availableEffects: result.effects });
+            }
+        } catch (e) {
+            // TDLib may not support effects — silently ignore
+        }
+    };
+
+    handleToggleEffectPicker = e => {
+        e.stopPropagation();
+        this.setState(s => ({ showEffectPicker: !s.showEffectPicker }));
+    };
+
+    handleSelectEffect = effectId => {
+        this.setState(s => ({
+            selectedEffectId: s.selectedEffectId === effectId ? null : effectId,
+            showEffectPicker: false,
+        }));
     };
 
     handleEmojiSelect = emoji => {
@@ -1591,6 +1623,9 @@ class InputBoxControl extends Component {
             inlineBotResults,
             charCount,
             ctrlEnterMode,
+            showEffectPicker,
+            selectedEffectId,
+            availableEffects,
         } = this.state;
         const MAX_MSG_LEN = 4096;
         const showCharCounter = charCount > 3000;
@@ -1829,6 +1864,54 @@ class InputBoxControl extends Component {
                             style={{ marginRight: 2 }}>
                             <ScheduleIcon fontSize='small' />
                         </IconButton>
+                    )}
+                    {!Boolean(editMessageId) && availableEffects.length > 0 && (
+                        <div style={{ position: 'relative', display: 'inline-block' }}>
+                            <IconButton
+                                size='small'
+                                aria-label='Enviar con efecto'
+                                title={
+                                    selectedEffectId ? 'Efecto seleccionado — clic para cambiar' : 'Enviar con efecto'
+                                }
+                                onClick={this.handleToggleEffectPicker}
+                                style={
+                                    selectedEffectId
+                                        ? { color: 'var(--color-primary, #5B8AF1)', marginRight: 2 }
+                                        : { marginRight: 2 }
+                                }>
+                                <span style={{ fontSize: 16, lineHeight: 1 }}>✨</span>
+                            </IconButton>
+                            {showEffectPicker && (
+                                <div className='effect-picker-popup'>
+                                    <div className='effect-picker-title'>Efecto al enviar</div>
+                                    <div className='effect-picker-grid'>
+                                        {availableEffects.map(effect => {
+                                            const emoji = effect.static_icon ? null : effect.emoji || '✨';
+                                            return (
+                                                <button
+                                                    key={effect.id}
+                                                    className={`effect-picker-item${
+                                                        selectedEffectId === effect.id
+                                                            ? ' effect-picker-item-selected'
+                                                            : ''
+                                                    }`}
+                                                    onClick={() => this.handleSelectEffect(effect.id)}
+                                                    title={effect.emoji || 'Efecto'}>
+                                                    {emoji}
+                                                </button>
+                                            );
+                                        })}
+                                    </div>
+                                    <button
+                                        className='effect-picker-clear'
+                                        onClick={() =>
+                                            this.setState({ selectedEffectId: null, showEffectPicker: false })
+                                        }>
+                                        Sin efecto
+                                    </button>
+                                </div>
+                            )}
+                        </div>
                     )}
                     <Button
                         variant='contained'
