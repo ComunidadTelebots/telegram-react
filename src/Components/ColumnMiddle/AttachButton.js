@@ -18,13 +18,22 @@ import MenuItem from '@material-ui/core/MenuItem';
 import PhotoIcon from '../../Assets/Icons/SharedMedia';
 import LocationIcon from '@material-ui/icons/LocationOnOutlined';
 import PollIcon from '@material-ui/icons/PollOutlined';
+import SmartToyIcon from '@material-ui/icons/SmartphoneOutlined';
 import { canSendDocuments, canSendPhotos, canSendPolls, isPrivateChat } from '../../Utils/Chat';
 import { ANIMATION_DURATION_300MS } from '../../Constants';
+import TdLibController from '../../Controllers/TdLibController';
 
 class AttachButton extends React.Component {
     state = {
         anchorEl: null,
+        attachBots: [],
     };
+
+    componentDidMount() {
+        TdLibController.send({ '@type': 'getAttachMenuBots' })
+            .then(r => this.setState({ attachBots: r.bots || [] }))
+            .catch(() => {});
+    }
 
     handleMenuClick = event => {
         this.setState({ anchorEl: event.currentTarget });
@@ -70,9 +79,21 @@ class AttachButton extends React.Component {
         onAttachLocation();
     };
 
+    handleAttachBot = async bot => {
+        this.handleMenuClose();
+        try {
+            const r = await TdLibController.send({
+                '@type': 'requestSimpleWebView',
+                bot_id: bot.bot_id,
+                url: undefined,
+            });
+            if (r && r.url) window.open(r.url, '_blank', 'noopener');
+        } catch (e) {}
+    };
+
     render() {
         const { classes, t, chatId } = this.props;
-        const { anchorEl } = this.state;
+        const { anchorEl, attachBots } = this.state;
 
         return (
             <>
@@ -125,6 +146,14 @@ class AttachButton extends React.Component {
                         </ListItemIcon>
                         <ListItemText primary='Ubicación en vivo' />
                     </MenuItem>
+                    {attachBots.map(bot => (
+                        <MenuItem key={bot.bot_id} onClick={() => this.handleAttachBot(bot)}>
+                            <ListItemIcon>
+                                <SmartToyIcon />
+                            </ListItemIcon>
+                            <ListItemText primary={bot.short_name} />
+                        </MenuItem>
+                    ))}
                 </Menu>
             </>
         );

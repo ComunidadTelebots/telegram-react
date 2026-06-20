@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.0.618] - 2026-06-20 — F1 Attach Menu Bots UI
+### Added
+- **F1 Attach Menu Bots** — AttachButton carga `getAttachMenuBots` en `componentDidMount`
+  - Bots del menú adjuntar aparecen como items adicionales en el menú paperclip
+  - Click en un bot llama `requestSimpleWebView` y abre la URL en nueva pestaña
+  - No modifica bots existentes; solo agrega dinámicamente los del servidor
+
 ## [0.0.617] - 2026-06-20 — J3 Live Location UI
 ### Added
 - **J3 Live Location UI** — Botón "Ubicación en vivo" en el menú adjuntar (paperclip)
