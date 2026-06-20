@@ -883,6 +883,26 @@ class GramJsController extends EventEmitter {
                 return this._setChatTheme(req);
             case 'getSimilarChannels':
                 return this._getSimilarChannels(req);
+            case 'getPrivacy':
+                return this._getPrivacy(req);
+            case 'setPrivacy':
+                return this._setPrivacy(req);
+            case 'getGlobalPrivacySettings':
+                return this._getGlobalPrivacySettings(req);
+            case 'setGlobalPrivacySettings':
+                return this._setGlobalPrivacySettings(req);
+            case 'getAccountTTL':
+                return this._getAccountTTL(req);
+            case 'setAccountTTL':
+                return this._setAccountTTL(req);
+            case 'getAutoDownloadSettings':
+                return this._getAutoDownloadSettings(req);
+            case 'saveAutoDownloadSettings':
+                return this._saveAutoDownloadSettings(req);
+            case 'getContentSettings':
+                return this._getContentSettings(req);
+            case 'setContentSettings':
+                return this._setContentSettings(req);
             case 'terminateSession':
                 return this._terminateSession(req);
             case 'terminateAllOtherSessions':
@@ -1157,6 +1177,26 @@ class GramJsController extends EventEmitter {
                 return this._setChatTheme(req);
             case 'getSimilarChannels':
                 return this._getSimilarChannels(req);
+            case 'getPrivacy':
+                return this._getPrivacy(req);
+            case 'setPrivacy':
+                return this._setPrivacy(req);
+            case 'getGlobalPrivacySettings':
+                return this._getGlobalPrivacySettings(req);
+            case 'setGlobalPrivacySettings':
+                return this._setGlobalPrivacySettings(req);
+            case 'getAccountTTL':
+                return this._getAccountTTL(req);
+            case 'setAccountTTL':
+                return this._setAccountTTL(req);
+            case 'getAutoDownloadSettings':
+                return this._getAutoDownloadSettings(req);
+            case 'saveAutoDownloadSettings':
+                return this._saveAutoDownloadSettings(req);
+            case 'getContentSettings':
+                return this._getContentSettings(req);
+            case 'setContentSettings':
+                return this._setContentSettings(req);
             case 'terminateSession':
                 return this._terminateSession(req);
             case 'terminateAllOtherSessions':
@@ -1421,6 +1461,130 @@ class GramJsController extends EventEmitter {
             console.warn('[GramJs] setChatTheme error', e);
             throw e;
         }
+    };
+
+    // ── Privacy ──────────────────────────────────────────────────────────────
+
+    _PRIVACY_KEY_MAP = {
+        StatusTimestamp: 'InputPrivacyKeyStatusTimestamp',
+        PhoneNumber: 'InputPrivacyKeyPhoneNumber',
+        ProfilePhoto: 'InputPrivacyKeyProfilePhoto',
+        PhoneCall: 'InputPrivacyKeyPhoneCall',
+        Forwards: 'InputPrivacyKeyForwards',
+        ChatInvite: 'InputPrivacyKeyChatInvite',
+        VoiceMessages: 'InputPrivacyKeyVoiceMessages',
+        About: 'InputPrivacyKeyAbout',
+        Birthday: 'InputPrivacyKeyBirthday',
+    };
+
+    _getPrivacyKey(key) {
+        const cls = this._PRIVACY_KEY_MAP[key];
+        if (!cls || !Api[cls]) throw new Error(`Unknown privacy key: ${key}`);
+        return new Api[cls]();
+    }
+
+    _getPrivacy = async ({ key }) => {
+        const result = await this.client.invoke(new Api.account.GetPrivacy({ key: this._getPrivacyKey(key) }));
+        return { rules: result.rules || [] };
+    };
+
+    _setPrivacy = async ({ key, rule }) => {
+        const RULE_MAP = {
+            AllowAll: 'InputPrivacyValueAllowAll',
+            AllowContacts: 'InputPrivacyValueAllowContacts',
+            DisallowAll: 'InputPrivacyValueDisallowAll',
+        };
+        const ruleCls = RULE_MAP[rule];
+        if (!ruleCls || !Api[ruleCls]) throw new Error(`Unknown rule: ${rule}`);
+        const result = await this.client.invoke(
+            new Api.account.SetPrivacy({ key: this._getPrivacyKey(key), rules: [new Api[ruleCls]()] }),
+        );
+        return { rules: result.rules || [] };
+    };
+
+    _getGlobalPrivacySettings = async () => {
+        const r = await this.client.invoke(new Api.account.GetGlobalPrivacySettings());
+        return {
+            archive_and_mute_new_noncontact_peers: r.archiveAndMuteNewNoncontactPeers || false,
+            keep_archived_unmuted: r.keepArchivedUnmuted || false,
+            keep_archived_folders: r.keepArchivedFolders || false,
+            hide_read_marks: r.hideReadMarks || false,
+            new_noncontact_peers_require_premium: r.newNoncontactPeersRequirePremium || false,
+        };
+    };
+
+    _setGlobalPrivacySettings = async ({ settings }) => {
+        await this.client.invoke(
+            new Api.account.SetGlobalPrivacySettings({
+                settings: new Api.GlobalPrivacySettings({
+                    archiveAndMuteNewNoncontactPeers: settings.archive_and_mute_new_noncontact_peers,
+                    keepArchivedUnmuted: settings.keep_archived_unmuted,
+                    keepArchivedFolders: settings.keep_archived_folders,
+                    hideReadMarks: settings.hide_read_marks,
+                    newNoncontactPeersRequirePremium: settings.new_noncontact_peers_require_premium,
+                }),
+            }),
+        );
+        return { success: true };
+    };
+
+    _getAccountTTL = async () => {
+        const r = await this.client.invoke(new Api.account.GetAccountTTL());
+        return { days: r.days || 180 };
+    };
+
+    _setAccountTTL = async ({ days }) => {
+        await this.client.invoke(new Api.account.SetAccountTTL({ ttl: new Api.AccountDaysTTL({ days }) }));
+        return { success: true };
+    };
+
+    _getAutoDownloadSettings = async () => {
+        const r = await this.client.invoke(new Api.account.GetAutoDownloadSettings());
+        const toObj = s => ({
+            disabled: s.disabled || false,
+            photo_size_max: s.photoSizeMax || 0,
+            video_size_max: Number(s.videoSizeMax || 0),
+            file_size_max: Number(s.fileSizeMax || 0),
+            video_upload_maxbitrate: s.videoUploadMaxbitrate || 0,
+        });
+        return {
+            low: toObj(r.low),
+            medium: toObj(r.medium),
+            high: toObj(r.high),
+        };
+    };
+
+    _saveAutoDownloadSettings = async ({ preset, settings }) => {
+        await this.client.invoke(
+            new Api.account.SaveAutoDownloadSettings({
+                low: preset === 'low',
+                high: preset === 'high',
+                settings: new Api.AutoDownloadSettings({
+                    disabled: settings.disabled || false,
+                    photoSizeMax: settings.photo_size_max || 0,
+                    videoSizeMax: BigInt(settings.video_size_max || 0),
+                    fileSizeMax: BigInt(settings.file_size_max || 0),
+                    videoUploadMaxbitrate: settings.video_upload_maxbitrate || 0,
+                    videoPreloadLarge: false,
+                    audioPreloadNext: false,
+                    phonecallsLessData: false,
+                    storiesPreload: false,
+                    smallQueueActiveOperationsMax: 2,
+                    largeQueueActiveOperationsMax: 2,
+                }),
+            }),
+        );
+        return { success: true };
+    };
+
+    _getContentSettings = async () => {
+        const r = await this.client.invoke(new Api.account.GetContentSettings());
+        return { sensitive_enabled: r.sensitiveEnabled || false, sensitive_can_change: r.sensitiveCanChange || false };
+    };
+
+    _setContentSettings = async ({ sensitive_enabled }) => {
+        await this.client.invoke(new Api.account.SetContentSettings({ sensitiveEnabled: sensitive_enabled }));
+        return { success: true };
     };
 
     sendPaidReaction = async (chatId, messageId, count = 1, isPrivate = false) => {

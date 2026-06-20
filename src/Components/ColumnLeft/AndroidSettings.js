@@ -24,6 +24,7 @@ import CropFreeIcon from '@material-ui/icons/CropFree';
 import TwoStepVerification from '../Additional/TwoStepVerification';
 import ActiveSessions from '../Additional/ActiveSessions';
 import EditProfile from '../Additional/EditProfile';
+import PrivacySettings from './PrivacySettings';
 import { getSrc } from '../../Utils/File';
 import { getUserFullName } from '../../Utils/User';
 import UserStore from '../../Stores/UserStore';
@@ -98,6 +99,10 @@ class AndroidSettings extends React.PureComponent {
         if (this.activeSessionsRef) this.activeSessionsRef.open();
     };
 
+    handlePrivacy = () => {
+        if (this.privacySettingsRef) this.privacySettingsRef.open();
+    };
+
     handleEditProfile = () => {
         if (this.editProfileRef) this.editProfileRef.open();
     };
@@ -129,9 +134,9 @@ class AndroidSettings extends React.PureComponent {
                     {
                         icon: <LockIcon />,
                         label: 'Privacy and Security',
-                        sub: 'Two-Step Verification',
+                        sub: 'Privacy settings',
                         arrow: true,
-                        action: this.handleTwoStepVerification,
+                        action: this.handlePrivacy,
                     },
                     { icon: <DataUsageIcon />, label: 'Data and Storage', sub: '', arrow: true },
                     { icon: <ChatBubbleIcon />, label: 'Chat Settings', sub: '', arrow: true },
@@ -315,6 +320,7 @@ class AndroidSettings extends React.PureComponent {
                 <TwoStepVerification ref={ref => (this.twoStepRef = ref)} />
                 <ActiveSessions ref={ref => (this.activeSessionsRef = ref)} />
                 <EditProfile ref={ref => (this.editProfileRef = ref)} />
+                <PrivacySettings ref={ref => (this.privacySettingsRef = ref)} />
             </>
         );
     }
