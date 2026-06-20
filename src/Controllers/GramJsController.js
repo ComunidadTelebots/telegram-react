@@ -1339,6 +1339,8 @@ class GramJsController extends EventEmitter {
                 return this._receivedCall(req);
             case 'sendCallSignalingData':
                 return this._sendCallSignalingData(req);
+            case 'setCallRating':
+                return this._setCallRating(req);
             case 'getDhConfig':
                 return this._getDhConfig(req);
 
@@ -5860,6 +5862,24 @@ class GramJsController extends EventEmitter {
             );
         } catch (e) {
             console.warn('[GramJs] receivedCall error (ignorado)', e.message);
+        }
+        return {};
+    };
+
+    _setCallRating = async ({ call_id, rating, comment }) => {
+        try {
+            const { default: callController } = await import('./CallController');
+            const info = callController.callInfo;
+            const accessHash = info ? BigInt(info.accessHash || 0) : BigInt(0);
+            await this.client.invoke(
+                new Api.phone.SetCallRating({
+                    peer: new Api.InputPhoneCall({ id: BigInt(call_id), accessHash }),
+                    rating: rating || 5,
+                    comment: comment || '',
+                }),
+            );
+        } catch (e) {
+            console.warn('[GramJs] setCallRating error', e.message);
         }
         return {};
     };

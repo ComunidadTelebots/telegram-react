@@ -26,6 +26,7 @@ import MessageThread from './Additional/MessageThread';
 import BotWebApp from './Additional/BotWebApp';
 import IncomingCall from './Calls/IncomingCall';
 import ActiveCall from './Calls/ActiveCall';
+import CallRatingDialog from './Calls/CallRatingDialog';
 import MediaViewer from './Viewer/MediaViewer';
 import ProfileMediaViewer from './Viewer/ProfileMediaViewer';
 import { borderStyle } from './Theme';
@@ -239,6 +240,7 @@ class MainPage extends React.Component {
                 <BotWebApp ref={ref => (window._botWebAppRef = ref)} />
                 <IncomingCall />
                 <ActiveCall />
+                <CallRatingDialog />
             </>
         );
     }

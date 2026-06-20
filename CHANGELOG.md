@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.0.624] - 2026-06-20 — W3 Calls: Rating dialog + setCallRating
+### Added
+- **W3 Call rating** — `CallRatingDialog` (estrellas 1-5) se abre automáticamente al finalizar llamada
+  - Estado `CallState.ENDED` dispara el dialog con el `call_id` guardado
+  - Rating < 4: muestra campo de comentario opcional
+  - Botón "Enviar" llama `setCallRating` → `phone.SetCallRating` en GramJsController
+  - Botón "Omitir" cierra sin enviar
+  - Montado en `MainPage.js` junto a `IncomingCall` / `ActiveCall`
+
 ## [0.0.623] - 2026-06-20 — W2 Calls: Tono de llamada (Web Audio API)
 ### Added
 - **W2 Call tone** — `src/lib/CallTone.js` usando Web Audio API puro (sin archivos de audio)
