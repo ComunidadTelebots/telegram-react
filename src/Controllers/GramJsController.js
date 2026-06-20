@@ -951,6 +951,12 @@ class GramJsController extends EventEmitter {
                 return this._getBroadcastRevenueStats(req);
             case 'getStarsRevenueStats':
                 return this._getStarsRevenueStats(req);
+            case 'sendStoryReaction':
+                return this._sendStoryReaction(req);
+            case 'toggleStoryPinned':
+                return this._toggleStoryPinned(req);
+            case 'getPinnedStories':
+                return this._getPinnedStories(req);
             case 'terminateSession':
                 return this._terminateSession(req);
             case 'terminateAllOtherSessions':
@@ -1293,6 +1299,12 @@ class GramJsController extends EventEmitter {
                 return this._getBroadcastRevenueStats(req);
             case 'getStarsRevenueStats':
                 return this._getStarsRevenueStats(req);
+            case 'sendStoryReaction':
+                return this._sendStoryReaction(req);
+            case 'toggleStoryPinned':
+                return this._toggleStoryPinned(req);
+            case 'getPinnedStories':
+                return this._getPinnedStories(req);
             case 'terminateSession':
                 return this._terminateSession(req);
             case 'terminateAllOtherSessions':
@@ -1557,6 +1569,50 @@ class GramJsController extends EventEmitter {
             console.warn('[GramJs] setChatTheme error', e);
             throw e;
         }
+    };
+
+    // ── Stories ──────────────────────────────────────────────────────────────
+
+    _sendStoryReaction = async ({ chat_id, story_id, reaction, add_to_recent }) => {
+        const inputPeer = tdlibChatIdToInputPeer(chat_id, this._entityCache);
+        let reactionObj;
+        if (!reaction || reaction === 'empty') {
+            reactionObj = new Api.ReactionEmpty();
+        } else if (reaction === 'paid') {
+            reactionObj = new Api.ReactionPaid();
+        } else {
+            reactionObj = new Api.ReactionEmoji({ emoticon: reaction });
+        }
+        await this.client.invoke(
+            new Api.stories.SendReaction({
+                peer: inputPeer,
+                storyId: story_id,
+                reaction: reactionObj,
+                addToRecent: add_to_recent,
+            }),
+        );
+        return { success: true };
+    };
+
+    _toggleStoryPinned = async ({ chat_id, story_ids, pinned }) => {
+        const inputPeer = tdlibChatIdToInputPeer(chat_id, this._entityCache);
+        await this.client.invoke(new Api.stories.TogglePinned({ peer: inputPeer, id: story_ids, pinned: !!pinned }));
+        return { success: true };
+    };
+
+    _getPinnedStories = async ({ chat_id, offset_id = 0, limit = 20 }) => {
+        const inputPeer = tdlibChatIdToInputPeer(chat_id, this._entityCache);
+        const result = await this.client.invoke(
+            new Api.stories.GetPinnedStories({ peer: inputPeer, offsetId: offset_id, limit }),
+        );
+        return {
+            stories: (result.stories || []).map(s => ({
+                id: s.id,
+                date: s.date,
+                expired: s.expired || false,
+                views: s.views ? { views_count: s.views.viewsCount, reactions_count: s.views.reactionsCount } : null,
+            })),
+        };
     };
 
     // ── Stats / Monetization ──────────────────────────────────────────────────
