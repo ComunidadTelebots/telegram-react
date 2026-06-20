@@ -10,6 +10,7 @@ import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
 import TdLibController from '../../Controllers/TdLibController';
 import GlobalPrivacySettings from './GlobalPrivacySettings';
+import AccountSettings from './AccountSettings';
 import './PrivacySettings.css';
 
 const PRIVACY_KEYS = [
@@ -124,6 +125,15 @@ class PrivacySettings extends React.PureComponent {
                                         </span>
                                         <ChevronRightIcon className='privacy-settings-row-arrow' />
                                     </button>
+                                    <button
+                                        className='privacy-settings-row'
+                                        onClick={() => this.accountSettingsRef && this.accountSettingsRef.open()}>
+                                        <span className='privacy-settings-row-content'>
+                                            <span className='privacy-settings-row-label'>Account & Data</span>
+                                            <span className='privacy-settings-row-value'>TTL, sensitive content…</span>
+                                        </span>
+                                        <ChevronRightIcon className='privacy-settings-row-arrow' />
+                                    </button>
                                 </div>
                                 <div className='privacy-settings-section'>
                                     <div className='privacy-settings-section-header'>Privacy</div>
@@ -147,6 +157,7 @@ class PrivacySettings extends React.PureComponent {
                     </div>
                 </div>
                 <GlobalPrivacySettings ref={ref => (this.globalPrivacyRef = ref)} />
+                <AccountSettings ref={ref => (this.accountSettingsRef = ref)} />
 
                 <Dialog open={!!editKey} onClose={this.handleEditClose} transitionDuration={0}>
                     <DialogTitle>{editLabel}</DialogTitle>
