@@ -4912,11 +4912,11 @@ class GramJsController extends EventEmitter {
         const { chat_id, notification_settings } = req;
         try {
             const inputPeer = tdlibChatIdToInputPeer(chat_id, this._entityCache);
-            const muteUntil = notification_settings?.mute_for
+            const INT32_MAX = 2147483647;
+            const rawMuteUntil = notification_settings?.mute_for
                 ? Math.floor(Date.now() / 1000) + notification_settings.mute_for
-                : notification_settings?.use_default_mute_for
-                ? 0
                 : 0;
+            const muteUntil = Math.min(rawMuteUntil, INT32_MAX);
 
             await this.client.invoke(
                 new Api.account.UpdateNotifySettings({
