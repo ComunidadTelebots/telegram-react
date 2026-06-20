@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.0.623] - 2026-06-20 — W2 Calls: Tono de llamada (Web Audio API)
+### Added
+- **W2 Call tone** — `src/lib/CallTone.js` usando Web Audio API puro (sin archivos de audio)
+  - `startRingTone('ring')`: tono de llamada entrante (440+480 Hz, 1s ON / 3s OFF)
+  - `startRingTone('ringback')`: tono de espera saliente (440 Hz, 1s ON / 2s OFF)
+  - `stopTone()`: corta el tono en todos los estados (accepted, discarded, active, idle)
+  - Integrado en CallController: ring al recibir llamada, ringback al iniciar, stop al aceptar/rechazar/activo
+
 ## [0.0.622] - 2026-06-20 — W1 Calls: Fix doble dispatch + ICE servers
 ### Fixed
 - **W1 Call bugs**: eliminado bloque de despacho directo que causaba que `UpdatePhoneCall` se procesara dos veces

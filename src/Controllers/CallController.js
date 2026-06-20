@@ -13,6 +13,7 @@
  */
 
 import { EventEmitter } from 'events';
+import { startRingTone, stopTone } from '../lib/CallTone';
 
 export const CallState = {
     IDLE: 'idle',
@@ -93,8 +94,10 @@ class CallController extends EventEmitter {
                     is_video: isVideo,
                 });
             });
+            startRingTone('ringback');
         } catch (e) {
             console.error('[CallController] requestCall error', e);
+            stopTone();
             this._setState(CallState.IDLE);
         }
     }
@@ -103,6 +106,7 @@ class CallController extends EventEmitter {
 
     async acceptCall() {
         if (this.state !== CallState.INCOMING) return;
+        stopTone();
         this._setState(CallState.ACCEPTING);
 
         try {
@@ -123,6 +127,7 @@ class CallController extends EventEmitter {
 
     async discardCall(reason = 'hangup') {
         if (this.state === CallState.IDLE || this.state === CallState.ENDED) return;
+        stopTone();
         const prevState = this.state;
         this._setState(CallState.ENDING);
 
@@ -170,10 +175,10 @@ class CallController extends EventEmitter {
 
     _onCallRequested(callObj) {
         if (this.state !== CallState.IDLE) {
-            // Ya hay una llamada activa, rechazar automáticamente
             this._sendDiscardBusy(callObj);
             return;
         }
+        startRingTone('ring');
         this.callInfo = {
             callId: String(callObj.id),
             accessHash: String(callObj.access_hash),
@@ -191,7 +196,7 @@ class CallController extends EventEmitter {
     }
 
     _onCallAccepted(callObj) {
-        // Caller recibe esto — el callee aceptó, tenemos g_b
+        stopTone();
         if (this.state !== CallState.WAITING) return;
         this.callInfo.accessHash = callObj.access_hash;
         const gb = callObj.g_b;
@@ -246,6 +251,7 @@ class CallController extends EventEmitter {
     }
 
     _onCallDiscarded(callObj) {
+        stopTone();
         this._cleanup();
         this._setState(CallState.ENDED);
         setTimeout(() => this._setState(CallState.IDLE), 2000);
@@ -300,6 +306,7 @@ class CallController extends EventEmitter {
     // ─── WebRTC (protocolo tgcalls — compatible con clientes oficiales) ───────────
 
     async _startWebRTC(callObj) {
+        stopTone();
         this._setState(CallState.ACTIVE);
         this._startDurationTimer();
         this._signalingSeq = 0;
