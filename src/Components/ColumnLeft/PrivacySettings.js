@@ -9,6 +9,7 @@ import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
 import TdLibController from '../../Controllers/TdLibController';
+import GlobalPrivacySettings from './GlobalPrivacySettings';
 import './PrivacySettings.css';
 
 const PRIVACY_KEYS = [
@@ -111,26 +112,41 @@ class PrivacySettings extends React.PureComponent {
                                 <CircularProgress size={28} />
                             </div>
                         ) : (
-                            <div className='privacy-settings-section'>
-                                <div className='privacy-settings-section-header'>Privacy</div>
-                                {PRIVACY_KEYS.map(({ key, label }) => (
+                            <>
+                                <div className='privacy-settings-section'>
+                                    <div className='privacy-settings-section-header'>Advanced</div>
                                     <button
-                                        key={key}
                                         className='privacy-settings-row'
-                                        onClick={() => this.handleRowClick(key)}>
+                                        onClick={() => this.globalPrivacyRef && this.globalPrivacyRef.open()}>
                                         <span className='privacy-settings-row-content'>
-                                            <span className='privacy-settings-row-label'>{label}</span>
-                                            <span className='privacy-settings-row-value'>
-                                                {getRuleLabel(privacyMap[key])}
-                                            </span>
+                                            <span className='privacy-settings-row-label'>Global Privacy Settings</span>
+                                            <span className='privacy-settings-row-value'>Archive, read marks…</span>
                                         </span>
                                         <ChevronRightIcon className='privacy-settings-row-arrow' />
                                     </button>
-                                ))}
-                            </div>
+                                </div>
+                                <div className='privacy-settings-section'>
+                                    <div className='privacy-settings-section-header'>Privacy</div>
+                                    {PRIVACY_KEYS.map(({ key, label }) => (
+                                        <button
+                                            key={key}
+                                            className='privacy-settings-row'
+                                            onClick={() => this.handleRowClick(key)}>
+                                            <span className='privacy-settings-row-content'>
+                                                <span className='privacy-settings-row-label'>{label}</span>
+                                                <span className='privacy-settings-row-value'>
+                                                    {getRuleLabel(privacyMap[key])}
+                                                </span>
+                                            </span>
+                                            <ChevronRightIcon className='privacy-settings-row-arrow' />
+                                        </button>
+                                    ))}
+                                </div>
+                            </>
                         )}
                     </div>
                 </div>
+                <GlobalPrivacySettings ref={ref => (this.globalPrivacyRef = ref)} />
 
                 <Dialog open={!!editKey} onClose={this.handleEditClose} transitionDuration={0}>
                     <DialogTitle>{editLabel}</DialogTitle>
