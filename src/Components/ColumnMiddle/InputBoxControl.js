@@ -28,6 +28,7 @@ import DialogContent from '@material-ui/core/DialogContent';
 import DialogActions from '@material-ui/core/DialogActions';
 import TextField from '@material-ui/core/TextField';
 import AttachButton from './../ColumnMiddle/AttachButton';
+import LiveLocationPanel from './LiveLocationPanel';
 import CreatePollDialog from '../Popup/CreatePollDialog';
 import GifPicker from './GifPicker';
 import GifIcon from '@material-ui/icons/Gif';
@@ -562,6 +563,33 @@ class InputBoxControl extends Component {
         TdLibController.clientUpdate({
             '@type': 'clientUpdateNewPoll',
         });
+    };
+
+    handleAttachLocation = () => {
+        if (!navigator.geolocation) return;
+        const { chatId } = this.state;
+        navigator.geolocation.getCurrentPosition(
+            async pos => {
+                const period = 3600;
+                try {
+                    const result = await TdLibController.send({
+                        '@type': 'sendLiveLocation',
+                        chat_id: chatId,
+                        lat: pos.coords.latitude,
+                        lon: pos.coords.longitude,
+                        period,
+                    });
+                    const msgId =
+                        result && result.updates && result.updates.updates
+                            ? (result.updates.updates.find(u => u.id) || {}).id
+                            : null;
+                    if (this.liveLocationPanelRef && msgId) {
+                        this.liveLocationPanelRef.start(chatId, msgId, period);
+                    }
+                } catch (e) {}
+            },
+            () => {},
+        );
     };
 
     handleAttachPhoto = () => {
@@ -1805,6 +1833,7 @@ class InputBoxControl extends Component {
                                         onAttachPhoto={this.handleAttachPhoto}
                                         onAttachDocument={this.handleAttachDocument}
                                         onAttachPoll={this.handleAttachPoll}
+                                        onAttachLocation={this.handleAttachLocation}
                                     />
                                 )}
 
@@ -1968,6 +1997,11 @@ class InputBoxControl extends Component {
                         </Button>
                     </DialogActions>
                 </Dialog>
+                <LiveLocationPanel
+                    ref={ref => {
+                        this.liveLocationPanelRef = ref;
+                    }}
+                />
             </div>
         );
     }

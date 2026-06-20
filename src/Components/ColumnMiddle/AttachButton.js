@@ -16,13 +16,14 @@ import ListItemText from '@material-ui/core/ListItemText';
 import Menu from '@material-ui/core/Menu';
 import MenuItem from '@material-ui/core/MenuItem';
 import PhotoIcon from '../../Assets/Icons/SharedMedia';
+import LocationIcon from '@material-ui/icons/LocationOnOutlined';
 import PollIcon from '@material-ui/icons/PollOutlined';
 import { canSendDocuments, canSendPhotos, canSendPolls, isPrivateChat } from '../../Utils/Chat';
 import { ANIMATION_DURATION_300MS } from '../../Constants';
 
 class AttachButton extends React.Component {
     state = {
-        anchorEl: null
+        anchorEl: null,
     };
 
     handleMenuClick = event => {
@@ -60,6 +61,15 @@ class AttachButton extends React.Component {
         onAttachPoll();
     };
 
+    handleAttachLocation = () => {
+        this.handleMenuClose();
+
+        const { onAttachLocation } = this.props;
+        if (!onAttachLocation) return;
+
+        onAttachLocation();
+    };
+
     render() {
         const { classes, t, chatId } = this.props;
         const { anchorEl } = this.state;
@@ -82,11 +92,11 @@ class AttachButton extends React.Component {
                     disableRestoreFocus={true}
                     anchorOrigin={{
                         vertical: 'top',
-                        horizontal: 'right'
+                        horizontal: 'right',
                     }}
                     transformOrigin={{
                         vertical: 'bottom',
-                        horizontal: 'right'
+                        horizontal: 'right',
                     }}
                     onClose={this.handleMenuClose}>
                     <MenuItem onClick={this.handleAttachPhoto} disabled={!canSendPhotos(chatId)}>
@@ -109,6 +119,12 @@ class AttachButton extends React.Component {
                             <ListItemText primary={t('Poll')} />
                         </MenuItem>
                     )}
+                    <MenuItem onClick={this.handleAttachLocation}>
+                        <ListItemIcon>
+                            <LocationIcon />
+                        </ListItemIcon>
+                        <ListItemText primary='Ubicación en vivo' />
+                    </MenuItem>
                 </Menu>
             </>
         );
@@ -119,7 +135,8 @@ AttachButton.propTypes = {
     chatId: PropTypes.number.isRequired,
     onAttachDocument: PropTypes.func.isRequired,
     onAttachPhoto: PropTypes.func.isRequired,
-    onAttachPoll: PropTypes.func.isRequired
+    onAttachPoll: PropTypes.func.isRequired,
+    onAttachLocation: PropTypes.func,
 };
 
 export default withTranslation()(AttachButton);

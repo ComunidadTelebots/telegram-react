@@ -971,6 +971,8 @@ class GramJsController extends EventEmitter {
                 return this._exportChatlistInvite(req);
             case 'sendLiveLocation':
                 return this._sendLiveLocation(req);
+            case 'editLiveLocation':
+                return this._editLiveLocation(req);
             case 'getSearchCounters':
                 return this._getSearchCounters(req);
             case 'terminateSession':
@@ -1335,6 +1337,8 @@ class GramJsController extends EventEmitter {
                 return this._exportChatlistInvite(req);
             case 'sendLiveLocation':
                 return this._sendLiveLocation(req);
+            case 'editLiveLocation':
+                return this._editLiveLocation(req);
             case 'getSearchCounters':
                 return this._getSearchCounters(req);
             case 'terminateSession':
@@ -1667,6 +1671,22 @@ class GramJsController extends EventEmitter {
             }),
         );
         return { success: true, updates: result };
+    };
+
+    _editLiveLocation = async ({ chat_id, message_id, lat, lon, heading, stopped }) => {
+        const inputPeer = tdlibChatIdToInputPeer(chat_id, this._entityCache);
+        await this.client.invoke(
+            new Api.messages.EditMessage({
+                peer: inputPeer,
+                id: message_id,
+                media: new Api.InputMediaGeoLive({
+                    geoPoint: stopped ? undefined : new Api.InputGeoPoint({ lat, long: lon }),
+                    stopped: stopped || undefined,
+                    heading: heading || undefined,
+                }),
+            }),
+        );
+        return { success: true };
     };
 
     _getSearchCounters = async ({ chat_id, filters }) => {

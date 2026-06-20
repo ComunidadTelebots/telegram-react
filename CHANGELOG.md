@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.0.617] - 2026-06-20 — J3 Live Location UI
+### Added
+- **J3 Live Location UI** — Botón "Ubicación en vivo" en el menú adjuntar (paperclip)
+  - Obtiene la geolocalización del navegador y llama `sendLiveLocation` (GramJS)
+  - Nuevo `LiveLocationPanel` anclado en InputBoxControl: cuenta regresiva MM:SS, punto verde animado, botón "Detener"
+  - Ciclo `setInterval` de 30s actualizando la posición con `editLiveLocation` (nuevo método GramJS)
+  - Botón "Detener" manda `editLiveLocation({stopped:true})` y cancela el ciclo
+  - `_editLiveLocation` en GramJsController usa `messages.EditMessage` con `InputMediaGeoLive({stopped})`
+  - CSS con `var(--)`, adaptado a todos los temas
+
+
+
 ## [0.0.616] - 2026-06-20 — Sprint autónomo: features completas
 ### Added (todos los CSS usan `var(--)`, adaptados a 46 clases design-*)
 
