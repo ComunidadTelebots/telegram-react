@@ -10,9 +10,18 @@ import PropTypes from 'prop-types';
 import classNames from 'classnames';
 import { withTranslation } from 'react-i18next';
 import ReplyTile from '../Tile/ReplyTile';
-import { getContent, getTitle, isDeletedMessage, getReplyPhotoSize, getReplyMinithumbnail } from '../../Utils/Message';
+import {
+    getContent,
+    getTitle,
+    getSenderUserId,
+    isDeletedMessage,
+    getReplyPhotoSize,
+    getReplyMinithumbnail,
+} from '../../Utils/Message';
 import { openChat } from '../../Actions/Client';
 import MessageStore from '../../Stores/MessageStore';
+import UserStore from '../../Stores/UserStore';
+import { getPeerColor } from '../../Utils/PeerColors';
 import './Reply.css';
 
 class Reply extends React.Component {
@@ -60,6 +69,9 @@ class Reply extends React.Component {
         const message = MessageStore.get(chatId, messageId);
 
         title = title || getTitle(message);
+        const senderUserId = getSenderUserId(message);
+        const senderUser = senderUserId ? UserStore.get(senderUserId) : null;
+        const titleColor = senderUser ? getPeerColor(senderUser.accent_color_id) : null;
         let content = !message ? t('Loading') : getContent(message, t);
         const photoSize = getReplyPhotoSize(chatId, messageId);
         const minithumbnail = getReplyMinithumbnail(chatId, messageId);
@@ -97,7 +109,11 @@ class Reply extends React.Component {
                         />
                     )}
                     <div className='reply-content'>
-                        {title && <div className='reply-content-title'>{title}</div>}
+                        {title && (
+                            <div className='reply-content-title' style={titleColor ? { color: titleColor } : undefined}>
+                                {title}
+                            </div>
+                        )}
                         <div className={classNames('reply-content-subtitle', { 'reply-content-quoted': !!quoteText })}>
                             {renderedContent}
                         </div>

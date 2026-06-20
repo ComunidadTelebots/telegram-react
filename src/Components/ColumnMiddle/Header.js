@@ -48,6 +48,7 @@ import LockIcon from '@material-ui/icons/Lock';
 import {
     getChatShortTitle,
     getChatSubtitle,
+    getChatTypingString,
     getChatTitle,
     isAccentChatSubtitle,
     isPrivateChat,
@@ -62,6 +63,8 @@ import SupergroupStore from '../../Stores/SupergroupStore';
 import MessageStore from '../../Stores/MessageStore';
 import AppStore from '../../Stores/ApplicationStore';
 import TdLibController from '../../Controllers/TdLibController';
+import { getPeerColor } from '../../Utils/PeerColors';
+import CustomEmoji from '../Message/CustomEmoji';
 import './Header.css';
 
 const styles = theme => ({
@@ -526,15 +529,16 @@ class Header extends Component {
         const chatId = AppStore.getChatId();
         const chat = ChatStore.get(chatId);
 
-        // Peer color accent (0-6 palette)
-        const PEER_COLORS = ['#e17076', '#eda86c', '#a695e7', '#7bc862', '#6ec9cb', '#65aadd', '#ee7aae'];
         let peerAccentColor = null;
+        let headerEmojiDocId = null;
         if (chat && chat.type) {
             const userId = chat.type['@type'] === 'chatTypePrivate' ? chat.type.user_id : null;
             if (userId) {
                 const user = UserStore.get(userId);
-                if (user && user.accent_color_id != null && user.accent_color_id >= 0) {
-                    peerAccentColor = PEER_COLORS[user.accent_color_id % PEER_COLORS.length] || null;
+                if (user) {
+                    peerAccentColor = getPeerColor(user.accent_color_id);
+                    headerEmojiDocId =
+                        user.emoji_status && user.emoji_status.document_id ? user.emoji_status.document_id : null;
                 }
             }
         }
@@ -546,36 +550,10 @@ class Header extends Component {
         let subtitle = getChatSubtitle(chatId, true);
         let isTyping = false;
 
-        const typingManager = chatId ? ChatStore.getTypingManager(chatId) : null;
-        if (typingManager && typingManager.actions && typingManager.actions.size > 0) {
-            const now = new Date();
-            const activeUsers = [...typingManager.actions.entries()].filter(([, v]) => v.expire > now);
-            if (activeUsers.length > 0) {
-                isTyping = true;
-                if (activeUsers.length === 1) {
-                    const [userId] = activeUsers[0];
-                    const user = UserStore.get(userId);
-                    const name = user ? user.first_name || user.last_name || 'Alguien' : 'Alguien';
-                    const action = activeUsers[0][1].action;
-                    const actionText =
-                        action['@type'] === 'chatActionRecordingVoiceNote'
-                            ? 'grabando audio...'
-                            : action['@type'] === 'chatActionUploadingDocument'
-                            ? 'enviando archivo...'
-                            : action['@type'] === 'chatActionUploadingPhoto'
-                            ? 'enviando foto...'
-                            : 'escribiendo...';
-                    subtitle = `${name} está ${actionText}`;
-                } else if (activeUsers.length === 2) {
-                    const names = activeUsers.map(([uid]) => {
-                        const u = UserStore.get(uid);
-                        return u ? u.first_name || 'Alguien' : 'Alguien';
-                    });
-                    subtitle = `${names[0]} y ${names[1]} están escribiendo...`;
-                } else {
-                    subtitle = `${activeUsers.length} personas están escribiendo...`;
-                }
-            }
+        const typingString = getChatTypingString(chatId);
+        if (typingString) {
+            isTyping = true;
+            subtitle = typingString;
         }
         let showProgressAnimation = false;
 
@@ -663,7 +641,10 @@ class Header extends Component {
                     <span className='header-status-content'>
                         {isSecret && <LockIcon style={{ fontSize: 15, verticalAlign: 'middle', marginRight: 3 }} />}
                         {title}
-                        {isPremium && (
+                        {headerEmojiDocId && (
+                            <CustomEmoji key={headerEmojiDocId} emojiId={headerEmojiDocId} fallback='' />
+                        )}
+                        {!headerEmojiDocId && isPremium && (
                             <span className='header-premium-badge' title='Premium'>
                                 ⭐
                             </span>
@@ -675,7 +656,18 @@ class Header extends Component {
                             [classes.headerStatusAccentTitle]: isAccentSubtitle && !isTyping,
                             'header-typing': isTyping,
                         })}>
-                        {subtitle}
+                        {isTyping ? (
+                            <>
+                                {subtitle.replace(/\.\.\.?$/, '')}
+                                <span className='typing-dots'>
+                                    <span />
+                                    <span />
+                                    <span />
+                                </span>
+                            </>
+                        ) : (
+                            subtitle
+                        )}
                     </span>
                     <span className='header-status-tail' />
                 </div>

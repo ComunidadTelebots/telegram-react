@@ -103,8 +103,38 @@
     background: rgba(255, 193, 7, 0.15);
     border: 1px solid rgba(255, 193, 7, 0.4);
     font-size: 13px;
-    cursor: default;
+    cursor: pointer;
     user-select: none;
+    transition: background 0.15s;
+}
+
+.reaction-paid-badge:hover {
+    background: rgba(255, 193, 7, 0.28);
+}
+
+/* Button to send a paid star reaction */
+.reaction-paid-add {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2px 7px;
+    border-radius: 12px;
+    border: 1px dashed rgba(255, 193, 7, 0.5);
+    background: transparent;
+    cursor: pointer;
+    font-size: 12px;
+    color: #b8860b;
+    transition: all 0.15s;
+}
+
+.reaction-paid-add:hover {
+    background: rgba(255, 193, 7, 0.12);
+    border-color: #f5c518;
+}
+
+.reaction-paid-sending {
+    opacity: 0.5;
+    pointer-events: none;
 }
 
 .reaction-paid-count {

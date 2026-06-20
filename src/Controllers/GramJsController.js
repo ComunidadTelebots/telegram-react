@@ -1321,11 +1321,17 @@ class GramJsController extends EventEmitter {
     _getMessageReactors = async ({ chat_id, message_id, reaction }) => {
         try {
             const inputPeer = tdlibChatIdToInputPeer(chat_id, this._entityCache);
+            let reactionFilter;
+            if (reaction === 'paid') {
+                reactionFilter = new Api.ReactionPaid();
+            } else if (reaction) {
+                reactionFilter = new Api.ReactionEmoji({ emoticon: reaction });
+            }
             const result = await this.client.invoke(
                 new Api.messages.GetMessageReactionsList({
                     peer: inputPeer,
                     id: message_id,
-                    reaction: reaction ? new Api.ReactionEmoji({ emoticon: reaction }) : undefined,
+                    reaction: reactionFilter,
                     limit: 50,
                 }),
             );
@@ -1338,7 +1344,14 @@ class GramJsController extends EventEmitter {
                     const user = result.users && result.users.find(u => Number(u.id) === userId);
                     if (user) name = [user.firstName, user.lastName].filter(Boolean).join(' ');
                 }
-                return { sender_id: { user_id: userId }, sender_name: name, reaction: r.reaction?.emoticon || '' };
+                const isPaid = r.reaction && r.reaction.className === 'ReactionPaid';
+                const starCount = isPaid && r.count ? r.count : null;
+                return {
+                    sender_id: { user_id: userId },
+                    sender_name: name,
+                    reaction: isPaid ? '⭐' : r.reaction?.emoticon || '',
+                    star_count: starCount,
+                };
             });
             return { reactors };
         } catch (e) {
@@ -1357,6 +1370,28 @@ class GramJsController extends EventEmitter {
             console.warn('[GramJs] getSimilarChannels error', e);
             return { chats: [] };
         }
+    };
+
+    getOutboxReadDate = async (chatId, messageId) => {
+        const inputPeer = tdlibChatIdToInputPeer(chatId, this._entityCache);
+        const result = await this.client.invoke(
+            new Api.messages.GetOutboxReadDate({ peer: inputPeer, msgId: messageId }),
+        );
+        return result.date;
+    };
+
+    sendPaidReaction = async (chatId, messageId, count = 1, isPrivate = false) => {
+        const inputPeer = tdlibChatIdToInputPeer(chatId, this._entityCache);
+        const randomId = BigInt(Math.floor(Math.random() * Number.MAX_SAFE_INTEGER));
+        await this.client.invoke(
+            new Api.messages.SendPaidReaction({
+                peer: inputPeer,
+                msgId: messageId,
+                count,
+                randomId,
+                private: isPrivate ? true : undefined,
+            }),
+        );
     };
 
     _getActiveSessions = async () => {

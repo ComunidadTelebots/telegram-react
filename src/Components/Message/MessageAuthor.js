@@ -14,6 +14,8 @@ import { getChatTitle, isPrivateChat } from '../../Utils/Chat';
 import { openUser as openUserCommand, openChat as openChatCommand } from '../../Actions/Client';
 import UserStore from '../../Stores/UserStore';
 import ChatStore from '../../Stores/ChatStore';
+import { getPeerColor } from '../../Utils/PeerColors';
+import CustomEmoji from './CustomEmoji';
 import './MessageAuthor.css';
 
 class MessageAuthor extends React.Component {
@@ -40,23 +42,33 @@ class MessageAuthor extends React.Component {
 
         const user = UserStore.get(userId);
         if (user) {
-            const tileColor = isPrivateChat(chatId)
-                ? 'message-author-color'
-                : `user_color_${(Math.abs(userId) % 8) + 1}`;
-            const className = classNames([tileColor], 'message-author');
+            const peerColor = getPeerColor(user.accent_color_id);
+            const tileColor =
+                !peerColor && isPrivateChat(chatId)
+                    ? 'message-author-color'
+                    : !peerColor
+                    ? `user_color_${(Math.abs(userId) % 8) + 1}`
+                    : null;
+            const className = classNames(tileColor, 'message-author');
+            const style = peerColor ? { color: peerColor } : undefined;
 
             const fullName = getUserFullName(user);
-            const premiumBadge = user.is_premium ? <span className='message-author-premium'>⭐</span> : null;
+            const emojiDocId = user.emoji_status && user.emoji_status.document_id;
+            const statusBadge = emojiDocId ? (
+                <CustomEmoji key={emojiDocId} emojiId={emojiDocId} fallback='' />
+            ) : user.is_premium ? (
+                <span className='message-author-premium'>⭐</span>
+            ) : null;
 
             return openUser ? (
-                <a className={className} onClick={this.handleSelect}>
+                <a className={className} style={style} onClick={this.handleSelect}>
                     {fullName}
-                    {premiumBadge}
+                    {statusBadge}
                 </a>
             ) : (
                 <>
-                    {fullName}
-                    {premiumBadge}
+                    <span style={style}>{fullName}</span>
+                    {statusBadge}
                 </>
             );
         }

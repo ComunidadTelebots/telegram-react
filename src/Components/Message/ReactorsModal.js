@@ -43,9 +43,12 @@ class ReactorsModal extends Component {
         const { open, onClose, reaction } = this.props;
         const { loading, reactors } = this.state;
 
+        const isPaid = reaction === 'paid';
+        const title = isPaid ? '⭐ Paid Reactions' : reaction ? `${reaction} Reactions` : 'Reactions';
+
         return (
             <Dialog open={open} onClose={onClose} maxWidth='xs' fullWidth>
-                <DialogTitle>{reaction ? `${reaction} Reacciones` : 'Reacciones'}</DialogTitle>
+                <DialogTitle>{title}</DialogTitle>
                 <DialogContent style={{ padding: 0, minHeight: 120 }}>
                     {loading && (
                         <div className='reactors-loading'>
@@ -59,7 +62,10 @@ class ReactorsModal extends Component {
                                 <ListItemAvatar>
                                     <UserTile userId={r.sender_id?.user_id || 0} />
                                 </ListItemAvatar>
-                                <ListItemText primary={r.sender_name || ''} secondary={r.reaction || ''} />
+                                <ListItemText
+                                    primary={r.sender_name || ''}
+                                    secondary={isPaid && r.star_count ? `⭐ ${r.star_count}` : r.reaction || ''}
+                                />
                             </ListItem>
                         ))}
                     </List>

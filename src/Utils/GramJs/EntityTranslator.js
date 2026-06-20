@@ -406,6 +406,10 @@ export function translateUser(user) {
         accent_color_id:
             user.color != null ? (typeof user.color === 'object' ? user.color.color ?? null : user.color) : null,
         is_premium: !!user.premium,
+        emoji_status:
+            user.emojiStatus && user.emojiStatus.documentId
+                ? { document_id: user.emojiStatus.documentId.toString() }
+                : null,
     };
 }
 

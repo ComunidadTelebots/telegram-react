@@ -15,6 +15,8 @@ import LockIcon from '@material-ui/icons/Lock';
 import CheckDecagramIcon from '../../Assets/Icons/Verified';
 import { getChatTitle, isChatVerified, isChatSecret, isChatPremium } from '../../Utils/Chat';
 import ChatStore from '../../Stores/ChatStore';
+import UserStore from '../../Stores/UserStore';
+import CustomEmoji from '../Message/CustomEmoji';
 import './DialogTitle.css';
 
 const styles = theme => ({
@@ -72,11 +74,17 @@ class DialogTitle extends React.Component {
         const isPremium = isChatPremium(chatId);
         const title = getChatTitle(chatId, showSavedMessages, t);
 
+        const chat = ChatStore.get(chatId);
+        const privateUserId = chat && chat.type && chat.type['@type'] === 'chatTypePrivate' ? chat.type.user_id : null;
+        const privateUser = privateUserId ? UserStore.get(privateUserId) : null;
+        const emojiDocId = privateUser && privateUser.emoji_status ? privateUser.emoji_status.document_id : null;
+
         return (
             <div className='dialog-title'>
                 {isSecret && <LockIcon className={classNames(classes.icon, 'dialog-title-icon')} />}
                 <span className='dialog-title-span'>{title}</span>
-                {isPremium && (
+                {emojiDocId && <CustomEmoji key={emojiDocId} emojiId={emojiDocId} fallback='' />}
+                {!emojiDocId && isPremium && (
                     <span className='dialog-title-premium' title='Premium'>
                         ⭐
                     </span>

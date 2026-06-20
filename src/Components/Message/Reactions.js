@@ -5,6 +5,7 @@
 import React, { Component } from 'react';
 import TdLibController from '../../Controllers/TdLibController';
 import MessageStore from '../../Stores/MessageStore';
+import GramJsController from '../../Controllers/GramJsController';
 import ReactorsModal from './ReactorsModal';
 import './Reactions.css';
 
@@ -14,7 +15,13 @@ const readReactionChats = new Set();
 class Reactions extends Component {
     constructor(props) {
         super(props);
-        this.state = { showPicker: false, reactorsModal: null, availableReactions: QUICK_REACTIONS };
+        this.state = {
+            showPicker: false,
+            reactorsModal: null,
+            availableReactions: QUICK_REACTIONS,
+            paidOptimistic: 0,
+            paidSending: false,
+        };
     }
 
     componentDidMount() {
@@ -96,6 +103,24 @@ class Reactions extends Component {
         this.setState(s => ({ showPicker: !s.showPicker }));
     };
 
+    handlePaidReactionClick = async e => {
+        e.stopPropagation();
+        const { chatId, messageId } = this.props;
+        if (this.state.paidSending) return;
+        this.setState(s => ({ paidOptimistic: s.paidOptimistic + 1, paidSending: true }));
+        try {
+            await GramJsController.sendPaidReaction(chatId, messageId, 1);
+        } catch (err) {
+            const msg = err && (err.message || String(err));
+            if (msg && msg.includes('STARS_TOO_FRESH')) {
+                alert('No tienes suficientes estrellas.');
+            }
+            this.setState(s => ({ paidOptimistic: Math.max(0, s.paidOptimistic - 1) }));
+        } finally {
+            this.setState({ paidSending: false });
+        }
+    };
+
     handleCloseReactors = () => {
         this.setState({ reactorsModal: null });
     };
@@ -130,11 +155,11 @@ class Reactions extends Component {
 
     render() {
         const { chatId, messageId } = this.props;
-        const { showPicker, reactorsModal, availableReactions } = this.state;
+        const { showPicker, reactorsModal, availableReactions, paidOptimistic, paidSending } = this.state;
         const message = MessageStore.get(chatId, messageId);
         const reactions = message && message.reactions;
         const list = reactions ? reactions.reactions : [];
-        const paidCount = reactions ? reactions.paid_total_count || 0 : 0;
+        const paidCount = (reactions ? reactions.paid_total_count || 0 : 0) + paidOptimistic;
         const unreadReactions = new Set(
             reactions && reactions.recent_reactions
                 ? reactions.recent_reactions.filter(r => r.is_unread).map(r => r.reaction)
@@ -144,10 +169,19 @@ class Reactions extends Component {
         return (
             <div className='reactions-wrap'>
                 {paidCount > 0 && (
-                    <span className='reaction-paid-badge' title={`${paidCount} paid reactions`}>
+                    <button
+                        className='reaction-paid-badge'
+                        title={`${paidCount} paid reactions`}
+                        onClick={e => this.setState({ reactorsModal: { chatId, messageId, reaction: 'paid' } })}>
                         ⭐ <span className='reaction-paid-count'>{paidCount}</span>
-                    </span>
+                    </button>
                 )}
+                <button
+                    className={`reaction-paid-add${paidSending ? ' reaction-paid-sending' : ''}`}
+                    onClick={this.handlePaidReactionClick}
+                    title='Send a star reaction'>
+                    +⭐
+                </button>
                 {list.map(r => (
                     <button
                         key={r.reaction}
