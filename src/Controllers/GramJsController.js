@@ -963,6 +963,16 @@ class GramJsController extends EventEmitter {
                 return this._getPaymentForm(req);
             case 'sendStarsForm':
                 return this._sendStarsForm(req);
+            case 'getSponsoredMessages':
+                return this._getSponsoredMessages(req);
+            case 'viewSponsoredMessage':
+                return this._viewSponsoredMessage(req);
+            case 'exportChatlistInvite':
+                return this._exportChatlistInvite(req);
+            case 'sendLiveLocation':
+                return this._sendLiveLocation(req);
+            case 'getSearchCounters':
+                return this._getSearchCounters(req);
             case 'terminateSession':
                 return this._terminateSession(req);
             case 'terminateAllOtherSessions':
@@ -1317,6 +1327,16 @@ class GramJsController extends EventEmitter {
                 return this._getPaymentForm(req);
             case 'sendStarsForm':
                 return this._sendStarsForm(req);
+            case 'getSponsoredMessages':
+                return this._getSponsoredMessages(req);
+            case 'viewSponsoredMessage':
+                return this._viewSponsoredMessage(req);
+            case 'exportChatlistInvite':
+                return this._exportChatlistInvite(req);
+            case 'sendLiveLocation':
+                return this._sendLiveLocation(req);
+            case 'getSearchCounters':
+                return this._getSearchCounters(req);
             case 'terminateSession':
                 return this._terminateSession(req);
             case 'terminateAllOtherSessions':
@@ -1581,6 +1601,93 @@ class GramJsController extends EventEmitter {
             console.warn('[GramJs] setChatTheme error', e);
             throw e;
         }
+    };
+
+    // ── Misc (J) ──────────────────────────────────────────────────────────────
+
+    _getSponsoredMessages = async ({ chat_id }) => {
+        const inputPeer = tdlibChatIdToInputPeer(chat_id, this._entityCache);
+        const result = await this.client.invoke(new Api.messages.GetSponsoredMessages({ peer: inputPeer }));
+        return {
+            messages: (result.messages || []).map(m => ({
+                random_id: Buffer.from(m.randomId).toString('hex'),
+                url: m.url,
+                title: m.title,
+                message: m.message,
+            })),
+        };
+    };
+
+    _viewSponsoredMessage = async ({ chat_id, random_id_hex }) => {
+        const inputPeer = tdlibChatIdToInputPeer(chat_id, this._entityCache);
+        await this.client.invoke(
+            new Api.messages.ViewSponsoredMessage({ peer: inputPeer, randomId: Buffer.from(random_id_hex, 'hex') }),
+        );
+        return { success: true };
+    };
+
+    _exportChatlistInvite = async ({ filter_id, title, peer_ids }) => {
+        const peers = await Promise.all(
+            peer_ids.map(id => Promise.resolve(tdlibChatIdToInputPeer(id, this._entityCache))),
+        );
+        const result = await this.client.invoke(
+            new Api.chatlists.ExportChatlistInvite({
+                chatlist: new Api.InputChatlistDialogFilter({ filterId: filter_id }),
+                title: title || '',
+                peers,
+            }),
+        );
+        return { invite: result.invite ? { url: result.invite.url, title: result.invite.title } : null };
+    };
+
+    _sendLiveLocation = async ({
+        chat_id,
+        reply_to_message_id,
+        lat,
+        lon,
+        heading,
+        period,
+        proximity_notification_radius,
+    }) => {
+        const inputPeer = tdlibChatIdToInputPeer(chat_id, this._entityCache);
+        const result = await this.client.invoke(
+            new Api.messages.SendMedia({
+                peer: inputPeer,
+                media: new Api.InputMediaGeoLive({
+                    geoPoint: new Api.InputGeoPoint({ lat, long: lon }),
+                    heading: heading || undefined,
+                    period: period || 3600,
+                    proximityNotificationRadius: proximity_notification_radius || undefined,
+                }),
+                message: '',
+                randomId: BigInt(Math.floor(Math.random() * Number.MAX_SAFE_INTEGER)),
+                replyTo: reply_to_message_id
+                    ? new Api.InputReplyToMessage({ replyToMsgId: reply_to_message_id })
+                    : undefined,
+            }),
+        );
+        return { success: true, updates: result };
+    };
+
+    _getSearchCounters = async ({ chat_id, filters }) => {
+        const inputPeer = tdlibChatIdToInputPeer(chat_id, this._entityCache);
+        const FILTER_MAP = {
+            photo: 'InputMessagesFilterPhotos',
+            video: 'InputMessagesFilterVideo',
+            document: 'InputMessagesFilterDocument',
+            url: 'InputMessagesFilterUrl',
+            audio: 'InputMessagesFilterMusic',
+            voice: 'InputMessagesFilterVoice',
+            gif: 'InputMessagesFilterGif',
+        };
+        const filterObjs = (filters || ['photo', 'video', 'document', 'url', 'audio', 'voice', 'gif']).map(f => {
+            const cls = FILTER_MAP[f];
+            return cls && Api[cls] ? new Api[cls]() : new Api.InputMessagesFilterEmpty();
+        });
+        const result = await this.client.invoke(
+            new Api.messages.GetSearchCounters({ peer: inputPeer, filters: filterObjs }),
+        );
+        return { counters: (result || []).map(c => ({ filter: c.filter?.className, count: c.count })) };
     };
 
     // ── Stars ─────────────────────────────────────────────────────────────────
