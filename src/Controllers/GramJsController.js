@@ -915,6 +915,14 @@ class GramJsController extends EventEmitter {
                 return this._toggleJoinToSend(req);
             case 'toggleJoinRequest':
                 return this._toggleJoinRequest(req);
+            case 'getFavedStickers':
+                return this._getFavedStickers(req);
+            case 'faveSticker':
+                return this._faveSticker(req);
+            case 'getEmojiGroups':
+                return this._getEmojiGroups(req);
+            case 'getAnimatedEmojiStickerSet':
+                return this._getAnimatedEmojiStickerSet(req);
             case 'terminateSession':
                 return this._terminateSession(req);
             case 'terminateAllOtherSessions':
@@ -1221,6 +1229,14 @@ class GramJsController extends EventEmitter {
                 return this._toggleJoinToSend(req);
             case 'toggleJoinRequest':
                 return this._toggleJoinRequest(req);
+            case 'getFavedStickers':
+                return this._getFavedStickers(req);
+            case 'faveSticker':
+                return this._faveSticker(req);
+            case 'getEmojiGroups':
+                return this._getEmojiGroups(req);
+            case 'getAnimatedEmojiStickerSet':
+                return this._getAnimatedEmojiStickerSet(req);
             case 'terminateSession':
                 return this._terminateSession(req);
             case 'terminateAllOtherSessions':
@@ -1485,6 +1501,50 @@ class GramJsController extends EventEmitter {
             console.warn('[GramJs] setChatTheme error', e);
             throw e;
         }
+    };
+
+    // ── Stickers / Emoji ──────────────────────────────────────────────────────
+
+    _getFavedStickers = async () => {
+        const result = await this.client.invoke(new Api.messages.GetFavedStickers({ hash: BigInt(0) }));
+        return { stickers: result.stickers || [], hash: result.hash };
+    };
+
+    _faveSticker = async ({ document_id, access_hash, file_reference, unfave }) => {
+        await this.client.invoke(
+            new Api.messages.FaveSticker({
+                id: new Api.InputDocument({
+                    id: BigInt(document_id),
+                    accessHash: BigInt(access_hash || 0),
+                    fileReference: Buffer.from(file_reference || []),
+                }),
+                unfave: !!unfave,
+            }),
+        );
+        return { success: true };
+    };
+
+    _getEmojiGroups = async () => {
+        const result = await this.client.invoke(new Api.messages.GetEmojiGroups({ hash: 0 }));
+        return {
+            groups: (result.groups || []).map(g => ({
+                title: g.title,
+                icon_emoji_id: String(g.iconEmojiId || 0),
+                emoticons: g.emoticons || [],
+            })),
+        };
+    };
+
+    _getAnimatedEmojiStickerSet = async () => {
+        const result = await this.client.invoke(
+            new Api.messages.GetStickerSet({ stickerset: new Api.InputStickerSetAnimatedEmoji(), hash: 0 }),
+        );
+        return {
+            set: result.set
+                ? { id: String(result.set.id), title: result.set.title, short_name: result.set.shortName }
+                : null,
+            stickers: (result.documents || []).map(d => ({ id: String(d.id), type: d.className })),
+        };
     };
 
     // ── Admin / Channels ─────────────────────────────────────────────────────
