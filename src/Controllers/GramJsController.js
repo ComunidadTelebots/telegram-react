@@ -903,6 +903,18 @@ class GramJsController extends EventEmitter {
                 return this._getContentSettings(req);
             case 'setContentSettings':
                 return this._setContentSettings(req);
+            case 'getAdminLog':
+                return this._getAdminLog(req);
+            case 'editAdmin':
+                return this._editAdmin(req);
+            case 'getJoinRequests':
+                return this._getJoinRequests(req);
+            case 'approveJoinRequest':
+                return this._approveJoinRequest(req);
+            case 'toggleJoinToSend':
+                return this._toggleJoinToSend(req);
+            case 'toggleJoinRequest':
+                return this._toggleJoinRequest(req);
             case 'terminateSession':
                 return this._terminateSession(req);
             case 'terminateAllOtherSessions':
@@ -1197,6 +1209,18 @@ class GramJsController extends EventEmitter {
                 return this._getContentSettings(req);
             case 'setContentSettings':
                 return this._setContentSettings(req);
+            case 'getAdminLog':
+                return this._getAdminLog(req);
+            case 'editAdmin':
+                return this._editAdmin(req);
+            case 'getJoinRequests':
+                return this._getJoinRequests(req);
+            case 'approveJoinRequest':
+                return this._approveJoinRequest(req);
+            case 'toggleJoinToSend':
+                return this._toggleJoinToSend(req);
+            case 'toggleJoinRequest':
+                return this._toggleJoinRequest(req);
             case 'terminateSession':
                 return this._terminateSession(req);
             case 'terminateAllOtherSessions':
@@ -1461,6 +1485,98 @@ class GramJsController extends EventEmitter {
             console.warn('[GramJs] setChatTheme error', e);
             throw e;
         }
+    };
+
+    // ── Admin / Channels ─────────────────────────────────────────────────────
+
+    _getAdminLog = async ({ chat_id, q = '', limit = 100, max_id = BigInt(0), min_id = BigInt(0) }) => {
+        const inputPeer = tdlibChatIdToInputPeer(chat_id, this._entityCache);
+        const result = await this.client.invoke(
+            new Api.channels.GetAdminLog({
+                channel: inputPeer,
+                q,
+                maxId: BigInt(max_id || 0),
+                minId: BigInt(min_id || 0),
+                limit,
+            }),
+        );
+        return {
+            events: (result.events || []).map(e => ({
+                id: String(e.id),
+                date: e.date,
+                user_id: String(e.userId),
+                action: e.action,
+            })),
+        };
+    };
+
+    _editAdmin = async ({ chat_id, user_id, rights, rank = '' }) => {
+        const inputPeer = tdlibChatIdToInputPeer(chat_id, this._entityCache);
+        const userPeer = await this.client.getInputEntity(BigInt(user_id));
+        await this.client.invoke(
+            new Api.channels.EditAdmin({
+                channel: inputPeer,
+                userId: userPeer,
+                adminRights: new Api.ChatAdminRights({
+                    changeInfo: rights.change_info,
+                    postMessages: rights.post_messages,
+                    editMessages: rights.edit_messages,
+                    deleteMessages: rights.delete_messages,
+                    banUsers: rights.ban_users,
+                    inviteUsers: rights.invite_users,
+                    pinMessages: rights.pin_messages,
+                    addAdmins: rights.add_admins,
+                    anonymous: rights.anonymous,
+                    manageCall: rights.manage_call,
+                    other: rights.other,
+                    manageTopics: rights.manage_topics,
+                }),
+                rank,
+            }),
+        );
+        return { success: true };
+    };
+
+    _getJoinRequests = async ({ chat_id, limit = 50 }) => {
+        const inputPeer = tdlibChatIdToInputPeer(chat_id, this._entityCache);
+        const result = await this.client.invoke(
+            new Api.messages.GetChatInviteImporters({
+                requested: true,
+                peer: inputPeer,
+                offsetDate: 0,
+                offsetUser: new Api.InputUserEmpty(),
+                limit,
+            }),
+        );
+        return {
+            importers: (result.importers || []).map(i => ({
+                user_id: String(i.userId),
+                date: i.date,
+                about: i.about || '',
+            })),
+            users: result.users || [],
+        };
+    };
+
+    _approveJoinRequest = async ({ chat_id, user_id, approved }) => {
+        const inputPeer = tdlibChatIdToInputPeer(chat_id, this._entityCache);
+        const userPeer = await this.client.getInputEntity(BigInt(user_id));
+        await this.client.invoke(
+            new Api.messages.HideChatJoinRequest({ approved: !!approved, peer: inputPeer, userId: userPeer }),
+        );
+        return { success: true };
+    };
+
+    _toggleJoinToSend = async ({ chat_id, enabled }) => {
+        const inputPeer = tdlibChatIdToInputPeer(chat_id, this._entityCache);
+        await this.client.invoke(new Api.channels.ToggleJoinToSend({ channel: inputPeer, enabled }));
+        return { success: true };
+    };
+
+    _toggleJoinRequest = async ({ chat_id, enabled }) => {
+        const inputPeer = tdlibChatIdToInputPeer(chat_id, this._entityCache);
+        await this.client.invoke(new Api.channels.ToggleJoinRequest({ channel: inputPeer, enabled }));
+        return { success: true };
     };
 
     // ── Privacy ──────────────────────────────────────────────────────────────

@@ -80,6 +80,8 @@ import TdLibController from '../../Controllers/TdLibController';
 import SimilarChannels from './SimilarChannels';
 import StarGiftsGallery from './StarGiftsGallery';
 import BusinessInfo from './BusinessInfo';
+import AdminLog from './AdminLog';
+import JoinRequests from './JoinRequests';
 import './ChatDetails.css';
 
 const styles = theme => ({
@@ -440,6 +442,16 @@ class ChatDetails extends React.Component {
         const { descriptionDraft } = this.state;
         await TdLibController.send({ '@type': 'setChatDescription', chat_id: chatId, description: descriptionDraft });
         this.setState({ editingDescription: false });
+    };
+
+    handleAdminLog = () => {
+        const { chatId } = this.props;
+        if (this.adminLogRef) this.adminLogRef.open(chatId);
+    };
+
+    handleJoinRequests = () => {
+        const { chatId } = this.props;
+        if (this.joinRequestsRef) this.joinRequestsRef.open(chatId);
     };
 
     handleSetSlowMode = async event => {
@@ -981,11 +993,36 @@ class ChatDetails extends React.Component {
                             <SimilarChannels chatId={chatId} />
                         </>
                     )}
+                    {chat && chat.type && chat.type['@type'] === 'chatTypeSupergroup' && (
+                        <>
+                            <Divider />
+                            <List>
+                                <ListItem button onClick={this.handleAdminLog}>
+                                    <ListItemText primary='Recent Actions' secondary='Admin log' />
+                                </ListItem>
+                                <ListItem button onClick={this.handleJoinRequests}>
+                                    <ListItemText primary='Join Requests' secondary='Approve or reject' />
+                                </ListItem>
+                            </List>
+                        </>
+                    )}
                 </div>
             </>
         );
 
-        return popup ? <>{content}</> : <div className={classNames('chat-details', className)}>{content}</div>;
+        return popup ? (
+            <>
+                {content}
+                <AdminLog ref={ref => (this.adminLogRef = ref)} />
+                <JoinRequests ref={ref => (this.joinRequestsRef = ref)} />
+            </>
+        ) : (
+            <div className={classNames('chat-details', className)}>
+                {content}
+                <AdminLog ref={ref => (this.adminLogRef = ref)} />
+                <JoinRequests ref={ref => (this.joinRequestsRef = ref)} />
+            </div>
+        );
     }
 }
 
