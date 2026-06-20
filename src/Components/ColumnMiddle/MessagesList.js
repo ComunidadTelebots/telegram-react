@@ -68,6 +68,7 @@ class MessagesList extends React.Component {
             separatorMessageId: 0,
             scrollDownVisible: false,
             replyHistory: [],
+            sponsoredMessages: [],
         };
 
         this.listRef = React.createRef();
@@ -624,6 +625,18 @@ class MessagesList extends React.Component {
 
             // load full info
             getChatFullInfo(chat.id);
+
+            if (isChannelChat(chat.id)) {
+                TdLibController.send({ '@type': 'getSponsoredMessages', chat_id: chat.id })
+                    .then(r => {
+                        if (sessionId === this.sessionId) {
+                            this.setState({ sponsoredMessages: r.messages || [] });
+                        }
+                    })
+                    .catch(() => {});
+            } else {
+                this.setState({ sponsoredMessages: [] });
+            }
         } else {
             this.loading = true;
             this.replace(0, [], () => {
@@ -1277,7 +1290,14 @@ class MessagesList extends React.Component {
 
     render() {
         const { classes, chatId } = this.props;
-        const { history, separatorMessageId, clearHistory, selectionActive, scrollDownVisible } = this.state;
+        const {
+            history,
+            separatorMessageId,
+            clearHistory,
+            selectionActive,
+            scrollDownVisible,
+            sponsoredMessages,
+        } = this.state;
         const jumpToUnreadVisible = scrollDownVisible && separatorMessageId > 0;
         const unreadCount = jumpToUnreadVisible
             ? history.filter(m => m.id >= separatorMessageId && !m.is_outgoing).length
@@ -1388,6 +1408,34 @@ class MessagesList extends React.Component {
                     <div className='messages-list-top' />
                     <div ref={this.itemsRef} className='messages-list-items'>
                         {this.messages}
+                        {sponsoredMessages.length > 0 &&
+                            sponsoredMessages.map((sm, idx) => (
+                                <div
+                                    key={idx}
+                                    className='sponsored-message-wrapper'
+                                    ref={el => {
+                                        if (!el) return;
+                                        const observer = new IntersectionObserver(
+                                            entries => {
+                                                if (entries[0].isIntersecting) {
+                                                    TdLibController.send({
+                                                        '@type': 'viewSponsoredMessage',
+                                                        chat_id: chatId,
+                                                        message_id: sm.message_id,
+                                                    }).catch(() => {});
+                                                    observer.disconnect();
+                                                }
+                                            },
+                                            { threshold: 0.5 },
+                                        );
+                                        observer.observe(el);
+                                    }}>
+                                    <div className='sponsored-message-label'>Patrocinado</div>
+                                    <div className='sponsored-message-text'>
+                                        {sm.content && sm.content.text && sm.content.text.text}
+                                    </div>
+                                </div>
+                            ))}
                     </div>
                 </div>
                 <Placeholder />

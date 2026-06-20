@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.0.620] - 2026-06-20 — J1 Sponsored Messages UI
+### Added
+- **J1 Sponsored Messages** — Inyección en MessagesList para canales
+  - Carga `getSponsoredMessages` al abrir un canal (por chat_id)
+  - Mensajes patrocinados aparecen al final de la lista con etiqueta "Patrocinado" en azul
+  - `IntersectionObserver` (threshold 0.5) llama `viewSponsoredMessage` cuando el mensaje se hace visible
+  - Se limpian al cambiar de chat (no-canal resetea a `[]`)
+  - CSS con `var(--)` adaptado a todos los temas
+
 ## [0.0.619] - 2026-06-20 — E2 Emoji Groups en EmojiPickerButton
 ### Added
 - **E2 Emoji Groups** — Barra de grupos de emoji encima del picker (solo tab emoji)
