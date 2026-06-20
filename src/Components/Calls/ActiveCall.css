@@ -169,3 +169,43 @@
 .active-call-btn svg {
     font-size: 24px;
 }
+
+/* ── Status label animation for connecting state ── */
+.active-call-duration {
+    min-height: 20px;
+}
+
+/* ── Design-family overrides ── */
+/* iOS: rounded panel, slightly lighter background */
+body.design-ios .active-call-panel {
+    border-radius: 24px;
+    background: #1c1c3a;
+}
+
+/* TDesktop: square-ish corners */
+body.design-tdesktop .active-call-panel {
+    border-radius: 12px;
+}
+
+/* Aurora: gradient background */
+body.design-aurora .active-call-panel {
+    background: linear-gradient(160deg, #1a1a3e 0%, #0d1b2a 100%);
+}
+
+body.design-aurora .active-call-avatar {
+    background: #7c4dff;
+}
+
+body.design-aurora .active-call-avatar--ringing {
+    animation: avatarPulseAurora 1.5s infinite;
+}
+
+@keyframes avatarPulseAurora {
+    0%,
+    100% {
+        box-shadow: 0 0 0 0 rgba(124, 77, 255, 0.5);
+    }
+    50% {
+        box-shadow: 0 0 0 16px rgba(124, 77, 255, 0);
+    }
+}

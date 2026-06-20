@@ -105,3 +105,20 @@
 .incoming-call-btn svg {
     font-size: 28px;
 }
+
+body.design-ios .incoming-call-panel {
+    border-radius: 24px;
+    background: #1c1c3a;
+}
+
+body.design-tdesktop .incoming-call-panel {
+    border-radius: 12px;
+}
+
+body.design-aurora .incoming-call-panel {
+    background: linear-gradient(160deg, #1a1a3e 0%, #0d1b2a 100%);
+}
+
+body.design-aurora .incoming-call-avatar {
+    background: #7c4dff;
+}

@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.0.625] - 2026-06-20 — W4 Calls: Conectando... status + CSS design overrides
+### Added
+- **W4 Call UI polish** — Estado "Conectando..." cuando ACTIVE y duration === 0 (antes de que empiece el audio)
+  - `ActiveCall.js`: `isConnecting = callState === ACTIVE && duration === 0` → `statusLabel = 'Conectando...'`
+  - `ActiveCall.css`: overrides para `design-ios` (radius 24px, bg #1c1c3a), `design-tdesktop` (radius 12px), `design-aurora` (gradient + purple avatar pulse)
+  - `IncomingCall.css`: mismos overrides para los tres temas
+  - `min-height: 20px` en `.active-call-duration` para evitar salto de layout al cambiar texto
+
 ## [0.0.624] - 2026-06-20 — W3 Calls: Rating dialog + setCallRating
 ### Added
 - **W3 Call rating** — `CallRatingDialog` (estrellas 1-5) se abre automáticamente al finalizar llamada

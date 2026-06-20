@@ -114,7 +114,8 @@ class ActiveCall extends Component {
         if (!visible) return null;
 
         const isRinging = callState === CallState.REQUESTING || callState === CallState.WAITING;
-        const statusLabel = isRinging ? 'Calling...' : formatDuration(duration);
+        const isConnecting = callState === CallState.ACTIVE && duration === 0;
+        const statusLabel = isRinging ? 'Llamando...' : isConnecting ? 'Conectando...' : formatDuration(duration);
 
         return (
             <div className='active-call-overlay'>
