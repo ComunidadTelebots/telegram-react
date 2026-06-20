@@ -957,6 +957,12 @@ class GramJsController extends EventEmitter {
                 return this._toggleStoryPinned(req);
             case 'getPinnedStories':
                 return this._getPinnedStories(req);
+            case 'getStarsTopupOptions':
+                return this._getStarsTopupOptions(req);
+            case 'getPaymentForm':
+                return this._getPaymentForm(req);
+            case 'sendStarsForm':
+                return this._sendStarsForm(req);
             case 'terminateSession':
                 return this._terminateSession(req);
             case 'terminateAllOtherSessions':
@@ -1305,6 +1311,12 @@ class GramJsController extends EventEmitter {
                 return this._toggleStoryPinned(req);
             case 'getPinnedStories':
                 return this._getPinnedStories(req);
+            case 'getStarsTopupOptions':
+                return this._getStarsTopupOptions(req);
+            case 'getPaymentForm':
+                return this._getPaymentForm(req);
+            case 'sendStarsForm':
+                return this._sendStarsForm(req);
             case 'terminateSession':
                 return this._terminateSession(req);
             case 'terminateAllOtherSessions':
@@ -1569,6 +1581,52 @@ class GramJsController extends EventEmitter {
             console.warn('[GramJs] setChatTheme error', e);
             throw e;
         }
+    };
+
+    // ── Stars ─────────────────────────────────────────────────────────────────
+
+    _getStarsTopupOptions = async () => {
+        const result = await this.client.invoke(new Api.payments.GetStarsTopupOptions());
+        return {
+            options: (result || []).map(o => ({
+                stars: String(o.stars),
+                currency: o.currency,
+                amount: String(o.amount),
+                store_product: o.storeProduct || null,
+                extended: o.extended || false,
+            })),
+        };
+    };
+
+    _getPaymentForm = async ({ chat_id, message_id }) => {
+        const inputPeer = tdlibChatIdToInputPeer(chat_id, this._entityCache);
+        const result = await this.client.invoke(
+            new Api.payments.GetPaymentForm({
+                invoice: new Api.InputInvoiceMessage({ peer: inputPeer, msgId: message_id }),
+                themeParams: new Api.DataJSON({ data: '{}' }),
+            }),
+        );
+        return {
+            form_id: String(result.formId),
+            title: result.title,
+            description: result.description,
+            invoice: result.invoice ? { currency: result.invoice.currency, prices: result.invoice.prices || [] } : null,
+            url: result.url,
+        };
+    };
+
+    _sendStarsForm = async ({ form_id, chat_id, message_id }) => {
+        const inputPeer = tdlibChatIdToInputPeer(chat_id, this._entityCache);
+        const result = await this.client.invoke(
+            new Api.payments.SendPaymentForm({
+                formId: BigInt(form_id),
+                invoice: new Api.InputInvoiceMessage({ peer: inputPeer, msgId: message_id }),
+                credentials: new Api.InputPaymentCredentials({
+                    data: new Api.DataJSON({ data: JSON.stringify({ type: 'stars' }) }),
+                }),
+            }),
+        );
+        return { success: true, result };
     };
 
     // ── Stories ──────────────────────────────────────────────────────────────
