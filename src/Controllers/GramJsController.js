@@ -933,6 +933,14 @@ class GramJsController extends EventEmitter {
                 return this._updateBusinessLocation(req);
             case 'updateBusinessIntro':
                 return this._updateBusinessIntro(req);
+            case 'getAttachMenuBots':
+                return this._getAttachMenuBots(req);
+            case 'getBotApp':
+                return this._getBotApp(req);
+            case 'requestAppWebView':
+                return this._requestAppWebView(req);
+            case 'requestSimpleWebView':
+                return this._requestSimpleWebView(req);
             case 'terminateSession':
                 return this._terminateSession(req);
             case 'terminateAllOtherSessions':
@@ -1257,6 +1265,14 @@ class GramJsController extends EventEmitter {
                 return this._updateBusinessLocation(req);
             case 'updateBusinessIntro':
                 return this._updateBusinessIntro(req);
+            case 'getAttachMenuBots':
+                return this._getAttachMenuBots(req);
+            case 'getBotApp':
+                return this._getBotApp(req);
+            case 'requestAppWebView':
+                return this._requestAppWebView(req);
+            case 'requestSimpleWebView':
+                return this._requestSimpleWebView(req);
             case 'terminateSession':
                 return this._terminateSession(req);
             case 'terminateAllOtherSessions':
@@ -1521,6 +1537,58 @@ class GramJsController extends EventEmitter {
             console.warn('[GramJs] setChatTheme error', e);
             throw e;
         }
+    };
+
+    // ── Mini Apps / Bots ──────────────────────────────────────────────────────
+
+    _getAttachMenuBots = async () => {
+        const result = await this.client.invoke(new Api.messages.GetAttachMenuBots({ hash: BigInt(0) }));
+        return {
+            bots: (result.bots || []).map(b => ({
+                bot_id: String(b.botId),
+                short_name: b.shortName,
+                peer_types: b.peerTypes?.map(t => t.className) || [],
+            })),
+        };
+    };
+
+    _getBotApp = async ({ bot_id, short_name }) => {
+        const botPeer = await this.client.getInputEntity(BigInt(bot_id));
+        const result = await this.client.invoke(
+            new Api.messages.GetBotApp({
+                app: new Api.InputBotAppShortName({ botId: botPeer, shortName: short_name }),
+                hash: BigInt(0),
+            }),
+        );
+        return { app: result.app ? { id: String(result.app.id), title: result.app.title, url: result.app.url } : null };
+    };
+
+    _requestAppWebView = async ({ chat_id, bot_id, short_name, start_param, platform = 'web' }) => {
+        const peer = tdlibChatIdToInputPeer(chat_id, this._entityCache);
+        const botPeer = await this.client.getInputEntity(BigInt(bot_id));
+        const result = await this.client.invoke(
+            new Api.messages.RequestAppWebView({
+                peer,
+                app: new Api.InputBotAppShortName({ botId: botPeer, shortName: short_name }),
+                startParam: start_param || undefined,
+                themeParams: new Api.DataJSON({ data: '{}' }),
+                platform,
+            }),
+        );
+        return { url: result.url };
+    };
+
+    _requestSimpleWebView = async ({ bot_id, url, platform = 'web' }) => {
+        const botPeer = await this.client.getInputEntity(BigInt(bot_id));
+        const result = await this.client.invoke(
+            new Api.messages.RequestSimpleWebView({
+                bot: botPeer,
+                url: url || undefined,
+                themeParams: new Api.DataJSON({ data: '{}' }),
+                platform,
+            }),
+        );
+        return { url: result.url };
     };
 
     // ── Business ──────────────────────────────────────────────────────────────
