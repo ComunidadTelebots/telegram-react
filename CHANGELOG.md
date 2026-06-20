@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.0.619] - 2026-06-20 — E2 Emoji Groups en EmojiPickerButton
+### Added
+- **E2 Emoji Groups** — Barra de grupos de emoji encima del picker (solo tab emoji)
+  - Carga `getEmojiGroups` en `componentDidMount`
+  - Scroll horizontal de botones-emoji (primer emoticon de cada grupo como icono)
+  - Click en grupo inserta ese emoji directamente vía `onSelect`
+  - Tooltip con el título del grupo; CSS con `var(--)` adaptado a todos los temas
+
 ## [0.0.618] - 2026-06-20 — F1 Attach Menu Bots UI
 ### Added
 - **F1 Attach Menu Bots** — AttachButton carga `getAttachMenuBots` en `componentDidMount`

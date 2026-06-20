@@ -36,11 +36,11 @@ const styles = theme => ({
         boxShadow: theme.shadows[8],
         position: 'absolute',
         bottom: 54,
-        display: 'none'
+        display: 'none',
     },
     pickerRootOpened: {
-        display: 'block'
-    }
+        display: 'block',
+    },
 });
 
 class EmojiPickerButton extends React.Component {
@@ -49,7 +49,8 @@ class EmojiPickerButton extends React.Component {
 
         this.state = {
             open: false,
-            tab: 0
+            tab: 0,
+            emojiGroups: [],
         };
 
         this.emojiPickerRef = React.createRef();
@@ -60,6 +61,9 @@ class EmojiPickerButton extends React.Component {
         ApplicationStore.on('clientUpdateThemeChange', this.onClientUpdateChange);
         LocalizationStore.on('clientUpdateLanguageChange', this.onClientUpdateChange);
         TdLibController.on('clientUpdateOpenStickersPanel', this.onClientUpdateOpenStickersPanel);
+        TdLibController.send({ '@type': 'getEmojiGroups' })
+            .then(r => this.setState({ emojiGroups: r.groups || [] }))
+            .catch(() => {});
     }
 
     componentWillUnmount() {
@@ -94,12 +98,12 @@ class EmojiPickerButton extends React.Component {
 
         this.recent = await TdLibController.send({
             '@type': 'getRecentStickers',
-            is_attached: false
+            is_attached: false,
         });
 
         this.stickerSets = await TdLibController.send({
             '@type': 'getInstalledStickerSets',
-            is_masks: false
+            is_masks: false,
         });
 
         const promises = [];
@@ -107,8 +111,8 @@ class EmojiPickerButton extends React.Component {
             promises.push(
                 TdLibController.send({
                     '@type': 'getStickerSet',
-                    set_id: x.id
-                })
+                    set_id: x.id,
+                }),
             );
         });
 
@@ -188,7 +192,7 @@ class EmojiPickerButton extends React.Component {
 
         TdLibController.clientUpdate({
             '@type': 'clientUpdateStickerSend',
-            sticker
+            sticker,
         });
 
         this.updatePicker(false);
@@ -198,7 +202,7 @@ class EmojiPickerButton extends React.Component {
         this.setState({ sticker });
         TdLibController.clientUpdate({
             '@type': 'clientUpdateStickerPreview',
-            sticker
+            sticker,
         });
 
         if (!sticker) {
@@ -208,7 +212,7 @@ class EmojiPickerButton extends React.Component {
 
     render() {
         const { classes, theme, t } = this.props;
-        const { open, tab, sticker } = this.state;
+        const { open, tab, sticker, emojiGroups } = this.state;
 
         if (open && !this.picker) {
             const i18n = {
@@ -226,8 +230,8 @@ class EmojiPickerButton extends React.Component {
                     objects: t('Objects'),
                     symbols: t('Symbols'),
                     flags: t('Flags'),
-                    custom: t('Custom')
-                }
+                    custom: t('Custom'),
+                },
             };
 
             this.picker = (
@@ -285,6 +289,22 @@ class EmojiPickerButton extends React.Component {
                             {t('Stickers')}
                         </Button>
                     </div>
+                    {tab === 0 && emojiGroups.length > 0 && (
+                        <div className='emoji-groups-bar'>
+                            {emojiGroups.map((g, i) => (
+                                <button
+                                    key={i}
+                                    className='emoji-group-btn'
+                                    title={g.title}
+                                    onClick={() => {
+                                        const em = g.emoticons && g.emoticons[0];
+                                        if (em && this.props.onSelect) this.props.onSelect({ native: em, id: em });
+                                    }}>
+                                    {g.emoticons && g.emoticons[0]}
+                                </button>
+                            ))}
+                        </div>
+                    )}
                     <div className={classNames('emoji-picker-content', { 'emoji-picker-content-stickers': tab === 1 })}>
                         {this.picker}
                         {this.stickersPicker}

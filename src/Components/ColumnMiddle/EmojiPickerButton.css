@@ -26,3 +26,32 @@
 .emoji-picker-content-stickers {
     transform: translateX(-338px);
 }
+
+.emoji-groups-bar {
+    display: flex;
+    overflow-x: auto;
+    padding: 4px 8px;
+    gap: 2px;
+    border-bottom: 1px solid var(--border-color, rgba(0, 0, 0, 0.08));
+    scrollbar-width: none;
+}
+
+.emoji-groups-bar::-webkit-scrollbar {
+    display: none;
+}
+
+.emoji-group-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 4px 6px;
+    font-size: 18px;
+    border-radius: 6px;
+    flex-shrink: 0;
+    line-height: 1;
+    transition: background 0.15s;
+}
+
+.emoji-group-btn:hover {
+    background: var(--color-accent-main-alpha, rgba(33, 150, 243, 0.12));
+}
