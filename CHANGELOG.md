@@ -1,5 +1,41 @@
 # Changelog
 
+## [0.0.616] - 2026-06-20 — Sprint autónomo: features completas
+### Added (todos los CSS usan `var(--)`, adaptados a 46 clases design-*)
+
+**A — Privacidad y Datos**
+- `[0.0.606]` **A1 Privacy Panel** — `account.GetPrivacy/SetPrivacy` para 9 keys (StatusTimestamp, PhoneNumber, ProfilePhoto, PhoneCall, Forwards, ChatInvite, VoiceMessages, About, Birthday). Panel en Settings: Everyone/Contacts/Nobody.
+- `[0.0.607]` **A2 Global Privacy** — `account.GetGlobalPrivacySettings/SetGlobalPrivacySettings`. Toggles: archive+mute, keep unarchived, hide read marks, require premium.
+- `[0.0.608]` **A3-A5 Account & Data** — `GetAccountTTL/SetAccountTTL` (30/90/180/365 días), `GetContentSettings/SetContentSettings` (contenido sensible), `GetAutoDownloadSettings/SaveAutoDownloadSettings`.
+
+**B — Admin Canales/Grupos**
+- `[0.0.609]` **B1-B4** — `channels.GetAdminLog` + panel Recent Actions en ChatDetails; `channels.EditAdmin` (rangos/permisos/rank); `messages.GetChatInviteImporters(requested)+HideChatJoinRequest` panel Join Requests aprobar/rechazar; `channels.ToggleJoinToSend/ToggleJoinRequest`.
+
+**E — Stickers/Emoji**
+- `[0.0.610]` **E1-E3** — `messages.GetFavedStickers+FaveSticker` (panel FavedStickers con quitar); `messages.GetEmojiGroups` (categorías disponibles vía dispatch); `messages.GetStickerSet(InputStickerSetAnimatedEmoji)`.
+
+**D — Business**
+- `[0.0.611]` **D1-D5** — `account.UpdateBusinessGreetingMessage/AwayMessage/WorkHours/Location/Intro`. BusinessEditor en BusinessInfo: editar intro y ubicación.
+
+**F — Mini Apps / Bots**
+- `[0.0.612]` **F1-F2** — `messages.GetAttachMenuBots`; `messages.GetBotApp + RequestAppWebView + RequestSimpleWebView`.
+
+**C — Stats / Monetización**
+- `[0.0.613]` **C1-C4** — `stats.GetMessageStats/GetMegagroupStats/GetMessagePublicForwards`; `stats.GetBroadcastRevenueStats + payments.GetStarsRevenueStats`. Panel ChannelStats en ChatDetails (TON + Stars revenue).
+
+**G — Stories**
+- `[0.0.614]` **G1-G2** — `stories.SendReaction` (emoji/paid/empty); `stories.TogglePinned + GetPinnedStories`.
+
+**H — Stars**
+- `[0.0.615]` **H1-H2** — `payments.GetStarsTopupOptions`; `payments.GetPaymentForm + SendPaymentForm` (credentials stars para paid media).
+
+**J — Sueltos**
+- `[0.0.616]` **J1-J4** — `messages.GetSponsoredMessages + ViewSponsoredMessage`; `chatlists.ExportChatlistInvite`; `sendLiveLocation` vía `InputMediaGeoLive`; `messages.GetSearchCounters` (photo/video/doc/url/audio/voice/gif).
+
+**I — Llamadas de grupo**: documentado en `TODO_PENDIENTE.md` (bloqueado por WebRTC).
+
+---
+
 ## [0.0.603] - 2026-06-20
 ### Added
 - **Enviar con Efecto** (Send with Effect) — paridad con Telegram Android/iOS
