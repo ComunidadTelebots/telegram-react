@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import TdLibController from '../../Controllers/TdLibController';
+import BusinessEditor from './BusinessEditor';
 import './BusinessInfo.css';
 
 const DAY_NAMES = ['Lu', 'Ma', 'Mi', 'Ju', 'Vi', 'Sá', 'Do'];
@@ -98,83 +99,91 @@ class BusinessInfo extends Component {
         const dayRanges = hasHours ? buildDayRanges(work_hours) : [];
 
         return (
-            <div className='business-info'>
-                {/* Business hours */}
-                {hasHours && (
-                    <div className='business-section'>
-                        <div className='business-section-title'>Horario</div>
-                        {isOpen !== null && (
-                            <div className={`business-hours-open-badge${isOpen ? '' : ' closed'}`}>
-                                <span className='dot' />
-                                <span>{isOpen ? 'Abierto ahora' : 'Cerrado ahora'}</span>
-                            </div>
-                        )}
-                        <div className='business-hours-grid'>
-                            {dayRanges.map((ranges, dayIdx) => (
-                                <React.Fragment key={dayIdx}>
-                                    <span className='business-hours-day' title={FULL_DAY_NAMES[dayIdx]}>
-                                        {DAY_NAMES[dayIdx]}
-                                    </span>
-                                    {ranges.length === 0 ? (
-                                        <span className='business-hours-range business-hours-closed'>Cerrado</span>
-                                    ) : (
-                                        <span className='business-hours-range'>
-                                            {ranges.map((r, i) => (
-                                                <span key={i}>
-                                                    {i > 0 && ', '}
-                                                    {minutesToTime(r.from)}–{minutesToTime(r.to)}
-                                                </span>
-                                            ))}
-                                        </span>
-                                    )}
-                                </React.Fragment>
-                            ))}
-                        </div>
-                    </div>
-                )}
-
-                {/* Intro */}
-                {hasIntro && (
-                    <div className='business-section'>
-                        <div className='business-section-title'>Presentación</div>
-                        {intro.title && <div className='business-intro-title'>{intro.title}</div>}
-                        {intro.description && <div className='business-text-block'>{intro.description}</div>}
-                    </div>
-                )}
-
-                {/* Greeting message */}
-                {hasGreeting && (
-                    <div className='business-section'>
-                        <div className='business-section-title'>Mensaje de bienvenida</div>
-                        <div className='business-text-block'>{greeting_message.text}</div>
-                    </div>
-                )}
-
-                {/* Away message */}
-                {hasAway && (
-                    <div className='business-section'>
-                        <div className='business-section-title'>Mensaje de ausencia</div>
-                        <div className='business-text-block'>{away_message.message.text}</div>
-                    </div>
-                )}
-
-                {/* Quick replies */}
-                {hasQR && (
-                    <div className='business-section'>
-                        <div className='business-section-title'>Respuestas rápidas</div>
-                        <div className='business-quick-replies'>
-                            {quickReplies.slice(0, 10).map((qr, i) => (
-                                <div key={i} className='business-quick-reply'>
-                                    {qr.shortcut && (
-                                        <span className='business-quick-reply-shortcut'>/{qr.shortcut}</span>
-                                    )}
-                                    {qr.name || qr.shortcut}
+            <>
+                <BusinessEditor ref={ref => (this.businessEditorRef = ref)} />
+                <div className='business-info'>
+                    <button
+                        className='business-info-edit-btn'
+                        onClick={() => this.businessEditorRef && this.businessEditorRef.open(info)}>
+                        Edit
+                    </button>
+                    {/* Business hours */}
+                    {hasHours && (
+                        <div className='business-section'>
+                            <div className='business-section-title'>Horario</div>
+                            {isOpen !== null && (
+                                <div className={`business-hours-open-badge${isOpen ? '' : ' closed'}`}>
+                                    <span className='dot' />
+                                    <span>{isOpen ? 'Abierto ahora' : 'Cerrado ahora'}</span>
                                 </div>
-                            ))}
+                            )}
+                            <div className='business-hours-grid'>
+                                {dayRanges.map((ranges, dayIdx) => (
+                                    <React.Fragment key={dayIdx}>
+                                        <span className='business-hours-day' title={FULL_DAY_NAMES[dayIdx]}>
+                                            {DAY_NAMES[dayIdx]}
+                                        </span>
+                                        {ranges.length === 0 ? (
+                                            <span className='business-hours-range business-hours-closed'>Cerrado</span>
+                                        ) : (
+                                            <span className='business-hours-range'>
+                                                {ranges.map((r, i) => (
+                                                    <span key={i}>
+                                                        {i > 0 && ', '}
+                                                        {minutesToTime(r.from)}–{minutesToTime(r.to)}
+                                                    </span>
+                                                ))}
+                                            </span>
+                                        )}
+                                    </React.Fragment>
+                                ))}
+                            </div>
                         </div>
-                    </div>
-                )}
-            </div>
+                    )}
+
+                    {/* Intro */}
+                    {hasIntro && (
+                        <div className='business-section'>
+                            <div className='business-section-title'>Presentación</div>
+                            {intro.title && <div className='business-intro-title'>{intro.title}</div>}
+                            {intro.description && <div className='business-text-block'>{intro.description}</div>}
+                        </div>
+                    )}
+
+                    {/* Greeting message */}
+                    {hasGreeting && (
+                        <div className='business-section'>
+                            <div className='business-section-title'>Mensaje de bienvenida</div>
+                            <div className='business-text-block'>{greeting_message.text}</div>
+                        </div>
+                    )}
+
+                    {/* Away message */}
+                    {hasAway && (
+                        <div className='business-section'>
+                            <div className='business-section-title'>Mensaje de ausencia</div>
+                            <div className='business-text-block'>{away_message.message.text}</div>
+                        </div>
+                    )}
+
+                    {/* Quick replies */}
+                    {hasQR && (
+                        <div className='business-section'>
+                            <div className='business-section-title'>Respuestas rápidas</div>
+                            <div className='business-quick-replies'>
+                                {quickReplies.slice(0, 10).map((qr, i) => (
+                                    <div key={i} className='business-quick-reply'>
+                                        {qr.shortcut && (
+                                            <span className='business-quick-reply-shortcut'>/{qr.shortcut}</span>
+                                        )}
+                                        {qr.name || qr.shortcut}
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+                </div>
+            </>
         );
     }
 }

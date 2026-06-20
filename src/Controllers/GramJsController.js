@@ -923,6 +923,16 @@ class GramJsController extends EventEmitter {
                 return this._getEmojiGroups(req);
             case 'getAnimatedEmojiStickerSet':
                 return this._getAnimatedEmojiStickerSet(req);
+            case 'updateBusinessGreetingMessage':
+                return this._updateBusinessGreetingMessage(req);
+            case 'updateBusinessAwayMessage':
+                return this._updateBusinessAwayMessage(req);
+            case 'updateBusinessWorkHours':
+                return this._updateBusinessWorkHours(req);
+            case 'updateBusinessLocation':
+                return this._updateBusinessLocation(req);
+            case 'updateBusinessIntro':
+                return this._updateBusinessIntro(req);
             case 'terminateSession':
                 return this._terminateSession(req);
             case 'terminateAllOtherSessions':
@@ -1237,6 +1247,16 @@ class GramJsController extends EventEmitter {
                 return this._getEmojiGroups(req);
             case 'getAnimatedEmojiStickerSet':
                 return this._getAnimatedEmojiStickerSet(req);
+            case 'updateBusinessGreetingMessage':
+                return this._updateBusinessGreetingMessage(req);
+            case 'updateBusinessAwayMessage':
+                return this._updateBusinessAwayMessage(req);
+            case 'updateBusinessWorkHours':
+                return this._updateBusinessWorkHours(req);
+            case 'updateBusinessLocation':
+                return this._updateBusinessLocation(req);
+            case 'updateBusinessIntro':
+                return this._updateBusinessIntro(req);
             case 'terminateSession':
                 return this._terminateSession(req);
             case 'terminateAllOtherSessions':
@@ -1501,6 +1521,74 @@ class GramJsController extends EventEmitter {
             console.warn('[GramJs] setChatTheme error', e);
             throw e;
         }
+    };
+
+    // ── Business ──────────────────────────────────────────────────────────────
+
+    _updateBusinessGreetingMessage = async ({ shortcut_id, recipients, no_activity_days }) => {
+        await this.client.invoke(
+            new Api.account.UpdateBusinessGreetingMessage({
+                message:
+                    shortcut_id != null
+                        ? new Api.InputBusinessGreetingMessage({
+                              shortcutId: shortcut_id,
+                              recipients: new Api.InputBusinessRecipients(recipients || {}),
+                              noActivityDays: no_activity_days || 7,
+                          })
+                        : undefined,
+            }),
+        );
+        return { success: true };
+    };
+
+    _updateBusinessAwayMessage = async ({ shortcut_id, offline_only, schedule, recipients }) => {
+        await this.client.invoke(
+            new Api.account.UpdateBusinessAwayMessage({
+                message:
+                    shortcut_id != null
+                        ? new Api.InputBusinessAwayMessage({
+                              offlineOnly: offline_only || false,
+                              shortcutId: shortcut_id,
+                              schedule: schedule || new Api.BusinessAwayMessageScheduleAlways(),
+                              recipients: new Api.InputBusinessRecipients(recipients || {}),
+                          })
+                        : undefined,
+            }),
+        );
+        return { success: true };
+    };
+
+    _updateBusinessWorkHours = async ({ open_now, timezone_id, weekly_open }) => {
+        await this.client.invoke(
+            new Api.account.UpdateBusinessWorkHours({
+                businessWorkHours: weekly_open
+                    ? new Api.BusinessWorkHours({ openNow: open_now, timezoneId: timezone_id, weeklyOpen: weekly_open })
+                    : undefined,
+            }),
+        );
+        return { success: true };
+    };
+
+    _updateBusinessLocation = async ({ lat, lon, address }) => {
+        await this.client.invoke(
+            new Api.account.UpdateBusinessLocation({
+                geoPoint: lat != null ? new Api.InputGeoPoint({ lat, long: lon }) : undefined,
+                address: address || undefined,
+            }),
+        );
+        return { success: true };
+    };
+
+    _updateBusinessIntro = async ({ title, description }) => {
+        await this.client.invoke(
+            new Api.account.UpdateBusinessIntro({
+                intro:
+                    title != null
+                        ? new Api.InputBusinessIntro({ title: title || '', description: description || '' })
+                        : undefined,
+            }),
+        );
+        return { success: true };
     };
 
     // ── Stickers / Emoji ──────────────────────────────────────────────────────
