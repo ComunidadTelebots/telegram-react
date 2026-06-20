@@ -28,6 +28,7 @@ import ApplicationStore from '../../Stores/ApplicationStore';
 import ChatStore from '../../Stores/ChatStore';
 import SupergroupStore from '../../Stores/SupergroupStore';
 import TdLibController from '../../Controllers/TdLibController';
+import ChatThemePicker from './ChatThemePicker';
 import './MainMenuButton.css';
 
 const styles = theme => ({
@@ -189,6 +190,7 @@ class MainMenuButton extends React.Component {
             openClearHistory: false,
             showShortcuts: false,
         };
+        this.chatThemePickerRef = React.createRef();
     }
 
     handleButtonClick = event => {
@@ -239,6 +241,14 @@ class MainMenuButton extends React.Component {
 
     handleShortcutsClose = () => {
         this.setState({ showShortcuts: false });
+    };
+
+    handleChatTheme = () => {
+        this.handleMenuClose();
+        const chatId = ApplicationStore.getChatId();
+        if (this.chatThemePickerRef.current) {
+            this.chatThemePickerRef.current.open(chatId);
+        }
     };
 
     handleLeave = () => {
@@ -382,6 +392,7 @@ class MainMenuButton extends React.Component {
                     anchorOrigin={menuAnchorOrigin}
                     transformOrigin={menuTransformOrigin}>
                     <MenuItem onClick={this.handleChatInfo}>Chat info</MenuItem>
+                    <MenuItem onClick={this.handleChatTheme}>Chat theme</MenuItem>
                     <MenuItem onClick={this.handleScheduledMessages}>Mensajes programados</MenuItem>
                     {clearHistory && <MenuItem onClick={this.handleClearHistory}>Clear history</MenuItem>}
                     {deleteChat && leaveChatTitle && <MenuItem onClick={this.handleLeave}>{leaveChatTitle}</MenuItem>}
@@ -391,6 +402,7 @@ class MainMenuButton extends React.Component {
                 <ClearHistoryDialog chatId={chatId} open={openClearHistory} onClose={this.handleClearHistoryContinue} />
                 <ScheduledMessages ref={ref => (this.scheduledMessagesRef = ref)} />
                 <KeyboardShortcutsDialog open={showShortcuts} onClose={this.handleShortcutsClose} />
+                <ChatThemePicker ref={this.chatThemePickerRef} />
             </>
         );
     }

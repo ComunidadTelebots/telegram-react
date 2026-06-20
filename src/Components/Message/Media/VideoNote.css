@@ -136,3 +136,37 @@
     opacity: 1;
     background: rgba(255, 255, 255, 0.18);
 }
+
+/* VideoNote speed control */
+.video-note-controls {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    position: absolute;
+    bottom: -28px;
+    left: 0;
+}
+
+.video-note-speed-btn {
+    background: none;
+    border: 1px solid currentColor;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 1px 5px;
+    cursor: pointer;
+    color: inherit;
+    opacity: 0.55;
+    line-height: 1.4;
+    transition: opacity 0.15s;
+}
+
+.video-note-speed-btn:hover {
+    opacity: 0.85;
+}
+
+.video-note-speed-active {
+    opacity: 1;
+    color: var(--accent, var(--color-primary, #2196f3));
+    border-color: var(--accent, var(--color-primary, #2196f3));
+}

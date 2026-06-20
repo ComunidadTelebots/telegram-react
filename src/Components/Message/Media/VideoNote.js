@@ -52,6 +52,7 @@ class VideoNote extends React.Component {
             transcriptionId: '',
             transcriptionError: '',
             transcriptionRated: null,
+            playbackRate: PlayerStore.playbackRate || 1.0,
         };
 
         this.windowFocused = window.hasFocus;
@@ -110,6 +111,7 @@ class VideoNote extends React.Component {
         PlayerStore.on('clientUpdateMediaCaptureStream', this.onClientUpdateMediaCaptureStream);
         PlayerStore.on('clientUpdateMediaTime', this.onClientUpdateMediaTime);
         PlayerStore.on('clientUpdateMediaEnd', this.onClientUpdateMediaEnd);
+        PlayerStore.on('clientUpdateMediaPlaybackRate', this.onPlaybackRateUpdate);
         TdLibController.addListener('update', this.onUpdate);
     }
 
@@ -128,6 +130,7 @@ class VideoNote extends React.Component {
         PlayerStore.off('clientUpdateMediaCaptureStream', this.onClientUpdateMediaCaptureStream);
         PlayerStore.off('clientUpdateMediaTime', this.onClientUpdateMediaTime);
         PlayerStore.off('clientUpdateMediaEnd', this.onClientUpdateMediaEnd);
+        PlayerStore.off('clientUpdateMediaPlaybackRate', this.onPlaybackRateUpdate);
         TdLibController.off('update', this.onUpdate);
     }
 
@@ -204,6 +207,7 @@ class VideoNote extends React.Component {
                 !this.openProfileMediaViewer &&
                 !this.openIV
             ) {
+                player.playbackRate = this.state.playbackRate || 1.0;
                 player.play();
             } else {
                 if (this.state.active) {
@@ -359,6 +363,20 @@ class VideoNote extends React.Component {
         }
     };
 
+    onPlaybackRateUpdate = ({ playbackRate }) => {
+        this.setState({ playbackRate });
+        const player = this.videoRef.current;
+        if (player) player.playbackRate = playbackRate;
+    };
+
+    handleSpeedClick = e => {
+        e.stopPropagation();
+        const SPEEDS = [1.0, 1.5, 2.0];
+        const { playbackRate } = this.state;
+        const next = SPEEDS[(SPEEDS.indexOf(playbackRate) + 1) % SPEEDS.length];
+        TdLibController.clientUpdate({ '@type': 'clientUpdateMediaPlaybackRate', playbackRate: next });
+    };
+
     handleCanPlay = () => {
         // const player = this.videoRef.current;
         // if (player){
@@ -382,6 +400,7 @@ class VideoNote extends React.Component {
             transcriptionId,
             transcriptionError,
             transcriptionRated,
+            playbackRate,
         } = this.state;
         const { minithumbnail, thumbnail, video, duration } = this.props.videoNote;
 
@@ -463,13 +482,23 @@ class VideoNote extends React.Component {
                     </>
                 )}
                 <FileProgress file={video} download upload cancelButton icon={<ArrowDownwardIcon />} />
-                <button
-                    className='video-note-transcribe-btn'
-                    onClick={this.handleTranscribe}
-                    disabled={transcribing}
-                    title='Transcribe video message'>
-                    {transcribing ? '...' : 'TXT'}
-                </button>
+                <div className='video-note-controls'>
+                    <button
+                        className='video-note-transcribe-btn'
+                        onClick={this.handleTranscribe}
+                        disabled={transcribing}
+                        title='Transcribe video message'>
+                        {transcribing ? '...' : 'TXT'}
+                    </button>
+                    {active && (
+                        <button
+                            className={`video-note-speed-btn${playbackRate !== 1.0 ? ' video-note-speed-active' : ''}`}
+                            onClick={this.handleSpeedClick}
+                            title='Velocidad de reproducción'>
+                            {playbackRate === 1.5 ? '1.5×' : playbackRate === 2.0 ? '2×' : '1×'}
+                        </button>
+                    )}
+                </div>
                 {(transcription || transcriptionError) && (
                     <div
                         className={classNames('video-note-transcription', {

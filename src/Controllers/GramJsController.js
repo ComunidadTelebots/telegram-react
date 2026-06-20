@@ -877,6 +877,10 @@ class GramJsController extends EventEmitter {
                 return this._getMessageReadParticipants(req);
             case 'getMessageReactors':
                 return this._getMessageReactors(req);
+            case 'getChatThemes':
+                return this._getChatThemes(req);
+            case 'setChatTheme':
+                return this._setChatTheme(req);
             case 'getSimilarChannels':
                 return this._getSimilarChannels(req);
             case 'terminateSession':
@@ -1147,6 +1151,10 @@ class GramJsController extends EventEmitter {
                 return this._getMessageReadParticipants(req);
             case 'getMessageReactors':
                 return this._getMessageReactors(req);
+            case 'getChatThemes':
+                return this._getChatThemes(req);
+            case 'setChatTheme':
+                return this._setChatTheme(req);
             case 'getSimilarChannels':
                 return this._getSimilarChannels(req);
             case 'terminateSession':
@@ -1378,6 +1386,41 @@ class GramJsController extends EventEmitter {
             new Api.messages.GetOutboxReadDate({ peer: inputPeer, msgId: messageId }),
         );
         return result.date;
+    };
+
+    _chatThemesCache = null;
+
+    _getChatThemes = async () => {
+        if (this._chatThemesCache) return { themes: this._chatThemesCache };
+        try {
+            const result = await this.client.invoke(new Api.account.GetChatThemes({ hash: BigInt(0) }));
+            const themes = result.themes || [];
+            this._chatThemesCache = themes.map(t => ({
+                emoticon: t.emoticon || '',
+                title: t.title || '',
+                settings: (t.settings || []).map(s => ({
+                    baseTheme: s.baseTheme ? s.baseTheme.className : '',
+                    accentColor: s.accentColor || 0,
+                    outboxAccentColor: s.outboxAccentColor || null,
+                    messageColors: s.messageColors || [],
+                })),
+            }));
+            return { themes: this._chatThemesCache };
+        } catch (e) {
+            console.warn('[GramJs] getChatThemes error', e);
+            return { themes: [] };
+        }
+    };
+
+    _setChatTheme = async ({ chat_id, emoticon }) => {
+        try {
+            const inputPeer = tdlibChatIdToInputPeer(chat_id, this._entityCache);
+            await this.client.invoke(new Api.messages.SetChatTheme({ peer: inputPeer, emoticon: emoticon || '' }));
+            return { success: true };
+        } catch (e) {
+            console.warn('[GramJs] setChatTheme error', e);
+            throw e;
+        }
     };
 
     sendPaidReaction = async (chatId, messageId, count = 1, isPrivate = false) => {
