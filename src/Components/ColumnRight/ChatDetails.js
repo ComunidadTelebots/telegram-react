@@ -82,6 +82,7 @@ import StarGiftsGallery from './StarGiftsGallery';
 import BusinessInfo from './BusinessInfo';
 import AdminLog from './AdminLog';
 import JoinRequests from './JoinRequests';
+import ChannelStats from './ChannelStats';
 import './ChatDetails.css';
 
 const styles = theme => ({
@@ -452,6 +453,11 @@ class ChatDetails extends React.Component {
     handleJoinRequests = () => {
         const { chatId } = this.props;
         if (this.joinRequestsRef) this.joinRequestsRef.open(chatId);
+    };
+
+    handleChannelStats = () => {
+        const { chatId } = this.props;
+        if (this.channelStatsRef) this.channelStatsRef.open(chatId);
     };
 
     handleSetSlowMode = async event => {
@@ -991,6 +997,12 @@ class ChatDetails extends React.Component {
                         <>
                             <Divider />
                             <SimilarChannels chatId={chatId} />
+                            <Divider />
+                            <List>
+                                <ListItem button onClick={this.handleChannelStats}>
+                                    <ListItemText primary='Channel Stats & Revenue' secondary='TON + Stars earnings' />
+                                </ListItem>
+                            </List>
                         </>
                     )}
                     {chat && chat.type && chat.type['@type'] === 'chatTypeSupergroup' && (
@@ -1015,12 +1027,14 @@ class ChatDetails extends React.Component {
                 {content}
                 <AdminLog ref={ref => (this.adminLogRef = ref)} />
                 <JoinRequests ref={ref => (this.joinRequestsRef = ref)} />
+                <ChannelStats ref={ref => (this.channelStatsRef = ref)} />
             </>
         ) : (
             <div className={classNames('chat-details', className)}>
                 {content}
                 <AdminLog ref={ref => (this.adminLogRef = ref)} />
                 <JoinRequests ref={ref => (this.joinRequestsRef = ref)} />
+                <ChannelStats ref={ref => (this.channelStatsRef = ref)} />
             </div>
         );
     }

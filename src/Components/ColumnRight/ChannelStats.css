@@ -1,0 +1,32 @@
+.channel-stats-content {
+    padding: 12px;
+}
+
+.channel-stats-card {
+    background: var(--design-panel-background, #fff);
+    border-radius: var(--border-radius-chat, 8px);
+    padding: 16px;
+    margin-bottom: 12px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.channel-stats-card-title {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-secondary, rgba(0, 0, 0, 0.54));
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 6px;
+}
+
+.channel-stats-card-value {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--color-accent-main, #2196f3);
+}
+
+.channel-stats-card-sub {
+    font-size: 13px;
+    color: var(--text-secondary, rgba(0, 0, 0, 0.54));
+    margin-top: 4px;
+}

@@ -941,6 +941,16 @@ class GramJsController extends EventEmitter {
                 return this._requestAppWebView(req);
             case 'requestSimpleWebView':
                 return this._requestSimpleWebView(req);
+            case 'getMessageStats':
+                return this._getMessageStats(req);
+            case 'getMegagroupStats':
+                return this._getMegagroupStats(req);
+            case 'getMessagePublicForwards':
+                return this._getMessagePublicForwards(req);
+            case 'getBroadcastRevenueStats':
+                return this._getBroadcastRevenueStats(req);
+            case 'getStarsRevenueStats':
+                return this._getStarsRevenueStats(req);
             case 'terminateSession':
                 return this._terminateSession(req);
             case 'terminateAllOtherSessions':
@@ -1273,6 +1283,16 @@ class GramJsController extends EventEmitter {
                 return this._requestAppWebView(req);
             case 'requestSimpleWebView':
                 return this._requestSimpleWebView(req);
+            case 'getMessageStats':
+                return this._getMessageStats(req);
+            case 'getMegagroupStats':
+                return this._getMegagroupStats(req);
+            case 'getMessagePublicForwards':
+                return this._getMessagePublicForwards(req);
+            case 'getBroadcastRevenueStats':
+                return this._getBroadcastRevenueStats(req);
+            case 'getStarsRevenueStats':
+                return this._getStarsRevenueStats(req);
             case 'terminateSession':
                 return this._terminateSession(req);
             case 'terminateAllOtherSessions':
@@ -1537,6 +1557,77 @@ class GramJsController extends EventEmitter {
             console.warn('[GramJs] setChatTheme error', e);
             throw e;
         }
+    };
+
+    // ── Stats / Monetization ──────────────────────────────────────────────────
+
+    _getMessageStats = async ({ chat_id, message_id }) => {
+        const inputPeer = tdlibChatIdToInputPeer(chat_id, this._entityCache);
+        const result = await this.client.invoke(
+            new Api.stats.GetMessageStats({ channel: inputPeer, msgId: message_id }),
+        );
+        return { views_graph: result.viewsGraph, reactions_by_emotion_graph: result.reactionsByEmotionGraph };
+    };
+
+    _getMegagroupStats = async ({ chat_id }) => {
+        const inputPeer = tdlibChatIdToInputPeer(chat_id, this._entityCache);
+        const result = await this.client.invoke(new Api.stats.GetMegagroupStats({ channel: inputPeer }));
+        return {
+            members_graph: result.membersGraph,
+            messages_graph: result.messagesGraph,
+            actions_graph: result.actionsGraph,
+            top_hoursGraph: result.topHoursGraph,
+            weekdays_graph: result.weekdaysGraph,
+            top_posters: (result.topPosters || []).map(p => ({ user_id: String(p.userId), messages: p.messages })),
+            top_admins: (result.topAdmins || []).map(a => ({
+                user_id: String(a.userId),
+                deleted: a.deleted,
+                kicked: a.kicked,
+            })),
+            top_inviters: (result.topInviters || []).map(i => ({
+                user_id: String(i.userId),
+                invitations: i.invitations,
+            })),
+        };
+    };
+
+    _getMessagePublicForwards = async ({ chat_id, message_id, limit = 20 }) => {
+        const inputPeer = tdlibChatIdToInputPeer(chat_id, this._entityCache);
+        const result = await this.client.invoke(
+            new Api.stats.GetMessagePublicForwards({ channel: inputPeer, msgId: message_id, offset: '', limit }),
+        );
+        return {
+            forwards: (result.forwards || []).map(f => ({
+                from_id: String(f.fromId?.channelId || f.fromId?.userId || 0),
+                date: f.date,
+                views: f.views,
+                message_id: f.id,
+            })),
+        };
+    };
+
+    _getBroadcastRevenueStats = async ({ chat_id }) => {
+        const inputPeer = tdlibChatIdToInputPeer(chat_id, this._entityCache);
+        const result = await this.client.invoke(new Api.stats.GetBroadcastRevenueStats({ peer: inputPeer }));
+        return {
+            ton_balance: String(result.balances?.overallRevenue || 0),
+            revenue_graph: result.revenueGraph,
+        };
+    };
+
+    _getStarsRevenueStats = async ({ chat_id }) => {
+        const inputPeer = tdlibChatIdToInputPeer(chat_id, this._entityCache);
+        const result = await this.client.invoke(new Api.payments.GetStarsRevenueStats({ peer: inputPeer }));
+        return {
+            status: result.status
+                ? {
+                      current_balance: String(result.status.currentBalance),
+                      available_balance: String(result.status.availableBalance),
+                      overall_revenue: String(result.status.overallRevenue),
+                  }
+                : null,
+            revenue_graph: result.revenueGraph,
+        };
     };
 
     // ── Mini Apps / Bots ──────────────────────────────────────────────────────
