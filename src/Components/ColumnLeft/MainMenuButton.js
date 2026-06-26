@@ -30,10 +30,8 @@ const styles = {
     },
 };
 
-const DRAWER_DESIGNS = new Set(['android-holo', 'android-v9', 'android-v11', 'android-classic', 'android-redesign']);
-
 function hasDrawer(d) {
-    return DRAWER_DESIGNS.has(d);
+    return d != null && d.startsWith('android');
 }
 
 class MainMenuButton extends React.Component {

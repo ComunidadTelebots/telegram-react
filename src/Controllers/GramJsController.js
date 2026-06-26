@@ -1472,6 +1472,7 @@ class GramJsController extends EventEmitter {
     };
 
     _getMessageReadParticipants = async ({ chat_id, message_id }) => {
+        if (!chat_id || !message_id) return { user_ids: [] };
         try {
             const inputPeer = tdlibChatIdToInputPeer(chat_id, this._entityCache);
             const result = await this.client.invoke(
@@ -3546,6 +3547,7 @@ class GramJsController extends EventEmitter {
     // ── Channel Boosts ────────────────────────────────────────────────────────
 
     _getBoostsStatus = async ({ chat_id }) => {
+        if (!chat_id || !this._connected) return { level: 0, boost_count: 0 };
         try {
             const peer = tdlibChatIdToInputPeer(chat_id, this._entityCache);
             const result = await this.client.invoke(new Api.premium.GetBoostsStatus({ peer }));

@@ -77,7 +77,7 @@ class DesignSwitcher extends React.PureComponent {
             <div className='design-switcher' ref={this.rootRef}>
                 {open && (
                     <div className='design-switcher-menu' role='menu' aria-label='Switch design'>
-                        <div className='design-switcher-title'>Switch design</div>
+                        <div className='design-switcher-title'>Cambiar diseño</div>
                         <div className='design-switcher-options'>{DESIGNS.map(this.renderOption)}</div>
                     </div>
                 )}
@@ -90,7 +90,7 @@ class DesignSwitcher extends React.PureComponent {
                     <AppsIcon className='design-switcher-trigger-icon' />
                     <span className='design-switcher-dot' style={{ background: accent }} />
                     <span className='design-switcher-trigger-label'>{label}</span>
-                    <span className='design-switcher-version'>v{packageJson.version}</span>
+                    <span className='design-switcher-version'>web v{packageJson.version}</span>
                 </button>
             </div>
         );

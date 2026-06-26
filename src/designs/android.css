@@ -5517,3 +5517,43 @@ body.design-android-v12 .message-bubble-out .reaction-add-btn {
 body.design-android-v12 .message-bubble-out .reaction-add-btn:hover {
     background: rgba(255, 255, 255, 0.12) !important;
 }
+
+/* ── Bug #9 / #11: Holo/v1/v9 — padding-bottom para evitar solapamiento con FAB y DesignSwitcher ── */
+body.design-android-holo .folder-dialogs-list,
+body.design-android-v1 .folder-dialogs-list,
+body.design-android-v2 .folder-dialogs-list,
+body.design-android-v3 .folder-dialogs-list,
+body.design-android-v35 .folder-dialogs-list {
+    padding-bottom: 60px;
+}
+
+/* android-v9 (Folders 2019) — FAB + DesignSwitcher clearance */
+body.design-android-v9 .folder-dialogs-list {
+    padding-bottom: 70px;
+}
+
+/* ── Bug #10: Android estándar (12.6) — bottom nav icon clearance ── */
+body.design-android .folder-dialogs-list {
+    padding-bottom: 80px;
+}
+body.design-android .android-bottom-nav {
+    display: flex !important;
+}
+
+/* ── Bug #3: Holo inputbox — evitar overflow de iconos fuera del contenedor ── */
+body.design-android-holo .inputbox-background,
+body.design-android-v1 .inputbox-background,
+body.design-android-v2 .inputbox-background {
+    overflow: hidden;
+    position: relative;
+}
+body.design-android-holo .inputbox-icon-button,
+body.design-android-v1 .inputbox-icon-button,
+body.design-android-v2 .inputbox-icon-button {
+    flex: 0 0 auto;
+}
+
+/* ── Bug #14: Classic 2020 (7.x) — eliminar lupa duplicada en header izquierdo ── */
+body.design-android-classic .header-master .header-right-button:last-child {
+    display: none;
+}

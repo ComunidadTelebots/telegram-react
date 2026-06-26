@@ -89,7 +89,7 @@ class ActiveSessions extends React.Component {
         return (
             <>
                 <Dialog open={open} onClose={this.handleClose} maxWidth='sm' fullWidth style={{ zIndex: 1400 }}>
-                    <DialogTitle>Active Sessions</DialogTitle>
+                    <DialogTitle>Sesiones activas</DialogTitle>
                     <DialogContent className='active-sessions-content'>
                         {loading && (
                             <div className='active-sessions-loading'>
@@ -101,7 +101,7 @@ class ActiveSessions extends React.Component {
                                 {current && (
                                     <>
                                         <Typography variant='caption' className='active-sessions-section-label'>
-                                            Current session
+                                            Sesión actual
                                         </Typography>
                                         <ListItem
                                             disableGutters
@@ -118,7 +118,7 @@ class ActiveSessions extends React.Component {
                                 )}
                                 {others.length > 0 && (
                                     <Typography variant='caption' className='active-sessions-section-label'>
-                                        Other sessions
+                                        Otras sesiones
                                     </Typography>
                                 )}
                                 {others.map(session => (
@@ -141,7 +141,7 @@ class ActiveSessions extends React.Component {
                                 ))}
                                 {!loading && sessions.length === 0 && (
                                     <ListItem>
-                                        <ListItemText primary='No sessions found' />
+                                        <ListItemText primary='No se encontraron sesiones' />
                                     </ListItem>
                                 )}
                             </List>
@@ -150,11 +150,11 @@ class ActiveSessions extends React.Component {
                     <DialogActions>
                         {others.length > 0 && (
                             <Button color='secondary' onClick={this.handleTerminateAll}>
-                                Terminate all other sessions
+                                Cerrar todas las demás sesiones
                             </Button>
                         )}
                         <Button color='primary' onClick={this.handleClose}>
-                            Close
+                            Cerrar
                         </Button>
                     </DialogActions>
                 </Dialog>

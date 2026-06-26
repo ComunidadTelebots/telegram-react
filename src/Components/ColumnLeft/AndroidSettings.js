@@ -138,41 +138,41 @@ class AndroidSettings extends React.PureComponent {
                 rows: [
                     {
                         icon: <NotificationsIcon />,
-                        label: 'Notifications and Sounds',
+                        label: 'Notificaciones y sonidos',
                         sub: '',
                         arrow: true,
-                        action: () => this.handleSoon('Notifications and Sounds'),
+                        action: () => this.handleSoon('Notificaciones y sonidos'),
                     },
                     {
                         icon: <LockIcon />,
-                        label: 'Privacy and Security',
-                        sub: 'Privacy settings',
+                        label: 'Privacidad y seguridad',
+                        sub: 'Configuración de privacidad',
                         arrow: true,
                         action: this.handlePrivacy,
                     },
                     {
                         icon: <DataUsageIcon />,
-                        label: 'Data and Storage',
+                        label: 'Datos y almacenamiento',
                         sub: '',
                         arrow: true,
-                        action: () => this.handleSoon('Data and Storage'),
+                        action: () => this.handleSoon('Datos y almacenamiento'),
                     },
                     {
                         icon: <ChatBubbleIcon />,
-                        label: 'Chat Settings',
+                        label: 'Ajustes de chat',
                         sub: '',
                         arrow: true,
-                        action: () => this.handleSoon('Chat Settings'),
+                        action: () => this.handleSoon('Ajustes de chat'),
                     },
                     ...(isOld
                         ? []
                         : [
                               {
                                   icon: <FolderIcon />,
-                                  label: 'Chat Folders',
+                                  label: 'Carpetas de chat',
                                   sub: '',
                                   arrow: true,
-                                  action: () => this.handleSoon('Chat Folders'),
+                                  action: () => this.handleSoon('Carpetas de chat'),
                               },
                           ]),
                 ],
@@ -185,8 +185,8 @@ class AndroidSettings extends React.PureComponent {
                           rows: [
                               {
                                   icon: <PhoneAndroidIcon />,
-                                  label: 'Devices',
-                                  sub: 'Active sessions',
+                                  label: 'Dispositivos',
+                                  sub: 'Sesiones activas',
                                   arrow: true,
                                   action: this.handleDevices,
                               },
@@ -218,19 +218,19 @@ class AndroidSettings extends React.PureComponent {
                 rows: [
                     {
                         icon: isDark ? <WbSunnyIcon /> : <Brightness2Icon />,
-                        label: 'Night Mode',
+                        label: 'Modo nocturno',
                         toggle: true,
                         toggleOn: isDark,
                         action: this.handleToggleDark,
                     },
                     {
                         icon: <PaletteIcon />,
-                        label: 'Appearance',
-                        sub: 'Design & Theme',
+                        label: 'Apariencia',
+                        sub: 'Diseño y tema',
                         arrow: true,
                         action: this.props.onAppearance,
                     },
-                    { icon: <LanguageIcon />, label: 'Language', sub: 'English', arrow: true },
+                    { icon: <LanguageIcon />, label: 'Idioma', sub: 'Español', arrow: true },
                 ],
             },
             // Invitar amigos — vieja era lo tenía aquí
@@ -248,7 +248,7 @@ class AndroidSettings extends React.PureComponent {
             // Almacenamiento
             {
                 key: 'storage',
-                rows: [{ icon: <StorageIcon />, label: 'Storage and Data', sub: '', arrow: true }],
+                rows: [{ icon: <StorageIcon />, label: 'Almacenamiento y datos', sub: '', arrow: true }],
             },
             // Soporte
             {
@@ -268,7 +268,7 @@ class AndroidSettings extends React.PureComponent {
                         <button className='android-settings-back' onClick={onClose} aria-label='Back'>
                             <ArrowBackIcon />
                         </button>
-                        <span className='android-settings-toolbar-title'>Settings</span>
+                        <span className='android-settings-toolbar-title'>Ajustes</span>
                         <button className='android-settings-toolbar-action' aria-label='Edit'>
                             <EditIcon style={{ fontSize: 20 }} />
                         </button>
@@ -344,7 +344,7 @@ class AndroidSettings extends React.PureComponent {
                                 </span>
                                 <span className='android-settings-row-content'>
                                     <span className='android-settings-row-label android-settings-row-label--danger'>
-                                        Log Out
+                                        Cerrar sesión
                                     </span>
                                 </span>
                             </button>

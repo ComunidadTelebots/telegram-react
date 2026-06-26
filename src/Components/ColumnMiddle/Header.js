@@ -104,6 +104,7 @@ class Header extends Component {
             showChatSearch: false,
             inviteLinkCopied: false,
             boostDialogOpen: false,
+            muteSnackbar: null,
         };
     }
 
@@ -255,8 +256,11 @@ class Header extends Component {
                     use_default_show_preview: true,
                 },
             });
+            this.setState({ muteSnackbar: isMuted ? 'Notificaciones activadas' : 'Chat silenciado' });
             this.forceUpdate();
-        } catch {}
+        } catch {
+            this.setState({ muteSnackbar: 'Error al cambiar notificaciones' });
+        }
     };
 
     handleArchiveToggle = async () => {
@@ -858,6 +862,13 @@ class Header extends Component {
                     autoHideDuration={2000}
                     onClose={() => this.setState({ inviteLinkCopied: false })}
                     message='Enlace de invitación copiado'
+                    anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+                />
+                <Snackbar
+                    open={!!this.state.muteSnackbar}
+                    autoHideDuration={2500}
+                    onClose={() => this.setState({ muteSnackbar: null })}
+                    message={this.state.muteSnackbar || ''}
                     anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
                 />
                 <Dialog
