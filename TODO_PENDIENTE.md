@@ -6,8 +6,8 @@
 **Razón:**
 - `phone.GetGroupCall` y `phone.JoinGroupCall` existen en la API de Telegram (GramJS tiene las clases).
 - Unirse a una llamada de grupo requiere establecer una sesión WebRTC P2P: generación de SDP offer/answer, ICE candidates, TURN/STUN servers, gestión de tracks de audio/vídeo.
-- Este cliente ya tiene una capa VoIP 1:1 (`requestCall`/`acceptCall`/`discardCall`) pero NO tiene la capa WebRTC de grupo (diferente protocolo, usa `GroupCall` en Telegram que requiere `JoinGroupCall` con un SDP y luego gestionar el stream multimedia).
-- Implementar correctamente requeriría integrar librerías como `mediasoup-client` o adaptar la WebRTC nativa del navegador con el protocolo de Telegram Group Calls, que es sustancialmente más complejo que llamadas 1:1.
+- Este cliente ya tiene la capa VoIP 1:1 completa (`requestCall`/`acceptCall`/`discardCall` + DH E2E + AES-CTR signaling), pero NO tiene la capa WebRTC de grupo (diferente protocolo).
+- Telegram Group Calls requiere `JoinGroupCall` con SDP + gestionar múltiples streams multimedia simultáneos.
 
 **Lo que se necesitaría:**
 1. `phone.GetGroupCall` → obtener info del call activo en el chat
@@ -15,14 +15,32 @@
 3. WebRTC: crear PeerConnection, añadir tracks, intercambiar ICE candidates vía `phone.SaveCallDebug`
 4. UI: panel de llamada grupal (participantes, mute, vídeo, levantar la mano, etc.)
 
-**Estimado:** 3-5 días de trabajo dedicado, fuera del alcance de este sprint autónomo.
+**Estimado:** 3-5 días de trabajo dedicado.
 
 ---
 
-### Mejoras futuras identificadas durante el sprint
+## Estado del sprint — completado
 
-- **E2 GetEmojiGroups en picker**: Las categorías de emoji se obtienen pero no se renderizan en el picker existente (EmojiControl). Integrar las categorías dinámicas requeriría refactorizar EmojiControl.
-- **J1 SponsoredMessages UI**: Los mensajes patrocinados se obtienen pero no se renderizan en el chat. Requeriría inyectarlos en la lista de mensajes con scroll infinito.
-- **J3 Live Location stop/update**: La ubicación en vivo se envía pero el ciclo de actualización periódica (`editMessage` cada 5min) y el botón de parada no están implementados como UI; el método GramJS está disponible.
-- **B2 EditAdmin UI**: El método `editAdmin` está disponible en GramJS pero no hay UI para gestionar roles de admins (añadir/quitar/editar permisos individuales).
-- **F1 AttachMenuBots UI**: Los bots del menú adjuntar se obtienen pero no se muestran en el botón de adjuntar (paperclip menu).
+Todas las features del sprint autónomo están implementadas:
+
+| Feature | Versión | Estado |
+|---------|---------|--------|
+| A1-A5 Privacidad y datos | 0.0.606–0.0.608 | ✅ |
+| B1-B4 Admin canales/grupos | 0.0.609 | ✅ |
+| B2 Admin Management UI | 0.0.621 | ✅ |
+| C1-C4 Stats / Monetización | 0.0.613 | ✅ |
+| D1-D5 Business | 0.0.611 | ✅ |
+| E1-E3 Stickers/Emoji | 0.0.610 | ✅ |
+| E2 Emoji Groups picker | 0.0.619 | ✅ |
+| F1-F2 Mini Apps / Bots | 0.0.612 | ✅ |
+| F1 Attach Menu Bots UI | 0.0.618 | ✅ |
+| G1-G2 Stories | 0.0.614 | ✅ |
+| H1-H2 Stars | 0.0.615 | ✅ |
+| J1-J4 Sueltos | 0.0.616 | ✅ |
+| J1 Sponsored Messages UI | 0.0.620 | ✅ |
+| J3 Live Location UI | 0.0.617 | ✅ |
+| W1 Calls: Fix doble dispatch + ICE | 0.0.622 | ✅ |
+| W2 Calls: Ring tones (Web Audio) | 0.0.623 | ✅ |
+| W3 Calls: Rating dialog | 0.0.624 | ✅ |
+| W4 Calls: Conectando... + CSS overrides | 0.0.625 | ✅ |
+| **I. Llamadas de grupo** | — | ❌ BLOQUEADO |
