@@ -5492,3 +5492,28 @@ body.theme-dark.design-android-v12 .jump-to-unread-button {
 [class*='design-android'] .business-hours-open-badge.closed {
     color: #e53935;
 }
+
+/* ── android-v12 (12.x Rediseño 2026) — fixes elementos invisibles en burbuja azul ── */
+
+/* Bug #6: InstantView / AMP buttons sobre burbuja azul saliente */
+body.design-android-v12 .message-bubble-out .web-page-button {
+    color: rgba(255, 255, 255, 0.9) !important;
+    border-color: rgba(255, 255, 255, 0.55) !important;
+}
+body.design-android-v12 .message-bubble-out .web-page-button:hover {
+    background: rgba(255, 255, 255, 0.12) !important;
+}
+
+/* Bug #7: ícono de llamada cancelada en burbuja azul saliente */
+body.design-android-v12 .message-bubble-out .document .MuiIconButton-colorPrimary {
+    color: rgba(255, 255, 255, 0.85) !important;
+}
+
+/* Bug #8: botón "+" de añadir reacción en burbuja azul saliente */
+body.design-android-v12 .message-bubble-out .reaction-add-btn {
+    border-color: rgba(255, 255, 255, 0.6) !important;
+    color: rgba(255, 255, 255, 0.85) !important;
+}
+body.design-android-v12 .message-bubble-out .reaction-add-btn:hover {
+    background: rgba(255, 255, 255, 0.12) !important;
+}

@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.0.627] - 2026-06-27 — Bugfix: CSS visual (todos los temas)
+### Fixed
+- **Bug #5 (Material You)**: selector de tema completamente invisible sobre header morado → pill blanca con `rgba(255,255,255,0.16)` background
+- **Bug visual Folders 2019 / Material 2015**: selector casi invisible → pills con contraste adecuado
+- **Bug #6 (Rediseño 2026)**: botones InstantView / AMP sin borde ni color en burbuja azul saliente → texto y borde blancos
+- **Bug #7 (Rediseño 2026)**: ícono de llamada cancelada invisible en burbuja azul saliente → `color: rgba(255,255,255,0.85)`
+- **Bug #8 (Rediseño 2026)**: botón "+" de añadir reacción invisible en burbuja azul saliente → border y color blancos
+- **Bug #1 global**: título "Telegram" del header izquierdo se cortaba cuando hay muchos botones → `min-width: 32px` en grow div + reducción de padding de botones a 6px/36px
+
 ## [0.0.626] - 2026-06-27 — Bugfix: JS críticos + UI Settings
 ### Fixed
 - **downloadFile**: `e.lesser is not a function` — `String(gMedia.size)` en vez de `Number()` para conversión segura de BigInt nativo de GramJS

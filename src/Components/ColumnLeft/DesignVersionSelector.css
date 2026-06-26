@@ -144,6 +144,20 @@
     overflow: visible;
 }
 
+/* Bug #1: Ensure the AppName title div never collapses to zero width */
+.header-master .header-status.grow {
+    min-width: 32px;
+    overflow: hidden;
+}
+
+/* Reduce header button size so title has room when many buttons are present */
+.header-master .header-left-button {
+    padding: 6px !important;
+    width: 36px;
+    height: 36px;
+    flex: 0 0 auto;
+}
+
 .folder-tabs {
     position: relative;
     z-index: 1;
@@ -222,6 +236,34 @@ body.design-aurora-midnight .dv-menu {
 body.design-aurora .dv-detail,
 body.design-aurora-midnight .dv-detail {
     color: #c9d1d9;
+}
+
+/* Material You (11.x): purple header → white pill (Bug #5) */
+body.design-android-matyou .dv-trigger {
+    border-color: rgba(255, 255, 255, 0.38);
+    background: rgba(255, 255, 255, 0.16);
+    color: #ffffff;
+}
+body.design-android-matyou .dv-trigger:hover {
+    background: rgba(255, 255, 255, 0.26);
+}
+
+/* Material 2015 / 3.x y 3.5: header claro con acento → pill con borde visible */
+body.design-android-v3 .dv-trigger,
+body.design-android-v35 .dv-trigger {
+    border-color: rgba(0, 0, 0, 0.28);
+    background: rgba(0, 0, 0, 0.06);
+    color: inherit;
+}
+
+/* Folders 2019 (6.x): header azul oscuro → white pill (Bug visual) */
+body.design-android-v9 .dv-trigger {
+    border-color: rgba(255, 255, 255, 0.38);
+    background: rgba(255, 255, 255, 0.14);
+    color: #ffffff;
+}
+body.design-android-v9 .dv-trigger:hover {
+    background: rgba(255, 255, 255, 0.22);
 }
 
 /* Telegram X: gradient header → white pill */
