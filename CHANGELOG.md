@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.0.626] - 2026-06-27 — Bugfix: JS críticos + UI Settings
+### Fixed
+- **downloadFile**: `e.lesser is not a function` — `String(gMedia.size)` en vez de `Number()` para conversión segura de BigInt nativo de GramJS
+- **getSavedStarGifts**: `this.getInputPeer is not a function` — corregido a `tdlibChatIdToInputPeer(chat_id, this._entityCache)`
+- **getBusinessInfo**: guard `if (!Api.account?.GetBusinessInfo)` para versiones de GramJS sin esta API
+- **terminateSession 406**: `FRESH_RESET_AUTHORISATION_FORBIDDEN` ahora muestra Snackbar con mensaje explicativo en vez de fallo silencioso
+- **Active Sessions z-index**: Dialog con `zIndex: 1400` para evitar solapamiento con el fondo del chat en primera apertura
+- **Settings submenus**: Notifications, Data & Storage, Chat Settings, Chat Folders ahora muestran Snackbar "próximamente" en vez de no hacer nada
+
 ## [0.0.625] - 2026-06-20 — W4 Calls: Conectando... status + CSS design overrides
 ### Added
 - **W4 Call UI polish** — Estado "Conectando..." cuando ACTIVE y duration === 0 (antes de que empiece el audio)

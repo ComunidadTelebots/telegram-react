@@ -18,6 +18,7 @@ import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
 import ListItemText from '@material-ui/core/ListItemText';
+import Snackbar from '@material-ui/core/Snackbar';
 import Typography from '@material-ui/core/Typography';
 import DeleteIcon from '@material-ui/icons/Delete';
 import TdLibController from '../../Controllers/TdLibController';
@@ -26,7 +27,7 @@ import './ActiveSessions.css';
 class ActiveSessions extends React.Component {
     constructor(props) {
         super(props);
-        this.state = { open: false, sessions: [], loading: false };
+        this.state = { open: false, sessions: [], loading: false, snackbar: null };
     }
 
     open = async () => {
@@ -44,13 +45,28 @@ class ActiveSessions extends React.Component {
     };
 
     handleTerminate = async session => {
-        await TdLibController.send({ '@type': 'terminateSession', session_id: session.id });
-        this.setState(prev => ({ sessions: prev.sessions.filter(s => s.id !== session.id) }));
+        try {
+            await TdLibController.send({ '@type': 'terminateSession', session_id: session.id });
+            this.setState(prev => ({ sessions: prev.sessions.filter(s => s.id !== session.id) }));
+        } catch (e) {
+            const msg = e?.message || '';
+            if (msg.includes('FRESH_RESET_AUTHORISATION_FORBIDDEN')) {
+                this.setState({
+                    snackbar: 'Esta sesión es demasiado reciente para cerrarla. Inténtalo en unos minutos.',
+                });
+            } else {
+                this.setState({ snackbar: 'Error al cerrar sesión. Inténtalo de nuevo.' });
+            }
+        }
     };
 
     handleTerminateAll = async () => {
-        await TdLibController.send({ '@type': 'terminateAllOtherSessions' });
-        this.setState(prev => ({ sessions: prev.sessions.filter(s => s.is_current) }));
+        try {
+            await TdLibController.send({ '@type': 'terminateAllOtherSessions' });
+            this.setState(prev => ({ sessions: prev.sessions.filter(s => s.is_current) }));
+        } catch (e) {
+            this.setState({ snackbar: 'Error al cerrar sesiones. Inténtalo de nuevo.' });
+        }
     };
 
     formatDate = timestamp => {
@@ -60,87 +76,95 @@ class ActiveSessions extends React.Component {
             month: 'short',
             day: 'numeric',
             hour: '2-digit',
-            minute: '2-digit'
+            minute: '2-digit',
         });
     };
 
     render() {
-        const { open, sessions, loading } = this.state;
+        const { open, sessions, loading, snackbar } = this.state;
 
         const current = sessions.find(s => s.is_current);
         const others = sessions.filter(s => !s.is_current);
 
         return (
-            <Dialog open={open} onClose={this.handleClose} maxWidth='sm' fullWidth>
-                <DialogTitle>Active Sessions</DialogTitle>
-                <DialogContent className='active-sessions-content'>
-                    {loading && (
-                        <div className='active-sessions-loading'>
-                            <CircularProgress />
-                        </div>
-                    )}
-                    {!loading && (
-                        <List disablePadding>
-                            {current && (
-                                <>
+            <>
+                <Dialog open={open} onClose={this.handleClose} maxWidth='sm' fullWidth style={{ zIndex: 1400 }}>
+                    <DialogTitle>Active Sessions</DialogTitle>
+                    <DialogContent className='active-sessions-content'>
+                        {loading && (
+                            <div className='active-sessions-loading'>
+                                <CircularProgress />
+                            </div>
+                        )}
+                        {!loading && (
+                            <List disablePadding>
+                                {current && (
+                                    <>
+                                        <Typography variant='caption' className='active-sessions-section-label'>
+                                            Current session
+                                        </Typography>
+                                        <ListItem
+                                            disableGutters
+                                            className='active-sessions-item active-sessions-item--current'>
+                                            <ListItemText
+                                                primary={`${current.device_model} — ${current.app_name} ${current.app_version}`}
+                                                secondary={`${current.platform} ${current.system_version} · ${
+                                                    current.country
+                                                } · ${this.formatDate(current.date_active)}`}
+                                            />
+                                        </ListItem>
+                                        {others.length > 0 && <Divider />}
+                                    </>
+                                )}
+                                {others.length > 0 && (
                                     <Typography variant='caption' className='active-sessions-section-label'>
-                                        Current session
+                                        Other sessions
                                     </Typography>
-                                    <ListItem
-                                        disableGutters
-                                        className='active-sessions-item active-sessions-item--current'>
+                                )}
+                                {others.map(session => (
+                                    <ListItem key={session.id} disableGutters className='active-sessions-item'>
                                         <ListItemText
-                                            primary={`${current.device_model} — ${current.app_name} ${current.app_version}`}
-                                            secondary={`${current.platform} ${current.system_version} · ${
-                                                current.country
-                                            } · ${this.formatDate(current.date_active)}`}
+                                            primary={`${session.device_model} — ${session.app_name} ${session.app_version}`}
+                                            secondary={`${session.platform} ${session.system_version} · ${
+                                                session.country
+                                            } · ${this.formatDate(session.date_active)}`}
                                         />
+                                        <ListItemSecondaryAction>
+                                            <IconButton
+                                                edge='end'
+                                                onClick={() => this.handleTerminate(session)}
+                                                size='small'>
+                                                <DeleteIcon fontSize='small' />
+                                            </IconButton>
+                                        </ListItemSecondaryAction>
                                     </ListItem>
-                                    {others.length > 0 && <Divider />}
-                                </>
-                            )}
-                            {others.length > 0 && (
-                                <Typography variant='caption' className='active-sessions-section-label'>
-                                    Other sessions
-                                </Typography>
-                            )}
-                            {others.map(session => (
-                                <ListItem key={session.id} disableGutters className='active-sessions-item'>
-                                    <ListItemText
-                                        primary={`${session.device_model} — ${session.app_name} ${session.app_version}`}
-                                        secondary={`${session.platform} ${session.system_version} · ${
-                                            session.country
-                                        } · ${this.formatDate(session.date_active)}`}
-                                    />
-                                    <ListItemSecondaryAction>
-                                        <IconButton
-                                            edge='end'
-                                            onClick={() => this.handleTerminate(session)}
-                                            size='small'>
-                                            <DeleteIcon fontSize='small' />
-                                        </IconButton>
-                                    </ListItemSecondaryAction>
-                                </ListItem>
-                            ))}
-                            {!loading && sessions.length === 0 && (
-                                <ListItem>
-                                    <ListItemText primary='No sessions found' />
-                                </ListItem>
-                            )}
-                        </List>
-                    )}
-                </DialogContent>
-                <DialogActions>
-                    {others.length > 0 && (
-                        <Button color='secondary' onClick={this.handleTerminateAll}>
-                            Terminate all other sessions
+                                ))}
+                                {!loading && sessions.length === 0 && (
+                                    <ListItem>
+                                        <ListItemText primary='No sessions found' />
+                                    </ListItem>
+                                )}
+                            </List>
+                        )}
+                    </DialogContent>
+                    <DialogActions>
+                        {others.length > 0 && (
+                            <Button color='secondary' onClick={this.handleTerminateAll}>
+                                Terminate all other sessions
+                            </Button>
+                        )}
+                        <Button color='primary' onClick={this.handleClose}>
+                            Close
                         </Button>
-                    )}
-                    <Button color='primary' onClick={this.handleClose}>
-                        Close
-                    </Button>
-                </DialogActions>
-            </Dialog>
+                    </DialogActions>
+                </Dialog>
+                <Snackbar
+                    open={!!snackbar}
+                    message={snackbar || ''}
+                    autoHideDuration={4000}
+                    onClose={() => this.setState({ snackbar: null })}
+                />
+            </>
         );
     }
 }

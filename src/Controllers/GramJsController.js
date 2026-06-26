@@ -3697,6 +3697,7 @@ class GramJsController extends EventEmitter {
     // ── Business ─────────────────────────────────────────────────────────────
 
     _getBusinessInfo = async ({ user_id }) => {
+        if (!Api.account?.GetBusinessInfo) return {};
         try {
             const userInput = await this.client.getInputEntity(user_id);
             const result = await this.client.invoke(new Api.account.GetBusinessInfo({ peer: userInput }));
@@ -4825,7 +4826,7 @@ class GramJsController extends EventEmitter {
                     thumbSize: '',
                 });
             }
-            const fileSize = gMedia.size ? bigInt(Math.round(Number(gMedia.size))) : bigInt(0);
+            const fileSize = gMedia.size ? bigInt(String(gMedia.size)) : bigInt(0);
             const buffer = await this.client.downloadFile(inputLocation, { dcId, fileSize, workers: 1 });
             return new Blob([buffer]);
         };
@@ -5407,7 +5408,10 @@ class GramJsController extends EventEmitter {
         for (let i = 0; i < bytes.length; i += chunkSize) {
             binary += String.fromCharCode(...bytes.slice(i, i + chunkSize));
         }
-        return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+        return btoa(binary)
+            .replace(/\+/g, '-')
+            .replace(/\//g, '_')
+            .replace(/=+$/, '');
     };
 
     _emitAuthError = err => {
@@ -5978,7 +5982,7 @@ class GramJsController extends EventEmitter {
 
     _getSavedStarGifts = async req => {
         const { chat_id, offset = 0, limit = 100 } = req;
-        const peer = await this.getInputPeer(chat_id);
+        const peer = tdlibChatIdToInputPeer(chat_id, this._entityCache);
         const result = await this.client.invoke(
             new Api.payments.GetSavedStarGifts({
                 peer,

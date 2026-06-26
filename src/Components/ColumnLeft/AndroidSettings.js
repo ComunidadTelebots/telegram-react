@@ -21,6 +21,7 @@ import GroupIcon from '@material-ui/icons/Group';
 import PersonAddIcon from '@material-ui/icons/PersonAdd';
 import ExitToAppIcon from '@material-ui/icons/ExitToApp';
 import CropFreeIcon from '@material-ui/icons/CropFree';
+import Snackbar from '@material-ui/core/Snackbar';
 import TwoStepVerification from '../Additional/TwoStepVerification';
 import ActiveSessions from '../Additional/ActiveSessions';
 import EditProfile from '../Additional/EditProfile';
@@ -48,6 +49,7 @@ class AndroidSettings extends React.PureComponent {
             isDark: document.body.classList.contains('theme-dark'),
             design: getDesign(),
             bio: '',
+            snackbar: null,
         };
     }
 
@@ -107,6 +109,10 @@ class AndroidSettings extends React.PureComponent {
         if (this.editProfileRef) this.editProfileRef.open();
     };
 
+    handleSoon = label => {
+        this.setState({ snackbar: `${label} — próximamente` });
+    };
+
     render() {
         const { onClose } = this.props;
         const { isDark, design, bio } = this.state;
@@ -130,7 +136,13 @@ class AndroidSettings extends React.PureComponent {
             {
                 key: 'account',
                 rows: [
-                    { icon: <NotificationsIcon />, label: 'Notifications and Sounds', sub: '', arrow: true },
+                    {
+                        icon: <NotificationsIcon />,
+                        label: 'Notifications and Sounds',
+                        sub: '',
+                        arrow: true,
+                        action: () => this.handleSoon('Notifications and Sounds'),
+                    },
                     {
                         icon: <LockIcon />,
                         label: 'Privacy and Security',
@@ -138,9 +150,31 @@ class AndroidSettings extends React.PureComponent {
                         arrow: true,
                         action: this.handlePrivacy,
                     },
-                    { icon: <DataUsageIcon />, label: 'Data and Storage', sub: '', arrow: true },
-                    { icon: <ChatBubbleIcon />, label: 'Chat Settings', sub: '', arrow: true },
-                    ...(isOld ? [] : [{ icon: <FolderIcon />, label: 'Chat Folders', sub: '', arrow: true }]),
+                    {
+                        icon: <DataUsageIcon />,
+                        label: 'Data and Storage',
+                        sub: '',
+                        arrow: true,
+                        action: () => this.handleSoon('Data and Storage'),
+                    },
+                    {
+                        icon: <ChatBubbleIcon />,
+                        label: 'Chat Settings',
+                        sub: '',
+                        arrow: true,
+                        action: () => this.handleSoon('Chat Settings'),
+                    },
+                    ...(isOld
+                        ? []
+                        : [
+                              {
+                                  icon: <FolderIcon />,
+                                  label: 'Chat Folders',
+                                  sub: '',
+                                  arrow: true,
+                                  action: () => this.handleSoon('Chat Folders'),
+                              },
+                          ]),
                 ],
             },
             // Dispositivos — desde v9 en adelante
@@ -321,6 +355,12 @@ class AndroidSettings extends React.PureComponent {
                 <ActiveSessions ref={ref => (this.activeSessionsRef = ref)} />
                 <EditProfile ref={ref => (this.editProfileRef = ref)} />
                 <PrivacySettings ref={ref => (this.privacySettingsRef = ref)} />
+                <Snackbar
+                    open={!!this.state.snackbar}
+                    message={this.state.snackbar || ''}
+                    autoHideDuration={3000}
+                    onClose={() => this.setState({ snackbar: null })}
+                />
             </>
         );
     }
