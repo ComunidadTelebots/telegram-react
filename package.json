@@ -1,7 +1,7 @@
 {
   "homepage": "/",
   "name": "telegram_react",
-  "version": "0.0.636",
+  "version": "0.0.637",
   "private": true,
   "dependencies": {
     "@material-ui/core": "^4.8.0",

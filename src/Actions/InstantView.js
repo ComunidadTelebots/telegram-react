@@ -8,6 +8,7 @@
 import { loadInstantViewContent } from '../Utils/File';
 import { setInstantViewContent } from './Client';
 import TdLibController from '../Controllers/TdLibController';
+import { openInternalBrowser } from './InternalBrowser';
 
 let timestamp = null;
 
@@ -29,8 +30,6 @@ export async function openInstantView(url) {
         loadInstantViewContent(result);
         setInstantViewContent({ instantView: result });
     } catch {
-        const newWindow = window.open();
-        newWindow.opener = null;
-        newWindow.location = url;
+        openInternalBrowser(url);
     }
 }

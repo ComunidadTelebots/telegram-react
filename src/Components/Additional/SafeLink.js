@@ -17,6 +17,7 @@ import DialogActions from '@material-ui/core/DialogActions';
 import { openChat } from '../../Actions/Client';
 import TdLibController from '../../Controllers/TdLibController';
 import { getDecodedUrl, getHref, isUrlSafe, parseTelegramInternalLink } from '../../Utils/Url';
+import { openInternalBrowser } from '../../Actions/InternalBrowser';
 import './SafeLink.css';
 
 class SafeLink extends React.Component {
@@ -63,16 +64,15 @@ class SafeLink extends React.Component {
     handleDone = event => {
         this.handleClose();
 
-        const { url, onClick } = this.props;
+        const { url, onClick, mail } = this.props;
         if (!url) return;
 
         if (onClick) {
             onClick(event);
+        } else if (mail) {
+            window.location.href = getHref(url, true);
         } else {
-            const newWindow = window.open('', '_blank', 'noopener,noreferrer');
-            if (!newWindow) return;
-            newWindow.opener = null;
-            newWindow.location = url;
+            openInternalBrowser(getHref(url, false));
         }
     };
 
@@ -88,6 +88,9 @@ class SafeLink extends React.Component {
         } else if (telegramLink) {
             event.preventDefault();
             this.openTelegramLink();
+        } else if (!this.props.mail) {
+            event.preventDefault();
+            openInternalBrowser(this.state.href);
         }
     };
 

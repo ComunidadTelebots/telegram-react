@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.0.637] - 2026-08-03 — Voz, navegador interno y presentación grupal
+### Added
+- Grabación y envío real de notas de voz con formatos compatibles, contador, cancelación, permisos y estados de Telegram.
+- Navegador interno seguro con hasta diez pestañas, historial, recarga, barra de dirección y apertura externa.
+- Compartir pantalla o cámara mediante un transporte WebRTC de presentación independiente y `phone.joinGroupCallPresentation`.
+### Security
+- El navegador admite únicamente HTTP/HTTPS, elimina credenciales de URL y aísla los iframes sin cámara, micrófono, geolocalización ni referencia.
+### Changed
+- El roadmap interno registra 31 capacidades completas de 33 auditadas.
+### Remaining
+- El vídeo nativo de participante requiere integrar fuentes SIM/FID en el transporte principal; cámara y pantalla ya funcionan como presentación.
+
 ## [0.0.636] - 2026-08-03 — Audio WebRTC para chats de voz
 ### Added
 - Unión y salida reales de chats de voz mediante `phone.joinGroupCall` y `phone.leaveGroupCall`.

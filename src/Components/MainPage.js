@@ -24,6 +24,7 @@ import InstantViewer from './InstantView/InstantViewer';
 import AmpViewer from './AmpViewer/AmpViewer';
 import MessageThread from './Additional/MessageThread';
 import BotWebApp from './Additional/BotWebApp';
+import InternalBrowser from './Additional/InternalBrowser';
 import IncomingCall from './Calls/IncomingCall';
 import ActiveCall from './Calls/ActiveCall';
 import CallRatingDialog from './Calls/CallRatingDialog';
@@ -238,6 +239,7 @@ class MainPage extends React.Component {
                 <DesignSwitcher />
                 <MessageThread ref={ref => (window._messageThreadRef = ref)} />
                 <BotWebApp ref={ref => (window._botWebAppRef = ref)} />
+                <InternalBrowser />
                 <IncomingCall />
                 <ActiveCall />
                 <CallRatingDialog />

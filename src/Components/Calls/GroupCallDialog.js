@@ -29,6 +29,9 @@ const initialState = {
     voiceStatus: GroupCallController.state.status,
     voiceMuted: GroupCallController.state.muted,
     remoteStream: GroupCallController.state.remoteStream,
+    presenting: GroupCallController.state.presenting,
+    presentationStream: GroupCallController.state.presentationStream,
+    presentationKind: GroupCallController.state.presentationKind,
 };
 
 class GroupCallDialog extends React.PureComponent {
@@ -48,6 +51,9 @@ class GroupCallDialog extends React.PureComponent {
                 voiceStatus: GroupCallController.state.status,
                 voiceMuted: GroupCallController.state.muted,
                 remoteStream: GroupCallController.state.remoteStream,
+                presenting: GroupCallController.state.presenting,
+                presentationStream: GroupCallController.state.presentationStream,
+                presentationKind: GroupCallController.state.presentationKind,
             });
             this.load();
         }
@@ -57,6 +63,15 @@ class GroupCallDialog extends React.PureComponent {
             const playback = this.audio.play();
             if (playback?.catch) playback.catch(() => undefined);
         }
+        if (
+            this.presentationVideo &&
+            this.state.presentationStream &&
+            this.presentationVideo.srcObject !== this.state.presentationStream
+        ) {
+            this.presentationVideo.srcObject = this.state.presentationStream;
+            const playback = this.presentationVideo.play();
+            if (playback?.catch) playback.catch(() => undefined);
+        }
     }
 
     handleVoiceState = state =>
@@ -64,6 +79,9 @@ class GroupCallDialog extends React.PureComponent {
             voiceStatus: state.status,
             voiceMuted: state.muted,
             remoteStream: state.remoteStream,
+            presenting: state.presenting,
+            presentationStream: state.presentationStream,
+            presentationKind: state.presentationKind,
             error: state.error || this.state.error,
         });
 
@@ -182,6 +200,16 @@ class GroupCallDialog extends React.PureComponent {
         }
     };
 
+    togglePresentation = async kind => {
+        this.setState({ error: '' });
+        try {
+            if (this.state.presenting) await GroupCallController.stopPresentation();
+            else await GroupCallController.startPresentation(kind);
+        } catch (error) {
+            this.setState({ error: error?.message || 'No se pudo compartir la pantalla.' });
+        }
+    };
+
     renderCreate() {
         const { saving, title, scheduleDate } = this.state;
         return (
@@ -213,7 +241,18 @@ class GroupCallDialog extends React.PureComponent {
     }
 
     renderActive() {
-        const { call, saving, title, inviteUsers, recordingTitle, recordVideo, voiceStatus, voiceMuted } = this.state;
+        const {
+            call,
+            saving,
+            title,
+            inviteUsers,
+            recordingTitle,
+            recordVideo,
+            voiceStatus,
+            voiceMuted,
+            presenting,
+            presentationKind,
+        } = this.state;
         const canManage = call.can_change_join_muted;
         const voiceConnected = voiceStatus === 'connected';
         const voiceConnecting = voiceStatus === 'connecting';
@@ -270,6 +309,29 @@ class GroupCallDialog extends React.PureComponent {
                                 <Button color='secondary' disabled={voiceConnecting} onClick={this.leaveVoice}>
                                     Salir del audio
                                 </Button>
+                                {presenting ? (
+                                    <Button
+                                        color='primary'
+                                        disabled={!voiceConnected}
+                                        onClick={this.togglePresentation}>
+                                        Dejar de compartir {presentationKind === 'camera' ? 'cÃ¡mara' : 'pantalla'}
+                                    </Button>
+                                ) : (
+                                    <>
+                                        <Button
+                                            color='primary'
+                                            disabled={!voiceConnected}
+                                            onClick={() => this.togglePresentation('screen')}>
+                                            Compartir pantalla
+                                        </Button>
+                                        <Button
+                                            color='primary'
+                                            disabled={!voiceConnected}
+                                            onClick={() => this.togglePresentation('camera')}>
+                                            Compartir cÃ¡mara
+                                        </Button>
+                                    </>
+                                )}
                             </>
                         )}
                         <DialogContentText>
@@ -282,6 +344,20 @@ class GroupCallDialog extends React.PureComponent {
                                 : 'Audio WebRTC disponible en navegadores compatibles.'}
                         </DialogContentText>
                         <audio ref={element => (this.audio = element)} autoPlay playsInline />
+                        {presenting && (
+                            <video
+                                ref={element => (this.presentationVideo = element)}
+                                autoPlay
+                                muted
+                                playsInline
+                                style={{ width: '100%', maxHeight: 180, background: '#000' }}
+                            />
+                        )}
+                        <DialogContentText>
+                            La cÃ¡mara se publica como presentaciÃ³n. El modo de vÃ­deo nativo del participante
+                            permanece desactivado porque exige renegociar el transporte principal y procesar fuentes
+                            SIM/FID.
+                        </DialogContentText>
                     </div>
                 )}
                 <TextField

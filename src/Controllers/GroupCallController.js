@@ -6,6 +6,9 @@ const initialState = {
     muted: true,
     error: '',
     remoteStream: null,
+    presenting: false,
+    presentationStream: null,
+    presentationKind: null,
 };
 
 const waitForIceGathering = pc =>
@@ -32,13 +35,62 @@ const offerToJoinPayload = sdp => {
     const rawSsrc = readSdpValue(sdp, 'a=ssrc:', false);
     const ssrc = rawSsrc ? Number(rawSsrc.split(/\s+/)[0]) : 0;
     if (!Number.isInteger(ssrc) || ssrc === 0) throw new Error('No se pudo generar un SSRC de audio válido');
+    const groups = sdp
+        .split(/\r?\n/)
+        .filter(line => line.startsWith('a=ssrc-group:'))
+        .map(line => {
+            const [semantics, ...sources] = line
+                .slice('a=ssrc-group:'.length)
+                .trim()
+                .split(/\s+/);
+            return { semantics, sources: sources.map(Number).filter(Number.isInteger) };
+        })
+        .filter(group => group.semantics && group.sources.length);
     return {
         fingerprints: [{ hash: fingerprint[0], fingerprint: fingerprint[1], setup: 'active' }],
         pwd: readSdpValue(sdp, 'a=ice-pwd:'),
         ssrc,
-        'ssrc-groups': [],
+        'ssrc-groups': groups,
         ufrag: readSdpValue(sdp, 'a=ice-ufrag:'),
     };
+};
+
+const buildPresentationAnswer = (localSdp, payload) => {
+    const transport = payload.transport || payload;
+    if (!transport.ufrag || !transport.pwd || !transport.fingerprints?.length) {
+        throw new Error('Telegram no devolviÃ³ parÃ¡metros WebRTC para la presentaciÃ³n');
+    }
+    const section = localSdp.split(/(?=m=)/).find(value => value.startsWith('m=video'));
+    if (!section) throw new Error('La oferta no contiene una pista de vÃ­deo');
+    const lines = section.split(/\r?\n/).filter(Boolean);
+    const media = lines[0];
+    const mid = (lines.find(line => line.startsWith('a=mid:')) || 'a=mid:0').slice('a=mid:'.length);
+    const codecs = lines.filter(line => /^(a=rtpmap:|a=fmtp:|a=rtcp-fb:|a=extmap:)/.test(line));
+    const candidates = (transport.candidates || []).map(candidateLine);
+    const fingerprints = transport.fingerprints.map(
+        fingerprint => `a=fingerprint:${fingerprint.hash || 'sha-256'} ${fingerprint.fingerprint}`,
+    );
+    return [
+        'v=0',
+        `o=- ${Date.now()} 2 IN IP4 0.0.0.0`,
+        's=-',
+        't=0 0',
+        `a=group:BUNDLE ${mid}`,
+        'a=ice-lite',
+        media.replace(/m=video\s+\d+/, 'm=video 1'),
+        'c=IN IP4 0.0.0.0',
+        `a=mid:${mid}`,
+        `a=ice-ufrag:${transport.ufrag}`,
+        `a=ice-pwd:${transport.pwd}`,
+        ...fingerprints,
+        'a=setup:passive',
+        ...candidates,
+        ...codecs,
+        'a=rtcp:1 IN IP4 0.0.0.0',
+        'a=rtcp-mux',
+        'a=recvonly',
+        '',
+    ].join('\r\n');
 };
 
 const candidateLine = candidate => {
@@ -138,6 +190,8 @@ class GroupCallController extends EventEmitter {
         this.transport = null;
         this.sourcesSignature = '';
         this.negotiating = false;
+        this.presentationPc = null;
+        this.presentationStream = null;
     }
 
     _setState(patch) {
@@ -208,6 +262,71 @@ class GroupCallController extends EventEmitter {
         this._setState({ muted: !!muted });
     }
 
+    async startPresentation(kind = 'screen') {
+        if (!this.call || this.state.status !== 'connected') throw new Error('Primero debes unirte al audio');
+        if (kind === 'screen' && !navigator.mediaDevices?.getDisplayMedia) {
+            throw new Error('Este navegador no permite compartir pantalla');
+        }
+        if (kind === 'camera' && !navigator.mediaDevices?.getUserMedia) {
+            throw new Error('Este navegador no permite usar la cÃ¡mara');
+        }
+        await this.stopPresentation(false);
+        try {
+            this.presentationStream =
+                kind === 'camera'
+                    ? await navigator.mediaDevices.getUserMedia({
+                          video: { width: { ideal: 1280 }, height: { ideal: 720 }, frameRate: { ideal: 24, max: 30 } },
+                          audio: false,
+                      })
+                    : await navigator.mediaDevices.getDisplayMedia({
+                          video: { frameRate: { ideal: 15, max: 30 } },
+                          audio: false,
+                      });
+            this.presentationPc = new RTCPeerConnection({ bundlePolicy: 'max-bundle' });
+            this.presentationStream.getVideoTracks().forEach(track => {
+                track.addEventListener('ended', () => this.stopPresentation());
+                this.presentationPc.addTrack(track, this.presentationStream);
+            });
+            const offer = await this.presentationPc.createOffer({
+                offerToReceiveAudio: false,
+                offerToReceiveVideo: false,
+            });
+            await this.presentationPc.setLocalDescription(offer);
+            await waitForIceGathering(this.presentationPc);
+            const localSdp = this.presentationPc.localDescription.sdp;
+            const result = await TdLibController.send({
+                '@type': 'joinGroupCallPresentation',
+                ...this.call,
+                params: offerToJoinPayload(localSdp),
+            });
+            const remotePayload = typeof result.params === 'string' ? JSON.parse(result.params) : result.params;
+            await this.presentationPc.setRemoteDescription({
+                type: 'answer',
+                sdp: buildPresentationAnswer(localSdp, remotePayload),
+            });
+            this._setState({ presenting: true, presentationStream: this.presentationStream, presentationKind: kind });
+        } catch (error) {
+            await this.stopPresentation(false);
+            throw error;
+        }
+    }
+
+    async stopPresentation(notifyServer = true) {
+        const wasPresenting = !!this.presentationPc;
+        this.presentationPc?.close();
+        this.presentationStream?.getTracks().forEach(track => track.stop());
+        this.presentationPc = null;
+        this.presentationStream = null;
+        if (notifyServer && wasPresenting && this.call) {
+            try {
+                await TdLibController.send({ '@type': 'leaveGroupCallPresentation', ...this.call });
+            } catch (_) {
+                // La captura local siempre debe finalizar aunque la llamada ya se haya cerrado.
+            }
+        }
+        this._setState({ presenting: false, presentationStream: null, presentationKind: null });
+    }
+
     async _checkConnection() {
         if (!this.call || !this.source || this.checkTimer) return;
         this.checkTimer = setTimeout(async () => {
@@ -251,6 +370,7 @@ class GroupCallController extends EventEmitter {
     async leave(notifyServer = true) {
         const call = this.call;
         const source = this.source;
+        await this.stopPresentation(notifyServer);
         this.call = null;
         this.source = 0;
         clearTimeout(this.checkTimer);

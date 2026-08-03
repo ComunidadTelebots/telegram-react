@@ -3,7 +3,7 @@
   "project": "ComunidadTelebots/telegram-react",
   "baseline": "Telegram Web feature families",
   "reviewed_at": "2026-08-03",
-  "summary": { "complete": 29, "partial": 2, "pending": 0, "total": 31 },
+  "summary": { "complete": 31, "partial": 2, "pending": 0, "total": 33 },
   "capabilities": [
     { "id": "auth", "name": "Inicio de sesión y 2FA", "status": "complete", "evidence": ["src/Components/Auth", "src/Components/Additional/TwoStepVerification.js"] },
     { "id": "messages", "name": "Mensajes, respuestas, reenvíos y edición", "status": "complete", "evidence": ["src/Actions/Message.js", "src/Components/Message"] },
@@ -33,7 +33,9 @@
     { "id": "saved_topics", "name": "Temas de Mensajes guardados", "status": "complete", "evidence": ["src/Components/ColumnMiddle/SavedFolders.js", "src/Controllers/GramJsController.js"] },
     { "id": "similar_channels", "name": "Canales similares", "status": "complete", "evidence": ["src/Components/ColumnRight/SimilarChannels.js", "src/Controllers/GramJsController.js"] },
     { "id": "settings", "name": "Ajustes completos de datos, chat y notificaciones", "status": "complete", "evidence": ["src/Components/ColumnLeft/AndroidSettings.js", "src/Components/ColumnLeft/AndroidDataSettings.js", "src/Components/ColumnLeft/Dialogs.js", "src/Components/ColumnLeft/MainMenuButton.js"] },
-    { "id": "group_calls", "name": "Llamadas grupales y vídeo", "status": "partial", "evidence": ["src/Components/Calls/GroupCallDialog.js", "src/Controllers/GroupCallController.js", "src/Controllers/GramJsController.js"], "blocker": "Audio WebRTC y administración funcionan; publicar vídeo y compartir pantalla todavía requieren negociación de presentación y SSRC de vídeo." },
+    { "id": "group_calls", "name": "Llamadas grupales y vídeo", "status": "partial", "evidence": ["src/Components/Calls/GroupCallDialog.js", "src/Controllers/GroupCallController.js", "src/Controllers/GramJsController.js"], "blocker": "Audio, cámara como presentación y pantalla funcionan; queda pendiente el vídeo nativo de participante con SIM/FID sobre el transporte principal." },
+    { "id": "voice_messages", "name": "Grabación y envío de mensajes de voz", "status": "complete", "evidence": ["src/Components/ColumnMiddle/InputBoxControl.js", "src/Controllers/GramJsController.js"] },
+    { "id": "internal_browser", "name": "Navegador interno multipestaña seguro", "status": "complete", "evidence": ["src/Components/Additional/InternalBrowser.js", "src/Stores/InternalBrowserStore.js", "src/Components/Additional/SafeLink.js"] },
     { "id": "message_effects", "name": "Efectos al enviar mensajes", "status": "complete", "evidence": ["src/Components/ColumnMiddle/InputBoxControl.js", "src/Controllers/GramJsController.js"] },
     { "id": "full_business_suite", "name": "Respuestas rápidas, horarios y bots empresariales completos", "status": "complete", "evidence": ["src/Components/ColumnRight/BusinessInfo.js", "src/Components/ColumnRight/BusinessEditor.js", "src/Controllers/GramJsController.js"] }
   ]

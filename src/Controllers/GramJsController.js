@@ -956,6 +956,10 @@ class GramJsController extends EventEmitter {
                 return this._checkGroupCallConnection(req);
             case 'getGroupCallAudioSources':
                 return this._getGroupCallAudioSources(req);
+            case 'joinGroupCallPresentation':
+                return this._joinGroupCallPresentation(req);
+            case 'leaveGroupCallPresentation':
+                return this._leaveGroupCallPresentation(req);
             case 'getAttachMenuBots':
                 return this._getAttachMenuBots(req);
             case 'getBotApp':
@@ -1272,6 +1276,10 @@ class GramJsController extends EventEmitter {
                 return this._checkGroupCallConnection(req);
             case 'getGroupCallAudioSources':
                 return this._getGroupCallAudioSources(req);
+            case 'joinGroupCallPresentation':
+                return this._joinGroupCallPresentation(req);
+            case 'leaveGroupCallPresentation':
+                return this._leaveGroupCallPresentation(req);
 
             // ── Archivos ──────────────────────────────────────────────────────
             case 'downloadFile':
@@ -2437,6 +2445,32 @@ class GramJsController extends EventEmitter {
                 .map(participant => (participant.source == null ? null : Number(participant.source)))
                 .filter(source => Number.isInteger(source) && source !== 0),
         };
+    };
+
+    _joinGroupCallPresentation = async ({ params, ...call }) => {
+        if (!params || !Number.isInteger(Number(params.ssrc)) || Number(params.ssrc) === 0) {
+            throw new Error('Invalid WebRTC presentation payload');
+        }
+        const result = await this.client.invoke(
+            new Api.phone.JoinGroupCallPresentation({
+                call: this._groupCallInput(call),
+                params: new Api.DataJSON({ data: JSON.stringify(params) }),
+            }),
+        );
+        const connection = (result?.updates || []).find(update => {
+            const type = update?.className || update?._ || update?.['@type'];
+            return type === 'UpdateGroupCallConnection' || type === 'updateGroupCallConnection';
+        });
+        const data = connection?.params?.data;
+        if (!data) throw new Error('Telegram did not return presentation connection parameters');
+        return { success: true, params: data };
+    };
+
+    _leaveGroupCallPresentation = async call => {
+        const result = await this.client.invoke(
+            new Api.phone.LeaveGroupCallPresentation({ call: this._groupCallInput(call) }),
+        );
+        return { success: true, updates: result };
     };
 
     // ── Stickers / Emoji ──────────────────────────────────────────────────────
@@ -3679,7 +3713,14 @@ class GramJsController extends EventEmitter {
                 contentType === 'inputMessageSticker' ||
                 contentType === 'inputMessageAnimation'
             ) {
-                return this._sendFile(chat_id, inputPeer, input_message_content, reply_to_message_id, schedule_date);
+                return this._sendFile(
+                    chat_id,
+                    inputPeer,
+                    input_message_content,
+                    reply_to_message_id,
+                    schedule_date,
+                    disable_notification,
+                );
             }
 
             if (contentType === 'inputMessagePoll') {
@@ -4186,7 +4227,7 @@ class GramJsController extends EventEmitter {
         }
     };
 
-    _sendFile = async (chatId, inputPeer, content, replyToMessageId, scheduleDate) => {
+    _sendFile = async (chatId, inputPeer, content, replyToMessageId, scheduleDate, disableNotification = false) => {
         const contentType = content['@type'];
         try {
             let file, caption, voiceNote, attributes;
@@ -4280,6 +4321,8 @@ class GramJsController extends EventEmitter {
                 voiceNote: voiceNote || false,
                 attributes: attributes && attributes.length ? attributes : undefined,
                 scheduleDate: scheduleDate || undefined,
+                silent: !!disableNotification,
+                mimeType: file.type || undefined,
                 workers: 1,
             });
 

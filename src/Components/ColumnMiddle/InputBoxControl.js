@@ -18,6 +18,7 @@ import InsertEmoticonIcon from '../../Assets/Icons/Smile';
 import SendIcon from '../../Assets/Icons/Send';
 import MicIcon from '@material-ui/icons/Mic';
 import StopIcon from '@material-ui/icons/Stop';
+import CloseIcon from '@material-ui/icons/Close';
 import ScheduleIcon from '@material-ui/icons/Schedule';
 import TagFacesIcon from '@material-ui/icons/TagFaces';
 import VolumeOffIcon from '@material-ui/icons/VolumeOff';
@@ -26,6 +27,7 @@ import Dialog from '@material-ui/core/Dialog';
 import DialogTitle from '@material-ui/core/DialogTitle';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogActions from '@material-ui/core/DialogActions';
+import Snackbar from '@material-ui/core/Snackbar';
 import TextField from '@material-ui/core/TextField';
 import AttachButton from './../ColumnMiddle/AttachButton';
 import LiveLocationPanel from './LiveLocationPanel';
@@ -86,6 +88,8 @@ class InputBoxControl extends Component {
             replyToMessageId: getChatDraftReplyToMessageId(chatId),
             editMessageId: 0,
             recording: false,
+            recordingSeconds: 0,
+            voiceError: null,
             scheduleDialogOpen: false,
             scheduleDateValue: '',
             pendingScheduleContent: null,
@@ -222,6 +226,13 @@ class InputBoxControl extends Component {
 
     componentWillUnmount() {
         this.saveDraft();
+
+        this._voiceCancelled = true;
+        if (this.mediaRecorder && this.mediaRecorder.state !== 'inactive') {
+            this.mediaRecorder.onstop = null;
+            this.mediaRecorder.stop();
+        }
+        this.cleanupVoiceCapture();
 
         AppStore.off('clientUpdateChatId', this.onClientUpdateChatId);
         AppStore.off('clientUpdateEditMessage', this.onClientUpdateEditMessage);
@@ -973,31 +984,84 @@ class InputBoxControl extends Component {
             this.handleVoiceStop();
             return;
         }
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia || typeof MediaRecorder === 'undefined') {
+            this.setState({ voiceError: 'Este navegador no permite grabar notas de voz.' });
+            return;
+        }
         try {
             const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            this.voiceStream = stream;
             this.audioChunks = [];
-            const mimeType = MediaRecorder.isTypeSupported('audio/webm;codecs=opus')
-                ? 'audio/webm;codecs=opus'
-                : 'audio/webm';
-            this.mediaRecorder = new MediaRecorder(stream, { mimeType });
+            this._voiceCancelled = false;
+            const mimeType =
+                typeof MediaRecorder.isTypeSupported === 'function'
+                    ? ['audio/webm;codecs=opus', 'audio/ogg;codecs=opus', 'audio/mp4'].find(type =>
+                          MediaRecorder.isTypeSupported(type),
+                      )
+                    : null;
+            this.mediaRecorder = mimeType ? new MediaRecorder(stream, { mimeType }) : new MediaRecorder(stream);
+            this._voiceMimeType = this.mediaRecorder.mimeType || mimeType || 'audio/webm';
             this.mediaRecorder.ondataavailable = e => {
                 if (e.data.size > 0) this.audioChunks.push(e.data);
             };
-            this.mediaRecorder.onstop = this._sendVoiceNote;
+            this.mediaRecorder.onerror = () => {
+                this._voiceCancelled = true;
+                this.cleanupVoiceCapture();
+                this.setState({ recording: false, voiceError: 'La grabación se interrumpió.' });
+            };
+            this.mediaRecorder.onstop = () => {
+                const cancelled = this._voiceCancelled;
+                this.cleanupVoiceCapture();
+                this.setState({ recording: false, recordingSeconds: 0 });
+                if (cancelled) this.audioChunks = [];
+                else this._sendVoiceNote();
+            };
             this._voiceStartTime = Date.now();
             this.mediaRecorder.start();
-            this.setState({ recording: true });
+            this._voiceTimer = setInterval(() => {
+                this.setState({ recordingSeconds: Math.floor((Date.now() - this._voiceStartTime) / 1000) });
+            }, 1000);
+            this.setState({ recording: true, recordingSeconds: 0, voiceError: null });
+            TdLibController.send({
+                '@type': 'sendChatAction',
+                chat_id: this.state.chatId,
+                action: { '@type': 'chatActionRecordingVoiceNote' },
+            });
         } catch (err) {
             console.error('[Voice] microphone error', err);
+            this.cleanupVoiceCapture();
+            const denied = err && (err.name === 'NotAllowedError' || err.name === 'SecurityError');
+            this.setState({
+                recording: false,
+                voiceError: denied
+                    ? 'Permite el acceso al micrófono para enviar notas de voz.'
+                    : 'No se pudo iniciar el micrófono.',
+            });
         }
     };
 
     handleVoiceStop = () => {
         if (this.mediaRecorder && this.mediaRecorder.state !== 'inactive') {
             this.mediaRecorder.stop();
-            this.mediaRecorder.stream.getTracks().forEach(t => t.stop());
         }
-        this.setState({ recording: false });
+    };
+
+    handleVoiceCancel = () => {
+        this._voiceCancelled = true;
+        if (this.mediaRecorder && this.mediaRecorder.state !== 'inactive') this.mediaRecorder.stop();
+        TdLibController.send({
+            '@type': 'sendChatAction',
+            chat_id: this.state.chatId,
+            action: { '@type': 'chatActionCancel' },
+        });
+    };
+
+    cleanupVoiceCapture = () => {
+        if (this._voiceTimer) clearInterval(this._voiceTimer);
+        this._voiceTimer = null;
+        if (this.voiceStream) this.voiceStream.getTracks().forEach(track => track.stop());
+        this.voiceStream = null;
+        this.mediaRecorder = null;
     };
 
     _sendVoiceNote = () => {
@@ -1005,9 +1069,10 @@ class InputBoxControl extends Component {
         if (!this.audioChunks || this.audioChunks.length === 0) return;
 
         const duration = Math.max(1, Math.round((Date.now() - this._voiceStartTime) / 1000));
-        const mimeType = this.mediaRecorder?.mimeType || 'audio/webm';
+        const mimeType = this._voiceMimeType || 'audio/webm';
         const blob = new Blob(this.audioChunks, { type: mimeType });
-        const file = new File([blob], 'voice.webm', { type: mimeType });
+        const extension = mimeType.includes('ogg') ? 'ogg' : mimeType.includes('mp4') ? 'm4a' : 'webm';
+        const file = new File([blob], `voice.${extension}`, { type: mimeType });
 
         const content = {
             '@type': 'inputMessageVoiceNote',
@@ -1016,7 +1081,18 @@ class InputBoxControl extends Component {
             waveform: '',
         };
 
-        this.sendMessage(content, true, () => {});
+        TdLibController.send({
+            '@type': 'sendChatAction',
+            chat_id: chatId,
+            action: { '@type': 'chatActionUploadingVoiceNote', progress: 0 },
+        });
+        this.sendMessage(content, true, () => {}).finally(() => {
+            TdLibController.send({
+                '@type': 'sendChatAction',
+                chat_id: chatId,
+                action: { '@type': 'chatActionCancel' },
+            });
+        });
         this.audioChunks = [];
     };
 
@@ -1653,6 +1729,8 @@ class InputBoxControl extends Component {
             openEditUrl,
             openEditMedia,
             recording,
+            recordingSeconds,
+            voiceError,
             scheduleDialogOpen,
             scheduleDateValue,
             silentSend,
@@ -1854,13 +1932,38 @@ class InputBoxControl extends Component {
                                 )}
 
                                 {!Boolean(editMessageId) && (
-                                    <IconButton
-                                        size='small'
-                                        aria-label={recording ? 'Stop recording' : 'Record voice'}
-                                        onClick={this.handleVoiceStart}
-                                        style={recording ? { color: '#e53935' } : {}}>
-                                        {recording ? <StopIcon /> : <MicIcon />}
-                                    </IconButton>
+                                    <>
+                                        {recording && (
+                                            <span
+                                                aria-live='polite'
+                                                title='Duración de la grabación'
+                                                style={{
+                                                    color: '#e53935',
+                                                    fontSize: 12,
+                                                    fontVariantNumeric: 'tabular-nums',
+                                                }}>
+                                                {Math.floor(recordingSeconds / 60)}:
+                                                {String(recordingSeconds % 60).padStart(2, '0')}
+                                            </span>
+                                        )}
+                                        {recording && (
+                                            <IconButton
+                                                size='small'
+                                                aria-label='Cancelar nota de voz'
+                                                title='Cancelar nota de voz'
+                                                onClick={this.handleVoiceCancel}>
+                                                <CloseIcon fontSize='small' />
+                                            </IconButton>
+                                        )}
+                                        <IconButton
+                                            size='small'
+                                            aria-label={recording ? 'Enviar nota de voz' : 'Grabar nota de voz'}
+                                            title={recording ? 'Detener y enviar' : 'Grabar nota de voz'}
+                                            onClick={this.handleVoiceStart}
+                                            style={recording ? { color: '#e53935' } : {}}>
+                                            {recording ? <StopIcon /> : <MicIcon />}
+                                        </IconButton>
+                                    </>
                                 )}
                             </div>
                         </div>
@@ -2017,6 +2120,12 @@ class InputBoxControl extends Component {
                     ref={ref => {
                         this.liveLocationPanelRef = ref;
                     }}
+                />
+                <Snackbar
+                    open={!!voiceError}
+                    message={voiceError || ''}
+                    autoHideDuration={4500}
+                    onClose={() => this.setState({ voiceError: null })}
                 />
             </div>
         );
