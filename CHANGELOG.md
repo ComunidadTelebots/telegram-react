@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.0.631] - 2026-08-03 — Ajustes por familia visual
+### Added
+- Menú funcional de Apariencia, Idioma, Dispositivos, Datos y Stickers para Unigram, Desktop, iOS, macOS, Web K/A, Webogram, Aurora y Telegram X.
+- Android conserva su drawer y overlay propios en todas sus versiones históricas.
+- Fuera de Android, Datos y almacenamiento utiliza los diálogos y listas Material ya tematizados por cada perfil; no se añaden estilos globales ni se sustituyen diseños existentes.
+### Fixed
+- El botón de menú de perfiles no Android ya no queda sin panel asociado.
+
 ## [0.0.630] - 2026-08-03 — Datos y stickers integrados en Ajustes
 ### Added
 - Nuevo panel funcional de datos y almacenamiento reutilizando el overlay Android existente: muestra uso y cuota, solicita persistencia, gestiona el permiso de notificaciones y elimina solo cachés temporales.

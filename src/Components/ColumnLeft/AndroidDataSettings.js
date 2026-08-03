@@ -5,6 +5,14 @@ import NotificationsIcon from '@material-ui/icons/Notifications';
 import SaveIcon from '@material-ui/icons/Save';
 import StorageIcon from '@material-ui/icons/Storage';
 import Snackbar from '@material-ui/core/Snackbar';
+import Dialog from '@material-ui/core/Dialog';
+import DialogContent from '@material-ui/core/DialogContent';
+import DialogTitle from '@material-ui/core/DialogTitle';
+import List from '@material-ui/core/List';
+import ListItem from '@material-ui/core/ListItem';
+import ListItemIcon from '@material-ui/core/ListItemIcon';
+import ListItemText from '@material-ui/core/ListItemText';
+import { getDesign, getDesignFamily } from '../../Design';
 
 const formatBytes = value => {
     if (!Number.isFinite(value) || value <= 0) return '0 MB';
@@ -96,6 +104,56 @@ class AndroidDataSettings extends React.PureComponent {
     render() {
         const { open, usage, quota, persistent, notificationPermission, snackbar } = this.state;
         if (!open) return null;
+        const family = getDesignFamily(getDesign());
+        const actions = [
+            {
+                icon: <StorageIcon />,
+                label: 'Uso de almacenamiento',
+                value: `${formatBytes(usage)} de ${formatBytes(quota)}`,
+                action: this.refreshStatus,
+            },
+            {
+                icon: <SaveIcon />,
+                label: 'Conservar datos sin conexión',
+                value: persistent ? 'Activado' : 'Solicitar permiso',
+                action: this.requestPersistentStorage,
+            },
+            {
+                icon: <NotificationsIcon />,
+                label: 'Notificaciones del navegador',
+                value: notificationPermission,
+                action: this.requestNotifications,
+            },
+            {
+                icon: <DeleteSweepIcon />,
+                label: 'Vaciar caché temporal',
+                value: 'No elimina chats ni sesiones',
+                action: this.clearWebCache,
+            },
+        ];
+        if (family !== 'android') {
+            return (
+                <Dialog open={open} onClose={this.close} fullWidth maxWidth='sm' transitionDuration={0}>
+                    <DialogTitle>Datos y almacenamiento</DialogTitle>
+                    <DialogContent style={{ padding: 0 }}>
+                        <List disablePadding>
+                            {actions.map(item => (
+                                <ListItem key={item.label} button onClick={item.action}>
+                                    <ListItemIcon>{item.icon}</ListItemIcon>
+                                    <ListItemText primary={item.label} secondary={item.value} />
+                                </ListItem>
+                            ))}
+                        </List>
+                    </DialogContent>
+                    <Snackbar
+                        open={!!snackbar}
+                        message={snackbar || ''}
+                        autoHideDuration={3500}
+                        onClose={() => this.setState({ snackbar: null })}
+                    />
+                </Dialog>
+            );
+        }
         return (
             <div className='android-settings-overlay'>
                 <div className='android-settings-toolbar'>

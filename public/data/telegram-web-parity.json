@@ -3,7 +3,7 @@
   "project": "ComunidadTelebots/telegram-react",
   "baseline": "Telegram Web feature families",
   "reviewed_at": "2026-08-03",
-  "summary": { "complete": 21, "partial": 5, "pending": 3, "total": 29 },
+  "summary": { "complete": 22, "partial": 5, "pending": 3, "total": 30 },
   "capabilities": [
     { "id": "auth", "name": "Inicio de sesión y 2FA", "status": "complete", "evidence": ["src/Components/Auth", "src/Components/Additional/TwoStepVerification.js"] },
     { "id": "messages", "name": "Mensajes, respuestas, reenvíos y edición", "status": "complete", "evidence": ["src/Actions/Message.js", "src/Components/Message"] },
@@ -26,6 +26,7 @@
     { "id": "notifications", "name": "Permiso de notificaciones del navegador", "status": "complete", "evidence": ["src/Components/ColumnLeft/AndroidSettings.js", "src/Utils/NotificationManager.js"] },
     { "id": "storage_controls", "name": "Uso, persistencia y limpieza segura de almacenamiento", "status": "complete", "evidence": ["src/Components/ColumnLeft/AndroidDataSettings.js"] },
     { "id": "favorite_stickers", "name": "Gestión de stickers favoritos desde Ajustes", "status": "complete", "evidence": ["src/Components/Additional/FavedStickers.js", "src/Components/ColumnLeft/AndroidSettings.js"] },
+    { "id": "profile_adaptive_settings", "name": "Ajustes adaptados a cada familia visual", "status": "complete", "evidence": ["src/Components/ColumnLeft/MainMenuButton.js", "src/Components/ColumnLeft/AndroidSettings.js", "src/Components/ColumnLeft/AndroidDataSettings.js", "src/Design.js"] },
     { "id": "business", "name": "Funciones Telegram Business", "status": "partial", "evidence": ["src/Components/ColumnRight/BusinessInfo.js"] },
     { "id": "stars_gifts", "name": "Stars y regalos", "status": "partial", "evidence": ["src/Components/ColumnRight/StarGiftsGallery.js"] },
     { "id": "saved_topics", "name": "Temas de Mensajes guardados", "status": "partial", "evidence": ["src/Controllers/GramJsController.js"] },
