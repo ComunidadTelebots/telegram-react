@@ -1,0 +1,57 @@
+/*
+ * Compatibility layer for modern features in every design family/version.
+ * Historical skins keep their own geometry and palette; this file only fills
+ * shared tokens and surfaces that old releases never defined.
+ */
+
+body[class*='design-'] {
+    --feature-surface: var(--design-panel-background, var(--background-color, #fff));
+    --feature-surface-hover: var(--design-hover-background, rgba(0, 0, 0, 0.05));
+    --feature-border: var(--design-border-color, rgba(0, 0, 0, 0.12));
+    --feature-muted: var(--design-muted-color, rgba(0, 0, 0, 0.55));
+    --feature-radius: var(--design-control-radius, 10px);
+}
+
+body:not(.design-legacy-features)[class*='design-']
+    :is(.internal-browser, .saved-folders, .admin-log, .business-editor, .admin-mgmt-panel, .group-call-dialog, .active-call-panel, .stargifts-gallery, .faved-stickers) {
+    color: var(--design-page-color, inherit);
+    font-family: var(--design-font-family, inherit);
+}
+
+body:not(.design-legacy-features)[class*='design-']
+    :is(.internal-browser-toolbar, .internal-browser-tabs, .saved-folders-header, .admin-log-toolbar, .business-editor-toolbar, .faved-stickers-toolbar) {
+    border-color: var(--feature-border);
+    background: var(--feature-surface);
+}
+
+body:not(.design-legacy-features)[class*='design-']
+    :is(.internal-browser button, .saved-folders button, .admin-log button, .business-editor button, .group-call-dialog
+        button, .active-call-panel button, .stargifts-gallery button, .faved-stickers button) {
+    border-radius: var(--feature-radius);
+    font-family: inherit;
+}
+
+body:not(.design-legacy-features)[class*='design-']
+    :is(.internal-browser button, .saved-folders button, .admin-log button, .business-editor button, .group-call-dialog
+        button, .active-call-panel button, .stargifts-gallery button, .faved-stickers button):hover {
+    background-color: var(--feature-surface-hover);
+}
+
+body:not(.design-legacy-features)[class*='design-']
+    :is(.internal-browser-empty, .saved-folders-empty, .admin-log-empty, .business-editor-hint) {
+    color: var(--feature-muted);
+}
+
+/* Old, compact families need a usable hit target for newly added toolbars. */
+body:not(.design-legacy-features):is(.design-webogram, .design-webogram-blue, .design-android-holo, .design-android-classic, .design-unigram-wp, .design-tdesktop-classic)
+    :is(.internal-browser-toolbar, .saved-folders-header, .admin-log-toolbar, .business-editor-toolbar, .faved-stickers-toolbar) {
+    min-height: 42px;
+}
+
+/*
+ * "Mantener diseño original" continues to control feature availability in
+ * the React components. It must not reset the chosen historical skin.
+ */
+body.design-legacy-features[class*='design-'] {
+    --feature-radius: var(--design-control-radius, 0);
+}

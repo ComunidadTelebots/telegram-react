@@ -160,21 +160,39 @@ class DesignVersionSelector extends React.PureComponent {
         this.state = {
             open: false,
             design: getDesign(),
+            legacyOnly: localStorage.getItem('tg_design_legacy_features') === 'true',
         };
     }
 
     componentDidMount() {
         document.addEventListener('mousedown', this.handleDocumentMouseDown);
         ApplicationStore.on('clientUpdateThemeChange', this.handleThemeChange);
+        ApplicationStore.on('clientUpdateDesignCapabilities', this.handleCapabilitiesChange);
     }
 
     componentWillUnmount() {
         document.removeEventListener('mousedown', this.handleDocumentMouseDown);
         ApplicationStore.off('clientUpdateThemeChange', this.handleThemeChange);
+        ApplicationStore.off('clientUpdateDesignCapabilities', this.handleCapabilitiesChange);
     }
 
     handleThemeChange = () => {
         this.setState({ design: getDesign() });
+    };
+
+    handleCapabilitiesChange = ({ legacyOnly }) => {
+        this.setState({ legacyOnly: !!legacyOnly });
+    };
+
+    handleToggleCapabilities = event => {
+        event.stopPropagation();
+        this.setState(({ legacyOnly }) => {
+            const next = !legacyOnly;
+            localStorage.setItem('tg_design_legacy_features', String(next));
+            document.body.classList.toggle('design-legacy-features', next);
+            ApplicationStore.emit('clientUpdateDesignCapabilities', { legacyOnly: next });
+            return { legacyOnly: next };
+        });
     };
 
     handleDocumentMouseDown = event => {
@@ -200,7 +218,7 @@ class DesignVersionSelector extends React.PureComponent {
     };
 
     render() {
-        const { open, design } = this.state;
+        const { open, design, legacyOnly } = this.state;
         const family = getDesignFamily(design);
         const versions = DESIGN_VERSION_REGISTRY[family];
 
@@ -242,6 +260,18 @@ class DesignVersionSelector extends React.PureComponent {
                                 </button>
                             );
                         })}
+                        <div className='dv-capabilities'>
+                            <div className='dv-capabilities-copy'>
+                                <strong>{legacyOnly ? 'Funciones de la época' : 'Todas las funciones actuales'}</strong>
+                                <span>La API moderna se mantiene en ambos modos.</span>
+                            </div>
+                            <button
+                                type='button'
+                                className={`dv-capabilities-button${legacyOnly ? ' is-legacy' : ''}`}
+                                onClick={this.handleToggleCapabilities}>
+                                {legacyOnly ? 'Activar funciones actuales' : 'Mantener diseño original'}
+                            </button>
+                        </div>
                     </div>
                 )}
             </div>

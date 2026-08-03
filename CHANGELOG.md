@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.0.638] - 2026-08-03 — Compatibilidad funcional en todos los diseños
+### Added
+- El selector de versiones muestra en todas las familias el estado funcional activo y un control para conservar únicamente las funciones propias de la época.
+- Cada versión visual puede usar las funciones actuales sin abandonar su apariencia original; la API moderna permanece activa en ambos modos.
+- Los detalles de canales y grupos muestran la comunidad o chat de debate enlazado obtenido mediante MTProto y permiten abrirlo directamente.
+- Comunidades enlazadas con descubrimiento de grupos y canales relacionados, navegación, enlace y desvinculación desde los detalles del chat.
+### Changed
+- La preferencia `tg_design_legacy_features` queda sincronizada entre el selector de versión, Ajustes y el menú principal.
+- El panel de compatibilidad se adapta a las variables visuales de cada familia y a pantallas móviles.
+- El manifiesto de paridad registra 32 capacidades completas, 2 parciales y ninguna pendiente de las 34 auditadas.
+
 ## [0.0.637] - 2026-08-03 — Voz, navegador interno y presentación grupal
 ### Added
 - Grabación y envío real de notas de voz con formatos compatibles, contador, cancelación, permisos y estados de Telegram.

@@ -31,6 +31,7 @@ import {
 import { translateStoryItem } from '../Utils/GramJs/UpdateTranslator';
 import { loadMessages, saveMessages } from '../Utils/MessageCache';
 import * as InstantViewCache from '../Stores/InstantViewCache';
+import { resolveLinkedCommunityChatId } from '../Utils/LinkedCommunity';
 
 const ACCOUNTS_KEY = 'tg_gramjs_accounts';
 const ACTIVE_ACCOUNT_KEY = 'tg_gramjs_active_account';
@@ -4528,6 +4529,15 @@ class GramJsController extends EventEmitter {
             const inputPeer = tdlibChatIdToInputPeer(chatId, this._entityCache);
             const result = await this.client.invoke(new Api.channels.GetFullChannel({ channel: inputPeer }));
             const full = result.fullChat || {};
+            const responseChats = result.chats || [];
+            responseChats.forEach(entity => {
+                this._cacheEntity(entity);
+                const linkedChat = translateChat(entity, null, this._entityCache);
+                if (linkedChat) {
+                    this._chatCache.set(linkedChat.id, linkedChat);
+                    this._emitUpdate({ '@type': 'updateNewChat', chat: linkedChat });
+                }
+            });
             const info = {
                 '@type': 'supergroupFullInfo',
                 description: full.about || '',
@@ -4543,6 +4553,7 @@ class GramJsController extends EventEmitter {
                 invite_link: full.exportedInvite?.link || '',
                 upgraded_from_basic_group_id: 0,
                 has_protected_content: !!full.noforwards,
+                linked_chat_id: resolveLinkedCommunityChatId(full.linkedChatId, responseChats),
                 slow_mode_delay: full.slowmodeSeconds || 0,
                 slow_mode_delay_expires_in: full.slowmodeNextSendDate
                     ? full.slowmodeNextSendDate - Math.floor(Date.now() / 1000)

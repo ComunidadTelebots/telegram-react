@@ -29,6 +29,7 @@ import CheckIcon from '@material-ui/icons/Check';
 import EditIcon from '@material-ui/icons/Edit';
 import LockIcon from '@material-ui/icons/Lock';
 import GroupIcon from '@material-ui/icons/Group';
+import ForumIcon from '@material-ui/icons/Forum';
 import CallIcon from '@material-ui/icons/Call';
 import CloseIcon from '@material-ui/icons/Close';
 import Divider from '@material-ui/core/Divider';
@@ -115,6 +116,7 @@ class ChatDetails extends React.Component {
             descriptionDraft: '',
             supergroupMembers: [],
             translationSettingsVersion: 0,
+            legacyFeaturesOnly: localStorage.getItem('tg_design_legacy_features') === 'true',
         };
     }
 
@@ -149,7 +151,7 @@ class ChatDetails extends React.Component {
 
     shouldComponentUpdate(nextProps, nextState) {
         const { chatId, theme, counters, migratedCounters } = this.props;
-        const { editingDescription, descriptionDraft, translationSettingsVersion } = this.state;
+        const { editingDescription, descriptionDraft, translationSettingsVersion, legacyFeaturesOnly } = this.state;
 
         if (nextProps.chatId !== chatId) {
             return true;
@@ -179,6 +181,10 @@ class ChatDetails extends React.Component {
             return true;
         }
 
+        if (nextState.legacyFeaturesOnly !== legacyFeaturesOnly) {
+            return true;
+        }
+
         return false;
     }
 
@@ -205,6 +211,7 @@ class ChatDetails extends React.Component {
         BasicGroupStore.on('updateBasicGroupFullInfo', this.onUpdateBasicGroupFullInfo);
         SupergroupStore.on('updateSupergroupFullInfo', this.onUpdateSupergroupFullInfo);
         ChatStore.on('updateChatMessageTtl', this.onUpdateChatMessageTtl);
+        ApplicationStore.on('clientUpdateDesignCapabilities', this.onDesignCapabilitiesChange);
     }
 
     componentWillUnmount() {
@@ -213,7 +220,12 @@ class ChatDetails extends React.Component {
         BasicGroupStore.off('updateBasicGroupFullInfo', this.onUpdateBasicGroupFullInfo);
         SupergroupStore.off('updateSupergroupFullInfo', this.onUpdateSupergroupFullInfo);
         ChatStore.off('updateChatMessageTtl', this.onUpdateChatMessageTtl);
+        ApplicationStore.off('clientUpdateDesignCapabilities', this.onDesignCapabilitiesChange);
     }
+
+    onDesignCapabilitiesChange = ({ legacyOnly }) => {
+        this.setState({ legacyFeaturesOnly: !!legacyOnly });
+    };
 
     onUpdateChatMessageTtl = update => {
         if (update.chat_id === this.props.chatId) this.forceUpdate();
@@ -398,6 +410,13 @@ class ChatDetails extends React.Component {
         }
     };
 
+    handleOpenLinkedCommunity = () => {
+        const chat = ChatStore.get(this.props.chatId);
+        const supergroupId = chat && chat.type && chat.type.supergroup_id;
+        const fullInfo = supergroupId ? SupergroupStore.getFullInfo(supergroupId) : null;
+        if (fullInfo && fullInfo.linked_chat_id) openChat(fullInfo.linked_chat_id, null, false);
+    };
+
     handleCreateSecretChat = async () => {
         const { chatId } = this.props;
         const chat = ChatStore.get(chatId);
@@ -575,6 +594,11 @@ class ChatDetails extends React.Component {
         const { editingDescription, descriptionDraft } = this.state;
         const isMe = isMeChat(chatId);
         const isSecret = isChatSecret(chatId);
+        const supergroupId = chat.type && chat.type.supergroup_id;
+        const currentSupergroup = supergroupId ? SupergroupStore.get(supergroupId) : null;
+        const supergroupFullInfo = supergroupId ? SupergroupStore.getFullInfo(supergroupId) : null;
+        const linkedCommunityId = supergroupFullInfo ? supergroupFullInfo.linked_chat_id : 0;
+        const linkedCommunity = linkedCommunityId ? ChatStore.get(linkedCommunityId) : null;
 
         const { supergroupMembers } = this.state;
         const basicMembers = getGroupChatMembers(chatId);
@@ -638,6 +662,30 @@ class ChatDetails extends React.Component {
                             onTileSelect={photo ? this.handleOpenViewer : null}
                         />
                     </div>
+                    {!!linkedCommunityId && !this.state.legacyFeaturesOnly && (
+                        <>
+                            <Divider />
+                            <List className='linked-community-list'>
+                                <ListItem
+                                    button
+                                    className={classNames(classes.listItem, 'linked-community-card')}
+                                    onClick={this.handleOpenLinkedCommunity}>
+                                    <ListItemIcon>
+                                        <ForumIcon className='linked-community-icon' />
+                                    </ListItemIcon>
+                                    <ListItemText
+                                        primary={linkedCommunity ? linkedCommunity.title : 'Comunidad enlazada'}
+                                        secondary={
+                                            currentSupergroup && currentSupergroup.is_channel
+                                                ? 'Grupo de debate de este canal'
+                                                : 'Canal vinculado a esta comunidad'
+                                        }
+                                    />
+                                    <span className='linked-community-open'>Abrir</span>
+                                </ListItem>
+                            </List>
+                        </>
+                    )}
                     {(username || phoneNumber || bio) && (
                         <>
                             <List>

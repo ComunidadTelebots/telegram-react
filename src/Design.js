@@ -27,6 +27,7 @@ import './designs/weba.css';
 import './designs/weba-classic.css';
 import './designs/palettes.css';
 import './designs/chat-patterns.css';
+import './designs/feature-compat.css';
 
 const DESIGN_KEY = 'tg_design';
 
@@ -202,6 +203,10 @@ export function setDesign(name) {
 
 export function initDesign() {
     setDesign(getDesign());
+    document.body.classList.toggle(
+        'design-legacy-features',
+        localStorage.getItem('tg_design_legacy_features') === 'true',
+    );
     initPalette();
     initChatPattern();
 }

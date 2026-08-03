@@ -29,3 +29,22 @@
 .chat-details-info-icon {
     transform: rotateZ(180deg);
 }
+.linked-community-list {
+    padding: 8px 12px;
+}
+
+.linked-community-card {
+    border: 1px solid var(--design-border-color, rgba(0, 0, 0, 0.1));
+    border-radius: var(--design-control-radius, 12px);
+    background: var(--design-hover-background, rgba(51, 144, 236, 0.06));
+}
+
+.linked-community-icon,
+.linked-community-open {
+    color: var(--color-accent-main, var(--accent, #3390ec));
+}
+
+.linked-community-open {
+    font-size: 12px;
+    font-weight: 600;
+}
