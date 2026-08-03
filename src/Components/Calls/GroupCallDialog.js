@@ -22,6 +22,9 @@ const initialState = {
     call: null,
     title: '',
     scheduleDate: '',
+    inviteUsers: '',
+    recordingTitle: '',
+    recordVideo: false,
 };
 
 class GroupCallDialog extends React.PureComponent {
@@ -98,6 +101,36 @@ class GroupCallDialog extends React.PureComponent {
         this.run({ '@type': 'discardGroupCall', ...this.callParams() });
     };
 
+    invite = async () => {
+        const users = this.state.inviteUsers
+            .split(/[\s,;]+/)
+            .map(value => value.trim())
+            .filter(Boolean);
+        if (!users.length) return;
+        const result = await this.run({ '@type': 'inviteToGroupCall', ...this.callParams(), users }, false);
+        if (result) this.setState({ inviteUsers: '' });
+    };
+
+    toggleRecording = () =>
+        this.run({
+            '@type': 'toggleGroupCallRecord',
+            ...this.callParams(),
+            start: !this.state.call.record_start_date,
+            video: this.state.recordVideo,
+            title: this.state.recordingTitle,
+        });
+
+    subscribeScheduled = () =>
+        this.run({ '@type': 'subscribeScheduledGroupCall', ...this.callParams(), subscribed: true }, false);
+
+    toggleParticipantMute = participant =>
+        this.run({
+            '@type': 'editGroupCallParticipant',
+            ...this.callParams(),
+            participant: participant.id,
+            muted: !participant.muted,
+        });
+
     renderCreate() {
         const { saving, title, scheduleDate } = this.state;
         return (
@@ -129,7 +162,8 @@ class GroupCallDialog extends React.PureComponent {
     }
 
     renderActive() {
-        const { call, saving, title } = this.state;
+        const { call, saving, title, inviteUsers, recordingTitle, recordVideo } = this.state;
+        const canManage = call.can_change_join_muted;
         return (
             <>
                 <DialogContentText>
@@ -144,16 +178,18 @@ class GroupCallDialog extends React.PureComponent {
                     fullWidth
                     margin='dense'
                 />
-                <Button color='primary' disabled={saving || title === call.title} onClick={this.editTitle}>
-                    Guardar título
-                </Button>
+                {canManage && (
+                    <Button color='primary' disabled={saving || title === call.title} onClick={this.editTitle}>
+                        Guardar título
+                    </Button>
+                )}
                 {call.can_change_join_muted && (
                     <FormControlLabel
                         control={<Checkbox checked={call.join_muted} onChange={this.toggleJoinMuted} color='primary' />}
                         label='Los nuevos participantes entran silenciados'
                     />
                 )}
-                {call.scheduled && (
+                {call.scheduled && canManage && (
                     <Button
                         color='primary'
                         variant='contained'
@@ -161,6 +197,49 @@ class GroupCallDialog extends React.PureComponent {
                         onClick={() => this.run({ '@type': 'startScheduledGroupCall', ...this.callParams() })}>
                         Iniciar ahora
                     </Button>
+                )}
+                {call.scheduled && (
+                    <Button color='primary' disabled={saving} onClick={this.subscribeScheduled}>
+                        Avisarme cuando empiece
+                    </Button>
+                )}
+                <TextField
+                    label='Invitar usuarios (@usuario o ID, separados por comas)'
+                    value={inviteUsers}
+                    onChange={event => this.setState({ inviteUsers: event.target.value })}
+                    fullWidth
+                    margin='dense'
+                />
+                <Button color='primary' disabled={saving || !inviteUsers.trim()} onClick={this.invite}>
+                    Invitar participantes
+                </Button>
+                {!call.scheduled && canManage && (
+                    <>
+                        {!call.record_start_date && (
+                            <TextField
+                                label='Título de la grabación (opcional)'
+                                value={recordingTitle}
+                                onChange={event => this.setState({ recordingTitle: event.target.value })}
+                                fullWidth
+                                margin='dense'
+                            />
+                        )}
+                        {!call.record_start_date && (
+                            <FormControlLabel
+                                control={
+                                    <Checkbox
+                                        checked={recordVideo}
+                                        onChange={event => this.setState({ recordVideo: event.target.checked })}
+                                        color='primary'
+                                    />
+                                }
+                                label='Incluir vídeo en la grabación'
+                            />
+                        )}
+                        <Button color='primary' disabled={saving} onClick={this.toggleRecording}>
+                            {call.record_start_date ? 'Detener grabación' : 'Iniciar grabación'}
+                        </Button>
+                    </>
                 )}
                 <List dense>
                     {(call.participants || []).map(participant => (
@@ -176,6 +255,14 @@ class GroupCallDialog extends React.PureComponent {
                                     .filter(Boolean)
                                     .join(' · ')}
                             />
+                            {canManage && (
+                                <Button
+                                    size='small'
+                                    disabled={saving || !participant.id}
+                                    onClick={() => this.toggleParticipantMute(participant)}>
+                                    {participant.muted ? 'Permitir hablar' : 'Silenciar'}
+                                </Button>
+                            )}
                         </ListItem>
                     ))}
                 </List>
@@ -209,7 +296,7 @@ class GroupCallDialog extends React.PureComponent {
                             Copiar invitación
                         </Button>
                     )}
-                    {call?.active && (
+                    {call?.active && call.can_change_join_muted && (
                         <Button disabled={saving} color='secondary' onClick={this.discard}>
                             Finalizar
                         </Button>

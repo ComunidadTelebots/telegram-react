@@ -16,6 +16,7 @@ import LanguageIcon from '@material-ui/icons/Language';
 import DevicesIcon from '@material-ui/icons/Devices';
 import StorageIcon from '@material-ui/icons/Storage';
 import EmojiEmotionsIcon from '@material-ui/icons/EmojiEmotions';
+import FolderIcon from '@material-ui/icons/Folder';
 import HistoryIcon from '@material-ui/icons/History';
 import withStyles from '@material-ui/core/styles/withStyles';
 import { withTranslation } from 'react-i18next';
@@ -125,6 +126,10 @@ class MainMenuButton extends React.Component {
         this.themePicker && this.themePicker.open();
     };
 
+    handleChatFolders = () => {
+        ApplicationStore.emit('clientUpdateOpenCreateFolder');
+    };
+
     render() {
         const { classes } = this.props;
         const { authorizationState, drawerOpen, design, menuAnchor, legacyOnly } = this.state;
@@ -177,6 +182,12 @@ class MainMenuButton extends React.Component {
                                     <EmojiEmotionsIcon />
                                 </ListItemIcon>
                                 Stickers favoritos
+                            </MenuItem>,
+                            <MenuItem key='folders' onClick={() => this.runMenuAction(this.handleChatFolders)}>
+                                <ListItemIcon>
+                                    <FolderIcon />
+                                </ListItemIcon>
+                                Carpetas de chat
                             </MenuItem>,
                         ]}
                         <MenuItem onClick={this.handleToggleLegacyFeatures}>

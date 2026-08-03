@@ -138,6 +138,7 @@ class Dialogs extends Component {
         AppStore.on('clientUpdateChatDetailsVisibility', this.onClientUpdateChatDetailsVisibility);
         AppStore.on('clientUpdateSearchChat', this.onClientUpdateSearchChat);
         AppStore.on('clientUpdateThemeChange', this.onClientUpdateThemeChange);
+        AppStore.on('clientUpdateOpenCreateFolder', this.handleOpenCreateFolder);
 
         ChatStore.on('updateChatChatList', this.onUpdateChatChatList);
 
@@ -159,6 +160,7 @@ class Dialogs extends Component {
         AppStore.off('clientUpdateChatDetailsVisibility', this.onClientUpdateChatDetailsVisibility);
         AppStore.off('clientUpdateSearchChat', this.onClientUpdateSearchChat);
         AppStore.off('clientUpdateThemeChange', this.onClientUpdateThemeChange);
+        AppStore.off('clientUpdateOpenCreateFolder', this.handleOpenCreateFolder);
 
         ChatStore.off('updateChatChatList', this.onUpdateChatChatList);
 

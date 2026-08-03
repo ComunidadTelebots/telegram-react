@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.0.635] - 2026-08-03 — Ajustes completos y chats de voz ampliados
+### Added
+- Transferencia real de regalos a usuarios mediante doble confirmación, validación del destinatario y coste visible.
+- Chats de voz con invitaciones, grabación de audio o vídeo, suscripción a sesiones programadas y moderación individual de participantes.
+- Acceso real a Ajustes de chat y al creador de Carpetas en Android y demás familias visuales compatibles.
+### Changed
+- Los controles administrativos de chats de voz se adaptan a los permisos efectivos devueltos por Telegram.
+- Corregido el mapeo de conversión, mejora, exportación y reembolso de regalos guardados.
+- Ajustes pasa a completo en el manifiesto: ya no quedan acciones “Próximamente”.
+### Compatibility
+- La reventa permanece deshabilitada porque la capa TL instalada no permite publicar un precio.
+- Audio, vídeo y pantalla en llamadas grupales siguen requiriendo una futura capa `tgcalls`/SFU.
+
 ## [0.0.634] - 2026-08-03 — Administración de chats de voz y seguridad WebApp
 ### Added
 - Panel real de chats de voz para grupos y supergrupos: detección, creación inmediata o programada, inicio, participantes, título, silencio inicial, invitación y finalización.

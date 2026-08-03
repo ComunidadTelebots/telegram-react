@@ -204,6 +204,49 @@
     text-align: center;
 }
 
+.stargift-transfer-form {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 10px;
+    border-radius: 10px;
+    background: var(--design-hover-color, rgba(0, 0, 0, 0.04));
+    color: var(--color-text-primary, #222);
+    font-size: 12px;
+}
+
+.stargift-transfer-form > input {
+    border: 1px solid var(--design-border-color, rgba(0, 0, 0, 0.14));
+    border-radius: 8px;
+    padding: 8px 10px;
+    background: var(--design-panel-background, #fff);
+    color: inherit;
+    font: inherit;
+}
+
+.stargift-transfer-confirm {
+    display: flex;
+    align-items: flex-start;
+    gap: 7px;
+    line-height: 1.35;
+}
+
+.stargift-transfer-submit {
+    border: 0;
+    border-radius: 8px;
+    padding: 8px 10px;
+    background: var(--color-accent-main, #2196f3);
+    color: #fff;
+    cursor: pointer;
+    font: inherit;
+    font-weight: 600;
+}
+
+.stargift-transfer-submit:disabled {
+    opacity: 0.5;
+    cursor: default;
+}
+
 .stargift-load-more {
     display: block;
     margin: 8px auto;

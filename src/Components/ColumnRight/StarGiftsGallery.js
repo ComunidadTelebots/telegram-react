@@ -4,6 +4,17 @@ import TdLibController from '../../Controllers/TdLibController';
 import './StarGiftsGallery.css';
 
 class GiftDetailModal extends Component {
+    constructor(props) {
+        super(props);
+        this.state = { transferOpen: false, transferConfirmed: false, recipient: '' };
+    }
+
+    submitTransfer = () => {
+        const recipient = this.state.recipient.trim();
+        if (!recipient || !this.state.transferConfirmed) return;
+        this.props.onAction('transfer', this.props.gift, { recipient });
+    };
+
     render() {
         const { gift, onClose, onAction, busyAction, actionError } = this.props;
         if (!gift) return null;
@@ -11,13 +22,12 @@ class GiftDetailModal extends Component {
         const canUpgrade = gift.can_upgrade || gift.canUpgrade;
         const upgradeStars = gift.upgrade_stars ?? gift.upgradeStars;
         const transferStars = gift.transfer_stars ?? gift.transferStars;
-        const canExportAt = gift.can_export_at ?? gift.canExportAt;
         const refunded = gift.refunded;
         const nameHidden = gift.name_hidden ?? gift.nameHidden;
         const unsaved = gift.unsaved;
 
         const canTransfer = transferStars != null;
-        const canResale = canExportAt != null;
+        const { transferOpen, transferConfirmed, recipient } = this.state;
 
         return (
             <div className='stargift-modal-backdrop' onClick={e => e.target === e.currentTarget && onClose()}>
@@ -61,7 +71,11 @@ class GiftDetailModal extends Component {
                             </button>
 
                             {/* Transfer */}
-                            <div className={`stargift-action${canTransfer ? '' : ' stargift-action--disabled'}`}>
+                            <button
+                                type='button'
+                                disabled={!canTransfer || !!busyAction}
+                                onClick={() => this.setState({ transferOpen: !transferOpen, transferConfirmed: false })}
+                                className={`stargift-action${canTransfer ? '' : ' stargift-action--disabled'}`}>
                                 <span className='stargift-action-icon'>↗</span>
                                 <div className='stargift-action-info'>
                                     <span className='stargift-action-label'>Transferir</span>
@@ -72,26 +86,56 @@ class GiftDetailModal extends Component {
                                 <span className='stargift-action-status'>
                                     {canTransfer ? 'Disponible' : 'No disponible'}
                                 </span>
-                            </div>
+                            </button>
+
+                            {transferOpen && canTransfer && (
+                                <div className='stargift-transfer-form'>
+                                    <label htmlFor='stargift-recipient'>Usuario o ID del destinatario</label>
+                                    <input
+                                        id='stargift-recipient'
+                                        type='text'
+                                        autoComplete='off'
+                                        value={recipient}
+                                        placeholder='@usuario o ID'
+                                        disabled={!!busyAction}
+                                        onChange={event =>
+                                            this.setState({ recipient: event.target.value, transferConfirmed: false })
+                                        }
+                                    />
+                                    <label className='stargift-transfer-confirm'>
+                                        <input
+                                            type='checkbox'
+                                            checked={transferConfirmed}
+                                            disabled={!recipient.trim() || !!busyAction}
+                                            onChange={event =>
+                                                this.setState({ transferConfirmed: event.target.checked })
+                                            }
+                                        />
+                                        <span>
+                                            Confirmo la transferencia irreversible
+                                            {transferStars > 0 ? ` y el coste de ${transferStars} Stars` : ''}.
+                                        </span>
+                                    </label>
+                                    <button
+                                        type='button'
+                                        className='stargift-transfer-submit'
+                                        disabled={!recipient.trim() || !transferConfirmed || !!busyAction}
+                                        onClick={this.submitTransfer}>
+                                        {busyAction === 'transfer' ? 'Transfiriendo...' : 'Confirmar transferencia'}
+                                    </button>
+                                </div>
+                            )}
 
                             {/* Resale */}
-                            <div className={`stargift-action${canResale ? '' : ' stargift-action--disabled'}`}>
+                            <div className='stargift-action stargift-action--disabled'>
                                 <span className='stargift-action-icon'>🏷</span>
                                 <div className='stargift-action-info'>
                                     <span className='stargift-action-label'>Poner en venta</span>
-                                    {canResale && canExportAt > 0 && (
-                                        <span className='stargift-action-cost'>
-                                            Disponible desde {new Date(canExportAt * 1000).toLocaleDateString()}
-                                        </span>
-                                    )}
+                                    <span className='stargift-action-cost'>
+                                        La API instalada no permite fijar precio.
+                                    </span>
                                 </div>
-                                <span className='stargift-action-status'>
-                                    {canResale
-                                        ? canExportAt > Date.now() / 1000
-                                            ? 'Pronto'
-                                            : 'Disponible'
-                                        : 'No disponible'}
-                                </span>
+                                <span className='stargift-action-status'>No disponible</span>
                             </div>
 
                             {/* Convert */}
@@ -186,12 +230,13 @@ class StarGiftsGallery extends Component {
         }
     };
 
-    _performAction = async (action, gift) => {
+    _performAction = async (action, gift, options = {}) => {
         const type = {
             save: 'saveStarGift',
             unsave: 'saveStarGift',
             convert: 'convertStarGift',
             upgrade: 'upgradeStarGift',
+            transfer: 'transferStarGift',
         }[action];
         if (!type) return;
         this.setState({ busyAction: action, actionError: '' });
@@ -201,8 +246,9 @@ class StarGiftsGallery extends Component {
                 gift_id: gift.id,
                 unsave: action === 'unsave',
                 keep_original_details: true,
+                recipient: options.recipient,
             });
-            if (action === 'convert') {
+            if (action === 'convert' || action === 'transfer') {
                 this.setState(state => ({
                     gifts: state.gifts.filter(item => item.id !== gift.id),
                     selectedGift: null,

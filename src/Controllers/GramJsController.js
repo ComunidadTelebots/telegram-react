@@ -938,6 +938,14 @@ class GramJsController extends EventEmitter {
                 return this._exportGroupCallInvite(req);
             case 'discardGroupCall':
                 return this._discardGroupCall(req);
+            case 'inviteToGroupCall':
+                return this._inviteToGroupCall(req);
+            case 'toggleGroupCallRecord':
+                return this._toggleGroupCallRecord(req);
+            case 'subscribeScheduledGroupCall':
+                return this._subscribeScheduledGroupCall(req);
+            case 'editGroupCallParticipant':
+                return this._editGroupCallParticipant(req);
             case 'getAttachMenuBots':
                 return this._getAttachMenuBots(req);
             case 'getBotApp':
@@ -1132,6 +1140,8 @@ class GramJsController extends EventEmitter {
                 return this._convertStarGift(req);
             case 'upgradeStarGift':
                 return this._upgradeStarGift(req);
+            case 'transferStarGift':
+                return this._transferStarGift(req);
             case 'joinChat':
                 return this._joinChat(req);
 
@@ -1234,6 +1244,14 @@ class GramJsController extends EventEmitter {
                 return this._exportGroupCallInvite(req);
             case 'discardGroupCall':
                 return this._discardGroupCall(req);
+            case 'inviteToGroupCall':
+                return this._inviteToGroupCall(req);
+            case 'toggleGroupCallRecord':
+                return this._toggleGroupCallRecord(req);
+            case 'subscribeScheduledGroupCall':
+                return this._subscribeScheduledGroupCall(req);
+            case 'editGroupCallParticipant':
+                return this._editGroupCallParticipant(req);
 
             // ── Archivos ──────────────────────────────────────────────────────
             case 'downloadFile':
@@ -2284,6 +2302,55 @@ class GramJsController extends EventEmitter {
 
     _discardGroupCall = async call => {
         const result = await this.client.invoke(new Api.phone.DiscardGroupCall({ call: this._groupCallInput(call) }));
+        return { success: true, updates: result };
+    };
+
+    _inviteToGroupCall = async ({ users = [], ...call }) => {
+        const inputs = [];
+        for (const user of users.slice(0, 100)) {
+            inputs.push(await this.client.getInputEntity(String(user).trim()));
+        }
+        if (!inputs.length) throw new Error('At least one participant is required');
+        const result = await this.client.invoke(
+            new Api.phone.InviteToGroupCall({ call: this._groupCallInput(call), users: inputs }),
+        );
+        return { success: true, updates: result };
+    };
+
+    _toggleGroupCallRecord = async ({ start, video = false, title = '', ...call }) => {
+        const result = await this.client.invoke(
+            new Api.phone.ToggleGroupCallRecord({
+                call: this._groupCallInput(call),
+                start: !!start,
+                video: !!video,
+                title: start && title ? String(title).trim() : undefined,
+                videoPortrait: false,
+            }),
+        );
+        return { success: true, updates: result };
+    };
+
+    _subscribeScheduledGroupCall = async ({ subscribed = true, ...call }) => {
+        const result = await this.client.invoke(
+            new Api.phone.ToggleGroupCallStartSubscription({
+                call: this._groupCallInput(call),
+                subscribed: !!subscribed,
+            }),
+        );
+        return { success: true, updates: result };
+    };
+
+    _editGroupCallParticipant = async ({ participant, muted, volume, raise_hand, ...call }) => {
+        const peer = await this.client.getInputEntity(String(participant).trim());
+        const result = await this.client.invoke(
+            new Api.phone.EditGroupCallParticipant({
+                call: this._groupCallInput(call),
+                participant: peer,
+                muted: muted == null ? undefined : !!muted,
+                volume: volume == null ? undefined : Math.max(1, Math.min(20000, Number(volume))),
+                raiseHand: raise_hand == null ? undefined : !!raise_hand,
+            }),
+        );
         return { success: true, updates: result };
     };
 
@@ -6328,11 +6395,16 @@ class GramJsController extends EventEmitter {
         const gifts = (result.gifts || []).map(g => ({
             id: g.msgId != null ? Number(g.msgId) : null,
             stars: g.gift?.stars != null ? Number(g.gift.stars) : null,
-            convert_stars: g.gift?.convertStars != null ? Number(g.gift.convertStars) : null,
+            convert_stars: g.convertStars != null ? Number(g.convertStars) : null,
+            upgrade_stars: g.upgradeStars != null ? Number(g.upgradeStars) : null,
+            transfer_stars: g.transferStars != null ? Number(g.transferStars) : null,
+            can_export_at: g.canExportAt != null ? Number(g.canExportAt) : null,
+            can_upgrade: !!g.canUpgrade,
             message: g.message?.text || null,
             date: g.date || null,
             name_hidden: !!g.nameHidden,
             unsaved: !!g.unsaved,
+            refunded: !!g.refunded,
         }));
         return { gifts, count: result.count || gifts.length };
     };
@@ -6362,6 +6434,25 @@ class GramJsController extends EventEmitter {
             new Api.payments.UpgradeStarGift({
                 keepOriginalDetails: !!keep_original_details,
                 stargift: this._savedStarGiftInput(gift_id),
+            }),
+        );
+        return { ok: true, result };
+    };
+
+    _transferStarGift = async ({ gift_id, recipient }) => {
+        const value = String(recipient || '').trim();
+        if (!/^(?:@[A-Za-z][A-Za-z0-9_]{4,31}|[A-Za-z][A-Za-z0-9_]{4,31}|\d{5,20})$/.test(value)) {
+            throw new Error('Introduce un usuario de Telegram o un ID vÃ¡lido');
+        }
+        const entity = /^\d+$/.test(value) ? BigInt(value) : value.replace(/^@/, '');
+        const toId = await this.client.getInputEntity(entity);
+        if (!(toId instanceof Api.InputPeerUser)) {
+            throw new Error('Los regalos solo se pueden transferir a usuarios');
+        }
+        const result = await this.client.invoke(
+            new Api.payments.TransferStarGift({
+                stargift: this._savedStarGiftInput(gift_id),
+                toId,
             }),
         );
         return { ok: true, result };

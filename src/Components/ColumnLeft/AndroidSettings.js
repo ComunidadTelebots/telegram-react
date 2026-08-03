@@ -125,6 +125,15 @@ class AndroidSettings extends React.PureComponent {
         this.setState({ snackbar: labels[permission] || 'Permiso de notificaciones pendiente' });
     };
 
+    handleChatSettings = () => {
+        if (this.props.onAppearance) this.props.onAppearance();
+    };
+
+    handleChatFolders = () => {
+        this.props.onClose();
+        ApplicationStore.emit('clientUpdateOpenCreateFolder');
+    };
+
     handleStorage = async () => {
         if (this.dataSettingsRef) this.dataSettingsRef.open();
     };
@@ -194,9 +203,9 @@ class AndroidSettings extends React.PureComponent {
                     {
                         icon: <ChatBubbleIcon />,
                         label: 'Ajustes de chat',
-                        sub: '',
+                        sub: 'Texto, densidad y animaciones',
                         arrow: true,
-                        action: () => this.handleSoon('Ajustes de chat'),
+                        action: this.handleChatSettings,
                     },
                     ...(legacyOnly
                         ? []
@@ -204,9 +213,9 @@ class AndroidSettings extends React.PureComponent {
                               {
                                   icon: <FolderIcon />,
                                   label: 'Carpetas de chat',
-                                  sub: '',
+                                  sub: 'Crear y organizar carpetas',
                                   arrow: true,
-                                  action: () => this.handleSoon('Carpetas de chat'),
+                                  action: this.handleChatFolders,
                               },
                           ]),
                 ],
