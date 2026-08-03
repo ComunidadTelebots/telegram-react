@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.0.632] - 2026-08-03 — Paridad funcional configurable entre versiones
+### Added
+- Botón `Solo funciones de la época` disponible en Android, Unigram, Desktop, iOS, macOS y perfiles web.
+- La preferencia queda guardada localmente y puede revertirse con `Mostrar funciones actuales`.
+### Changed
+- Por defecto, las variantes históricas cambian exclusivamente el diseño y conservan todas las funciones modernas.
+- En modo histórico se ocultan solo accesos visuales modernos; la API, sesión, cifrado y backend continúan siendo los actuales.
+### Compatibility
+- No se modifican hojas de estilo, nombres de diseño ni preferencias existentes.
+
 ## [0.0.631] - 2026-08-03 — Ajustes por familia visual
 ### Added
 - Menú funcional de Apariencia, Idioma, Dispositivos, Datos y Stickers para Unigram, Desktop, iOS, macOS, Web K/A, Webogram, Aurora y Telegram X.

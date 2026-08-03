@@ -21,6 +21,7 @@ import GroupIcon from '@material-ui/icons/Group';
 import PersonAddIcon from '@material-ui/icons/PersonAdd';
 import ExitToAppIcon from '@material-ui/icons/ExitToApp';
 import CropFreeIcon from '@material-ui/icons/CropFree';
+import HistoryIcon from '@material-ui/icons/History';
 import Snackbar from '@material-ui/core/Snackbar';
 import TwoStepVerification from '../Additional/TwoStepVerification';
 import ActiveSessions from '../Additional/ActiveSessions';
@@ -41,10 +42,6 @@ import './AndroidSettings.css';
 function isHoloOrClassic(d) {
     return d === 'android-holo' || d === 'android-classic';
 }
-function isNewEra(d) {
-    return d === 'android-glass' || d === 'android';
-}
-
 class AndroidSettings extends React.PureComponent {
     constructor(props) {
         super(props);
@@ -53,6 +50,7 @@ class AndroidSettings extends React.PureComponent {
             design: getDesign(),
             bio: '',
             snackbar: null,
+            legacyOnly: localStorage.getItem('tg_design_legacy_features') === 'true',
         };
     }
 
@@ -135,6 +133,15 @@ class AndroidSettings extends React.PureComponent {
         if (this.favedStickersRef) this.favedStickersRef.open();
     };
 
+    handleToggleLegacyFeatures = () => {
+        this.setState(({ legacyOnly }) => {
+            const next = !legacyOnly;
+            localStorage.setItem('tg_design_legacy_features', String(next));
+            ApplicationStore.emit('clientUpdateDesignCapabilities', { legacyOnly: next });
+            return { legacyOnly: next };
+        });
+    };
+
     handleLanguage = () => {
         if (this.languagePickerRef) this.languagePickerRef.open();
     };
@@ -143,7 +150,7 @@ class AndroidSettings extends React.PureComponent {
 
     render() {
         const { onClose } = this.props;
-        const { isDark, design, bio } = this.state;
+        const { isDark, design, bio, legacyOnly } = this.state;
         const me = this.getMe();
         const name = me ? getUserFullName(me) : 'Telegram User';
         const phone = me && me.phone_number ? '+' + me.phone_number : '';
@@ -156,7 +163,6 @@ class AndroidSettings extends React.PureComponent {
             .toUpperCase();
         const avatarSrc = me ? getSrc(me.profile_photo ? me.profile_photo.small : null) : null;
         const isOld = isHoloOrClassic(design);
-        const isNew = isNewEra(design);
 
         // Secciones que varían por era
         const sections = [
@@ -192,7 +198,7 @@ class AndroidSettings extends React.PureComponent {
                         arrow: true,
                         action: () => this.handleSoon('Ajustes de chat'),
                     },
-                    ...(isOld
+                    ...(legacyOnly
                         ? []
                         : [
                               {
@@ -206,7 +212,7 @@ class AndroidSettings extends React.PureComponent {
                 ],
             },
             // Dispositivos — desde v9 en adelante
-            ...(!isHoloOrClassic(design)
+            ...(!legacyOnly
                 ? [
                       {
                           key: 'devices',
@@ -220,11 +226,7 @@ class AndroidSettings extends React.PureComponent {
                               },
                           ],
                       },
-                  ]
-                : []),
-            // Premium — solo en eras modernas
-            ...(isNew
-                ? [
+                      // Premium — solo en eras modernas
                       {
                           key: 'premium',
                           rows: [
@@ -270,6 +272,14 @@ class AndroidSettings extends React.PureComponent {
                         sub: 'Español',
                         arrow: true,
                         action: this.handleLanguage,
+                    },
+                    {
+                        icon: <HistoryIcon />,
+                        label: 'Solo funciones de la época',
+                        sub: legacyOnly ? 'Activado · API moderna' : 'Desactivado · funciones actuales',
+                        toggle: true,
+                        toggleOn: legacyOnly,
+                        action: this.handleToggleLegacyFeatures,
                     },
                 ],
             },

@@ -16,6 +16,7 @@ import LanguageIcon from '@material-ui/icons/Language';
 import DevicesIcon from '@material-ui/icons/Devices';
 import StorageIcon from '@material-ui/icons/Storage';
 import EmojiEmotionsIcon from '@material-ui/icons/EmojiEmotions';
+import HistoryIcon from '@material-ui/icons/History';
 import withStyles from '@material-ui/core/styles/withStyles';
 import { withTranslation } from 'react-i18next';
 import { compose } from 'recompose';
@@ -55,6 +56,7 @@ class MainMenuButton extends React.Component {
             accounts: TdLibController.getAccounts ? TdLibController.getAccounts() : [],
             activeAccountIndex: parseInt(localStorage.getItem('tg_gramjs_active_account') || '0', 10),
             design: getDesign(),
+            legacyOnly: localStorage.getItem('tg_design_legacy_features') === 'true',
         };
     }
 
@@ -102,6 +104,14 @@ class MainMenuButton extends React.Component {
         action();
     };
 
+    handleToggleLegacyFeatures = () => {
+        this.setState(({ legacyOnly }) => {
+            const next = !legacyOnly;
+            localStorage.setItem('tg_design_legacy_features', String(next));
+            return { legacyOnly: next };
+        });
+    };
+
     handleLogOut = () => {
         this.props.onLogOut && this.props.onLogOut();
     };
@@ -116,7 +126,7 @@ class MainMenuButton extends React.Component {
 
     render() {
         const { classes } = this.props;
-        const { authorizationState, drawerOpen, design, menuAnchor } = this.state;
+        const { authorizationState, drawerOpen, design, menuAnchor, legacyOnly } = this.state;
 
         const showDrawer = isAuthorizationReady(authorizationState) && hasDrawer(design);
 
@@ -144,23 +154,35 @@ class MainMenuButton extends React.Component {
                             </ListItemIcon>
                             Idioma
                         </MenuItem>
-                        <MenuItem onClick={() => this.runMenuAction(this.handleActiveSessions)}>
+                        {!legacyOnly && [
+                            <MenuItem key='devices' onClick={() => this.runMenuAction(this.handleActiveSessions)}>
+                                <ListItemIcon>
+                                    <DevicesIcon />
+                                </ListItemIcon>
+                                Dispositivos
+                            </MenuItem>,
+                            <MenuItem
+                                key='storage'
+                                onClick={() => this.runMenuAction(() => this.dataSettingsRef.open())}>
+                                <ListItemIcon>
+                                    <StorageIcon />
+                                </ListItemIcon>
+                                Datos y almacenamiento
+                            </MenuItem>,
+                            <MenuItem
+                                key='stickers'
+                                onClick={() => this.runMenuAction(() => this.favedStickersRef.open())}>
+                                <ListItemIcon>
+                                    <EmojiEmotionsIcon />
+                                </ListItemIcon>
+                                Stickers favoritos
+                            </MenuItem>,
+                        ]}
+                        <MenuItem onClick={this.handleToggleLegacyFeatures}>
                             <ListItemIcon>
-                                <DevicesIcon />
+                                <HistoryIcon />
                             </ListItemIcon>
-                            Dispositivos
-                        </MenuItem>
-                        <MenuItem onClick={() => this.runMenuAction(() => this.dataSettingsRef.open())}>
-                            <ListItemIcon>
-                                <StorageIcon />
-                            </ListItemIcon>
-                            Datos y almacenamiento
-                        </MenuItem>
-                        <MenuItem onClick={() => this.runMenuAction(() => this.favedStickersRef.open())}>
-                            <ListItemIcon>
-                                <EmojiEmotionsIcon />
-                            </ListItemIcon>
-                            Stickers favoritos
+                            {legacyOnly ? 'Mostrar funciones actuales' : 'Solo funciones de la época'}
                         </MenuItem>
                     </Menu>
                 )}
