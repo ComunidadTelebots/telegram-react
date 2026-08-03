@@ -27,6 +27,8 @@ import ActiveSessions from '../Additional/ActiveSessions';
 import EditProfile from '../Additional/EditProfile';
 import PrivacySettings from './PrivacySettings';
 import LanguagePicker from './LanguagePicker';
+import AndroidDataSettings from './AndroidDataSettings';
+import FavedStickers from '../Additional/FavedStickers';
 import { getSrc } from '../../Utils/File';
 import { getUserFullName } from '../../Utils/User';
 import UserStore from '../../Stores/UserStore';
@@ -126,13 +128,11 @@ class AndroidSettings extends React.PureComponent {
     };
 
     handleStorage = async () => {
-        if (!navigator.storage || !navigator.storage.estimate) {
-            this.setState({ snackbar: 'El navegador no ofrece datos de almacenamiento.' });
-            return;
-        }
-        const { usage = 0, quota = 0 } = await navigator.storage.estimate();
-        const mb = value => (value / 1024 / 1024).toFixed(1);
-        this.setState({ snackbar: `Telegram usa ${mb(usage)} MB de ${mb(quota)} MB disponibles` });
+        if (this.dataSettingsRef) this.dataSettingsRef.open();
+    };
+
+    handleFavoriteStickers = () => {
+        if (this.favedStickersRef) this.favedStickersRef.open();
     };
 
     handleLanguage = () => {
@@ -235,7 +235,13 @@ class AndroidSettings extends React.PureComponent {
                                   arrow: true,
                                   accent: true,
                               },
-                              { icon: <EmojiEmotionsIcon />, label: 'Stickers & Emoji', sub: '', arrow: true },
+                              {
+                                  icon: <EmojiEmotionsIcon />,
+                                  label: 'Stickers & Emoji',
+                                  sub: 'Stickers favoritos',
+                                  arrow: true,
+                                  action: this.handleFavoriteStickers,
+                              },
                           ],
                       },
                   ]
@@ -410,6 +416,8 @@ class AndroidSettings extends React.PureComponent {
                 <EditProfile ref={ref => (this.editProfileRef = ref)} />
                 <PrivacySettings ref={ref => (this.privacySettingsRef = ref)} />
                 <LanguagePicker ref={ref => (this.languagePickerRef = ref)} />
+                <AndroidDataSettings ref={ref => (this.dataSettingsRef = ref)} />
+                <FavedStickers ref={ref => (this.favedStickersRef = ref)} />
                 <Snackbar
                     open={!!this.state.snackbar}
                     message={this.state.snackbar || ''}

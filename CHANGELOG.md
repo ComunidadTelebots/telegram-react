@@ -1,8 +1,16 @@
 # Changelog
 
+## [0.0.630] - 2026-08-03 — Datos y stickers integrados en Ajustes
+### Added
+- Nuevo panel funcional de datos y almacenamiento reutilizando el overlay Android existente: muestra uso y cuota, solicita persistencia, gestiona el permiso de notificaciones y elimina solo cachés temporales.
+- La fila `Stickers & Emoji` abre el gestor real de stickers favoritos ya incluido en el cliente.
+- El manifiesto de paridad incorpora estas dos capacidades como completadas y verificadas por archivo.
+### Security
+- La limpieza de caché no elimina IndexedDB, sesiones, chats ni credenciales; se limita a la API `CacheStorage` del navegador.
+
 ## [0.0.629] - 2026-08-03 — Paridad verificable con Telegram Web
 ### Added
-- Manifiesto público `public/data/telegram-web-parity.json` con 26 familias funcionales, estado `complete`, `partial` o `pending`, evidencia en código y bloqueos reales.
+- Manifiesto público `public/data/telegram-web-parity.json` con 27 familias funcionales, estado `complete`, `partial` o `pending`, evidencia en código y bloqueos reales.
 - Los ajustes Android permiten solicitar el permiso real de notificaciones, consultar el almacenamiento utilizado, abrir el selector de idioma y acceder a soporte/FAQ.
 - Se mantienen intactos todos los temas y diseños existentes; las mejoras reutilizan filas, diálogos y snackbars actuales.
 
