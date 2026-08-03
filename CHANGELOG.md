@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.0.629] - 2026-08-03 — Paridad verificable con Telegram Web
+### Added
+- Manifiesto público `public/data/telegram-web-parity.json` con 26 familias funcionales, estado `complete`, `partial` o `pending`, evidencia en código y bloqueos reales.
+- Los ajustes Android permiten solicitar el permiso real de notificaciones, consultar el almacenamiento utilizado, abrir el selector de idioma y acceder a soporte/FAQ.
+- Se mantienen intactos todos los temas y diseños existentes; las mejoras reutilizan filas, diálogos y snackbars actuales.
+
 ## [0.0.627] - 2026-06-27 — Bugfix: CSS visual (todos los temas)
 ### Fixed
 - **Bug #5 (Material You)**: selector de tema completamente invisible sobre header morado → pill blanca con `rgba(255,255,255,0.16)` background
@@ -170,4 +176,3 @@
 
 ## [0.0.601] - Previous
 - Earlier versions
-

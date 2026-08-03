@@ -26,6 +26,7 @@ import TwoStepVerification from '../Additional/TwoStepVerification';
 import ActiveSessions from '../Additional/ActiveSessions';
 import EditProfile from '../Additional/EditProfile';
 import PrivacySettings from './PrivacySettings';
+import LanguagePicker from './LanguagePicker';
 import { getSrc } from '../../Utils/File';
 import { getUserFullName } from '../../Utils/User';
 import UserStore from '../../Stores/UserStore';
@@ -113,6 +114,33 @@ class AndroidSettings extends React.PureComponent {
         this.setState({ snackbar: `${label} — próximamente` });
     };
 
+    handleNotifications = async () => {
+        if (!('Notification' in window)) {
+            this.setState({ snackbar: 'Este navegador no admite notificaciones.' });
+            return;
+        }
+        const permission =
+            Notification.permission === 'default' ? await Notification.requestPermission() : Notification.permission;
+        const labels = { granted: 'Notificaciones activadas', denied: 'Notificaciones bloqueadas por el navegador' };
+        this.setState({ snackbar: labels[permission] || 'Permiso de notificaciones pendiente' });
+    };
+
+    handleStorage = async () => {
+        if (!navigator.storage || !navigator.storage.estimate) {
+            this.setState({ snackbar: 'El navegador no ofrece datos de almacenamiento.' });
+            return;
+        }
+        const { usage = 0, quota = 0 } = await navigator.storage.estimate();
+        const mb = value => (value / 1024 / 1024).toFixed(1);
+        this.setState({ snackbar: `Telegram usa ${mb(usage)} MB de ${mb(quota)} MB disponibles` });
+    };
+
+    handleLanguage = () => {
+        if (this.languagePickerRef) this.languagePickerRef.open();
+    };
+
+    openHelp = path => window.open(`https://telegram.org/${path}`, '_blank', 'noopener,noreferrer');
+
     render() {
         const { onClose } = this.props;
         const { isDark, design, bio } = this.state;
@@ -141,7 +169,7 @@ class AndroidSettings extends React.PureComponent {
                         label: 'Notificaciones y sonidos',
                         sub: '',
                         arrow: true,
-                        action: () => this.handleSoon('Notificaciones y sonidos'),
+                        action: this.handleNotifications,
                     },
                     {
                         icon: <LockIcon />,
@@ -155,7 +183,7 @@ class AndroidSettings extends React.PureComponent {
                         label: 'Datos y almacenamiento',
                         sub: '',
                         arrow: true,
-                        action: () => this.handleSoon('Datos y almacenamiento'),
+                        action: this.handleStorage,
                     },
                     {
                         icon: <ChatBubbleIcon />,
@@ -230,7 +258,13 @@ class AndroidSettings extends React.PureComponent {
                         arrow: true,
                         action: this.props.onAppearance,
                     },
-                    { icon: <LanguageIcon />, label: 'Idioma', sub: 'Español', arrow: true },
+                    {
+                        icon: <LanguageIcon />,
+                        label: 'Idioma',
+                        sub: 'Español',
+                        arrow: true,
+                        action: this.handleLanguage,
+                    },
                 ],
             },
             // Invitar amigos — vieja era lo tenía aquí
@@ -248,14 +282,34 @@ class AndroidSettings extends React.PureComponent {
             // Almacenamiento
             {
                 key: 'storage',
-                rows: [{ icon: <StorageIcon />, label: 'Almacenamiento y datos', sub: '', arrow: true }],
+                rows: [
+                    {
+                        icon: <StorageIcon />,
+                        label: 'Almacenamiento y datos',
+                        sub: '',
+                        arrow: true,
+                        action: this.handleStorage,
+                    },
+                ],
             },
             // Soporte
             {
                 key: 'help',
                 rows: [
-                    { icon: <HelpIcon />, label: 'Ask a Question', sub: '', arrow: true },
-                    { icon: <InfoIcon />, label: 'Telegram Features', sub: '', arrow: true },
+                    {
+                        icon: <HelpIcon />,
+                        label: 'Ask a Question',
+                        sub: '',
+                        arrow: true,
+                        action: () => this.openHelp('support'),
+                    },
+                    {
+                        icon: <InfoIcon />,
+                        label: 'Telegram Features',
+                        sub: '',
+                        arrow: true,
+                        action: () => this.openHelp('faq'),
+                    },
                 ],
             },
         ];
@@ -355,6 +409,7 @@ class AndroidSettings extends React.PureComponent {
                 <ActiveSessions ref={ref => (this.activeSessionsRef = ref)} />
                 <EditProfile ref={ref => (this.editProfileRef = ref)} />
                 <PrivacySettings ref={ref => (this.privacySettingsRef = ref)} />
+                <LanguagePicker ref={ref => (this.languagePickerRef = ref)} />
                 <Snackbar
                     open={!!this.state.snackbar}
                     message={this.state.snackbar || ''}
