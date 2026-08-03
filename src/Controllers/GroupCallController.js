@@ -1,0 +1,280 @@
+import { EventEmitter } from 'events';
+import TdLibController from './TdLibController';
+
+const initialState = {
+    status: 'idle',
+    muted: true,
+    error: '',
+    remoteStream: null,
+};
+
+const waitForIceGathering = pc =>
+    new Promise(resolve => {
+        if (pc.iceGatheringState === 'complete') return resolve();
+        const finish = () => {
+            pc.removeEventListener('icegatheringstatechange', onChange);
+            clearTimeout(timer);
+            resolve();
+        };
+        const onChange = () => pc.iceGatheringState === 'complete' && finish();
+        const timer = setTimeout(finish, 8000);
+        pc.addEventListener('icegatheringstatechange', onChange);
+    });
+
+const readSdpValue = (sdp, prefix, required = true) => {
+    const line = sdp.split(/\r?\n/).find(value => value.startsWith(prefix));
+    if (!line && required) throw new Error(`La oferta WebRTC no contiene ${prefix}`);
+    return line ? line.slice(prefix.length) : '';
+};
+
+const offerToJoinPayload = sdp => {
+    const fingerprint = readSdpValue(sdp, 'a=fingerprint:').split(/\s+/);
+    const rawSsrc = readSdpValue(sdp, 'a=ssrc:', false);
+    const ssrc = rawSsrc ? Number(rawSsrc.split(/\s+/)[0]) : 0;
+    if (!Number.isInteger(ssrc) || ssrc === 0) throw new Error('No se pudo generar un SSRC de audio válido');
+    return {
+        fingerprints: [{ hash: fingerprint[0], fingerprint: fingerprint[1], setup: 'active' }],
+        pwd: readSdpValue(sdp, 'a=ice-pwd:'),
+        ssrc,
+        'ssrc-groups': [],
+        ufrag: readSdpValue(sdp, 'a=ice-ufrag:'),
+    };
+};
+
+const candidateLine = candidate => {
+    const protocol = String(candidate.protocol || 'udp').toUpperCase();
+    const generation = candidate.generation == null ? 0 : candidate.generation;
+    return `a=candidate:${candidate.foundation} ${candidate.component} ${protocol} ${candidate.priority} ${candidate.ip} ${candidate.port} typ ${candidate.type} generation ${generation}`;
+};
+
+const buildRemoteAnswer = payload => {
+    const transport = payload.transport || payload;
+    if (!transport.ufrag || !transport.pwd || !transport.fingerprints?.length) {
+        throw new Error('Telegram no devolvió parámetros WebRTC válidos');
+    }
+    const candidates = (transport.candidates || []).map(candidateLine).join('\r\n');
+    const fingerprint = transport.fingerprints[0];
+    return `v=0\r
+o=- ${Date.now()} 2 IN IP4 0.0.0.0\r
+s=-\r
+t=0 0\r
+a=group:BUNDLE 0\r
+a=ice-lite\r
+m=audio 1 RTP/SAVPF 111 126\r
+c=IN IP4 0.0.0.0\r
+a=mid:0\r
+a=ice-ufrag:${transport.ufrag}\r
+a=ice-pwd:${transport.pwd}\r
+a=fingerprint:${fingerprint.hash || 'sha-256'} ${fingerprint.fingerprint}\r
+a=setup:passive\r
+${candidates}\r
+a=rtpmap:111 opus/48000/2\r
+a=rtpmap:126 telephone-event/8000\r
+a=fmtp:111 minptime=10; useinbandfec=1; usedtx=1\r
+a=rtcp:1 IN IP4 0.0.0.0\r
+a=rtcp-mux\r
+a=rtcp-fb:111 transport-cc\r
+a=extmap:1 urn:ietf:params:rtp-hdrext:ssrc-audio-level\r
+a=recvonly\r
+`;
+};
+
+const buildConferenceOffer = (transport, sources, mainSource) => {
+    const normalized = Array.from(new Set([mainSource, ...sources].map(source => Number(source) >>> 0))).filter(
+        Boolean,
+    );
+    const mids = normalized.map(source => (source === mainSource >>> 0 ? '0' : `audio${source}`));
+    const lines = [
+        'v=0',
+        `o=- ${Date.now()} 2 IN IP4 0.0.0.0`,
+        's=-',
+        't=0 0',
+        `a=group:BUNDLE ${mids.join(' ')}`,
+        'a=ice-lite',
+    ];
+    normalized.forEach(source => {
+        const main = source === mainSource >>> 0;
+        lines.push(`m=audio ${main ? 1 : 0} RTP/SAVPF 111 126`);
+        lines.push('c=IN IP4 0.0.0.0');
+        lines.push(`a=mid:${main ? '0' : `audio${source}`}`);
+        lines.push(`a=ice-ufrag:${transport.ufrag}`, `a=ice-pwd:${transport.pwd}`);
+        transport.fingerprints.forEach(fingerprint => {
+            lines.push(`a=fingerprint:${fingerprint.hash || 'sha-256'} ${fingerprint.fingerprint}`, 'a=setup:passive');
+        });
+        (transport.candidates || []).forEach(candidate => lines.push(candidateLine(candidate)));
+        lines.push(
+            'a=rtpmap:111 opus/48000/2',
+            'a=rtpmap:126 telephone-event/8000',
+            'a=fmtp:111 minptime=10; useinbandfec=1; usedtx=1',
+            'a=rtcp:1 IN IP4 0.0.0.0',
+            'a=rtcp-mux',
+            'a=rtcp-fb:111 transport-cc',
+            'a=extmap:1 urn:ietf:params:rtp-hdrext:ssrc-audio-level',
+            main ? 'a=sendrecv' : 'a=sendonly',
+        );
+        if (!main) lines.push('a=bundle-only');
+        lines.push(
+            `a=ssrc-group:FID ${source}`,
+            `a=ssrc:${source} cname:stream${source}`,
+            `a=ssrc:${source} msid:stream${source} audio${source}`,
+            `a=ssrc:${source} mslabel:audio${source}`,
+            `a=ssrc:${source} label:audio${source}`,
+        );
+    });
+    return `${lines.join('\r\n')}\r\n`;
+};
+
+class GroupCallController extends EventEmitter {
+    constructor() {
+        super();
+        this.state = { ...initialState };
+        this.pc = null;
+        this.localStream = null;
+        this.remoteStream = null;
+        this.call = null;
+        this.source = 0;
+        this.checkTimer = null;
+        this.sourcesTimer = null;
+        this.transport = null;
+        this.sourcesSignature = '';
+        this.negotiating = false;
+    }
+
+    _setState(patch) {
+        this.state = { ...this.state, ...patch };
+        this.emit('state', this.state);
+    }
+
+    async join({ call_id, access_hash, muted = true }) {
+        if (!navigator.mediaDevices?.getUserMedia || typeof RTCPeerConnection === 'undefined') {
+            throw new Error('Este navegador no permite llamadas WebRTC');
+        }
+        await this.leave(false);
+        this.call = { call_id, access_hash };
+        this._setState({ status: 'connecting', muted: !!muted, error: '', remoteStream: null });
+        try {
+            this.pc = new RTCPeerConnection({ bundlePolicy: 'max-bundle' });
+            this.remoteStream = new MediaStream();
+            this.pc.ontrack = event => {
+                const tracks = event.streams?.[0]?.getTracks() || [event.track];
+                tracks.forEach(track => {
+                    if (!this.remoteStream.getTracks().some(current => current.id === track.id)) {
+                        this.remoteStream.addTrack(track);
+                    }
+                });
+                this._setState({ remoteStream: this.remoteStream });
+            };
+            this.pc.onconnectionstatechange = () => {
+                if (this.pc?.connectionState === 'connected') this._setState({ status: 'connected', error: '' });
+                if (['failed', 'disconnected'].includes(this.pc?.connectionState)) this._checkConnection();
+            };
+            this.localStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+            this.localStream.getAudioTracks().forEach(track => {
+                track.enabled = !muted;
+                this.pc.addTrack(track, this.localStream);
+            });
+            const offer = await this.pc.createOffer({ offerToReceiveAudio: true, offerToReceiveVideo: false });
+            await this.pc.setLocalDescription(offer);
+            await waitForIceGathering(this.pc);
+            const payload = offerToJoinPayload(this.pc.localDescription.sdp);
+            this.source = payload.ssrc;
+            const result = await TdLibController.send({
+                '@type': 'joinGroupCall',
+                call_id,
+                access_hash,
+                muted: !!muted,
+                params: payload,
+            });
+            const remotePayload = typeof result.params === 'string' ? JSON.parse(result.params) : result.params;
+            if (remotePayload?.stream) throw new Error('El modo stream de esta emisión todavía no es compatible');
+            this.transport = remotePayload.transport || remotePayload;
+            await this.pc.setRemoteDescription({ type: 'answer', sdp: buildRemoteAnswer(remotePayload) });
+            await this._refreshAudioSources();
+            this.sourcesTimer = setInterval(() => this._refreshAudioSources(), 5000);
+            this._setState({ status: 'connected', remoteStream: this.remoteStream });
+            return this.state;
+        } catch (error) {
+            await this.leave(false);
+            this._setState({ status: 'error', error: error?.message || 'No se pudo conectar al chat de voz' });
+            throw error;
+        }
+    }
+
+    async setMuted(muted) {
+        this.localStream?.getAudioTracks().forEach(track => (track.enabled = !muted));
+        if (this.call) {
+            await TdLibController.send({ '@type': 'setGroupCallSelfMuted', ...this.call, muted: !!muted });
+        }
+        this._setState({ muted: !!muted });
+    }
+
+    async _checkConnection() {
+        if (!this.call || !this.source || this.checkTimer) return;
+        this.checkTimer = setTimeout(async () => {
+            this.checkTimer = null;
+            try {
+                const result = await TdLibController.send({
+                    '@type': 'checkGroupCallConnection',
+                    ...this.call,
+                    source: this.source,
+                });
+                if (!result.connected) await this.leave();
+            } catch (_) {
+                await this.leave();
+            }
+        }, 4000);
+    }
+
+    async _refreshAudioSources() {
+        if (!this.call || !this.pc || !this.transport || this.negotiating) return;
+        try {
+            const result = await TdLibController.send({ '@type': 'getGroupCallAudioSources', ...this.call });
+            const sources = (result.sources || []).filter(source => Number(source) >>> 0 !== this.source >>> 0);
+            const signature = sources
+                .map(source => Number(source) >>> 0)
+                .sort((a, b) => a - b)
+                .join(',');
+            if (signature === this.sourcesSignature) return;
+            this.negotiating = true;
+            const offer = buildConferenceOffer(this.transport, sources, this.source);
+            await this.pc.setRemoteDescription({ type: 'offer', sdp: offer });
+            const answer = await this.pc.createAnswer();
+            await this.pc.setLocalDescription(answer);
+            this.sourcesSignature = signature;
+        } catch (error) {
+            console.warn('[GroupCall] No se pudieron actualizar las fuentes de audio', error);
+        } finally {
+            this.negotiating = false;
+        }
+    }
+
+    async leave(notifyServer = true) {
+        const call = this.call;
+        const source = this.source;
+        this.call = null;
+        this.source = 0;
+        clearTimeout(this.checkTimer);
+        this.checkTimer = null;
+        clearInterval(this.sourcesTimer);
+        this.sourcesTimer = null;
+        this.pc?.close();
+        this.pc = null;
+        this.localStream?.getTracks().forEach(track => track.stop());
+        this.remoteStream?.getTracks().forEach(track => track.stop());
+        this.localStream = null;
+        this.remoteStream = null;
+        this.transport = null;
+        this.sourcesSignature = '';
+        this.negotiating = false;
+        if (notifyServer && call && source) {
+            try {
+                await TdLibController.send({ '@type': 'leaveGroupCall', ...call, source });
+            } catch (_) {
+                // La limpieza local debe completarse aunque Telegram ya haya cerrado la llamada.
+            }
+        }
+        this._setState({ ...initialState });
+    }
+}
+
+export default new GroupCallController();

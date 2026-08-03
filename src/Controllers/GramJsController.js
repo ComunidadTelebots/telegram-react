@@ -946,6 +946,16 @@ class GramJsController extends EventEmitter {
                 return this._subscribeScheduledGroupCall(req);
             case 'editGroupCallParticipant':
                 return this._editGroupCallParticipant(req);
+            case 'joinGroupCall':
+                return this._joinGroupCall(req);
+            case 'leaveGroupCall':
+                return this._leaveGroupCall(req);
+            case 'setGroupCallSelfMuted':
+                return this._setGroupCallSelfMuted(req);
+            case 'checkGroupCallConnection':
+                return this._checkGroupCallConnection(req);
+            case 'getGroupCallAudioSources':
+                return this._getGroupCallAudioSources(req);
             case 'getAttachMenuBots':
                 return this._getAttachMenuBots(req);
             case 'getBotApp':
@@ -1252,6 +1262,16 @@ class GramJsController extends EventEmitter {
                 return this._subscribeScheduledGroupCall(req);
             case 'editGroupCallParticipant':
                 return this._editGroupCallParticipant(req);
+            case 'joinGroupCall':
+                return this._joinGroupCall(req);
+            case 'leaveGroupCall':
+                return this._leaveGroupCall(req);
+            case 'setGroupCallSelfMuted':
+                return this._setGroupCallSelfMuted(req);
+            case 'checkGroupCallConnection':
+                return this._checkGroupCallConnection(req);
+            case 'getGroupCallAudioSources':
+                return this._getGroupCallAudioSources(req);
 
             // ── Archivos ──────────────────────────────────────────────────────
             case 'downloadFile':
@@ -2237,6 +2257,7 @@ class GramJsController extends EventEmitter {
                 raised_hand: !!item.raiseHandRating,
                 video_joined: !!item.videoJoined,
                 volume: item.volume || 10000,
+                source: item.source == null ? null : Number(item.source),
             };
         });
         const call = result.call || {};
@@ -2352,6 +2373,70 @@ class GramJsController extends EventEmitter {
             }),
         );
         return { success: true, updates: result };
+    };
+
+    _joinGroupCall = async ({ muted = true, params, invite_hash, ...call }) => {
+        if (!params || !Number.isInteger(Number(params.ssrc)) || Number(params.ssrc) === 0) {
+            throw new Error('Invalid WebRTC group-call payload');
+        }
+        const result = await this.client.invoke(
+            new Api.phone.JoinGroupCall({
+                muted: !!muted,
+                videoStopped: true,
+                call: this._groupCallInput(call),
+                joinAs: new Api.InputPeerSelf(),
+                inviteHash: invite_hash || undefined,
+                params: new Api.DataJSON({ data: JSON.stringify(params) }),
+            }),
+        );
+        const updates = result?.updates || [];
+        const connection = updates.find(update => {
+            const type = update?.className || update?._ || update?.['@type'];
+            return type === 'UpdateGroupCallConnection' || type === 'updateGroupCallConnection';
+        });
+        const data = connection?.params?.data;
+        if (!data) throw new Error('Telegram did not return group-call connection parameters');
+        return { success: true, params: data };
+    };
+
+    _leaveGroupCall = async ({ source, ...call }) => {
+        const result = await this.client.invoke(
+            new Api.phone.LeaveGroupCall({ call: this._groupCallInput(call), source: Number(source) | 0 }),
+        );
+        return { success: true, updates: result };
+    };
+
+    _setGroupCallSelfMuted = async ({ muted, ...call }) => {
+        const result = await this.client.invoke(
+            new Api.phone.EditGroupCallParticipant({
+                call: this._groupCallInput(call),
+                participant: new Api.InputPeerSelf(),
+                muted: !!muted,
+            }),
+        );
+        return { success: true, updates: result };
+    };
+
+    _checkGroupCallConnection = async ({ source, ...call }) => {
+        const sources = await this.client.invoke(
+            new Api.phone.CheckGroupCall({ call: this._groupCallInput(call), sources: [Number(source) | 0] }),
+        );
+        return {
+            connected: Array.from(sources || [])
+                .map(Number)
+                .includes(Number(source) | 0),
+        };
+    };
+
+    _getGroupCallAudioSources = async call => {
+        const result = await this.client.invoke(
+            new Api.phone.GetGroupCall({ call: this._groupCallInput(call), limit: 100 }),
+        );
+        return {
+            sources: (result?.participants || [])
+                .map(participant => (participant.source == null ? null : Number(participant.source)))
+                .filter(source => Number.isInteger(source) && source !== 0),
+        };
     };
 
     // ── Stickers / Emoji ──────────────────────────────────────────────────────

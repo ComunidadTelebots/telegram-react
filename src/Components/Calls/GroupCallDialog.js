@@ -14,6 +14,7 @@ import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
 import TextField from '@material-ui/core/TextField';
 import TdLibController from '../../Controllers/TdLibController';
+import GroupCallController from '../../Controllers/GroupCallController';
 
 const initialState = {
     loading: false,
@@ -25,15 +26,46 @@ const initialState = {
     inviteUsers: '',
     recordingTitle: '',
     recordVideo: false,
+    voiceStatus: GroupCallController.state.status,
+    voiceMuted: GroupCallController.state.muted,
+    remoteStream: GroupCallController.state.remoteStream,
 };
 
 class GroupCallDialog extends React.PureComponent {
     state = initialState;
 
-    componentDidUpdate(prevProps) {
-        if (this.props.open && (!prevProps.open || prevProps.chatId !== this.props.chatId)) this.load();
-        if (!this.props.open && prevProps.open) this.setState(initialState);
+    componentDidMount() {
+        GroupCallController.on('state', this.handleVoiceState);
     }
+
+    componentWillUnmount() {
+        GroupCallController.removeListener('state', this.handleVoiceState);
+    }
+
+    componentDidUpdate(prevProps) {
+        if (this.props.open && (!prevProps.open || prevProps.chatId !== this.props.chatId)) {
+            this.setState({
+                voiceStatus: GroupCallController.state.status,
+                voiceMuted: GroupCallController.state.muted,
+                remoteStream: GroupCallController.state.remoteStream,
+            });
+            this.load();
+        }
+        if (!this.props.open && prevProps.open) this.setState(initialState);
+        if (this.audio && this.state.remoteStream && this.audio.srcObject !== this.state.remoteStream) {
+            this.audio.srcObject = this.state.remoteStream;
+            const playback = this.audio.play();
+            if (playback?.catch) playback.catch(() => undefined);
+        }
+    }
+
+    handleVoiceState = state =>
+        this.setState({
+            voiceStatus: state.status,
+            voiceMuted: state.muted,
+            remoteStream: state.remoteStream,
+            error: state.error || this.state.error,
+        });
 
     callParams = () => ({
         call_id: this.state.call.call_id,
@@ -131,6 +163,25 @@ class GroupCallDialog extends React.PureComponent {
             muted: !participant.muted,
         });
 
+    joinVoice = async () => {
+        this.setState({ error: '' });
+        try {
+            await GroupCallController.join({ ...this.callParams(), muted: true });
+        } catch (error) {
+            this.setState({ error: error?.message || 'No se pudo conectar el audio.' });
+        }
+    };
+
+    leaveVoice = () => GroupCallController.leave();
+
+    toggleSelfMute = async () => {
+        try {
+            await GroupCallController.setMuted(!this.state.voiceMuted);
+        } catch (error) {
+            this.setState({ error: error?.message || 'No se pudo cambiar el micrófono.' });
+        }
+    };
+
     renderCreate() {
         const { saving, title, scheduleDate } = this.state;
         return (
@@ -162,8 +213,10 @@ class GroupCallDialog extends React.PureComponent {
     }
 
     renderActive() {
-        const { call, saving, title, inviteUsers, recordingTitle, recordVideo } = this.state;
+        const { call, saving, title, inviteUsers, recordingTitle, recordVideo, voiceStatus, voiceMuted } = this.state;
         const canManage = call.can_change_join_muted;
+        const voiceConnected = voiceStatus === 'connected';
+        const voiceConnecting = voiceStatus === 'connecting';
         return (
             <>
                 <DialogContentText>
@@ -202,6 +255,34 @@ class GroupCallDialog extends React.PureComponent {
                     <Button color='primary' disabled={saving} onClick={this.subscribeScheduled}>
                         Avisarme cuando empiece
                     </Button>
+                )}
+                {!call.scheduled && (
+                    <div>
+                        {voiceStatus === 'idle' || voiceStatus === 'error' ? (
+                            <Button color='primary' variant='contained' disabled={saving} onClick={this.joinVoice}>
+                                Unirme al audio
+                            </Button>
+                        ) : (
+                            <>
+                                <Button color='primary' disabled={!voiceConnected} onClick={this.toggleSelfMute}>
+                                    {voiceMuted ? 'Activar micrófono' : 'Silenciar micrófono'}
+                                </Button>
+                                <Button color='secondary' disabled={voiceConnecting} onClick={this.leaveVoice}>
+                                    Salir del audio
+                                </Button>
+                            </>
+                        )}
+                        <DialogContentText>
+                            {voiceConnecting
+                                ? 'Conectando con el servidor de audio de Telegram…'
+                                : voiceConnected
+                                ? voiceMuted
+                                    ? 'Conectado como oyente.'
+                                    : 'Conectado con el micrófono activo.'
+                                : 'Audio WebRTC disponible en navegadores compatibles.'}
+                        </DialogContentText>
+                        <audio ref={element => (this.audio = element)} autoPlay playsInline />
+                    </div>
                 )}
                 <TextField
                     label='Invitar usuarios (@usuario o ID, separados por comas)'
@@ -266,10 +347,6 @@ class GroupCallDialog extends React.PureComponent {
                         </ListItem>
                     ))}
                 </List>
-                <DialogContentText>
-                    La administración funciona aquí. La conexión de audio grupal requiere el transporte nativo tgcalls y
-                    todavía debe realizarse desde una aplicación oficial de Telegram.
-                </DialogContentText>
             </>
         );
     }

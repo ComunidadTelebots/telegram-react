@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.0.636] - 2026-08-03 — Audio WebRTC para chats de voz
+### Added
+- Unión y salida reales de chats de voz mediante `phone.joinGroupCall` y `phone.leaveGroupCall`.
+- Generación del payload WebRTC requerido por Telegram con SSRC, ICE, DTLS y fingerprints.
+- Conexión al SFU, reproducción de participantes, actualización periódica de fuentes y comprobación de reconexión.
+- Micrófono silenciado al entrar, activación voluntaria y sincronización del mute con Telegram.
+### Architecture
+- Nuevo controlador grupal independiente del protocolo cifrado P2P de llamadas privadas.
+- Recuperada y adaptada la negociación multipista utilizada históricamente por Telegram React.
+### Remaining
+- La publicación de vídeo y la presentación de pantalla siguen pendientes de su conexión WebRTC independiente.
+
 ## [0.0.635] - 2026-08-03 — Ajustes completos y chats de voz ampliados
 ### Added
 - Transferencia real de regalos a usuarios mediante doble confirmación, validación del destinatario y coste visible.
