@@ -89,6 +89,7 @@ class GramJsController extends EventEmitter {
         this._customEmojiCache = new Map(); // String(document_id) → translated sticker object
         this._customEmojiFetchQueue = new Set(); // IDs pending batch fetch
         this._customEmojiFetchTimer = null;
+        this._sponsoredMessagesCache = new Map();
         this._downloadReconnects = new Map();
         this._downloadReconnectAt = new Map();
         this._downloadDeferUntil = new Map();
@@ -145,6 +146,7 @@ class GramJsController extends EventEmitter {
         this._folderChats.clear();
         this._chatFilters = [];
         this._stickerSetAccessHashes.clear();
+        this._sponsoredMessagesCache.clear();
     };
 
     _switchToAccount = async index => {
@@ -995,6 +997,10 @@ class GramJsController extends EventEmitter {
                 return this._getSponsoredMessages(req);
             case 'viewSponsoredMessage':
                 return this._viewSponsoredMessage(req);
+            case 'clickSponsoredMessage':
+                return this._clickSponsoredMessage(req);
+            case 'reportSponsoredMessage':
+                return this._reportSponsoredMessage(req);
             case 'exportChatlistInvite':
                 return this._exportChatlistInvite(req);
             case 'sendLiveLocation':
@@ -1423,6 +1429,10 @@ class GramJsController extends EventEmitter {
                 return this._getSponsoredMessages(req);
             case 'viewSponsoredMessage':
                 return this._viewSponsoredMessage(req);
+            case 'clickSponsoredMessage':
+                return this._clickSponsoredMessage(req);
+            case 'reportSponsoredMessage':
+                return this._reportSponsoredMessage(req);
             case 'exportChatlistInvite':
                 return this._exportChatlistInvite(req);
             case 'sendLiveLocation':
@@ -1705,16 +1715,29 @@ class GramJsController extends EventEmitter {
     // ── Misc (J) ──────────────────────────────────────────────────────────────
 
     _getSponsoredMessages = async ({ chat_id }) => {
+        const cached = this._sponsoredMessagesCache.get(chat_id);
+        if (cached && Date.now() - cached.createdAt < 5 * 60 * 1000) return cached.value;
         const inputPeer = tdlibChatIdToInputPeer(chat_id, this._entityCache);
         const result = await this.client.invoke(new Api.messages.GetSponsoredMessages({ peer: inputPeer }));
-        return {
+        (result.chats || []).concat(result.users || []).forEach(entity => this._cacheEntity(entity));
+        const value = {
+            posts_between: Number(result.postsBetween || 0),
             messages: (result.messages || []).map(m => ({
-                random_id: Buffer.from(m.randomId).toString('hex'),
-                url: m.url,
-                title: m.title,
-                message: m.message,
+                random_id_hex: Buffer.from(m.randomId || []).toString('hex'),
+                url: String(m.url || ''),
+                title: String(m.title || ''),
+                message: String(m.message || ''),
+                button_text: String(m.buttonText || 'Abrir'),
+                recommended: !!m.recommended,
+                can_report: !!m.canReport,
+                sponsor_info: String(m.sponsorInfo || ''),
+                additional_info: String(m.additionalInfo || ''),
+                has_photo: !!m.photo,
+                has_media: !!m.media,
             })),
         };
+        this._sponsoredMessagesCache.set(chat_id, { createdAt: Date.now(), value });
+        return value;
     };
 
     _viewSponsoredMessage = async ({ chat_id, random_id_hex }) => {
@@ -1723,6 +1746,43 @@ class GramJsController extends EventEmitter {
             new Api.messages.ViewSponsoredMessage({ peer: inputPeer, randomId: Buffer.from(random_id_hex, 'hex') }),
         );
         return { success: true };
+    };
+
+    _clickSponsoredMessage = async ({ chat_id, random_id_hex, media = false, fullscreen = false }) => {
+        const inputPeer = tdlibChatIdToInputPeer(chat_id, this._entityCache);
+        await this.client.invoke(
+            new Api.messages.ClickSponsoredMessage({
+                peer: inputPeer,
+                randomId: Buffer.from(random_id_hex, 'hex'),
+                media: !!media,
+                fullscreen: !!fullscreen,
+            }),
+        );
+        return { success: true };
+    };
+
+    _reportSponsoredMessage = async ({ chat_id, random_id_hex, option_hex = '' }) => {
+        const inputPeer = tdlibChatIdToInputPeer(chat_id, this._entityCache);
+        const result = await this.client.invoke(
+            new Api.messages.ReportSponsoredMessage({
+                peer: inputPeer,
+                randomId: Buffer.from(random_id_hex, 'hex'),
+                option: Buffer.from(option_hex, 'hex'),
+            }),
+        );
+        const type = String(result.className || result._ || '');
+        if (/ChooseOption$/i.test(type)) {
+            return {
+                status: 'choose',
+                title: String(result.title || 'Informar de este anuncio'),
+                options: (result.options || []).map(item => ({
+                    text: String(item.text || ''),
+                    option_hex: Buffer.from(item.option || []).toString('hex'),
+                })),
+            };
+        }
+        this._sponsoredMessagesCache.delete(chat_id);
+        return { status: /AdsHidden$/i.test(type) ? 'hidden' : 'reported' };
     };
 
     _exportChatlistInvite = async ({ filter_id, title, peer_ids }) => {

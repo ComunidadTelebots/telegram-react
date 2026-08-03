@@ -20,6 +20,7 @@ import JumpToUnreadButton from './JumpToUnreadButton';
 import ServiceMessage from '../Message/ServiceMessage';
 import StickersHint from './StickersHint';
 import CommunityChannelAd from './CommunityChannelAd';
+import OfficialSponsoredMessage from './OfficialSponsoredMessage';
 import { throttle, getPhotoSize, itemsInView, historyEquals } from '../../Utils/Common';
 import { loadChatsContent, loadDraftContent, loadMessageContents } from '../../Utils/File';
 import { canMessageBeEdited, filterDuplicateMessages, filterMessages } from '../../Utils/Message';
@@ -71,6 +72,7 @@ class MessagesList extends React.Component {
             scrollDownVisible: false,
             replyHistory: [],
             sponsoredMessages: [],
+            sponsoredPostsBetween: 0,
             communityAds: [],
         };
 
@@ -640,7 +642,12 @@ class MessagesList extends React.Component {
             // load full info
             getChatFullInfo(chat.id);
 
-            if (isChannelChat(chat.id)) {
+            const isChannel = isChannelChat(chat.id);
+            const privateUserId = chat.type && chat.type['@type'] === 'chatTypePrivate' ? chat.type.user_id : 0;
+            const privateUser = privateUserId ? UserStore.get(privateUserId) : null;
+            const isBot = !!(privateUser && privateUser.type && privateUser.type['@type'] === 'userTypeBot');
+
+            if (isChannel) {
                 this.setState({ communityAds: [] });
                 const adsUrl = `${getCommunityAdsEndpoint()}?placement=${encodeURIComponent(
                     COMMUNITY_AD_PLACEMENT,
@@ -659,15 +666,23 @@ class MessagesList extends React.Component {
                     .catch(() => {
                         if (sessionId === this.sessionId) this.setState({ communityAds: [] });
                     });
+            } else {
+                this.setState({ communityAds: [] });
+            }
+
+            if (isChannel || isBot) {
                 TdLibController.send({ '@type': 'getSponsoredMessages', chat_id: chat.id })
                     .then(r => {
                         if (sessionId === this.sessionId) {
-                            this.setState({ sponsoredMessages: r.messages || [] });
+                            this.setState({
+                                sponsoredMessages: r.messages || [],
+                                sponsoredPostsBetween: Number(r.posts_between || 0),
+                            });
                         }
                     })
                     .catch(() => {});
             } else {
-                this.setState({ sponsoredMessages: [], communityAds: [] });
+                this.setState({ sponsoredMessages: [], sponsoredPostsBetween: 0 });
             }
         } else {
             this.loading = true;
@@ -1329,6 +1344,7 @@ class MessagesList extends React.Component {
             selectionActive,
             scrollDownVisible,
             sponsoredMessages,
+            sponsoredPostsBetween,
             communityAds,
         } = this.state;
         const jumpToUnreadVisible = scrollDownVisible && separatorMessageId > 0;
@@ -1440,6 +1456,39 @@ class MessagesList extends React.Component {
             );
         }
 
+        if (this.messages && sponsoredMessages.length) {
+            const chat = ChatStore.get(chatId);
+            const privateUserId = chat && chat.type && chat.type['@type'] === 'chatTypePrivate' ? chat.type.user_id : 0;
+            const privateUser = privateUserId ? UserStore.get(privateUserId) : null;
+            const isBot = !!(privateUser && privateUser.type && privateUser.type['@type'] === 'userTypeBot');
+            const removeSponsored = randomId =>
+                this.setState(state => ({
+                    sponsoredMessages: state.sponsoredMessages.filter(item => item.random_id_hex !== randomId),
+                }));
+            const officialAds = sponsoredMessages.map(ad => (
+                <OfficialSponsoredMessage
+                    key={`telegram-sponsored-${ad.random_id_hex}`}
+                    ad={ad}
+                    chatId={chatId}
+                    compact={isBot}
+                    onRemoved={removeSponsored}
+                />
+            ));
+            if (isBot) {
+                this.messages.unshift(...officialAds);
+            } else if (sponsoredPostsBetween > 0) {
+                officialAds.forEach((ad, index) => {
+                    const position = Math.min(
+                        this.messages.length,
+                        Math.max(1, this.messages.length - sponsoredPostsBetween * (index + 1)),
+                    );
+                    this.messages.splice(position, 0, ad);
+                });
+            } else {
+                this.messages.push(...officialAds);
+            }
+        }
+
         return (
             <div
                 className={classNames(classes.background, 'messages-list', {
@@ -1450,34 +1499,6 @@ class MessagesList extends React.Component {
                     <div className='messages-list-top' />
                     <div ref={this.itemsRef} className='messages-list-items'>
                         {this.messages}
-                        {sponsoredMessages.length > 0 &&
-                            sponsoredMessages.map((sm, idx) => (
-                                <div
-                                    key={idx}
-                                    className='sponsored-message-wrapper'
-                                    ref={el => {
-                                        if (!el) return;
-                                        const observer = new IntersectionObserver(
-                                            entries => {
-                                                if (entries[0].isIntersecting) {
-                                                    TdLibController.send({
-                                                        '@type': 'viewSponsoredMessage',
-                                                        chat_id: chatId,
-                                                        message_id: sm.message_id,
-                                                    }).catch(() => {});
-                                                    observer.disconnect();
-                                                }
-                                            },
-                                            { threshold: 0.5 },
-                                        );
-                                        observer.observe(el);
-                                    }}>
-                                    <div className='sponsored-message-label'>Patrocinado</div>
-                                    <div className='sponsored-message-text'>
-                                        {sm.content && sm.content.text && sm.content.text.text}
-                                    </div>
-                                </div>
-                            ))}
                     </div>
                 </div>
                 <Placeholder />

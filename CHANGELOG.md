@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.0.640] - 2026-08-03 — Anuncios oficiales de Telegram
+### Added
+- Flujo obligatorio de anuncios oficiales para canales y bots mediante `messages.getSponsoredMessages`.
+- Tarjetas con título, texto, etiqueta Patrocinado/Recomendado, botón oficial e información del anunciante.
+- Registro correcto de visualizaciones y clics mediante `viewSponsoredMessage` y `clickSponsoredMessage`.
+- Flujo de denuncia con las opciones devueltas por `reportSponsoredMessage`.
+### Changed
+- Los resultados se conservan durante cinco minutos, según la especificación oficial.
+- En canales se respeta `posts_between`; sin esa indicación aparecen después de las publicaciones. En bots se muestran como barra superior.
+
 ## [0.0.639] - 2026-08-03 — Campañas comunitarias entre publicaciones
 ### Added
 - Los canales muestran una campaña aprobada de TodoSobreAllTech integrada entre sus publicaciones, con imagen opcional, llamada a la acción y enlace de clic medido.

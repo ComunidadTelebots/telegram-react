@@ -64,8 +64,10 @@ class SafeLink extends React.Component {
     handleDone = event => {
         this.handleClose();
 
-        const { url, onClick, mail } = this.props;
+        const { url, onClick, onOpen, mail } = this.props;
         if (!url) return;
+
+        if (onOpen) onOpen();
 
         if (onClick) {
             onClick(event);
@@ -79,8 +81,10 @@ class SafeLink extends React.Component {
     handleSafeClick = event => {
         event.stopPropagation();
 
-        const { onClick } = this.props;
+        const { onClick, onOpen } = this.props;
         const { telegramLink } = this.state;
+
+        if (onOpen) onOpen();
 
         if (onClick) {
             event.preventDefault();
@@ -167,6 +171,7 @@ SafeLink.propTypes = {
     displayText: PropTypes.string,
     mail: PropTypes.bool,
     onClick: PropTypes.func,
+    onOpen: PropTypes.func,
 };
 
 export default withTranslation()(SafeLink);
