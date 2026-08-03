@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.0.639] - 2026-08-03 — Campañas comunitarias entre publicaciones
+### Added
+- Los canales muestran una campaña aprobada de TodoSobreAllTech integrada entre sus publicaciones, con imagen opcional, llamada a la acción y enlace de clic medido.
+- La carga usa el catálogo público con rotación y nunca inserta campañas en grupos ni conversaciones privadas.
+- Las tarjetas reutilizan las variables visuales de cada diseño y se ocultan cuando el usuario activa `Mantener diseño original`.
+### Fixed
+- Los mensajes patrocinados nativos y las campañas comunitarias fuerzan ahora la actualización visual al terminar su carga asíncrona.
+
 ## [0.0.638] - 2026-08-03 — Compatibilidad funcional en todos los diseños
 ### Added
 - El selector de versiones muestra en todas las familias el estado funcional activo y un control para conservar únicamente las funciones propias de la época.

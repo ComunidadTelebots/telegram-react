@@ -19,6 +19,7 @@ import ScrollDownButton from './ScrollDownButton';
 import JumpToUnreadButton from './JumpToUnreadButton';
 import ServiceMessage from '../Message/ServiceMessage';
 import StickersHint from './StickersHint';
+import CommunityChannelAd from './CommunityChannelAd';
 import { throttle, getPhotoSize, itemsInView, historyEquals } from '../../Utils/Common';
 import { loadChatsContent, loadDraftContent, loadMessageContents } from '../../Utils/File';
 import { canMessageBeEdited, filterDuplicateMessages, filterMessages } from '../../Utils/Message';
@@ -34,6 +35,7 @@ import PlayerStore from '../../Stores/PlayerStore';
 import SupergroupStore from '../../Stores/SupergroupStore';
 import UserStore from '../../Stores/UserStore';
 import TdLibController from '../../Controllers/TdLibController';
+import { COMMUNITY_AD_PLACEMENT, getCommunityAdsEndpoint, normalizeCommunityAd } from '../../Utils/CommunityAds';
 import './MessagesList.css';
 
 const ScrollBehaviorEnum = Object.freeze({
@@ -69,6 +71,7 @@ class MessagesList extends React.Component {
             scrollDownVisible: false,
             replyHistory: [],
             sponsoredMessages: [],
+            communityAds: [],
         };
 
         this.listRef = React.createRef();
@@ -138,7 +141,16 @@ class MessagesList extends React.Component {
 
     shouldComponentUpdate(nextProps, nextState) {
         const { chatId, messageId, theme } = this.props;
-        const { playerOpened, history, dragging, clearHistory, selectionActive, scrollDownVisible } = this.state;
+        const {
+            playerOpened,
+            history,
+            dragging,
+            clearHistory,
+            selectionActive,
+            scrollDownVisible,
+            sponsoredMessages,
+            communityAds,
+        } = this.state;
 
         if (nextProps.theme !== theme) {
             // console.log('[ml] shouldComponentUpdate theme');
@@ -184,6 +196,8 @@ class MessagesList extends React.Component {
             // console.log('[ml] shouldComponentUpdate selectionActive');
             return true;
         }
+
+        if (nextState.sponsoredMessages !== sponsoredMessages || nextState.communityAds !== communityAds) return true;
 
         // console.log('[ml] shouldComponentUpdate false');
         return false;
@@ -627,6 +641,24 @@ class MessagesList extends React.Component {
             getChatFullInfo(chat.id);
 
             if (isChannelChat(chat.id)) {
+                this.setState({ communityAds: [] });
+                const adsUrl = `${getCommunityAdsEndpoint()}?placement=${encodeURIComponent(
+                    COMMUNITY_AD_PLACEMENT,
+                )}&channel_only=1`;
+                fetch(adsUrl, { credentials: 'omit', referrerPolicy: 'no-referrer' })
+                    .then(response => (response.ok ? response.json() : Promise.reject(new Error('ads unavailable'))))
+                    .then(data => {
+                        if (sessionId !== this.sessionId) return;
+                        this.setState({
+                            communityAds: (data.ads || [])
+                                .map(normalizeCommunityAd)
+                                .filter(Boolean)
+                                .slice(0, 1),
+                        });
+                    })
+                    .catch(() => {
+                        if (sessionId === this.sessionId) this.setState({ communityAds: [] });
+                    });
                 TdLibController.send({ '@type': 'getSponsoredMessages', chat_id: chat.id })
                     .then(r => {
                         if (sessionId === this.sessionId) {
@@ -635,7 +667,7 @@ class MessagesList extends React.Component {
                     })
                     .catch(() => {});
             } else {
-                this.setState({ sponsoredMessages: [] });
+                this.setState({ sponsoredMessages: [], communityAds: [] });
             }
         } else {
             this.loading = true;
@@ -1297,6 +1329,7 @@ class MessagesList extends React.Component {
             selectionActive,
             scrollDownVisible,
             sponsoredMessages,
+            communityAds,
         } = this.state;
         const jumpToUnreadVisible = scrollDownVisible && separatorMessageId > 0;
         const unreadCount = jumpToUnreadVisible
@@ -1397,6 +1430,15 @@ class MessagesList extends React.Component {
                       </div>
                   );
               });
+
+        if (this.messages && communityAds.length && this.messages.length >= 3) {
+            const insertAt = Math.max(1, this.messages.length - 5);
+            this.messages.splice(
+                insertAt,
+                0,
+                <CommunityChannelAd key={`community-ad-${chatId}-${communityAds[0].id}`} ad={communityAds[0]} />,
+            );
+        }
 
         return (
             <div

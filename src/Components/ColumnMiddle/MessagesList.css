@@ -62,3 +62,87 @@
     white-space: pre-wrap;
     word-break: break-word;
 }
+
+.community-channel-ad {
+    --community-ad-background: var(--design-panel-background, #fff);
+    --community-ad-foreground: var(--text-primary, #172033);
+    --community-ad-accent: var(--color-accent-main, #2196f3);
+    align-items: center;
+    background: var(--community-ad-background);
+    border: 1px solid color-mix(in srgb, var(--community-ad-accent) 28%, transparent);
+    border-radius: var(--border-radius-chat, 12px);
+    color: var(--community-ad-foreground);
+    display: flex;
+    gap: 10px;
+    margin: 8px 12px;
+    padding: 10px 12px;
+}
+
+.community-channel-ad-image {
+    border-radius: 10px;
+    height: 46px;
+    object-fit: cover;
+    width: 46px;
+}
+
+.community-channel-ad-copy {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.community-channel-ad-copy strong,
+.community-channel-ad-copy span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.community-channel-ad-copy > span:last-child {
+    font-size: 12px;
+    opacity: 0.78;
+}
+.community-channel-ad-label {
+    color: var(--community-ad-accent);
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.community-channel-ad-action {
+    align-items: center;
+    background: var(--community-ad-accent);
+    border-radius: 999px;
+    color: #fff;
+    display: inline-flex;
+    flex: 0 0 auto;
+    font-size: 12px;
+    font-weight: 700;
+    gap: 4px;
+    min-height: 34px;
+    padding: 0 12px;
+    text-decoration: none;
+}
+
+.community-channel-ad-action svg {
+    font-size: 14px;
+}
+
+.design-legacy-features .community-channel-ad {
+    display: none;
+}
+
+@media (max-width: 520px) {
+    .community-channel-ad {
+        align-items: stretch;
+        flex-wrap: wrap;
+    }
+    .community-channel-ad-copy {
+        flex-basis: calc(100% - 58px);
+    }
+    .community-channel-ad-action {
+        justify-content: center;
+        margin-left: 56px;
+    }
+}
