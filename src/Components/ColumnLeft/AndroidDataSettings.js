@@ -1,6 +1,7 @@
 import React from 'react';
 import ArrowBackIcon from '@material-ui/icons/ArrowBack';
 import DeleteSweepIcon from '@material-ui/icons/DeleteSweep';
+import CloudDownloadIcon from '@material-ui/icons/CloudDownload';
 import NotificationsIcon from '@material-ui/icons/Notifications';
 import SaveIcon from '@material-ui/icons/Save';
 import StorageIcon from '@material-ui/icons/Storage';
@@ -13,6 +14,13 @@ import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import { getDesign, getDesignFamily } from '../../Design';
+import TdLibController from '../../Controllers/TdLibController';
+
+const DOWNLOAD_PRESETS = [
+    { key: 'low', label: 'Uso de datos bajo' },
+    { key: 'medium', label: 'Uso de datos medio' },
+    { key: 'high', label: 'Uso de datos alto' },
+];
 
 const formatBytes = value => {
     if (!Number.isFinite(value) || value <= 0) return '0 MB';
@@ -26,6 +34,8 @@ class AndroidDataSettings extends React.PureComponent {
         quota: 0,
         persistent: false,
         notificationPermission: 'default',
+        autoDownload: null,
+        savingPreset: null,
         snackbar: null,
     };
 
@@ -47,10 +57,15 @@ class AndroidDataSettings extends React.PureComponent {
                 persistent = await navigator.storage.persisted();
             }
         } catch {}
+        let autoDownload = this.state.autoDownload;
+        try {
+            autoDownload = await TdLibController.send({ '@type': 'getAutoDownloadSettings' });
+        } catch {}
         this.setState({
             usage,
             quota,
             persistent,
+            autoDownload,
             notificationPermission: 'Notification' in window ? Notification.permission : 'unsupported',
         });
     };
@@ -89,9 +104,35 @@ class AndroidDataSettings extends React.PureComponent {
         this.setState({ snackbar: `${names.length} cachés temporales eliminadas. Tus chats no se han borrado.` });
     };
 
-    renderRow(icon, label, value, action) {
+    toggleAutoDownloadPreset = async preset => {
+        const current = this.state.autoDownload && this.state.autoDownload[preset];
+        if (!current || this.state.savingPreset) return;
+        const settings = { ...current, disabled: !current.disabled };
+        this.setState({ savingPreset: preset });
+        try {
+            await TdLibController.send({ '@type': 'saveAutoDownloadSettings', preset, settings });
+            this.setState(state => ({
+                autoDownload: { ...state.autoDownload, [preset]: settings },
+                snackbar: `${preset}: descarga automática ${settings.disabled ? 'desactivada' : 'activada'}.`,
+            }));
+        } catch (error) {
+            this.setState({ snackbar: 'No se pudo guardar el perfil de descarga automática.' });
+        } finally {
+            this.setState({ savingPreset: null });
+        }
+    };
+
+    getPresetValue = preset => {
+        if (!preset) return 'No disponible';
+        if (preset.disabled) return 'Desactivado';
+        const video = formatBytes(preset.video_size_max);
+        const files = formatBytes(preset.file_size_max);
+        return `Activado · vídeo ${video} · archivos ${files}`;
+    };
+
+    renderRow(icon, label, value, action, disabled = false) {
         return (
-            <button className='android-settings-row' onClick={action}>
+            <button className='android-settings-row' onClick={action} disabled={disabled}>
                 <span className='android-settings-row-icon'>{icon}</span>
                 <span className='android-settings-row-content'>
                     <span className='android-settings-row-label'>{label}</span>
@@ -102,7 +143,16 @@ class AndroidDataSettings extends React.PureComponent {
     }
 
     render() {
-        const { open, usage, quota, persistent, notificationPermission, snackbar } = this.state;
+        const {
+            open,
+            usage,
+            quota,
+            persistent,
+            notificationPermission,
+            autoDownload,
+            savingPreset,
+            snackbar,
+        } = this.state;
         if (!open) return null;
         const family = getDesignFamily(getDesign());
         const actions = [
@@ -131,6 +181,14 @@ class AndroidDataSettings extends React.PureComponent {
                 action: this.clearWebCache,
             },
         ];
+        const downloadActions = DOWNLOAD_PRESETS.map(({ key, label }) => ({
+            key,
+            icon: <CloudDownloadIcon />,
+            label,
+            value: this.getPresetValue(autoDownload && autoDownload[key]),
+            action: () => this.toggleAutoDownloadPreset(key),
+            disabled: !!savingPreset,
+        }));
         if (family !== 'android') {
             return (
                 <Dialog open={open} onClose={this.close} fullWidth maxWidth='sm' transitionDuration={0}>
@@ -139,6 +197,19 @@ class AndroidDataSettings extends React.PureComponent {
                         <List disablePadding>
                             {actions.map(item => (
                                 <ListItem key={item.label} button onClick={item.action}>
+                                    <ListItemIcon>{item.icon}</ListItemIcon>
+                                    <ListItemText primary={item.label} secondary={item.value} />
+                                </ListItem>
+                            ))}
+                            <ListItem divider disabled>
+                                <ListItemText primary='Descarga automática de Telegram' />
+                            </ListItem>
+                            {downloadActions.map(item => (
+                                <ListItem
+                                    key={item.key}
+                                    button
+                                    disabled={item.disabled || !autoDownload}
+                                    onClick={item.action}>
                                     <ListItemIcon>{item.icon}</ListItemIcon>
                                     <ListItemText primary={item.label} secondary={item.value} />
                                 </ListItem>
@@ -184,6 +255,20 @@ class AndroidDataSettings extends React.PureComponent {
                             notificationPermission,
                             this.requestNotifications,
                         )}
+                    </div>
+                    <div className='android-settings-section'>
+                        {downloadActions.map((item, index) => (
+                            <React.Fragment key={item.key}>
+                                {index > 0 && <div className='android-settings-divider' />}
+                                {this.renderRow(
+                                    item.icon,
+                                    item.label,
+                                    item.value,
+                                    item.action,
+                                    item.disabled || !autoDownload,
+                                )}
+                            </React.Fragment>
+                        ))}
                     </div>
                     <div className='android-settings-section android-settings-section--danger'>
                         {this.renderRow(

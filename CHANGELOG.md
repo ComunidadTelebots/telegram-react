@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.0.634] - 2026-08-03 — Administración de chats de voz y seguridad WebApp
+### Added
+- Panel real de chats de voz para grupos y supergrupos: detección, creación inmediata o programada, inicio, participantes, título, silencio inicial, invitación y finalización.
+- Perfiles oficiales de descarga automática bajo, medio y alto, con límites y preferencias preservadas al sincronizar con Telegram.
+### Security
+- Mini Apps restringen mensajes entre ventanas al origen y ventana esperados y validan enlaces HTTP/HTTPS.
+- Markdown y documentos bloquean protocolos peligrosos e inyección mediante atributos de enlaces.
+- Los enlaces seguros gestionan correctamente ventanas emergentes bloqueadas.
+### Roadmap
+- Llamadas grupales pasan a estado parcial: la administración ya funciona y queda pendiente el transporte `tgcalls` para audio, vídeo y pantalla.
+- Stars y regalos vuelve honestamente a parcial hasta integrar transferencia y reventa completas.
+
 ## [0.0.633] - 2026-08-03 — Paridad funcional avanzada
 ### Added
 - Gestión real de respuestas rápidas y bots conectados de Telegram Business.

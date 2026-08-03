@@ -74,6 +74,13 @@ class BotWebApp extends Component {
     }
 
     open(url, title = 'Bot', chatId = null, botUserId = null, queryId = null) {
+        try {
+            const parsed = new URL(url, window.location.href);
+            if (!['http:', 'https:'].includes(parsed.protocol)) return false;
+            url = parsed.href;
+        } catch {
+            return false;
+        }
         this._chatId = chatId;
         this._botUserId = botUserId;
         this._queryId = queryId;
@@ -93,6 +100,7 @@ class BotWebApp extends Component {
             popup: null,
             headerColorKey: null,
         });
+        return true;
     }
 
     close = (force = false) => {
@@ -137,10 +145,29 @@ class BotWebApp extends Component {
         try {
             const frame = this.iframeRef.current;
             if (frame && frame.contentWindow) {
-                frame.contentWindow.postMessage(JSON.stringify(msg), '*');
+                const targetOrigin = new URL(this.state.url, window.location.href).origin;
+                frame.contentWindow.postMessage(JSON.stringify(msg), targetOrigin);
             }
         } catch {}
     }
+
+    _isTrustedFrameMessage = event => {
+        try {
+            const frame = this.iframeRef.current;
+            const expectedOrigin = new URL(this.state.url, window.location.href).origin;
+            return !!frame && event.source === frame.contentWindow && event.origin === expectedOrigin;
+        } catch {
+            return false;
+        }
+    };
+
+    _openExternal = value => {
+        try {
+            const url = new URL(value);
+            if (!['http:', 'https:'].includes(url.protocol)) return;
+            window.open(url.href, '_blank', 'noopener,noreferrer');
+        } catch {}
+    };
 
     componentDidMount() {
         window.addEventListener('message', this._handleMessage);
@@ -179,6 +206,7 @@ class BotWebApp extends Component {
 
     _handleMessage = e => {
         if (!this.state.open) return;
+        if (!this._isTrustedFrameMessage(e)) return;
         let data;
         try {
             data = typeof e.data === 'string' ? JSON.parse(e.data) : e.data;
@@ -205,11 +233,11 @@ class BotWebApp extends Component {
                 this._notifyViewport(true);
                 break;
             case 'web_app_open_link':
-                if (eventData.url) window.open(eventData.url, '_blank', 'noopener,noreferrer');
+                if (eventData.url) this._openExternal(eventData.url);
                 break;
             case 'web_app_open_tg_link':
-                if (eventData.path_full)
-                    window.open('https://t.me' + eventData.path_full, '_blank', 'noopener,noreferrer');
+                if (eventData.path_full && /^\/[A-Za-z0-9_+\-/?.=&%]+$/.test(eventData.path_full))
+                    this._openExternal('https://t.me' + eventData.path_full);
                 break;
             case 'web_app_setup_main_button':
                 this.setState({ mainButton: { ...eventData } });

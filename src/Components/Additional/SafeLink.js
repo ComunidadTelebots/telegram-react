@@ -69,7 +69,8 @@ class SafeLink extends React.Component {
         if (onClick) {
             onClick(event);
         } else {
-            const newWindow = window.open();
+            const newWindow = window.open('', '_blank', 'noopener,noreferrer');
+            if (!newWindow) return;
             newWindow.opener = null;
             newWindow.location = url;
         }
@@ -101,7 +102,7 @@ class SafeLink extends React.Component {
                 openChat(chat.id, telegramLink.messageId || null);
             }
         } catch (error) {
-            const newWindow = window.open();
+            const newWindow = window.open('', '_blank', 'noopener,noreferrer');
             if (!newWindow) return;
             newWindow.opener = null;
             newWindow.location = getHref(url);

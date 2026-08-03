@@ -924,6 +924,20 @@ class GramJsController extends EventEmitter {
                 return this._getBusinessConnectedBots(req);
             case 'updateBusinessConnectedBot':
                 return this._updateBusinessConnectedBot(req);
+            case 'getGroupCallInfo':
+                return this._getGroupCallInfo(req);
+            case 'createGroupCall':
+                return this._createGroupCall(req);
+            case 'startScheduledGroupCall':
+                return this._startScheduledGroupCall(req);
+            case 'editGroupCallTitle':
+                return this._editGroupCallTitle(req);
+            case 'toggleGroupCallJoinMuted':
+                return this._toggleGroupCallJoinMuted(req);
+            case 'exportGroupCallInvite':
+                return this._exportGroupCallInvite(req);
+            case 'discardGroupCall':
+                return this._discardGroupCall(req);
             case 'getAttachMenuBots':
                 return this._getAttachMenuBots(req);
             case 'getBotApp':
@@ -1206,6 +1220,20 @@ class GramJsController extends EventEmitter {
                 return this._getBusinessConnectedBots(req);
             case 'updateBusinessConnectedBot':
                 return this._updateBusinessConnectedBot(req);
+            case 'getGroupCallInfo':
+                return this._getGroupCallInfo(req);
+            case 'createGroupCall':
+                return this._createGroupCall(req);
+            case 'startScheduledGroupCall':
+                return this._startScheduledGroupCall(req);
+            case 'editGroupCallTitle':
+                return this._editGroupCallTitle(req);
+            case 'toggleGroupCallJoinMuted':
+                return this._toggleGroupCallJoinMuted(req);
+            case 'exportGroupCallInvite':
+                return this._exportGroupCallInvite(req);
+            case 'discardGroupCall':
+                return this._discardGroupCall(req);
 
             // ── Archivos ──────────────────────────────────────────────────────
             case 'downloadFile':
@@ -2152,6 +2180,113 @@ class GramJsController extends EventEmitter {
         return { success: true, updates: result };
     };
 
+    _groupCallInput = ({ call_id, access_hash }) =>
+        new Api.InputGroupCall({ id: BigInt(call_id), accessHash: BigInt(access_hash) });
+
+    _getChatFullForGroupCall = async chatId => {
+        const inputPeer = tdlibChatIdToInputPeer(chatId, this._entityCache);
+        if (chatId < -1000000000000) {
+            const result = await this.client.invoke(new Api.channels.GetFullChannel({ channel: inputPeer }));
+            return result.fullChat || {};
+        }
+        const basicGroupId = Math.abs(Number(chatId));
+        const result = await this.client.invoke(new Api.messages.GetFullChat({ chatId: BigInt(basicGroupId) }));
+        return result.fullChat || {};
+    };
+
+    _getGroupCallInfo = async ({ chat_id, limit = 100 }) => {
+        const full = await this._getChatFullForGroupCall(Number(chat_id));
+        const active = full.call;
+        if (!active?.id || !active?.accessHash) return { active: false, participants: [] };
+        const callInput = new Api.InputGroupCall({ id: active.id, accessHash: active.accessHash });
+        const result = await this.client.invoke(new Api.phone.GetGroupCall({ call: callInput, limit }));
+        const users = new Map((result?.users || []).map(user => [String(user.id), user]));
+        const chats = new Map((result?.chats || []).map(chat => [String(chat.id), chat]));
+        const participants = (result?.participants || []).map(item => {
+            const peerId = String(item.peer?.userId || item.peer?.channelId || item.peer?.chatId || '');
+            const peer = users.get(peerId) || chats.get(peerId);
+            return {
+                id: peerId,
+                name:
+                    [peer?.firstName, peer?.lastName].filter(Boolean).join(' ') ||
+                    peer?.title ||
+                    peer?.username ||
+                    peerId,
+                username: peer?.username || '',
+                muted: !!item.muted,
+                muted_by_you: !!item.mutedByYou,
+                can_self_unmute: !!item.canSelfUnmute,
+                raised_hand: !!item.raiseHandRating,
+                video_joined: !!item.videoJoined,
+                volume: item.volume || 10000,
+            };
+        });
+        const call = result.call || {};
+        return {
+            active: true,
+            call_id: String(active.id),
+            access_hash: String(active.accessHash),
+            title: call.title || '',
+            participants_count: call.participantsCount || participants.length,
+            join_muted: !!call.joinMuted,
+            can_change_join_muted: !!call.canChangeJoinMuted,
+            can_start_video: !!call.canStartVideo,
+            record_start_date: call.recordStartDate || 0,
+            schedule_date: call.scheduleDate || 0,
+            scheduled: !!call.scheduleDate,
+            participants,
+        };
+    };
+
+    _createGroupCall = async ({ chat_id, title = '', schedule_date = 0 }) => {
+        const peer = tdlibChatIdToInputPeer(Number(chat_id), this._entityCache);
+        const result = await this.client.invoke(
+            new Api.phone.CreateGroupCall({
+                peer,
+                randomId: Math.floor(Math.random() * 0x7fffffff),
+                title: String(title || '').trim() || undefined,
+                scheduleDate: schedule_date ? Number(schedule_date) : undefined,
+            }),
+        );
+        return { success: true, updates: result };
+    };
+
+    _startScheduledGroupCall = async call => {
+        const result = await this.client.invoke(
+            new Api.phone.StartScheduledGroupCall({ call: this._groupCallInput(call) }),
+        );
+        return { success: true, updates: result };
+    };
+
+    _editGroupCallTitle = async ({ title, ...call }) => {
+        const result = await this.client.invoke(
+            new Api.phone.EditGroupCallTitle({ call: this._groupCallInput(call), title: String(title || '').trim() }),
+        );
+        return { success: true, updates: result };
+    };
+
+    _toggleGroupCallJoinMuted = async ({ join_muted, ...call }) => {
+        const result = await this.client.invoke(
+            new Api.phone.ToggleGroupCallSettings({
+                call: this._groupCallInput(call),
+                joinMuted: !!join_muted,
+            }),
+        );
+        return { success: true, updates: result };
+    };
+
+    _exportGroupCallInvite = async call => {
+        const result = await this.client.invoke(
+            new Api.phone.ExportGroupCallInvite({ call: this._groupCallInput(call), canSelfUnmute: true }),
+        );
+        return { link: result.link || '' };
+    };
+
+    _discardGroupCall = async call => {
+        const result = await this.client.invoke(new Api.phone.DiscardGroupCall({ call: this._groupCallInput(call) }));
+        return { success: true, updates: result };
+    };
+
     // ── Stickers / Emoji ──────────────────────────────────────────────────────
 
     _getFavedStickers = async () => {
@@ -2367,10 +2502,16 @@ class GramJsController extends EventEmitter {
         const r = await this.client.invoke(new Api.account.GetAutoDownloadSettings());
         const toObj = s => ({
             disabled: s.disabled || false,
+            video_preload_large: s.videoPreloadLarge || false,
+            audio_preload_next: s.audioPreloadNext || false,
+            phonecalls_less_data: s.phonecallsLessData || false,
+            stories_preload: s.storiesPreload || false,
             photo_size_max: s.photoSizeMax || 0,
             video_size_max: Number(s.videoSizeMax || 0),
             file_size_max: Number(s.fileSizeMax || 0),
             video_upload_maxbitrate: s.videoUploadMaxbitrate || 0,
+            small_queue_active_operations_max: s.smallQueueActiveOperationsMax || 2,
+            large_queue_active_operations_max: s.largeQueueActiveOperationsMax || 2,
         });
         return {
             low: toObj(r.low),
@@ -2390,12 +2531,12 @@ class GramJsController extends EventEmitter {
                     videoSizeMax: BigInt(settings.video_size_max || 0),
                     fileSizeMax: BigInt(settings.file_size_max || 0),
                     videoUploadMaxbitrate: settings.video_upload_maxbitrate || 0,
-                    videoPreloadLarge: false,
-                    audioPreloadNext: false,
-                    phonecallsLessData: false,
-                    storiesPreload: false,
-                    smallQueueActiveOperationsMax: 2,
-                    largeQueueActiveOperationsMax: 2,
+                    videoPreloadLarge: settings.video_preload_large || false,
+                    audioPreloadNext: settings.audio_preload_next || false,
+                    phonecallsLessData: settings.phonecalls_less_data || false,
+                    storiesPreload: settings.stories_preload || false,
+                    smallQueueActiveOperationsMax: settings.small_queue_active_operations_max || 2,
+                    largeQueueActiveOperationsMax: settings.large_queue_active_operations_max || 2,
                 }),
             }),
         );

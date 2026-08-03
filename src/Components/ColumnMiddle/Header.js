@@ -65,6 +65,7 @@ import AppStore from '../../Stores/ApplicationStore';
 import TdLibController from '../../Controllers/TdLibController';
 import { getPeerColor } from '../../Utils/PeerColors';
 import CustomEmoji from '../Message/CustomEmoji';
+import GroupCallDialog from '../Calls/GroupCallDialog';
 import './Header.css';
 
 const styles = theme => ({
@@ -105,6 +106,7 @@ class Header extends Component {
             inviteLinkCopied: false,
             boostDialogOpen: false,
             muteSnackbar: null,
+            groupCallOpen: false,
         };
     }
 
@@ -695,6 +697,17 @@ class Header extends Component {
                                 </IconButton>
                             </>
                         )}
+                        {chat.type &&
+                            (chat.type['@type'] === 'chatTypeSupergroup' ||
+                                chat.type['@type'] === 'chatTypeBasicGroup') && (
+                                <IconButton
+                                    className={classes.messageSearchIconButton}
+                                    aria-label='Chat de voz'
+                                    title='Chat de voz'
+                                    onClick={() => this.setState({ groupCallOpen: true })}>
+                                    <CallIcon />
+                                </IconButton>
+                            )}
                         <IconButton
                             className={classes.messageSearchIconButton}
                             aria-label='Search in chat'
@@ -856,6 +869,11 @@ class Header extends Component {
                     open={!!this.state.boostDialogOpen}
                     chatId={AppStore.getChatId()}
                     onClose={() => this.setState({ boostDialogOpen: false })}
+                />
+                <GroupCallDialog
+                    open={!!this.state.groupCallOpen}
+                    chatId={AppStore.getChatId()}
+                    onClose={() => this.setState({ groupCallOpen: false })}
                 />
                 <Snackbar
                     open={this.state.inviteLinkCopied}

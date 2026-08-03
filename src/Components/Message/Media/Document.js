@@ -26,14 +26,23 @@ function parseMarkdown(md) {
         s
             .replace(/&/g, '&amp;')
             .replace(/</g, '&lt;')
-            .replace(/>/g, '&gt;');
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+    const safeHref = value => {
+        const href = String(value || '').trim();
+        return /^(https?:\/\/|mailto:|tg:)/i.test(href) ? href : '#';
+    };
     const inlineFormat = raw => {
         let s = escape(raw);
         s = s.replace(/`([^`]+)`/g, '<code>$1</code>');
         s = s.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
         s = s.replace(/\*([^*]+)\*/g, '<em>$1</em>');
         s = s.replace(/~~([^~]+)~~/g, '<del>$1</del>');
-        s = s.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>');
+        s = s.replace(
+            /\[([^\]]+)\]\(([^)]+)\)/g,
+            (_, label, href) => `<a href="${safeHref(href)}" target="_blank" rel="noopener noreferrer">${label}</a>`,
+        );
         return s;
     };
     const lines = md.split('\n');
