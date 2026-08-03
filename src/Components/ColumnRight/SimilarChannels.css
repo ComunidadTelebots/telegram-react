@@ -33,6 +33,30 @@
     display: flex;
     flex-direction: column;
     min-width: 0;
+    flex: 1;
+}
+
+.similar-channel-join {
+    border: 0;
+    border-radius: 14px;
+    padding: 6px 10px;
+    background: var(--color-primary, #2196f3);
+    color: #fff;
+    cursor: pointer;
+    font: inherit;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.similar-channel-join:disabled {
+    opacity: 0.55;
+    cursor: default;
+}
+
+.similar-channels-error {
+    padding: 4px 16px 8px;
+    color: var(--message-error-color, #d93025);
+    font-size: 12px;
 }
 
 .similar-channel-title {

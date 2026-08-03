@@ -16,20 +16,46 @@ class BusinessEditor extends React.PureComponent {
             locationAddress: '',
             locationLat: '',
             locationLon: '',
+            quickReplies: [],
+            quickShortcut: '',
+            quickMessage: '',
+            connectedBots: [],
+            botUsername: '',
+            error: '',
         };
     }
 
     open(info) {
-        this.setState({
-            open: true,
-            saving: false,
-            introTitle: info?.intro?.title || '',
-            introDesc: info?.intro?.description || '',
-            locationAddress: info?.location?.address || '',
-            locationLat: info?.location?.location?.latitude != null ? String(info.location.location.latitude) : '',
-            locationLon: info?.location?.location?.longitude != null ? String(info.location.location.longitude) : '',
-        });
+        this.setState(
+            {
+                open: true,
+                saving: false,
+                introTitle: info?.intro?.title || '',
+                introDesc: info?.intro?.description || '',
+                locationAddress: info?.location?.address || '',
+                locationLat: info?.location?.location?.latitude != null ? String(info.location.location.latitude) : '',
+                locationLon:
+                    info?.location?.location?.longitude != null ? String(info.location.location.longitude) : '',
+                error: '',
+            },
+            this.loadAutomation,
+        );
     }
+
+    loadAutomation = async () => {
+        try {
+            const [quick, bots] = await Promise.all([
+                TdLibController.send({ '@type': 'getQuickReplies' }),
+                TdLibController.send({ '@type': 'getBusinessConnectedBots' }),
+            ]);
+            this.setState({
+                quickReplies: quick?.quick_reply_shortcuts || [],
+                connectedBots: bots?.bots || [],
+            });
+        } catch (error) {
+            this.setState({ error: error?.message || 'No se pudo cargar la automatización empresarial.' });
+        }
+    };
 
     handleClose = () => this.setState({ open: false });
 
@@ -43,6 +69,7 @@ class BusinessEditor extends React.PureComponent {
             });
         } catch {}
         this.setState({ saving: false });
+        if (this.props.onSaved) this.props.onSaved();
     };
 
     handleSaveLocation = async () => {
@@ -56,10 +83,100 @@ class BusinessEditor extends React.PureComponent {
             });
         } catch {}
         this.setState({ saving: false });
+        if (this.props.onSaved) this.props.onSaved();
+    };
+
+    handleCreateQuickReply = async () => {
+        const { quickShortcut, quickMessage } = this.state;
+        if (!quickShortcut.trim() || !quickMessage.trim()) return;
+        this.setState({ saving: true, error: '' });
+        try {
+            await TdLibController.send({
+                '@type': 'createQuickReply',
+                shortcut: quickShortcut,
+                message: quickMessage,
+            });
+            this.setState({ quickShortcut: '', quickMessage: '' });
+            await this.loadAutomation();
+        } catch (error) {
+            this.setState({ error: error?.message || 'No se pudo crear la respuesta rápida.' });
+        }
+        this.setState({ saving: false });
+        if (this.props.onSaved) this.props.onSaved();
+    };
+
+    handleRenameQuickReply = async item => {
+        const shortcut = window.prompt('Nuevo atajo', item.shortcut || '');
+        if (!shortcut || shortcut === item.shortcut) return;
+        this.setState({ saving: true, error: '' });
+        try {
+            await TdLibController.send({ '@type': 'editQuickReply', shortcut_id: item.id, shortcut });
+            await this.loadAutomation();
+        } catch (error) {
+            this.setState({ error: error?.message || 'No se pudo renombrar la respuesta.' });
+        }
+        this.setState({ saving: false });
+    };
+
+    handleDeleteQuickReply = async item => {
+        if (!window.confirm(`¿Eliminar /${item.shortcut}?`)) return;
+        this.setState({ saving: true, error: '' });
+        try {
+            await TdLibController.send({ '@type': 'deleteQuickReply', shortcut_id: item.id });
+            await this.loadAutomation();
+        } catch (error) {
+            this.setState({ error: error?.message || 'No se pudo eliminar la respuesta.' });
+        }
+        this.setState({ saving: false });
+        if (this.props.onSaved) this.props.onSaved();
+    };
+
+    handleConnectBot = async () => {
+        const bot = this.state.botUsername.trim();
+        if (!bot) return;
+        this.setState({ saving: true, error: '' });
+        try {
+            await TdLibController.send({ '@type': 'updateBusinessConnectedBot', bot, can_reply: true });
+            this.setState({ botUsername: '' });
+            await this.loadAutomation();
+        } catch (error) {
+            this.setState({ error: error?.message || 'No se pudo conectar el bot.' });
+        }
+        this.setState({ saving: false });
+    };
+
+    handleDisconnectBot = async item => {
+        if (!window.confirm(`¿Desconectar ${item.name || item.username}?`)) return;
+        this.setState({ saving: true, error: '' });
+        try {
+            await TdLibController.send({
+                '@type': 'updateBusinessConnectedBot',
+                bot: item.username ? `@${item.username}` : item.id,
+                deleted: true,
+            });
+            await this.loadAutomation();
+        } catch (error) {
+            this.setState({ error: error?.message || 'No se pudo desconectar el bot.' });
+        }
+        this.setState({ saving: false });
     };
 
     render() {
-        const { open, saving, introTitle, introDesc, locationAddress, locationLat, locationLon } = this.state;
+        const {
+            open,
+            saving,
+            introTitle,
+            introDesc,
+            locationAddress,
+            locationLat,
+            locationLon,
+            quickReplies,
+            quickShortcut,
+            quickMessage,
+            connectedBots,
+            botUsername,
+            error,
+        } = this.state;
         if (!open) return null;
 
         return (
@@ -68,9 +185,14 @@ class BusinessEditor extends React.PureComponent {
                     <button className='business-editor-back' onClick={this.handleClose}>
                         <ArrowBackIcon />
                     </button>
-                    <span className='business-editor-title'>Edit Business Info</span>
+                    <span className='business-editor-title'>Telegram Business</span>
                 </div>
                 <div className='business-editor-content'>
+                    {error && (
+                        <div className='business-text-block' role='alert'>
+                            {error}
+                        </div>
+                    )}
                     <div className='business-editor-section'>
                         <div className='business-editor-section-header'>Intro</div>
                         <TextField
@@ -129,6 +251,90 @@ class BusinessEditor extends React.PureComponent {
                         <Button variant='contained' color='primary' disabled={saving} onClick={this.handleSaveLocation}>
                             Save Location
                         </Button>
+                    </div>
+                    <div className='business-editor-section'>
+                        <div className='business-editor-section-header'>Respuestas rápidas</div>
+                        <TextField
+                            label='Atajo (por ejemplo, horario)'
+                            value={quickShortcut}
+                            onChange={e => this.setState({ quickShortcut: e.target.value.replace(/\s/g, '') })}
+                            fullWidth
+                            variant='outlined'
+                            size='small'
+                            style={{ marginBottom: 12 }}
+                        />
+                        <TextField
+                            label='Mensaje'
+                            value={quickMessage}
+                            onChange={e => this.setState({ quickMessage: e.target.value })}
+                            fullWidth
+                            multiline
+                            rows={3}
+                            variant='outlined'
+                            size='small'
+                            style={{ marginBottom: 12 }}
+                        />
+                        <Button
+                            variant='contained'
+                            color='primary'
+                            disabled={saving || !quickShortcut.trim() || !quickMessage.trim()}
+                            onClick={this.handleCreateQuickReply}>
+                            Crear respuesta
+                        </Button>
+                        <div className='business-quick-replies' style={{ marginTop: 12 }}>
+                            {quickReplies.map(item => (
+                                <div className='business-quick-reply' key={item.id}>
+                                    <span className='business-quick-reply-shortcut'>/{item.shortcut}</span>
+                                    <span>{item.count || 0} mensaje(s)</span>
+                                    <Button
+                                        size='small'
+                                        disabled={saving}
+                                        onClick={() => this.handleRenameQuickReply(item)}>
+                                        Editar
+                                    </Button>
+                                    <Button
+                                        size='small'
+                                        disabled={saving}
+                                        onClick={() => this.handleDeleteQuickReply(item)}>
+                                        Eliminar
+                                    </Button>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                    <div className='business-editor-section'>
+                        <div className='business-editor-section-header'>Bots empresariales conectados</div>
+                        <TextField
+                            label='@usuario del bot'
+                            value={botUsername}
+                            onChange={e => this.setState({ botUsername: e.target.value })}
+                            fullWidth
+                            variant='outlined'
+                            size='small'
+                            style={{ marginBottom: 12 }}
+                        />
+                        <Button
+                            variant='contained'
+                            color='primary'
+                            disabled={saving || !botUsername.trim()}
+                            onClick={this.handleConnectBot}>
+                            Conectar bot
+                        </Button>
+                        <div className='business-quick-replies' style={{ marginTop: 12 }}>
+                            {connectedBots.map(item => (
+                                <div className='business-quick-reply' key={item.id}>
+                                    <strong>{item.name}</strong>
+                                    {item.username && <span>@{item.username}</span>}
+                                    <span>{item.can_reply ? 'Puede responder' : 'Solo lectura'}</span>
+                                    <Button
+                                        size='small'
+                                        disabled={saving}
+                                        onClick={() => this.handleDisconnectBot(item)}>
+                                        Desconectar
+                                    </Button>
+                                </div>
+                            ))}
+                        </div>
                     </div>
                 </div>
             </div>

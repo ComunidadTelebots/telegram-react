@@ -301,3 +301,42 @@ body.design-weba .saved-tab--active,
 body.design-weba-classic .saved-tab--active {
     border-bottom-color: #2ca5e0;
 }
+
+.saved-folders-search {
+    padding: 8px 12px;
+}
+
+.saved-folders-search input {
+    width: 100%;
+    box-sizing: border-box;
+    border: 0;
+    border-radius: 18px;
+    padding: 9px 14px;
+    background: var(--design-hover-color, rgba(0, 0, 0, 0.06));
+    color: var(--color-text-primary, #222);
+    font: inherit;
+    outline: none;
+}
+
+.saved-folder-pin {
+    border: 0;
+    background: transparent;
+    color: var(--design-muted-color, rgba(0, 0, 0, 0.38));
+    cursor: pointer;
+    padding: 6px;
+}
+
+.saved-folder-pin--active {
+    color: var(--color-accent-main, #2196f3);
+}
+
+.saved-folder-load-more {
+    display: block;
+    margin: 10px auto 18px;
+    border: 0;
+    background: transparent;
+    color: var(--color-accent-main, #2196f3);
+    cursor: pointer;
+    font: inherit;
+    font-weight: 500;
+}

@@ -108,6 +108,7 @@ class MainMenuButton extends React.Component {
         this.setState(({ legacyOnly }) => {
             const next = !legacyOnly;
             localStorage.setItem('tg_design_legacy_features', String(next));
+            ApplicationStore.emit('clientUpdateDesignCapabilities', { legacyOnly: next });
             return { legacyOnly: next };
         });
     };

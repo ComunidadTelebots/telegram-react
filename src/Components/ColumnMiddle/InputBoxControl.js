@@ -96,6 +96,7 @@ class InputBoxControl extends Component {
             showEffectPicker: false,
             selectedEffectId: null,
             availableEffects: [],
+            legacyFeaturesOnly: localStorage.getItem('tg_design_legacy_features') === 'true',
             mentionQuery: null,
             mentionMembers: [],
             botCommandQuery: null,
@@ -213,9 +214,10 @@ class InputBoxControl extends Component {
         MessageStore.on('clientUpdateReply', this.onClientUpdateReply);
         MessageStore.on('updateDeleteMessages', this.onUpdateDeleteMessages);
         StickerStore.on('clientUpdateStickerSend', this.onClientUpdateStickerSend);
+        AppStore.on('clientUpdateDesignCapabilities', this.onDesignCapabilitiesChange);
 
         this.loadDraft();
-        this.loadAvailableEffects();
+        if (!this.state.legacyFeaturesOnly) this.loadAvailableEffects();
     }
 
     componentWillUnmount() {
@@ -228,7 +230,21 @@ class InputBoxControl extends Component {
         MessageStore.off('clientUpdateReply', this.onClientUpdateReply);
         MessageStore.off('updateDeleteMessages', this.onUpdateDeleteMessages);
         StickerStore.off('clientUpdateStickerSend', this.onClientUpdateStickerSend);
+        AppStore.off('clientUpdateDesignCapabilities', this.onDesignCapabilitiesChange);
     }
+
+    onDesignCapabilitiesChange = ({ legacyOnly }) => {
+        this.setState(
+            {
+                legacyFeaturesOnly: !!legacyOnly,
+                selectedEffectId: legacyOnly ? null : this.state.selectedEffectId,
+                showEffectPicker: false,
+            },
+            () => {
+                if (!legacyOnly && this.state.availableEffects.length === 0) this.loadAvailableEffects();
+            },
+        );
+    };
 
     onUpdateDeleteMessages = update => {
         const { chatId, editMessageId } = this.state;
@@ -1894,7 +1910,7 @@ class InputBoxControl extends Component {
                             <ScheduleIcon fontSize='small' />
                         </IconButton>
                     )}
-                    {!Boolean(editMessageId) && availableEffects.length > 0 && (
+                    {!Boolean(editMessageId) && !this.state.legacyFeaturesOnly && availableEffects.length > 0 && (
                         <div style={{ position: 'relative', display: 'inline-block' }}>
                             <IconButton
                                 size='small'

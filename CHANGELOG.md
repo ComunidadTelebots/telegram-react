@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.0.633] - 2026-08-03 — Paridad funcional avanzada
+### Added
+- Gestión real de respuestas rápidas y bots conectados de Telegram Business.
+- Selector y envío real de efectos disponibles en los mensajes, compatible con el modo histórico opcional.
+- Búsqueda, paginación y fijado de carpetas de Mensajes guardados.
+- Unión directa a canales similares con estados de progreso y error.
+- Acciones reales para guardar, ocultar, convertir y mejorar regalos de Telegram Stars.
+### Changed
+- El manifiesto verificable de paridad alcanza 29 de 31 familias completas; solo quedan ajustes avanzados y llamadas grupales.
+### Verification
+- Constructores de GramJS y sintaxis JSX/JavaScript comprobados antes de publicación.
+
 ## [0.0.632] - 2026-08-03 — Paridad funcional configurable entre versiones
 ### Added
 - Botón `Solo funciones de la época` disponible en Android, Unigram, Desktop, iOS, macOS y perfiles web.

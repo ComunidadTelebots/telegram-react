@@ -790,6 +790,8 @@ class GramJsController extends EventEmitter {
                 return this._forwardMessages(req);
             case 'sendMessage':
                 return this._sendMessage(req);
+            case 'getAvailableMessageEffects':
+                return this._getAvailableMessageEffects();
             case 'sendGifByUrl':
                 return this._sendGifByUrl(req);
             case 'setChatMessageAutoDeleteTime':
@@ -910,6 +912,18 @@ class GramJsController extends EventEmitter {
                 return this._updateBusinessLocation(req);
             case 'updateBusinessIntro':
                 return this._updateBusinessIntro(req);
+            case 'getQuickReplies':
+                return this._getQuickReplies(req);
+            case 'createQuickReply':
+                return this._createQuickReply(req);
+            case 'editQuickReply':
+                return this._editQuickReply(req);
+            case 'deleteQuickReply':
+                return this._deleteQuickReply(req);
+            case 'getBusinessConnectedBots':
+                return this._getBusinessConnectedBots(req);
+            case 'updateBusinessConnectedBot':
+                return this._updateBusinessConnectedBot(req);
             case 'getAttachMenuBots':
                 return this._getAttachMenuBots(req);
             case 'getBotApp':
@@ -1092,10 +1106,20 @@ class GramJsController extends EventEmitter {
                 return this._getPinnedSavedDialogs(req);
             case 'getSavedHistory':
                 return this._getSavedHistory(req);
+            case 'toggleSavedDialogIsPinned':
+                return this._toggleSavedDialogIsPinned(req);
 
             // ── Stargifts ─────────────────────────────────────────────────────
             case 'getSavedStarGifts':
                 return this._getSavedStarGifts(req);
+            case 'saveStarGift':
+                return this._saveStarGift(req);
+            case 'convertStarGift':
+                return this._convertStarGift(req);
+            case 'upgradeStarGift':
+                return this._upgradeStarGift(req);
+            case 'joinChat':
+                return this._joinChat(req);
 
             // ── Forum Topics ──────────────────────────────────────────────────
             case 'getForumTopics':
@@ -1170,6 +1194,18 @@ class GramJsController extends EventEmitter {
             // ── Business ─────────────────────────────────────────────────────
             case 'getBusinessInfo':
                 return this._getBusinessInfo(req);
+            case 'getQuickReplies':
+                return this._getQuickReplies(req);
+            case 'createQuickReply':
+                return this._createQuickReply(req);
+            case 'editQuickReply':
+                return this._editQuickReply(req);
+            case 'deleteQuickReply':
+                return this._deleteQuickReply(req);
+            case 'getBusinessConnectedBots':
+                return this._getBusinessConnectedBots(req);
+            case 'updateBusinessConnectedBot':
+                return this._updateBusinessConnectedBot(req);
 
             // ── Archivos ──────────────────────────────────────────────────────
             case 'downloadFile':
@@ -2013,6 +2049,107 @@ class GramJsController extends EventEmitter {
             }),
         );
         return { success: true };
+    };
+
+    _joinChat = async ({ chat_id }) => {
+        const peer = tdlibChatIdToInputPeer(chat_id, this._entityCache);
+        if (!(peer instanceof Api.InputPeerChannel)) {
+            throw new Error('Solo es posible unirse a canales o supergrupos');
+        }
+        const result = await this.client.invoke(
+            new Api.channels.JoinChannel({
+                channel: new Api.InputChannel({ channelId: peer.channelId, accessHash: peer.accessHash }),
+            }),
+        );
+        return { ok: true, updates: result };
+    };
+
+    _getQuickReplies = async () => {
+        const result = await this.client.invoke(new Api.messages.GetQuickReplies({ hash: BigInt(0) }));
+        return {
+            quick_reply_shortcuts: (result?.quickReplies || []).map(item => ({
+                id: item.shortcutId,
+                shortcut: item.shortcut,
+                top_message: item.topMessage,
+                count: item.count,
+            })),
+        };
+    };
+
+    _createQuickReply = async ({ shortcut, message }) => {
+        const normalized = String(shortcut || '')
+            .trim()
+            .replace(/^\/+/, '');
+        const text = String(message || '').trim();
+        if (!normalized || !text) throw new Error('Shortcut and message are required');
+        const available = await this.client.invoke(new Api.messages.CheckQuickReplyShortcut({ shortcut: normalized }));
+        if (!available) throw new Error('Quick reply shortcut is already in use');
+        const peer = await this.client.getInputEntity('me');
+        await this.client.invoke(
+            new Api.messages.SendMessage({
+                peer,
+                message: text,
+                randomId: BigInt(Date.now()) * BigInt(1000) + BigInt(Math.floor(Math.random() * 1000)),
+                quickReplyShortcut: new Api.InputQuickReplyShortcut({ shortcut: normalized }),
+            }),
+        );
+        return { success: true };
+    };
+
+    _editQuickReply = async ({ shortcut_id, shortcut }) => {
+        const normalized = String(shortcut || '')
+            .trim()
+            .replace(/^\/+/, '');
+        if (!shortcut_id || !normalized) throw new Error('Shortcut is required');
+        const success = await this.client.invoke(
+            new Api.messages.EditQuickReplyShortcut({ shortcutId: Number(shortcut_id), shortcut: normalized }),
+        );
+        return { success: !!success };
+    };
+
+    _deleteQuickReply = async ({ shortcut_id }) => {
+        const success = await this.client.invoke(
+            new Api.messages.DeleteQuickReplyShortcut({ shortcutId: Number(shortcut_id) }),
+        );
+        return { success: !!success };
+    };
+
+    _getBusinessConnectedBots = async () => {
+        const result = await this.client.invoke(new Api.account.GetConnectedBots());
+        const users = new Map((result?.users || []).map(user => [String(user.id), user]));
+        return {
+            bots: (result?.connectedBots || []).map(item => {
+                const user = users.get(String(item.botId));
+                return {
+                    id: String(item.botId),
+                    username: user?.username || '',
+                    name:
+                        [user?.firstName, user?.lastName].filter(Boolean).join(' ') ||
+                        user?.username ||
+                        String(item.botId),
+                    can_reply: !!item.canReply,
+                    recipients: item.recipients || {},
+                };
+            }),
+        };
+    };
+
+    _updateBusinessConnectedBot = async ({ bot, can_reply = true, deleted = false, recipients = {} }) => {
+        const botInput = await this.client.getInputEntity(String(bot || '').trim());
+        const result = await this.client.invoke(
+            new Api.account.UpdateConnectedBot({
+                bot: botInput,
+                canReply: !!can_reply,
+                deleted: !!deleted,
+                recipients: new Api.InputBusinessBotRecipients({
+                    existingChats: recipients.existing_chats !== false,
+                    newChats: recipients.new_chats !== false,
+                    contacts: recipients.contacts !== false,
+                    nonContacts: recipients.non_contacts !== false,
+                }),
+            }),
+        );
+        return { success: true, updates: result };
     };
 
     // ── Stickers / Emoji ──────────────────────────────────────────────────────
@@ -3232,6 +3369,7 @@ class GramJsController extends EventEmitter {
             schedule_date,
             disable_notification,
             disable_web_page_preview,
+            effect_id,
         } = req;
         const contentType = input_message_content?.['@type'];
 
@@ -3264,15 +3402,35 @@ class GramJsController extends EventEmitter {
 
             const text = input_message_content?.text?.text || '';
             const formattingEntities = tdEntitiesToGramJs(input_message_content?.text?.entities);
-            const result = await this.client.sendMessage(inputPeer, {
-                message: text,
-                replyTo: reply_to_message_id || undefined,
-                parseMode: undefined,
-                formattingEntities: formattingEntities.length ? formattingEntities : undefined,
-                scheduleDate: schedule_date || undefined,
-                silent: !!disable_notification,
-                noWebpage: !!disable_web_page_preview,
-            });
+            let result;
+            if (effect_id) {
+                const { generateRandomBigInt } = await import('telegram/Helpers');
+                const request = new Api.messages.SendMessage({
+                    peer: inputPeer,
+                    message: text,
+                    randomId: generateRandomBigInt(),
+                    replyTo: reply_to_message_id
+                        ? new Api.InputReplyToMessage({ replyToMsgId: reply_to_message_id })
+                        : undefined,
+                    entities: formattingEntities.length ? formattingEntities : undefined,
+                    scheduleDate: schedule_date || undefined,
+                    silent: !!disable_notification,
+                    noWebpage: !!disable_web_page_preview,
+                    effect: bigInt(String(effect_id)),
+                });
+                const updates = await this.client.invoke(request);
+                result = await this.client._getResponseMessage(request, updates, inputPeer);
+            } else {
+                result = await this.client.sendMessage(inputPeer, {
+                    message: text,
+                    replyTo: reply_to_message_id || undefined,
+                    parseMode: undefined,
+                    formattingEntities: formattingEntities.length ? formattingEntities : undefined,
+                    scheduleDate: schedule_date || undefined,
+                    silent: !!disable_notification,
+                    noWebpage: !!disable_web_page_preview,
+                });
+            }
 
             const tdMessage = translateMessage(result, chat_id);
             if (tdMessage) {
@@ -3292,6 +3450,25 @@ class GramJsController extends EventEmitter {
             throw err;
         }
         return {};
+    };
+
+    _getAvailableMessageEffects = async () => {
+        try {
+            const result = await this.client.invoke(new Api.messages.GetAvailableEffects({ hash: 0 }));
+            const effects = (result.effects || []).map(effect => ({
+                '@type': 'messageEffect',
+                id: String(effect.id),
+                emoji: effect.emoticon || '✨',
+                premium_required: !!effect.premiumRequired,
+                static_icon_id: effect.staticIconId ? String(effect.staticIconId) : null,
+                effect_sticker_id: effect.effectStickerId ? String(effect.effectStickerId) : null,
+                effect_animation_id: effect.effectAnimationId ? String(effect.effectAnimationId) : null,
+            }));
+            return { '@type': 'messageEffects', effects };
+        } catch (err) {
+            console.error('[GramJs] getAvailableMessageEffects error', err);
+            return { '@type': 'messageEffects', effects: [] };
+        }
     };
 
     _sendPoll = async (chatId, inputPeer, content, replyToMessageId, scheduleDate, disableNotification) => {
@@ -5938,23 +6115,38 @@ class GramJsController extends EventEmitter {
         return this._translateSavedDialogs(result);
     };
 
+    _savedPeerToInputPeer = peer => {
+        if (peer && peer.user_id) {
+            const user = this._entityCache.get(Number(peer.user_id));
+            return new Api.InputPeerUser({ userId: BigInt(peer.user_id), accessHash: user?.accessHash || BigInt(0) });
+        }
+        if (peer && peer.chat_id) {
+            return new Api.InputPeerChat({ chatId: BigInt(peer.chat_id) });
+        }
+        if (peer && peer.channel_id) {
+            const channel = this._entityCache.get(-1000000000000 - Number(peer.channel_id));
+            return new Api.InputPeerChannel({
+                channelId: BigInt(peer.channel_id),
+                accessHash: channel?.accessHash || BigInt(0),
+            });
+        }
+        throw new Error('La carpeta guardada no contiene un destinatario válido');
+    };
+
+    _toggleSavedDialogIsPinned = async ({ peer, is_pinned }) => {
+        const inputPeer = this._savedPeerToInputPeer(peer);
+        await this.client.invoke(
+            new Api.messages.ToggleSavedDialogPin({
+                pinned: !!is_pinned,
+                peer: new Api.InputDialogPeer({ peer: inputPeer }),
+            }),
+        );
+        return { ok: true, is_pinned: !!is_pinned };
+    };
+
     _getSavedHistory = async req => {
         const { peer, offset_id = 0, offset_date = 0, limit = 30 } = req;
-        let inputPeer;
-        if (peer && peer.user_id) {
-            const u = this._entityCache.get(Number(peer.user_id));
-            inputPeer = new Api.InputPeerUser({ userId: BigInt(peer.user_id), accessHash: u?.accessHash || BigInt(0) });
-        } else if (peer && peer.chat_id) {
-            inputPeer = new Api.InputPeerChat({ chatId: BigInt(peer.chat_id) });
-        } else if (peer && peer.channel_id) {
-            const ch = this._entityCache.get(-1000000000000 - Number(peer.channel_id));
-            inputPeer = new Api.InputPeerChannel({
-                channelId: BigInt(peer.channel_id),
-                accessHash: ch?.accessHash || BigInt(0),
-            });
-        } else {
-            inputPeer = new Api.InputPeerEmpty();
-        }
+        const inputPeer = this._savedPeerToInputPeer(peer);
         const result = await this.client.invoke(
             new Api.messages.GetSavedHistory({
                 peer: inputPeer,
@@ -6002,6 +6194,36 @@ class GramJsController extends EventEmitter {
             unsaved: !!g.unsaved,
         }));
         return { gifts, count: result.count || gifts.length };
+    };
+
+    _savedStarGiftInput = giftId => {
+        if (giftId == null || Number.isNaN(Number(giftId))) throw new Error('Regalo guardado no válido');
+        return new Api.InputSavedStarGiftUser({ msgId: Number(giftId) });
+    };
+
+    _saveStarGift = async ({ gift_id, unsave = false }) => {
+        await this.client.invoke(
+            new Api.payments.SaveStarGift({
+                unsave: !!unsave,
+                stargift: this._savedStarGiftInput(gift_id),
+            }),
+        );
+        return { ok: true, unsaved: !!unsave };
+    };
+
+    _convertStarGift = async ({ gift_id }) => {
+        await this.client.invoke(new Api.payments.ConvertStarGift({ stargift: this._savedStarGiftInput(gift_id) }));
+        return { ok: true };
+    };
+
+    _upgradeStarGift = async ({ gift_id, keep_original_details = true }) => {
+        const result = await this.client.invoke(
+            new Api.payments.UpgradeStarGift({
+                keepOriginalDetails: !!keep_original_details,
+                stargift: this._savedStarGiftInput(gift_id),
+            }),
+        );
+        return { ok: true, result };
     };
 
     // ── Forum Topics ─────────────────────────────────────────────────────────

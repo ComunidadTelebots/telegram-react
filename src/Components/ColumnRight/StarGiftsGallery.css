@@ -187,10 +187,32 @@
     padding: 8px 10px;
     border-radius: 10px;
     background: var(--design-hover-color, rgba(0, 0, 0, 0.04));
+    border: 0;
+    width: 100%;
+    text-align: left;
+    font: inherit;
+    cursor: pointer;
 }
 
 .stargift-action--disabled {
     opacity: 0.45;
+}
+
+.stargift-action-error {
+    color: var(--message-error-color, #d93025);
+    font-size: 12px;
+    text-align: center;
+}
+
+.stargift-load-more {
+    display: block;
+    margin: 8px auto;
+    border: 0;
+    background: transparent;
+    color: var(--color-accent-main, #2196f3);
+    cursor: pointer;
+    font: inherit;
+    font-weight: 500;
 }
 
 .stargift-action-icon {

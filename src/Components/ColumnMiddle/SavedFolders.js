@@ -38,32 +38,42 @@ function peerChatId(peer) {
 class SavedFolderMessages extends Component {
     constructor(props) {
         super(props);
-        this.state = { messages: [], loading: true, error: '' };
+        this.state = { messages: [], loading: true, loadingMore: false, hasMore: true, error: '' };
     }
 
     componentDidMount() {
         this._load();
     }
 
-    _load = async () => {
+    _load = async (append = false) => {
         const { savedPeer } = this.props;
+        const { messages } = this.state;
+        const oldest = append && messages.length ? messages[messages.length - 1] : null;
+        this.setState(append ? { loadingMore: true, error: '' } : { loading: true, error: '' });
         try {
             const result = await TdLibController.send({
                 '@type': 'getSavedHistory',
                 peer: savedPeer,
                 limit: 30,
-                offset_id: 0,
-                offset_date: 0,
+                offset_id: oldest?.id || 0,
+                offset_date: oldest?.date || 0,
             });
-            this.setState({ messages: result.messages || [], loading: false });
+            const next = result.messages || [];
+            const known = new Set(messages.map(message => message.id));
+            this.setState({
+                messages: append ? messages.concat(next.filter(message => !known.has(message.id))) : next,
+                loading: false,
+                loadingMore: false,
+                hasMore: next.length === 30,
+            });
         } catch (err) {
-            this.setState({ loading: false, error: err.message || 'Error al cargar mensajes.' });
+            this.setState({ loading: false, loadingMore: false, error: err.message || 'Error al cargar mensajes.' });
         }
     };
 
     render() {
         const { savedPeer, onBack } = this.props;
-        const { messages, loading, error } = this.state;
+        const { messages, loading, loadingMore, hasMore, error } = this.state;
         const label = peerLabel(savedPeer);
 
         return (
@@ -98,6 +108,14 @@ class SavedFolderMessages extends Component {
                     {!loading && !error && messages.length === 0 && (
                         <div className='saved-folder-empty'>No hay mensajes guardados aquí.</div>
                     )}
+                    {!loading && !error && messages.length > 0 && hasMore && (
+                        <button
+                            className='saved-folder-load-more'
+                            disabled={loadingMore}
+                            onClick={() => this._load(true)}>
+                            {loadingMore ? 'Cargando...' : 'Cargar mensajes anteriores'}
+                        </button>
+                    )}
                 </div>
             </div>
         );
@@ -114,6 +132,8 @@ class SavedFolders extends Component {
             error: '',
             activeTab: 'all',
             openPeer: null,
+            query: '',
+            pinningKey: '',
         };
     }
 
@@ -137,15 +157,44 @@ class SavedFolders extends Component {
         }
     };
 
+    _togglePinned = async (dialog, event) => {
+        event.stopPropagation();
+        const peer = dialog.peer;
+        const key = JSON.stringify(peer);
+        const pinned = !dialog.isPinned;
+        this.setState({ pinningKey: key, error: '' });
+        try {
+            await TdLibController.send({ '@type': 'toggleSavedDialogIsPinned', peer, is_pinned: pinned });
+            const update = item => (JSON.stringify(item.peer) === key ? { ...item, isPinned: pinned } : item);
+            this.setState(state => ({
+                dialogs: state.dialogs.map(update),
+                pinned: pinned
+                    ? [update(dialog), ...state.pinned.filter(item => JSON.stringify(item.peer) !== key)]
+                    : state.pinned.filter(item => JSON.stringify(item.peer) !== key),
+                pinningKey: '',
+            }));
+        } catch (err) {
+            this.setState({ pinningKey: '', error: err.message || 'No se pudo cambiar el fijado.' });
+        }
+    };
+
     render() {
         const { onClose } = this.props;
-        const { dialogs, pinned, loading, error, activeTab, openPeer } = this.state;
+        const { dialogs, pinned, loading, error, activeTab, openPeer, query, pinningKey } = this.state;
 
         if (openPeer) {
             return <SavedFolderMessages savedPeer={openPeer} onBack={() => this.setState({ openPeer: null })} />;
         }
 
-        const list = activeTab === 'pinned' ? pinned : dialogs;
+        const source = activeTab === 'pinned' ? pinned : dialogs;
+        const normalizedQuery = query.trim().toLocaleLowerCase();
+        const list = normalizedQuery
+            ? source.filter(dialog =>
+                  peerLabel(dialog.peer)
+                      .toLocaleLowerCase()
+                      .includes(normalizedQuery),
+              )
+            : source;
 
         return (
             <div className='saved-folders'>
@@ -170,6 +219,16 @@ class SavedFolders extends Component {
                     </button>
                 </div>
 
+                <div className='saved-folders-search'>
+                    <input
+                        type='search'
+                        value={query}
+                        placeholder='Buscar en Mensajes guardados'
+                        aria-label='Buscar en Mensajes guardados'
+                        onChange={event => this.setState({ query: event.target.value })}
+                    />
+                </div>
+
                 <div className='saved-folders-body'>
                     {loading && (
                         <div className='saved-folder-loading'>
@@ -184,9 +243,15 @@ class SavedFolders extends Component {
                             const chatId = peerChatId(peer);
                             const label = peerLabel(peer);
                             return (
-                                <button
+                                <div
                                     key={idx}
                                     className='saved-folder-row'
+                                    role='button'
+                                    tabIndex={0}
+                                    onKeyDown={event => {
+                                        if (event.key === 'Enter' || event.key === ' ')
+                                            this.setState({ openPeer: peer });
+                                    }}
                                     onClick={() => this.setState({ openPeer: peer })}>
                                     <div className='saved-folder-avatar'>
                                         {chatId ? (
@@ -205,8 +270,17 @@ class SavedFolders extends Component {
                                             </span>
                                         )}
                                     </div>
-                                    {dialog.isPinned && <PushPinIcon className='saved-folder-pin-icon' />}
-                                </button>
+                                    <button
+                                        type='button'
+                                        className={`saved-folder-pin${
+                                            dialog.isPinned ? ' saved-folder-pin--active' : ''
+                                        }`}
+                                        disabled={pinningKey === JSON.stringify(peer)}
+                                        aria-label={dialog.isPinned ? `Desfijar ${label}` : `Fijar ${label}`}
+                                        onClick={event => this._togglePinned(dialog, event)}>
+                                        <PushPinIcon className='saved-folder-pin-icon' />
+                                    </button>
+                                </div>
                             );
                         })}
                     {!loading && !error && list.length === 0 && (

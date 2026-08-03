@@ -5,7 +5,7 @@ import './StarGiftsGallery.css';
 
 class GiftDetailModal extends Component {
     render() {
-        const { gift, onClose } = this.props;
+        const { gift, onClose, onAction, busyAction, actionError } = this.props;
         if (!gift) return null;
 
         const canUpgrade = gift.can_upgrade || gift.canUpgrade;
@@ -43,7 +43,11 @@ class GiftDetailModal extends Component {
 
                         <div className='stargift-actions'>
                             {/* Upgrade */}
-                            <div className={`stargift-action${canUpgrade ? '' : ' stargift-action--disabled'}`}>
+                            <button
+                                type='button'
+                                disabled={!canUpgrade || !!busyAction}
+                                onClick={() => onAction('upgrade', gift)}
+                                className={`stargift-action${canUpgrade ? '' : ' stargift-action--disabled'}`}>
                                 <span className='stargift-action-icon'>✨</span>
                                 <div className='stargift-action-info'>
                                     <span className='stargift-action-label'>Mejorar regalo</span>
@@ -54,7 +58,7 @@ class GiftDetailModal extends Component {
                                 <span className='stargift-action-status'>
                                     {canUpgrade ? 'Disponible' : 'No disponible'}
                                 </span>
-                            </div>
+                            </button>
 
                             {/* Transfer */}
                             <div className={`stargift-action${canTransfer ? '' : ' stargift-action--disabled'}`}>
@@ -92,16 +96,37 @@ class GiftDetailModal extends Component {
 
                             {/* Convert */}
                             {gift.convert_stars != null && (
-                                <div className='stargift-action'>
+                                <button
+                                    type='button'
+                                    disabled={!!busyAction}
+                                    onClick={() => onAction('convert', gift)}
+                                    className='stargift-action'>
                                     <span className='stargift-action-icon'>💫</span>
                                     <div className='stargift-action-info'>
                                         <span className='stargift-action-label'>Convertir a estrellas</span>
                                         <span className='stargift-action-cost'>{gift.convert_stars} ⭐</span>
                                     </div>
                                     <span className='stargift-action-status'>Disponible</span>
-                                </div>
+                                </button>
                             )}
+
+                            <button
+                                type='button'
+                                disabled={!!busyAction}
+                                onClick={() => onAction(gift.unsaved ? 'save' : 'unsave', gift)}
+                                className='stargift-action'>
+                                <span className='stargift-action-icon'>{gift.unsaved ? '☆' : '★'}</span>
+                                <div className='stargift-action-info'>
+                                    <span className='stargift-action-label'>
+                                        {gift.unsaved ? 'Mostrar en el perfil' : 'Ocultar del perfil'}
+                                    </span>
+                                </div>
+                                <span className='stargift-action-status'>
+                                    {busyAction === 'save' || busyAction === 'unsave' ? 'Guardando...' : 'Cambiar'}
+                                </span>
+                            </button>
                         </div>
+                        {actionError && <div className='stargift-action-error'>{actionError}</div>}
                     </div>
                 </div>
             </div>
@@ -112,7 +137,17 @@ class GiftDetailModal extends Component {
 class StarGiftsGallery extends Component {
     constructor(props) {
         super(props);
-        this.state = { gifts: [], loading: true, error: '', selectedGift: null };
+        this.state = {
+            gifts: [],
+            loading: true,
+            loadingMore: false,
+            hasMore: false,
+            total: 0,
+            error: '',
+            selectedGift: null,
+            busyAction: '',
+            actionError: '',
+        };
     }
 
     componentDidMount() {
@@ -121,28 +156,77 @@ class StarGiftsGallery extends Component {
 
     componentDidUpdate(prevProps) {
         if (prevProps.chatId !== this.props.chatId) {
-            this.setState({ gifts: [], loading: true, error: '', selectedGift: null });
+            this.setState({ gifts: [], loading: true, error: '', selectedGift: null, actionError: '' });
             this._load();
         }
     }
 
-    _load = async () => {
+    _load = async (append = false) => {
         const { chatId } = this.props;
+        const offset = append ? this.state.gifts.length : 0;
+        this.setState(append ? { loadingMore: true, error: '' } : { loading: true, error: '' });
         try {
             const result = await TdLibController.send({
                 '@type': 'getSavedStarGifts',
                 chat_id: chatId,
-                offset: 0,
-                limit: 100,
+                offset,
+                limit: 50,
             });
-            this.setState({ gifts: result.gifts || [], loading: false });
+            const next = result.gifts || [];
+            const total = result.count || next.length;
+            this.setState(state => ({
+                gifts: append ? state.gifts.concat(next) : next,
+                total,
+                loading: false,
+                loadingMore: false,
+                hasMore: offset + next.length < total,
+            }));
         } catch (err) {
-            this.setState({ loading: false, error: err.message || 'Error al cargar regalos.' });
+            this.setState({ loading: false, loadingMore: false, error: err.message || 'Error al cargar regalos.' });
+        }
+    };
+
+    _performAction = async (action, gift) => {
+        const type = {
+            save: 'saveStarGift',
+            unsave: 'saveStarGift',
+            convert: 'convertStarGift',
+            upgrade: 'upgradeStarGift',
+        }[action];
+        if (!type) return;
+        this.setState({ busyAction: action, actionError: '' });
+        try {
+            await TdLibController.send({
+                '@type': type,
+                gift_id: gift.id,
+                unsave: action === 'unsave',
+                keep_original_details: true,
+            });
+            if (action === 'convert') {
+                this.setState(state => ({
+                    gifts: state.gifts.filter(item => item.id !== gift.id),
+                    selectedGift: null,
+                    busyAction: '',
+                    total: Math.max(0, state.total - 1),
+                }));
+            } else {
+                const updated = {
+                    ...gift,
+                    unsaved: action === 'unsave' ? true : action === 'save' ? false : gift.unsaved,
+                };
+                this.setState(state => ({
+                    gifts: state.gifts.map(item => (item.id === gift.id ? updated : item)),
+                    selectedGift: updated,
+                    busyAction: '',
+                }));
+            }
+        } catch (error) {
+            this.setState({ busyAction: '', actionError: error.message || 'No se pudo actualizar el regalo.' });
         }
     };
 
     render() {
-        const { gifts, loading, error, selectedGift } = this.state;
+        const { gifts, loading, loadingMore, hasMore, error, selectedGift, busyAction, actionError } = this.state;
 
         if (loading) {
             return (
@@ -172,8 +256,19 @@ class StarGiftsGallery extends Component {
                         </button>
                     ))}
                 </div>
+                {hasMore && (
+                    <button className='stargift-load-more' disabled={loadingMore} onClick={() => this._load(true)}>
+                        {loadingMore ? 'Cargando...' : 'Ver más regalos'}
+                    </button>
+                )}
                 {selectedGift && (
-                    <GiftDetailModal gift={selectedGift} onClose={() => this.setState({ selectedGift: null })} />
+                    <GiftDetailModal
+                        gift={selectedGift}
+                        busyAction={busyAction}
+                        actionError={actionError}
+                        onAction={this._performAction}
+                        onClose={() => this.setState({ selectedGift: null, actionError: '' })}
+                    />
                 )}
             </div>
         );

@@ -72,7 +72,7 @@ class BusinessInfo extends Component {
         }
 
         try {
-            const qr = await TdLibController.send({ '@type': 'getBusinessConnectedBot', bot_user_id: userId });
+            const qr = await TdLibController.send({ '@type': 'getQuickReplies' });
             if (qr?.quick_reply_shortcuts) {
                 this.setState({ quickReplies: qr.quick_reply_shortcuts });
             }
@@ -100,7 +100,7 @@ class BusinessInfo extends Component {
 
         return (
             <>
-                <BusinessEditor ref={ref => (this.businessEditorRef = ref)} />
+                <BusinessEditor ref={ref => (this.businessEditorRef = ref)} onSaved={this._load} />
                 <div className='business-info'>
                     <button
                         className='business-info-edit-btn'

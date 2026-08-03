@@ -6,7 +6,7 @@ import './SimilarChannels.css';
 class SimilarChannels extends Component {
     constructor(props) {
         super(props);
-        this.state = { chats: [], loading: true };
+        this.state = { chats: [], loading: true, joiningId: null, joinedIds: [], error: '' };
     }
 
     componentDidMount() {
@@ -19,22 +19,34 @@ class SimilarChannels extends Component {
 
     load = async () => {
         const { chatId } = this.props;
-        this.setState({ loading: true, chats: [] });
+        this.setState({ loading: true, chats: [], error: '' });
         try {
             const result = await TdLibController.send({ '@type': 'getSimilarChannels', chat_id: chatId });
             this.setState({ chats: result.chats || [], loading: false });
-        } catch {
-            this.setState({ loading: false });
+        } catch (error) {
+            this.setState({ loading: false, error: error.message || 'No se pudieron cargar las recomendaciones.' });
+        }
+    };
+
+    join = async (chatId, event) => {
+        event.stopPropagation();
+        this.setState({ joiningId: chatId, error: '' });
+        try {
+            await TdLibController.send({ '@type': 'joinChat', chat_id: chatId });
+            this.setState(state => ({ joiningId: null, joinedIds: state.joinedIds.concat(chatId) }));
+        } catch (error) {
+            this.setState({ joiningId: null, error: error.message || 'No se pudo unir al canal.' });
         }
     };
 
     render() {
-        const { chats, loading } = this.state;
-        if (loading || chats.length === 0) return null;
+        const { chats, loading, joiningId, joinedIds, error } = this.state;
+        if (loading || (chats.length === 0 && !error)) return null;
 
         return (
             <div className='similar-channels'>
                 <div className='similar-channels-title'>Canales similares</div>
+                {error && <div className='similar-channels-error'>{error}</div>}
                 <div className='similar-channels-list'>
                     {chats.map(chat => (
                         <div
@@ -52,6 +64,17 @@ class SimilarChannels extends Component {
                                     </div>
                                 )}
                             </div>
+                            <button
+                                type='button'
+                                className='similar-channel-join'
+                                disabled={joiningId === chat.id || joinedIds.includes(chat.id)}
+                                onClick={event => this.join(chat.id, event)}>
+                                {joinedIds.includes(chat.id)
+                                    ? 'Unido'
+                                    : joiningId === chat.id
+                                    ? 'Uniendo...'
+                                    : 'Unirme'}
+                            </button>
                         </div>
                     ))}
                 </div>
