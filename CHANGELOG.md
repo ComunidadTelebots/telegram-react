@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.0.644] - 2026-08-05 — Editor multimedia y refuerzo web
+### Added
+- Editor multimedia reutilizable para mensajes y Stories, con recorte real, giro, volteo, brillo, contraste, restauración y previsualización Canvas.
+- Exportación segura a PNG o JPEG y pruebas unitarias de las transformaciones de imagen, selector de diseño y destinos externos.
+### Changed
+- El selector de diseño se sincroniza al cambiar de perfil o versión desde otra interfaz y conserva correctamente la etiqueta y el color de cada familia.
+- Los mapas de código de producción quedan desactivados por defecto y pueden habilitarse explícitamente con `GENERATE_SOURCEMAP=true`.
+- Nginx incorpora cabeceras de protección sin impedir llamadas, geolocalización, Mini Apps ni contenido multimedia.
+### Fixed
+- Sustituir documentos, vídeos u otros archivos no gráficos conserva el flujo anterior; solo las imágenes abren el nuevo editor.
+- Los clics de notificaciones y el visor AMP rechazan destinos externos inseguros.
+### Security
+- Eliminados registros de teléfono, `phoneCodeHash`, tokens push y otros datos sensibles del navegador.
+- Auditoría de producción verificada sin vulnerabilidades moderadas, altas ni críticas; permanecen cuatro avisos bajos indirectos cuya corrección automática es incompatible.
+
 ## [0.0.643] - 2026-08-05 — Ubicación en directo completa
 ### Added
 - Selector previo para compartir la ubicación durante 15 minutos, 1 hora u 8 horas desde cualquier perfil visual.
