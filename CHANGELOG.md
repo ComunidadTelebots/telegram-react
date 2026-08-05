@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.0.650] - 2026-08-06 — Reacciones extendidas para todos los diseños
+### Added
+- Buscador de reacciones por emoji y significado.
+- Compactación automática a cinco reacciones con botón `+N` para desplegar el resto.
+- Tooltip diferido con hasta cinco nombres reales de usuarios que reaccionaron.
+- Reacción grande mediante doble clic y el parámetro MTProto oficial `big`.
+### Changed
+- Selector, buscador, botones y tooltips heredan superficies, colores, radios, sombras y modo oscuro de cada diseño.
+- Adaptaciones específicas para estilos clásicos, Android Holo, Webogram, Telegram Desktop, iOS, macOS y Android Glass.
+- Se conservan Stars, partículas, reacción predeterminada, modal de usuarios y sincronización de no leídas.
+### Tests
+- Suite completa de 35 pruebas y compilación Vite/PWA verificadas.
+
 ## [0.0.649] - 2026-08-06 — Prevención de fallos reportados por usuarios de Telegram Web
 ### Added
 - Los comentarios y respuestas incluyen una acción real «Ver en el chat» para recuperar el contexto original.

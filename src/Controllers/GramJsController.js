@@ -4920,13 +4920,14 @@ class GramJsController extends EventEmitter {
     // ─── Reaction handlers ───────────────────────────────────────────────────
 
     _sendReaction = async req => {
-        const { chat_id, message_id, reaction } = req;
+        const { chat_id, message_id, reaction, is_big } = req;
         try {
             const inputPeer = tdlibChatIdToInputPeer(chat_id, this._entityCache);
             await this.client.invoke(
                 new Api.messages.SendReaction({
                     peer: inputPeer,
                     msgId: message_id,
+                    big: Boolean(is_big),
                     reaction: reaction ? [new Api.ReactionEmoji({ emoticon: reaction })] : [],
                 }),
             );

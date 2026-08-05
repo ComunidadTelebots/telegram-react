@@ -1,7 +1,7 @@
 {
   "homepage": "/",
   "name": "telegram_react",
-  "version": "0.0.649",
+  "version": "0.0.650",
   "private": true,
   "engines": {
     "node": ">=22.12.0",

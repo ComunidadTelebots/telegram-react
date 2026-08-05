@@ -10,6 +10,11 @@ import ReactorsModal from './ReactorsModal';
 import './Reactions.css';
 
 const QUICK_REACTIONS = ['👍', '❤️', '😂', '😮', '😢', '🙏'];
+const MAX_VISIBLE_REACTIONS = 5;
+const REACTION_SEARCH_TERMS = [
+    'me gusta like', 'amor corazon heart', 'risa reir laugh', 'sorpresa wow', 'triste llorar sad', 'rezar gracias please',
+    'fuego fire', 'fiesta celebrar party', 'aplauso clap', 'pensar think', 'mente explota mind blown', 'enamorado love',
+];
 const readReactionChats = new Set();
 
 class Reactions extends Component {
@@ -21,7 +26,14 @@ class Reactions extends Component {
             availableReactions: QUICK_REACTIONS,
             paidOptimistic: 0,
             paidSending: false,
+            pickerSearch: '',
+            expanded: false,
+            tooltip: null,
+            tooltipNames: [],
         };
+        this.pickerRef = null;
+        this.tooltipTimer = null;
+        this.reactionClickTimer = null;
     }
 
     componentDidMount() {
@@ -29,6 +41,7 @@ class Reactions extends Component {
         MessageStore.on('updateMessageReactions', this.onUpdateReactions);
         this.markUnreadReactionsAsRead();
         this.loadAvailableReactions();
+        document.addEventListener('mousedown', this.handleOutsideClick);
     }
 
     componentDidUpdate() {
@@ -38,6 +51,9 @@ class Reactions extends Component {
     componentWillUnmount() {
         this._isMounted = false;
         MessageStore.off('updateMessageReactions', this.onUpdateReactions);
+        document.removeEventListener('mousedown', this.handleOutsideClick);
+        clearTimeout(this.tooltipTimer);
+        clearTimeout(this.reactionClickTimer);
     }
 
     onUpdateReactions = update => {
@@ -63,7 +79,60 @@ class Reactions extends Component {
             message_id: messageId,
             reaction: existing && existing.is_chosen ? null : emoji,
         });
-        this.setState({ showPicker: false });
+        this.setState({ showPicker: false, pickerSearch: '' });
+    };
+
+    handleReactionDoubleClick = (event, emoji) => {
+        event.preventDefault();
+        event.stopPropagation();
+        clearTimeout(this.reactionClickTimer);
+        TdLibController.send({
+            '@type': 'sendMessageReaction',
+            chat_id: this.props.chatId,
+            message_id: this.props.messageId,
+            reaction: emoji,
+            is_big: true,
+        });
+        const target = event.currentTarget;
+        target.classList.add('reaction-big-pulse');
+        setTimeout(() => target && target.classList.remove('reaction-big-pulse'), 600);
+    };
+
+    handleReactionBubbleClick = (event, emoji) => {
+        clearTimeout(this.reactionClickTimer);
+        this.reactionClickTimer = setTimeout(() => this.handleReactionClick(emoji, event), 220);
+    };
+
+    handleOutsideClick = event => {
+        if (this.pickerRef && !this.pickerRef.contains(event.target)) {
+            this.setState({ showPicker: false, pickerSearch: '' });
+        }
+    };
+
+    handleReactionHover = (event, emoji) => {
+        const rect = event.currentTarget.getBoundingClientRect();
+        clearTimeout(this.tooltipTimer);
+        this.tooltipTimer = setTimeout(async () => {
+            const result = await TdLibController.send({
+                '@type': 'getMessageReactors',
+                chat_id: this.props.chatId,
+                message_id: this.props.messageId,
+                reaction: emoji,
+            });
+            if (!this._isMounted) return;
+            const names = (result?.reactors || []).slice(0, 5).map(r => r.sender_name).filter(Boolean);
+            if (names.length) {
+                this.setState({
+                    tooltip: { top: rect.top, left: rect.left + rect.width / 2 },
+                    tooltipNames: names,
+                });
+            }
+        }, 350);
+    };
+
+    handleReactionLeave = () => {
+        clearTimeout(this.tooltipTimer);
+        this.setState({ tooltip: null, tooltipNames: [] });
     };
 
     spawnParticles = target => {
@@ -100,7 +169,7 @@ class Reactions extends Component {
 
     handleTogglePicker = e => {
         e.stopPropagation();
-        this.setState(s => ({ showPicker: !s.showPicker }));
+        this.setState(s => ({ showPicker: !s.showPicker, pickerSearch: '' }));
     };
 
     handlePaidReactionClick = async e => {
@@ -155,10 +224,30 @@ class Reactions extends Component {
 
     render() {
         const { chatId, messageId } = this.props;
-        const { showPicker, reactorsModal, availableReactions, paidOptimistic, paidSending } = this.state;
+        const {
+            showPicker,
+            reactorsModal,
+            availableReactions,
+            paidOptimistic,
+            paidSending,
+            pickerSearch,
+            expanded,
+            tooltip,
+            tooltipNames,
+        } = this.state;
         const message = MessageStore.get(chatId, messageId);
         const reactions = message && message.reactions;
         const list = reactions ? reactions.reactions : [];
+        const visibleList =
+            expanded || list.length <= MAX_VISIBLE_REACTIONS ? list : list.slice(0, MAX_VISIBLE_REACTIONS);
+        const hiddenCount = Math.max(0, list.length - MAX_VISIBLE_REACTIONS);
+        const normalizedSearch = pickerSearch.trim().toLocaleLowerCase();
+        const filteredReactions = availableReactions.filter(
+            (emoji, index) =>
+                !normalizedSearch ||
+                emoji.includes(normalizedSearch) ||
+                (REACTION_SEARCH_TERMS[index] || '').includes(normalizedSearch),
+        );
         const paidCount = (reactions ? reactions.paid_total_count || 0 : 0) + paidOptimistic;
         const unreadReactions = new Set(
             reactions && reactions.recent_reactions
@@ -182,34 +271,57 @@ class Reactions extends Component {
                     title='Send a star reaction'>
                     +⭐
                 </button>
-                {list.map(r => (
+                {visibleList.map(r => (
                     <button
                         key={r.reaction}
                         className={`reaction-bubble${r.is_chosen ? ' reaction-chosen' : ''}${
                             unreadReactions.has(r.reaction) ? ' reaction-unread' : ''
                         }`}
-                        onClick={e => this.handleReactionClick(r.reaction, e)}
+                        onClick={e => this.handleReactionBubbleClick(e, r.reaction)}
+                        onDoubleClick={e => this.handleReactionDoubleClick(e, r.reaction)}
                         onContextMenu={e => this.handleReactionLongPress(e, r.reaction)}
+                        onMouseEnter={e => this.handleReactionHover(e, r.reaction)}
+                        onMouseLeave={this.handleReactionLeave}
                         title={r.reaction}>
                         <span className='reaction-emoji'>{r.reaction}</span>
                         <span className='reaction-count'>{r.total_count}</span>
                     </button>
                 ))}
+                {!expanded && hiddenCount > 0 && (
+                    <button className='reaction-more-btn' onClick={() => this.setState({ expanded: true })}>
+                        +{hiddenCount}
+                    </button>
+                )}
                 <button className='reaction-add-btn' onClick={this.handleTogglePicker} title='Add reaction'>
                     +
                 </button>
                 {showPicker && (
-                    <div className='reaction-picker'>
-                        {availableReactions.map(emoji => (
-                            <button
-                                key={emoji}
-                                className='reaction-picker-item'
-                                onClick={e => this.handleReactionClick(emoji, e)}
-                                onContextMenu={event => this.handleSetDefaultReaction(event, emoji)}
-                                title='Click para reaccionar; click derecho para predeterminada'>
-                                {emoji}
-                            </button>
-                        ))}
+                    <div className='reaction-picker-panel' ref={node => (this.pickerRef = node)}>
+                        <input
+                            className='reaction-picker-search'
+                            value={pickerSearch}
+                            onChange={event => this.setState({ pickerSearch: event.target.value })}
+                            placeholder='Buscar reacción…'
+                            aria-label='Buscar reacción'
+                            autoFocus
+                        />
+                        <div className='reaction-picker-grid'>
+                            {filteredReactions.map(emoji => (
+                                <button
+                                    key={emoji}
+                                    className='reaction-picker-item'
+                                    onClick={e => this.handleReactionClick(emoji, e)}
+                                    onContextMenu={event => this.handleSetDefaultReaction(event, emoji)}
+                                    title='Clic para reaccionar; clic derecho para predeterminada'>
+                                    {emoji}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+                )}
+                {tooltip && tooltipNames.length > 0 && (
+                    <div className='reaction-tooltip' style={{ top: tooltip.top - 40, left: tooltip.left }}>
+                        {tooltipNames.join(', ')}
                     </div>
                 )}
                 {reactorsModal && (
