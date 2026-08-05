@@ -9,6 +9,7 @@ import KeyboardArrowDownIcon from '@material-ui/icons/KeyboardArrowDown';
 import CheckIcon from '@material-ui/icons/Check';
 import ApplicationStore from '../../Stores/ApplicationStore';
 import { DESIGN_ACCENTS, getDesign, getDesignFamily, setDesign } from '../../Design';
+import { newestDesignVersionsFirst } from '../../Utils/DesignVersionOrder';
 import './DesignVersionSelector.css';
 
 // All sub-variants per design family.
@@ -242,7 +243,7 @@ class DesignVersionSelector extends React.PureComponent {
                 </button>
                 {open && (
                     <div className='dv-menu' role='menu'>
-                        {versions.map(option => {
+                        {newestDesignVersionsFirst(versions).map(option => {
                             const selected = option.value === design;
                             return (
                                 <button

@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.0.647] - 2026-08-06 — Orden cronológico del selector visual
+### Fixed
+- Los selectores de cada familia muestran ahora la versión más moderna arriba y la más antigua abajo.
+- El orden visual se calcula sobre una copia para no modificar el registro ni la selección persistida del usuario.
+### Tests
+- Añadida una prueba de regresión del orden descendente; suite completa de 35 pruebas y compilación Vite/PWA verificadas.
+
 ## [0.0.646] - 2026-08-05 — Compilación Docker reproducible
 ### Fixed
 - Añadido `.dockerignore` para impedir que `node_modules` antiguos del servidor sobrescriban las dependencias instaladas dentro de la imagen.
