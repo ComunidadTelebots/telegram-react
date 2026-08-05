@@ -1,10 +1,8 @@
-FROM node:18-alpine AS builder
+FROM node:22-alpine AS builder
 WORKDIR /app
 COPY package*.json ./
-RUN npm install --legacy-peer-deps
+RUN npm ci --legacy-peer-deps --ignore-scripts --no-audit --no-fund
 COPY . .
-ENV NODE_OPTIONS=--openssl-legacy-provider
-ENV SKIP_PREFLIGHT_CHECK=true
 RUN npm run build
 
 FROM nginx:alpine

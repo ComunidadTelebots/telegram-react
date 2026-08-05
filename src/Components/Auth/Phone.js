@@ -511,7 +511,6 @@ class Phone extends React.Component {
                     <Link
                         style={{ cursor: 'pointer' }}
                         onClick={() => {
-                            const TdLib = require('../../Controllers/TdLibController').default;
                             TdLib.send({ '@type': 'requestQrCodeAuthentication', other_user_ids: [] });
                         }}>
                         Log in by QR Code

@@ -36,7 +36,7 @@ cp .env.example .env.development
 ```bash
 npm run start
 ```
-Opens http://localhost:3000 in your browser
+Opens http://localhost:5173 in your browser
 
 #### Code Quality
 
@@ -63,7 +63,7 @@ npm run format:check
 #### Testing
 ```bash
 npm run test          # Run tests in watch mode
-npm run test --ci     # Run tests once (for CI)
+npm run test:run      # Run tests once (for CI)
 ```
 
 #### Building
@@ -169,7 +169,7 @@ export default MyComponent;
 ```bash
 npm run stats
 ```
-Opens webpack-bundle-analyzer to see bundle composition
+Creates the Vite production bundle in analysis mode.
 
 ## Git Workflow
 

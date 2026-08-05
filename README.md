@@ -88,7 +88,7 @@ Pendiente: race condition del DH en `requestCall`, fallback ICE con TURN real (h
 │  GramJS (node_modules/gramjs)                           │
 │  └─ MTProto + serialización TL (capa 198)               │
 │                                                         │
-│  Service Worker (sw-precache)                           │
+│  Service Worker (Vite PWA + Workbox)                    │
 │  └─ Caché de assets para uso offline                    │
 └─────────────────────────────────────────────────────────┘
                           │
@@ -105,20 +105,19 @@ Componentes clave de llamadas:
 
 ## Despliegue local
 
-Requisitos: [Node.js 16+](http://nodejs.org/) y npm.
+Requisitos: [Node.js 22 LTS](http://nodejs.org/) y npm.
 
 ```bash
 git clone https://github.com/ComunidadTelebots/telegram-react.git
 cd telegram-react
-npm install
-cp node_modules/tdweb/dist/* public/
+npm ci --legacy-peer-deps
 ```
 
 Configuración — crea `.env.local` (en `.gitignore`, no se versiona) con credenciales de [my.telegram.org/apps](https://my.telegram.org/apps):
 
 ```
-REACT_APP_TELEGRAM_API_ID=tu_api_id
-REACT_APP_TELEGRAM_API_HASH=tu_api_hash
+VITE_TELEGRAM_API_ID=tu_api_id
+VITE_TELEGRAM_API_HASH=tu_api_hash
 ```
 
 > **Aviso:** en clientes web el `api_hash` siempre acaba en el bundle JS y es extraíble. Usa una app dedicada a este despliegue, no la misma que uses para otros proyectos. Si Telegram detecta abuso, podría revocarla.
@@ -126,7 +125,7 @@ REACT_APP_TELEGRAM_API_HASH=tu_api_hash
 Arrancar:
 
 ```bash
-npm start         # http://localhost:3000
+npm start         # http://localhost:5173
 npm run build     # build de producción en build/
 ```
 
@@ -135,7 +134,7 @@ npm run build     # build de producción en build/
 Build estático sirvible por cualquier servidor (nginx, Apache, Caddy):
 
 ```bash
-REACT_APP_TELEGRAM_API_ID=... REACT_APP_TELEGRAM_API_HASH=... npm run build
+VITE_TELEGRAM_API_ID=... VITE_TELEGRAM_API_HASH=... npm run build
 ```
 
 > **Importante:** si vas a servir desde la raíz del dominio, quita o ajusta la línea `"homepage"` de `package.json` antes del build. De lo contrario el service worker pedirá assets desde `/telegram-react/...` y devolverá 404.
@@ -206,7 +205,7 @@ Mejores prácticas si lo autoalojas:
 - [ ] Videollamadas (verificación + pruebas).
 - [ ] Mensajes de voz (grabación + envío).
 - [ ] Forum topics.
-- [ ] Migrar service worker a Workbox (`sw-precache` deprecated).
+- [x] Service worker migrado a Workbox mediante Vite PWA.
 
 **Largo plazo:**
 - [ ] Llamadas grupales (requiere mediasoup/SFU, esfuerzo alto).

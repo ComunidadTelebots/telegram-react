@@ -1,5 +1,30 @@
 # Changelog
 
+## [0.0.642] - 2026-08-03 — Migración completa a Vite
+### Security
+- Retirados Create React App, `react-app-rewired`, `worker-loader`, `sw-precache` y su cadena de dependencias abandonada.
+- La auditoría baja de 200 alertas iniciales a 6 bajas indirectas, sin vulnerabilidades moderadas, altas ni críticas.
+- Service worker migrado a Workbox con navegación segura, limpieza de cachés antiguas y apertura validada de notificaciones.
+### Changed
+- Compilación, desarrollo, pruebas y análisis de paquetes funcionan ahora con Vite 7 y Vitest.
+- GramJS conserva los polyfills de navegador; los workers de caché y compresión usan módulos nativos de Vite.
+- Se mantiene íntegramente la interfaz React y todos sus perfiles visuales.
+### Fixed
+- Eliminados imports CommonJS dinámicos y un import inexistente que Webpack toleraba silenciosamente.
+- Restaurada la importación segura de SVG como componentes React.
+
+## [0.0.641] - 2026-08-03 — Refuerzo de dependencias
+### Security
+- Actualizado el entorno de compilación desde Create React App 3 a la última versión estable de su línea, eliminando todas las alertas críticas detectadas inicialmente.
+- Actualizados i18next, react-i18next, universal-cookie y las herramientas de desarrollo mantenidas.
+- Retirados `tdweb` sin uso y `recompose`; su única utilidad empleada, `compose`, queda implementada localmente sin dependencias vulnerables.
+- Declarados explícitamente los polyfills y el almacenamiento que GramJS usa en Webpack 5, evitando dependencias accidentales.
+### Changed
+- El análisis de código queda separado de la compilación de producción para poder modernizar gradualmente las reglas heredadas sin bloquear despliegues.
+- Versión del cliente elevada a 0.0.641; compilación de producción verificada.
+### Remaining
+- Las alertas restantes pertenecen principalmente a la cadena abandonada de Create React App y `sw-precache`; su retirada completa requiere migrar el empaquetado a Vite/Workbox sin alterar los diseños históricos.
+
 ## [0.0.640] - 2026-08-03 — Anuncios oficiales de Telegram
 ### Added
 - Flujo obligatorio de anuncios oficiales para canales y bots mediante `messages.getSponsoredMessages`.

@@ -22,7 +22,6 @@ import DialogMeta from './DialogMeta';
 import {
     canSetChatChatList,
     canDeleteChat,
-    isArchivedChat,
     isChatArchived,
     isChatMuted,
     isChatSecret,

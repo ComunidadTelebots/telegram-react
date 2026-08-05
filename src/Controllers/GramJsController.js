@@ -6566,7 +6566,6 @@ class GramJsController extends EventEmitter {
                 hash: BigInt(0),
             }),
         );
-        const { translateMessage } = require('../Utils/GramJs/EntityTranslator');
         const messages = (result.messages || [])
             .map(m => {
                 try {

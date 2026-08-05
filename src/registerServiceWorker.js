@@ -50,9 +50,12 @@ export default async function register() {
             return;
         }
 
-        const serviceWorkerName =
-            process.env.NODE_ENV === 'production' ? 'service-worker.js' : 'custom-service-worker.js';
-        const swUrl = `${process.env.PUBLIC_URL}/${serviceWorkerName}`;
+        // VitePWA emits the production worker at the application base path.
+        // Do not install the legacy CRA worker in development: it can keep stale
+        // bundles cached and make local changes appear to be ignored.
+        if (process.env.NODE_ENV !== 'production') return;
+        const baseUrl = new URL(process.env.PUBLIC_URL || '/', window.location.origin);
+        const swUrl = new URL('service-worker.js', `${baseUrl.href.replace(/\/?$/, '/')}`).href;
         console.log(`[SW] Service worker url: ${swUrl}`);
 
         if (!isLocalhost) {
@@ -137,10 +140,11 @@ async function checkValidServiceWorker(swUrl) {
     console.log('[SW] CheckValidServiceWorker');
     // Check if the service worker can be found. If it can't reload the page.
     try {
-        const response = await fetch(swUrl);
+        const response = await fetch(swUrl, { cache: 'no-store' });
 
         // Ensure service worker exists, and that we really are getting a JS file.
-        if (response.status === 404 || response.headers.get('content-type').indexOf('javascript') === -1) {
+        const contentType = response.headers.get('content-type') || '';
+        if (response.status === 404 || !contentType.includes('javascript')) {
             // No service worker found. Probably a different app. Reload the page.
             const registration = await navigator.serviceWorker.ready;
             await registration.unregister();

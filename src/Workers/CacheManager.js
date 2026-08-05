@@ -5,7 +5,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 // eslint-disable-next-line import/no-webpack-loader-syntax
-import CacheWorker from './cache.worker';
+import CacheWorker from './cache.worker.js?worker';
 import { randomString } from './Helpers';
 import { set, get, del, clear } from 'idb-keyval';
 import TdLibController from '../Controllers/TdLibController';

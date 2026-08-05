@@ -9,7 +9,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import withStyles from '@material-ui/core/styles/withStyles';
 import classNames from 'classnames';
-import { ReactComponent as Logo } from '../../Assets/telegram-logo.svg';
+import Logo from '../../Assets/telegram-logo.svg?react';
 import Lottie from '../Viewer/Lottie';
 import AuthStore from '../../Stores/AuthorizationStore';
 import './Caption.css';

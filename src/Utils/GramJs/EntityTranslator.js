@@ -4,6 +4,7 @@
  */
 
 import * as InstantViewCache from '../../Stores/InstantViewCache';
+import { Api } from 'telegram';
 
 // ─── ID helpers ─────────────────────────────────────────────────────────────
 
@@ -27,7 +28,6 @@ export function entityToTdlibChatId(entity) {
 
 /** Convierte un TDLib chat_id al InputPeer de GramJS usando la caché de entidades. */
 export function tdlibChatIdToInputPeer(chatId, entityCache) {
-    const { Api } = require('telegram');
     if (chatId > 0) {
         const u = entityCache.get(chatId);
         return new Api.InputPeerUser({ userId: BigInt(chatId), accessHash: u?.accessHash || BigInt(0) });

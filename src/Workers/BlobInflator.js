@@ -7,7 +7,7 @@
 
 import { randomString } from './Helpers';
 // eslint-disable-next-line import/no-webpack-loader-syntax
-import PakoWorker from './pako.worker';
+import PakoWorker from './pako.worker.js?worker';
 
 const worker = new PakoWorker();
 const handlers = new Map();

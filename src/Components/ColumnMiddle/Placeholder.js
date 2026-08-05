@@ -7,7 +7,7 @@
 
 import React from 'react';
 import { withTranslation } from 'react-i18next';
-import { ReactComponent as BubblesLogo } from '../../Assets/Bubbles.svg';
+import BubblesLogo from '../../Assets/Bubbles.svg?react';
 import AppStore from '../../Stores/ApplicationStore';
 import './Placeholder.css';
 
