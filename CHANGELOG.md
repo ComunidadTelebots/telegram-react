@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.0.649] - 2026-08-06 — Prevención de fallos reportados por usuarios de Telegram Web
+### Added
+- Los comentarios y respuestas incluyen una acción real «Ver en el chat» para recuperar el contexto original.
+### Fixed
+- Los hilos muestran nombres reales y perfiles interactivos en lugar de identificadores numéricos.
+- Las menciones visibles se confirman mediante `readAllChatMentions`, evitando contadores atascados entre dispositivos.
+### Roadmap
+- Registrados los riesgos oficiales de sincronización en llamadas grupales y separación de sonidos entrantes/salientes para su implementación verificable.
+### Tests
+- Suite completa y compilación Vite/PWA verificadas antes de publicar.
+
 ## [0.0.648] - 2026-08-06 — Remitentes y bloques de mensajes de grupo
 ### Fixed
 - Los mensajes recibidos en grupos muestran el nombre real del usuario en vez de repetir el nombre del grupo.

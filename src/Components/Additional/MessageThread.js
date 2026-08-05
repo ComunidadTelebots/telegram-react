@@ -5,6 +5,8 @@ import CircularProgress from '@material-ui/core/CircularProgress';
 import TdLibController from '../../Controllers/TdLibController';
 import MessageStore from '../../Stores/MessageStore';
 import { getText } from '../../Utils/Message';
+import { openChat } from '../../Actions/Client';
+import MessageAuthor from '../Message/MessageAuthor';
 import './MessageThread.css';
 
 class MessageThread extends Component {
@@ -20,6 +22,11 @@ class MessageThread extends Component {
     }
 
     close = () => this.setState({ open: false });
+
+    openInChat = messageId => {
+        openChat(this.state.chatId, messageId);
+        this.close();
+    };
 
     _load = async (chatId, messageId) => {
         try {
@@ -64,13 +71,25 @@ class MessageThread extends Component {
                         {!loading &&
                             messages.map(msg => {
                                 const text = getText(msg);
-                                const senderName = msg.sender_user_id ? `User ${msg.sender_user_id}` : 'Channel';
                                 return (
                                     <div key={msg.id} className='message-thread-item'>
-                                        <div className='message-thread-item-sender'>{senderName}</div>
+                                        <div className='message-thread-item-sender'>
+                                            <MessageAuthor
+                                                chatId={msg.chat_id}
+                                                userId={msg.sender_user_id}
+                                                openUser={Boolean(msg.sender_user_id)}
+                                                openChat={!msg.sender_user_id}
+                                            />
+                                        </div>
                                         <div className='message-thread-item-text'>
                                             {text && text.length > 0 ? text : <em>[media]</em>}
                                         </div>
+                                        <button
+                                            type='button'
+                                            className='message-thread-view-chat'
+                                            onClick={() => this.openInChat(msg.id)}>
+                                            Ver en el chat
+                                        </button>
                                     </div>
                                 );
                             })}

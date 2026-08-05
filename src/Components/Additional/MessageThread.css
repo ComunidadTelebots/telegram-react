@@ -70,6 +70,23 @@
     white-space: pre-wrap;
 }
 
+.message-thread-view-chat {
+    margin-top: 7px;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: var(--color-accent, #3390ec);
+    cursor: pointer;
+    font: inherit;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.message-thread-view-chat:hover,
+.message-thread-view-chat:focus-visible {
+    text-decoration: underline;
+}
+
 @media (max-width: 600px) {
     .message-thread-panel {
         width: 100vw;

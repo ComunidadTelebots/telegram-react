@@ -710,6 +710,12 @@ class MessagesList extends React.Component {
                 chat_id: messages[0].chat_id,
                 message_ids: messages.map(x => x.id),
             });
+            if (messages.some(x => x.contains_unread_mention)) {
+                TdLibController.send({
+                    '@type': 'readAllChatMentions',
+                    chat_id: messages[0].chat_id,
+                });
+            }
         };
 
         if (window.hasFocus) {
