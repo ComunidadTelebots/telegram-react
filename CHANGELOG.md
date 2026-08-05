@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.0.648] - 2026-08-06 — Remitentes y bloques de mensajes de grupo
+### Fixed
+- Los mensajes recibidos en grupos muestran el nombre real del usuario en vez de repetir el nombre del grupo.
+- GramJS publica los perfiles resueltos en `UserStore` tanto en el historial principal como en comentarios e hilos.
+- El nombre del remitente aparece una sola vez al comienzo de cada bloque consecutivo, como en los clientes oficiales de Telegram.
+- Los mensajes propios quedan alineados a la derecha, sin avatar izquierdo y con la cola de burbuja correcta; los recibidos conservan el espacio estable del avatar.
+- Un perfil que todavía está cargando ya no se confunde visualmente con el grupo.
+### Tests
+- Suite completa de 35 pruebas y compilación Vite/PWA verificadas.
+
 ## [0.0.647] - 2026-08-06 — Orden cronológico del selector visual
 ### Fixed
 - Los selectores de cada familia muestran ahora la versión más moderna arriba y la más antigua abajo.

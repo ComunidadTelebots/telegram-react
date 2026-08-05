@@ -137,6 +137,26 @@ pre code {
     box-sizing: border-box;
 }
 
+.message-outgoing .message-content {
+    margin-left: auto;
+    margin-right: 0;
+}
+
+.message-outgoing .message-left-padding {
+    flex: 1 1 auto;
+}
+
+.message-outgoing .message-bubble::after {
+    right: -7px;
+    left: auto;
+    mask: url(../../Assets/bubble-tail-right.svg);
+    transform: translate(2px, -2px);
+}
+
+.message-outgoing.message-short .message-content {
+    margin-left: auto;
+}
+
 .message-bubble {
     position: relative;
     border-radius: 10px 10px 10px 0;

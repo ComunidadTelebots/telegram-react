@@ -19,6 +19,18 @@ import CustomEmoji from './CustomEmoji';
 import './MessageAuthor.css';
 
 class MessageAuthor extends React.Component {
+    componentDidMount() {
+        UserStore.on('updateUser', this.handleUserUpdate);
+    }
+
+    componentWillUnmount() {
+        UserStore.off('updateUser', this.handleUserUpdate);
+    }
+
+    handleUserUpdate = update => {
+        if (update && update.user && update.user.id === this.props.userId) this.forceUpdate();
+    };
+
     handleSelect = event => {
         const { chatId, userId, openUser, openChat } = this.props;
 
@@ -71,6 +83,10 @@ class MessageAuthor extends React.Component {
                     {statusBadge}
                 </>
             );
+        }
+
+        if (userId) {
+            return <span className='message-author'>{`${t('User') || 'Usuario'} ${userId}`}</span>;
         }
 
         const chat = ChatStore.get(chatId);

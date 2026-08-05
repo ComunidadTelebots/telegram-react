@@ -678,6 +678,17 @@ class GramJsController extends EventEmitter {
         this._cacheEntity(user);
         const tdUser = translateUser(user);
         if (tdUser) this._userCache.set(tdUser.id, tdUser);
+        return tdUser;
+    };
+
+    _cacheAndEmitUsers = users => {
+        const emitted = new Set();
+        for (const user of users || []) {
+            const tdUser = this._cacheUser(user);
+            if (!tdUser || emitted.has(tdUser.id)) continue;
+            emitted.add(tdUser.id);
+            this._emitUpdate({ '@type': 'updateUser', user: tdUser });
+        }
     };
 
     // ─── Interfaz pública (compatible con TdLibController) ──────────────────
@@ -1514,6 +1525,7 @@ class GramJsController extends EventEmitter {
             }),
         );
         const { translateMessage } = await import('../Utils/GramJs/EntityTranslator');
+        this._cacheAndEmitUsers(result.users || []);
         const messages = (result.messages || []).map(m => translateMessage(m, chat_id));
         return { '@type': 'messages', messages, total_count: result.count || messages.length };
     };
@@ -3579,15 +3591,14 @@ class GramJsController extends EventEmitter {
             offsetId: fromMessageId || 0,
             addOffset: offset,
         });
-        // Cache senders from the message batch so profile photos and names load
-        for (const m of msgs) {
-            if (m.sender) this._cacheUser(m.sender);
-        }
+        // The controller cache is not the React UserStore. Emit every resolved
+        // sender so group messages render the actual author instead of the chat title.
+        this._cacheAndEmitUsers(msgs.map(m => m.sender).filter(Boolean));
         const messages = msgs.map(m => translateMessage(m, chatId)).filter(Boolean);
-        // Emit updateUser for senders not yet in the store (needed for sender names in groups)
+        // Resolve uncommon sender shapes that GramJS did not attach to the message.
         for (const m of messages) {
             const uid = m.sender_user_id;
-            if (uid && uid !== chatId && !this._userCache.has(uid)) {
+            if (uid && uid !== chatId && !msgs.some(raw => raw.sender && entityToTdlibChatId(raw.sender) === uid)) {
                 const cached = this._entityCache.get(uid);
                 if (cached) {
                     const tdUser = translateUser(cached);

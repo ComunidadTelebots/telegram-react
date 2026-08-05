@@ -1422,7 +1422,8 @@ class MessagesList extends React.Component {
                       const nextShowTitle = this.showMessageTitle(nextMessage, x, false);
 
                       const showTail = !nextMessage || isServiceMessage(nextMessage) || nextShowTitle;
-                      const showAuthor = isGroupChat(x.chat_id) && !x.is_outgoing && !isChannelChat(x.chat_id);
+                      const showAuthor =
+                          showTitle && isGroupChat(x.chat_id) && !x.is_outgoing && !isChannelChat(x.chat_id);
 
                       m = (
                           <Message

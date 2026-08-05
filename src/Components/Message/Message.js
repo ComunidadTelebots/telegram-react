@@ -984,8 +984,9 @@ class Message extends Component {
         const media = getMedia(message, this.openMedia, hasTitle, hasCaption);
         this.unread = getUnread(message);
 
+        const isIncomingGroup = !is_outgoing && isGroupChat(chatId);
         let tile = null;
-        if (showTail) {
+        if (showTail && !is_outgoing) {
             tile = sender_user_id ? (
                 <UserTile userId={sender_user_id} onSelect={this.handleSelectUser} small />
             ) : (
@@ -997,7 +998,9 @@ class Message extends Component {
             'message-selected': selected,
             [classes.messageSelected]: selected,
             [classes.messageHighlighted]: highlighted && !selected,
-            'message-short': !tile,
+            'message-short': is_outgoing ? !showTail : !tile,
+            'message-outgoing': is_outgoing,
+            'message-incoming-group': isIncomingGroup,
         });
 
         const meta = <Meta date={date} editDate={edit_date} views={views} onDateClick={this.handleDateClick} />;
