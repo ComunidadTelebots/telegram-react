@@ -11,6 +11,9 @@ import { APP_NAME, NOTIFICATION_AUDIO_DELAY_MS } from '../Constants';
 import ChatStore from './ChatStore';
 import MessageStore from './MessageStore';
 import TdLibController from '../Controllers/TdLibController';
+import { createMessageTonePlayer } from '../Utils/MessageSound';
+
+const playMessageTone = createMessageTonePlayer();
 
 class NotificationStore extends EventEmitter {
     constructor() {
@@ -153,10 +156,11 @@ class NotificationStore extends EventEmitter {
                 break;
             }
             case 'updateNewMessage': {
+                const { message } = update;
+                if (message && message.is_outgoing) playMessageTone(true);
                 const { windowFocused } = this;
                 // console.log('[ns] updateNewMessage', windowFocused);
                 if (!windowFocused) {
-                    const { message } = update;
                     const { chat_id, id } = message;
 
                     const chatMap = this.newMessages.get(chat_id) || new Map();
@@ -168,8 +172,7 @@ class NotificationStore extends EventEmitter {
                         const now = new Date();
                         if (now > this.nextSoundAt) {
                             // console.log('[ns] audio play');
-                            const audio = new Audio('sound_a.mp3');
-                            audio.play();
+                            playMessageTone(false);
 
                             const nextSoundAt = new Date();
                             nextSoundAt.setMilliseconds(nextSoundAt.getMilliseconds() + NOTIFICATION_AUDIO_DELAY_MS);

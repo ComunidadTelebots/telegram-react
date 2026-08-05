@@ -1,5 +1,11 @@
 import React, { Component } from 'react';
 import './DisplaySettings.css';
+import {
+    INCOMING_SOUND_KEY,
+    OUTGOING_SOUND_KEY,
+    readSoundPreference,
+    writeSoundPreference,
+} from '../../Utils/MessageSound';
 
 const FONT_SIZE_KEY = 'tg_font_size';
 const COMPACT_KEY = 'tg_compact_mode';
@@ -23,6 +29,8 @@ class DisplaySettings extends Component {
             fontSize: parseInt(localStorage.getItem(FONT_SIZE_KEY) || '14', 10),
             compact: localStorage.getItem(COMPACT_KEY) === '1',
             animSpeed: localStorage.getItem(ANIM_KEY) || '1',
+            incomingSound: readSoundPreference(INCOMING_SOUND_KEY, localStorage, true),
+            outgoingSound: readSoundPreference(OUTGOING_SOUND_KEY, localStorage, false),
         };
     }
 
@@ -47,8 +55,14 @@ class DisplaySettings extends Component {
         document.documentElement.style.setProperty('--anim-speed', speed);
     };
 
+    handleSound = (key, stateKey) => event => {
+        const enabled = event.target.checked;
+        writeSoundPreference(key, enabled);
+        this.setState({ [stateKey]: enabled });
+    };
+
     render() {
-        const { fontSize, compact, animSpeed } = this.state;
+        const { fontSize, compact, animSpeed, incomingSound, outgoingSound } = this.state;
         return (
             <div className='display-settings'>
                 <div className='display-settings-title'>Visualización</div>
@@ -69,6 +83,24 @@ class DisplaySettings extends Component {
                         <span className='display-settings-range-hint display-settings-range-hint--lg'>A</span>
                         <span className='display-settings-range-val'>{fontSize}px</span>
                     </div>
+                </div>
+
+                <div className='display-settings-row'>
+                    <label className='display-settings-label'>Sonido de mensajes recibidos</label>
+                    <label className='display-settings-toggle'>
+                        <input type='checkbox' checked={incomingSound}
+                            onChange={this.handleSound(INCOMING_SOUND_KEY, 'incomingSound')} />
+                        <span className='display-settings-toggle-track' />
+                    </label>
+                </div>
+
+                <div className='display-settings-row'>
+                    <label className='display-settings-label'>Sonido de mensajes enviados</label>
+                    <label className='display-settings-toggle'>
+                        <input type='checkbox' checked={outgoingSound}
+                            onChange={this.handleSound(OUTGOING_SOUND_KEY, 'outgoingSound')} />
+                        <span className='display-settings-toggle-track' />
+                    </label>
                 </div>
 
                 <div className='display-settings-row'>

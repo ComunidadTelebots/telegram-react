@@ -26,7 +26,20 @@ import UpdatePanel from './UpdatePanel';
 import AndroidBottomNav from './AndroidBottomNav';
 import { borderStyle } from '../Theme';
 import { openChat } from '../../Actions/Client';
+import { setChatChatList, toggleChatNotificationSettings } from '../../Actions/Chat';
+import { viewMessages } from '../../Actions/Message';
 import { getArchiveTitle } from '../../Utils/Archive';
+import {
+    CHAT_LIST_LINES_KEY,
+    PLUS_FILTER_KEY,
+    PLUS_SETTINGS_EVENT,
+    PLUS_SORT_KEY,
+    PLUS_VIEWS_KEY,
+    normalizeChatListLines,
+    readSmartChatPreference,
+    writeSmartChatPreference,
+} from '../../Utils/SmartChatList';
+import { canSetChatChatList, isChatMuted, isChatUnread } from '../../Utils/Chat';
 import { loadChatsContent } from '../../Utils/File';
 import AppStore from '../../Stores/ApplicationStore';
 import CacheStore from '../../Stores/CacheStore';
@@ -54,6 +67,23 @@ const FOLDER_ICONS = {
     Existing: '📨',
     Setup: '⚙️',
 };
+
+const SMART_FILTERS = [
+    ['all', 'Todos'],
+    ['users', 'Usuarios'],
+    ['groups', 'Grupos'],
+    ['channels', 'Canales'],
+    ['bots', 'Bots'],
+    ['favorites', 'Favoritos'],
+    ['unread', 'No leídos'],
+    ['managed', 'Administrados'],
+];
+const SORT_MODES = [
+    ['telegram', 'Orden de Telegram'],
+    ['unread', 'No leídos primero'],
+    ['name', 'Por nombre'],
+    ['favorites', 'Favoritos primero'],
+];
 
 function getFolderIcon(name) {
     return FOLDER_ICONS[name] || '📁';
@@ -93,6 +123,13 @@ class Dialogs extends Component {
             forumChatId: null,
             createFolderOpen: false,
             createFolderName: '',
+            smartViewsEnabled: readSmartChatPreference(PLUS_VIEWS_KEY, '0') === '1',
+            smartFilter: readSmartChatPreference(PLUS_FILTER_KEY, 'all'),
+            sortMode: readSmartChatPreference(PLUS_SORT_KEY, 'telegram'),
+            selectionMode: false,
+            selectedChatIds: new Set(),
+            bulkBusy: false,
+            chatListLines: normalizeChatListLines(readSmartChatPreference(CHAT_LIST_LINES_KEY, '2')),
         };
     }
 
@@ -126,6 +163,15 @@ class Dialogs extends Component {
         if (nextState.activeFilter !== activeFilter) return true;
         if (nextState.storyViewerChatId !== this.state.storyViewerChatId) return true;
         if (nextState.forumChatId !== this.state.forumChatId) return true;
+        if (nextState.smartViewsEnabled !== this.state.smartViewsEnabled) return true;
+        if (nextState.smartFilter !== this.state.smartFilter || nextState.sortMode !== this.state.sortMode) return true;
+        if (
+            nextState.selectionMode !== this.state.selectionMode ||
+            nextState.selectedChatIds !== this.state.selectedChatIds
+        )
+            return true;
+        if (nextState.bulkBusy !== this.state.bulkBusy) return true;
+        if (nextState.chatListLines !== this.state.chatListLines) return true;
 
         return false;
     }
@@ -152,6 +198,7 @@ class Dialogs extends Component {
         ChatStore.on('clientUpdateCloseArchive', this.onClientUpdateCloseArchive);
 
         document.addEventListener('keydown', this.handleEscapeKey);
+        window.addEventListener(PLUS_SETTINGS_EVENT, this.syncPlusSettings);
     }
 
     componentWillUnmount() {
@@ -174,7 +221,15 @@ class Dialogs extends Component {
         ChatStore.off('clientUpdateCloseArchive', this.onClientUpdateCloseArchive);
 
         document.removeEventListener('keydown', this.handleEscapeKey);
+        window.removeEventListener(PLUS_SETTINGS_EVENT, this.syncPlusSettings);
     }
+
+    syncPlusSettings = () => this.setState({
+        smartViewsEnabled: readSmartChatPreference(PLUS_VIEWS_KEY, '0') === '1',
+        smartFilter: readSmartChatPreference(PLUS_FILTER_KEY, 'all'),
+        sortMode: readSmartChatPreference(PLUS_SORT_KEY, 'telegram'),
+        chatListLines: normalizeChatListLines(readSmartChatPreference(CHAT_LIST_LINES_KEY, '2')),
+    });
 
     onTdlibClientUpdate = update => {
         if (update['@type'] === 'clientUpdateChatFilters') {
@@ -196,7 +251,71 @@ class Dialogs extends Component {
     };
 
     handleFolderSelect = filterId => {
-        this.setState({ activeFilter: filterId });
+        this.setState({ activeFilter: filterId, smartFilter: 'all', selectionMode: false, selectedChatIds: new Set() });
+    };
+
+    toggleSmartViews = () => {
+        this.setState(state => {
+            const enabled = !state.smartViewsEnabled;
+            writeSmartChatPreference(PLUS_VIEWS_KEY, enabled ? '1' : '0');
+            return { smartViewsEnabled: enabled, smartFilter: 'all', selectionMode: false, selectedChatIds: new Set() };
+        });
+    };
+
+    setSmartFilter = smartFilter => {
+        writeSmartChatPreference(PLUS_FILTER_KEY, smartFilter);
+        this.setState({ smartFilter, activeFilter: null, selectionMode: false, selectedChatIds: new Set() });
+    };
+
+    setSortMode = event => {
+        const sortMode = event.target.value;
+        writeSmartChatPreference(PLUS_SORT_KEY, sortMode);
+        this.setState({ sortMode });
+    };
+
+    setChatListLines = event => {
+        const chatListLines = normalizeChatListLines(event.target.value);
+        writeSmartChatPreference(CHAT_LIST_LINES_KEY, String(chatListLines));
+        this.setState({ chatListLines });
+    };
+
+    toggleSelectionMode = () => this.setState({ selectionMode: !this.state.selectionMode, selectedChatIds: new Set() });
+
+    toggleChatSelection = chatId =>
+        this.setState(state => {
+            const selectedChatIds = new Set(state.selectedChatIds);
+            if (selectedChatIds.has(chatId)) selectedChatIds.delete(chatId);
+            else selectedChatIds.add(chatId);
+            return { selectedChatIds };
+        });
+
+    runBulkAction = async action => {
+        const chatIds = [...this.state.selectedChatIds];
+        if (!chatIds.length || this.state.bulkBusy) return;
+        this.setState({ bulkBusy: true });
+        try {
+            await Promise.allSettled(
+                chatIds.map(async chatId => {
+                    const chat = ChatStore.get(chatId);
+                    if (!chat) return;
+                    if (action === 'read' && isChatUnread(chatId)) {
+                        if (chat.unread_count > 0 && chat.last_message)
+                            await viewMessages(chatId, [chat.last_message.id], true);
+                        else
+                            await TdLibController.send({
+                                '@type': 'toggleChatIsMarkedAsUnread',
+                                chat_id: chatId,
+                                is_marked_as_unread: false,
+                            });
+                    }
+                    if (action === 'mute' && !isChatMuted(chatId)) toggleChatNotificationSettings(chatId, true);
+                    if (action === 'archive' && canSetChatChatList(chatId))
+                        setChatChatList(chatId, { '@type': 'chatListArchive' });
+                }),
+            );
+        } finally {
+            this.setState({ bulkBusy: false, selectionMode: false, selectedChatIds: new Set() });
+        }
     };
 
     handleOpenCreateFolder = () => {
@@ -472,6 +591,13 @@ class Dialogs extends Component {
             forumChatId,
             createFolderOpen,
             createFolderName,
+            smartViewsEnabled,
+            smartFilter,
+            sortMode,
+            selectionMode,
+            selectedChatIds,
+            bulkBusy,
+            chatListLines,
         } = this.state;
 
         const mainCacheItems = cache ? cache.chats || [] : null;
@@ -481,7 +607,9 @@ class Dialogs extends Component {
             <div
                 className={classNames(classes.borderColor, 'dialogs', {
                     'dialogs-third-column': isChatDetailsVisible,
-                })}>
+                    'chat-list-three-lines': chatListLines === 3,
+                })}
+            >
                 <DialogsHeader
                     ref={this.dialogsHeaderRef}
                     openArchive={openArchive}
@@ -492,10 +620,91 @@ class Dialogs extends Component {
                 />
                 {!openSearch && <StoriesTray />}
                 {!openSearch && !openArchive && (
+                    <div className='plus-chat-tools'>
+                        <button
+                            type='button'
+                            className='plus-chat-tools-toggle'
+                            aria-pressed={smartViewsEnabled}
+                            onClick={this.toggleSmartViews}
+                        >
+                            {smartViewsEnabled ? 'Vistas inteligentes' : 'Activar vistas inteligentes'}
+                        </button>
+                        {smartViewsEnabled && (
+                            <>
+                                <label className='plus-chat-sort'>
+                                    <span className='sr-only'>Ordenar chats</span>
+                                    <select value={sortMode} onChange={this.setSortMode} aria-label='Ordenar chats'>
+                                        {SORT_MODES.map(([value, label]) => (
+                                            <option key={value} value={value}>
+                                                {label}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </label>
+                                <label className='plus-chat-lines'>
+                                    <span className='sr-only'>Líneas por chat</span>
+                                    <select
+                                        value={chatListLines}
+                                        onChange={this.setChatListLines}
+                                        aria-label='Líneas por chat'
+                                    >
+                                        <option value={2}>2 líneas</option>
+                                        <option value={3}>3 líneas</option>
+                                    </select>
+                                </label>
+                                <button
+                                    type='button'
+                                    className='plus-chat-select'
+                                    aria-pressed={selectionMode}
+                                    onClick={this.toggleSelectionMode}
+                                >
+                                    {selectionMode ? 'Cancelar' : 'Seleccionar'}
+                                </button>
+                            </>
+                        )}
+                    </div>
+                )}
+                {!openSearch && !openArchive && smartViewsEnabled && !selectionMode && (
+                    <div className='smart-chat-tabs' role='tablist' aria-label='Vistas de chats'>
+                        {SMART_FILTERS.map(([value, label]) => (
+                            <button
+                                key={value}
+                                type='button'
+                                role='tab'
+                                aria-selected={smartFilter === value}
+                                className={classNames('smart-chat-tab', {
+                                    'smart-chat-tab-active': smartFilter === value,
+                                })}
+                                onClick={() => this.setSmartFilter(value)}
+                            >
+                                {label}
+                            </button>
+                        ))}
+                    </div>
+                )}
+                {!openSearch && !openArchive && selectionMode && (
+                    <div className='bulk-chat-actions' role='toolbar' aria-label='Acciones para chats seleccionados'>
+                        <strong>{selectedChatIds.size} seleccionados</strong>
+                        <button disabled={!selectedChatIds.size || bulkBusy} onClick={() => this.runBulkAction('read')}>
+                            Leer
+                        </button>
+                        <button disabled={!selectedChatIds.size || bulkBusy} onClick={() => this.runBulkAction('mute')}>
+                            Silenciar
+                        </button>
+                        <button
+                            disabled={!selectedChatIds.size || bulkBusy}
+                            onClick={() => this.runBulkAction('archive')}
+                        >
+                            Archivar
+                        </button>
+                    </div>
+                )}
+                {!openSearch && !openArchive && (
                     <div className='folder-tabs'>
                         <button
                             className={classNames('folder-tab', { 'folder-tab-active': activeFilter === null })}
-                            onClick={() => this.handleFolderSelect(null)}>
+                            onClick={() => this.handleFolderSelect(null)}
+                        >
                             Todos
                         </button>
                         {chatFilters.map(f => (
@@ -503,7 +712,8 @@ class Dialogs extends Component {
                                 key={f.id}
                                 className={classNames('folder-tab', { 'folder-tab-active': activeFilter === f.id })}
                                 onClick={() => this.handleFolderSelect(f.id)}
-                                title={f.title}>
+                                title={f.title}
+                            >
                                 {f.icon_name && f.icon_name !== 'All' && (
                                     <span className='folder-tab-icon'>{getFolderIcon(f.icon_name)}</span>
                                 )}
@@ -511,7 +721,8 @@ class Dialogs extends Component {
                                 <span
                                     className='folder-tab-delete'
                                     title='Eliminar carpeta'
-                                    onClick={e => this.handleDeleteFolder(e, f.id)}>
+                                    onClick={e => this.handleDeleteFolder(e, f.id)}
+                                >
                                     ×
                                 </span>
                             </button>
@@ -519,7 +730,8 @@ class Dialogs extends Component {
                         <button
                             className='folder-tab folder-tab-add'
                             onClick={this.handleOpenCreateFolder}
-                            title='Nueva carpeta'>
+                            title='Nueva carpeta'
+                        >
                             +
                         </button>
                     </div>
@@ -545,7 +757,8 @@ class Dialogs extends Component {
                             onClick={this.handleCreateFolder}
                             color='primary'
                             variant='contained'
-                            disabled={!createFolderName.trim()}>
+                            disabled={!createFolderName.trim()}
+                        >
                             Crear
                         </Button>
                     </DialogActions>
@@ -572,6 +785,11 @@ class Dialogs extends Component {
                                 archiveTitle={archiveTitle}
                                 open={true}
                                 onSaveCache={this.handleSaveCache}
+                                smartFilter={smartViewsEnabled ? smartFilter : 'all'}
+                                sortMode={smartViewsEnabled ? sortMode : 'telegram'}
+                                selectionMode={selectionMode}
+                                selectedChatIds={selectedChatIds}
+                                onToggleChatSelection={this.toggleChatSelection}
                             />
                             <DialogsList
                                 type='chatListArchive'
@@ -580,6 +798,8 @@ class Dialogs extends Component {
                                 items={archiveItems}
                                 open={openArchive}
                                 onSaveCache={this.handleSaveCache}
+                                smartFilter='all'
+                                sortMode='telegram'
                             />
                         </>
                     )}

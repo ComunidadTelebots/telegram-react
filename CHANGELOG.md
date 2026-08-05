@@ -1,5 +1,27 @@
 # Changelog
 
+## [0.0.651] - 2026-08-06 — Mensajería resistente y herramientas Plus
+### Added
+- Sonidos independientes y persistentes para mensajes recibidos y enviados; el nuevo sonido de salida es opcional.
+- Reintentos acotados y deduplicación de mensajes y reacciones durante llamadas grupales, conservando el `randomId` MTProto.
+- Vistas inteligentes Plus para usuarios, grupos, canales, bots, favoritos, no leídos y chats administrados.
+- Ordenación opcional por no leídos, nombre o favoritos sin sustituir el orden predeterminado de Telegram.
+- Selección múltiple accesible con acciones masivas de lectura, silencio y archivo.
+- Detección runtime de capacidades MTProto para Passkeys, reventa y ofertas de regalos.
+- Barra opcional de hasta seis chats recientes y navegación rápida accesible.
+- Acciones configurables al hacer doble clic en mensajes, con exclusión de controles y multimedia.
+- Calidad de fotografía Original, Alta, Equilibrada o Ahorro en envío y editor.
+- Lista de conversaciones configurable en dos o tres líneas.
+- Avisos opt-in y limitados de presencia/escritura para un máximo de veinte contactos seleccionados.
+- Acción configurable al pulsar el avatar y copia/restauración segura de preferencias mediante JSON validado.
+- Centro único «Opciones Plus Messenger» junto a Idioma, Dispositivos y Datos, con flecha atrás, controles activables y enlace al repositorio oficial.
+### Security
+- Los límites `FLOOD_WAIT/429` nunca usan reintentos rápidos.
+- Preferencias resistentes a bloqueos de almacenamiento y tonos Web Audio con cierre garantizado.
+- Ninguna operación financiera se habilita si falta un constructor MTProto requerido.
+### Tests
+- Suite completa y compilación Vite/PWA verificadas conjuntamente.
+
 ## [0.0.650] - 2026-08-06 — Reacciones extendidas para todos los diseños
 ### Added
 - Buscador de reacciones por emoji y significado.

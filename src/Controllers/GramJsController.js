@@ -33,6 +33,7 @@ import { loadMessages, saveMessages } from '../Utils/MessageCache';
 import * as InstantViewCache from '../Stores/InstantViewCache';
 import { resolveLinkedCommunityChatId } from '../Utils/LinkedCommunity';
 import { normalizeParticipantVideo } from '../Utils/GroupCallMedia';
+import { isGroupCallSyncActive, runGroupCallOperation } from '../Utils/GroupCallMessageSync';
 
 const ACCOUNTS_KEY = 'tg_gramjs_accounts';
 const ACTIVE_ACCOUNT_KEY = 'tg_gramjs_active_account';
@@ -3826,12 +3827,13 @@ class GramJsController extends EventEmitter {
             const text = input_message_content?.text?.text || '';
             const formattingEntities = tdEntitiesToGramJs(input_message_content?.text?.entities);
             let result;
-            if (effect_id) {
+            if (effect_id || isGroupCallSyncActive()) {
                 const { generateRandomBigInt } = await import('telegram/Helpers');
+                const randomId = generateRandomBigInt();
                 const request = new Api.messages.SendMessage({
                     peer: inputPeer,
                     message: text,
-                    randomId: generateRandomBigInt(),
+                    randomId,
                     replyTo: reply_to_message_id
                         ? new Api.InputReplyToMessage({ replyToMsgId: reply_to_message_id })
                         : undefined,
@@ -3839,9 +3841,12 @@ class GramJsController extends EventEmitter {
                     scheduleDate: schedule_date || undefined,
                     silent: !!disable_notification,
                     noWebpage: !!disable_web_page_preview,
-                    effect: bigInt(String(effect_id)),
+                    effect: effect_id ? bigInt(String(effect_id)) : undefined,
                 });
-                const updates = await this.client.invoke(request);
+                const updates = await runGroupCallOperation(
+                    `message:${chat_id}:${randomId.toString()}`,
+                    () => this.client.invoke(request),
+                );
                 result = await this.client._getResponseMessage(request, updates, inputPeer);
             } else {
                 result = await this.client.sendMessage(inputPeer, {
@@ -4923,13 +4928,15 @@ class GramJsController extends EventEmitter {
         const { chat_id, message_id, reaction, is_big } = req;
         try {
             const inputPeer = tdlibChatIdToInputPeer(chat_id, this._entityCache);
-            await this.client.invoke(
-                new Api.messages.SendReaction({
+            const request = new Api.messages.SendReaction({
                     peer: inputPeer,
                     msgId: message_id,
                     big: Boolean(is_big),
                     reaction: reaction ? [new Api.ReactionEmoji({ emoticon: reaction })] : [],
-                }),
+                });
+            await runGroupCallOperation(
+                `reaction:${chat_id}:${message_id}:${reaction || 'remove'}:${Boolean(is_big)}`,
+                () => this.client.invoke(request),
             );
         } catch (err) {
             console.error('[GramJs] sendReaction error', err);

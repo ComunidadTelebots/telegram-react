@@ -25,13 +25,13 @@ import {
     isChatArchived,
     isChatMuted,
     isChatSecret,
-    isChatUnread
+    isChatUnread,
 } from '../../Utils/Chat';
 import {
     setChatChatList,
     toggleChatIsMarkedAsUnread,
     toggleChatIsPinned,
-    toggleChatNotificationSettings
+    toggleChatNotificationSettings,
 } from '../../Actions/Chat';
 import { openChat } from '../../Actions/Client';
 import { viewMessages } from '../../Actions/Message';
@@ -43,23 +43,23 @@ import './Dialog.css';
 
 const styles = theme => ({
     menuListRoot: {
-        minWidth: 150
+        minWidth: 150,
     },
     statusRoot: {
         position: 'absolute',
         right: 1,
         bottom: 1,
-        zIndex: 1
+        zIndex: 1,
     },
     statusIcon: {},
     iconIndicator: {
-        background: '#80d066'
+        background: '#80d066',
     },
     verifiedIcon: {
-        color: theme.palette.primary.main
+        color: theme.palette.primary.main,
     },
     unreadIcon: {
-        background: theme.palette.primary.light
+        background: theme.palette.primary.light,
     },
     dialogActive: {
         color: '#fff', //theme.palette.primary.contrastText,
@@ -68,17 +68,17 @@ const styles = theme => ({
         cursor: 'pointer',
         margin: '0 12px',
         '& $verifiedIcon': {
-            color: '#fff'
+            color: '#fff',
         },
         '& $unreadIcon': {
-            background: '#ffffff77'
+            background: '#ffffff77',
         },
         '& $statusRoot': {
-            background: theme.palette.primary.main
+            background: theme.palette.primary.main,
         },
         '& $iconIndicator': {
-            background: '#ffffff'
-        }
+            background: '#ffffff',
+        },
     },
     dialog: {
         borderRadius: 8,
@@ -87,13 +87,13 @@ const styles = theme => ({
         '&:hover': {
             backgroundColor: theme.palette.primary.main + '22',
             '& $statusRoot': {
-                background: theme.palette.type === 'dark' ? theme.palette.background.default : '#FFFFFF'
+                background: theme.palette.type === 'dark' ? theme.palette.background.default : '#FFFFFF',
             },
             '& $statusIcon': {
-                background: theme.palette.primary.main + '22'
-            }
-        }
-    }
+                background: theme.palette.primary.main + '22',
+            },
+        },
+    },
 });
 
 class Dialog extends Component {
@@ -107,7 +107,7 @@ class Dialog extends Component {
             chat: chat,
             contextMenu: false,
             left: 0,
-            top: 0
+            top: 0,
         };
     }
 
@@ -134,6 +134,11 @@ class Dialog extends Component {
 
     handleSelect = event => {
         if (event.button === 0) {
+            if (this.props.selectionMode) {
+                event.preventDefault();
+                this.props.onToggleSelection?.(this.props.chatId);
+                return;
+            }
             openChat(this.props.chatId);
         }
     };
@@ -165,7 +170,7 @@ class Dialog extends Component {
                 canToggleArchive,
                 canDelete,
                 left,
-                top
+                top,
             });
         }
     };
@@ -198,7 +203,7 @@ class Dialog extends Component {
             chat_list: isChatArchived(chatId) ? { '@type': 'chatListArchive' } : { '@type': 'chatListMain' },
             offset_order: '9223372036854775807',
             offset_chat_id: 0,
-            limit: pinnedSumMaxOption.value + 10
+            limit: pinnedSumMaxOption.value + 10,
         });
 
         const pinnedSum = chats.chat_ids.reduce((x, id) => {
@@ -295,12 +300,12 @@ class Dialog extends Component {
             '@type': 'clientUpdateChatId',
             chatId: 0,
             previousChatId: chatId,
-            nextChatId: 0
+            nextChatId: 0,
         });
     };
 
     render() {
-        const { classes, chatId, showSavedMessages, hidden, t } = this.props;
+        const { classes, chatId, showSavedMessages, hidden, t, selectionMode, selected } = this.props;
         const { contextMenu, left, top, canToggleArchive, canTogglePin, canDelete } = this.state;
 
         if (hidden) return null;
@@ -318,11 +323,27 @@ class Dialog extends Component {
                 ref={this.dialog}
                 className={classNames(
                     isSelected ? classes.dialogActive : classes.dialog,
-                    isSelected ? 'dialog-active' : 'dialog'
+                    isSelected ? 'dialog-active' : 'dialog',
+                    { 'dialog-bulk-selected': selectionMode && selected, 'dialog-selection-mode': selectionMode },
                 )}
+                role={selectionMode ? 'checkbox' : undefined}
+                aria-checked={selectionMode ? Boolean(selected) : undefined}
+                tabIndex={selectionMode ? 0 : undefined}
+                onKeyDown={event => {
+                    if (selectionMode && (event.key === 'Enter' || event.key === ' ')) {
+                        event.preventDefault();
+                        this.props.onToggleSelection?.(chatId);
+                    }
+                }}
                 onMouseDown={this.handleSelect}
-                onContextMenu={this.handleContextMenu}>
+                onContextMenu={this.handleContextMenu}
+            >
                 <div className='dialog-wrapper'>
+                    {selectionMode && (
+                        <span className='dialog-selection-check' aria-hidden='true'>
+                            {selected ? '✓' : ''}
+                        </span>
+                    )}
                     <ChatTile
                         chatId={chatId}
                         showSavedMessages={showSavedMessages}
@@ -330,7 +351,7 @@ class Dialog extends Component {
                         classes={{
                             statusRoot: classes.statusRoot,
                             statusIcon: classes.statusIcon,
-                            iconIndicator: classes.iconIndicator
+                            iconIndicator: classes.iconIndicator,
                         }}
                     />
                     <div className='dialog-inner-wrapper'>
@@ -351,13 +372,14 @@ class Dialog extends Component {
                     anchorPosition={{ top, left }}
                     anchorOrigin={{
                         vertical: 'bottom',
-                        horizontal: 'right'
+                        horizontal: 'right',
                     }}
                     transformOrigin={{
                         vertical: 'top',
-                        horizontal: 'left'
+                        horizontal: 'left',
                     }}
-                    onMouseDown={e => e.stopPropagation()}>
+                    onMouseDown={e => e.stopPropagation()}
+                >
                     <MenuList classes={{ root: classes.menuListRoot }} onClick={e => e.stopPropagation()}>
                         {canToggleArchive && (
                             <MenuItem onClick={this.handleArchive}>
@@ -387,12 +409,17 @@ class Dialog extends Component {
 Dialog.propTypes = {
     chatId: PropTypes.number.isRequired,
     hidden: PropTypes.bool,
-    showSavedMessages: PropTypes.bool
+    showSavedMessages: PropTypes.bool,
+    selectionMode: PropTypes.bool,
+    selected: PropTypes.bool,
+    onToggleSelection: PropTypes.func,
 };
 
 Dialog.defaultProps = {
     hidden: false,
-    showSavedMessages: true
+    showSavedMessages: true,
+    selectionMode: false,
+    selected: false,
 };
 
 const enhance = compose(withStyles(styles, { withTheme: true }), withTranslation());

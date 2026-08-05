@@ -15,12 +15,16 @@ import Cookies from 'universal-cookie';
 import { OPTIMIZATIONS_FIRST_START } from './Constants';
 import './index.css';
 import { initDesign } from './Design';
+import PlusNoticeHost from './Components/Additional/PlusNoticeHost';
 
 initDesign();
 
 ReactDOM.render(
     <Router basename={process.env.PUBLIC_URL || '/'}>
-        <Route path='/' component={TelegramApp} />
+        <>
+            <Route path='/' component={TelegramApp} />
+            <PlusNoticeHost />
+        </>
     </Router>,
     document.getElementById('root'),
 );

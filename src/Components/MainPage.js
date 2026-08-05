@@ -28,6 +28,7 @@ import InternalBrowser from './Additional/InternalBrowser';
 import IncomingCall from './Calls/IncomingCall';
 import ActiveCall from './Calls/ActiveCall';
 import CallRatingDialog from './Calls/CallRatingDialog';
+import QuickChatBar from './Additional/QuickChatBar';
 import MediaViewer from './Viewer/MediaViewer';
 import ProfileMediaViewer from './Viewer/ProfileMediaViewer';
 import { borderStyle } from './Theme';
@@ -243,6 +244,7 @@ class MainPage extends React.Component {
                 <IncomingCall />
                 <ActiveCall />
                 <CallRatingDialog />
+                <QuickChatBar />
             </>
         );
     }

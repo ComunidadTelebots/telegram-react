@@ -63,6 +63,7 @@ import InputBase from '@material-ui/core/InputBase';
 import ChatStore from '../../Stores/ChatStore';
 import { pinMessage, unpinMessage } from '../../Actions/Message';
 import { withRestoreRef, withSaveRef } from '../../Utils/HOC';
+import { readDoubleClickAction, shouldIgnoreMessageDoubleClick } from '../../Utils/PlusInteractions';
 
 const styles = theme => ({
     message: {
@@ -674,6 +675,30 @@ class Message extends Component {
         }
     };
 
+    handleMessageDoubleClick = event => {
+        if (shouldIgnoreMessageDoubleClick(event.target, event.currentTarget)) return;
+        const action = readDoubleClickAction();
+        if (action === 'none') return;
+
+        const { chatId, messageId } = this.props;
+        const message = MessageStore.get(chatId, messageId);
+        if (!message) return;
+        event.preventDefault();
+        event.stopPropagation();
+
+        if (action === 'react') {
+            TdLibController.send({ '@type': 'sendMessageReaction', chat_id: chatId, message_id: messageId, reaction: '👍' });
+        } else if (action === 'reply' && canSendMessages(chatId)) {
+            this.handleReply(event);
+        } else if (action === 'edit' && canMessageBeEdited(chatId, messageId)) {
+            this.handleEdit(event);
+        } else if (action === 'save' && message.can_be_forwarded) {
+            this.handleSaveToSavedMessages(event);
+        } else if (action === 'copy') {
+            this.handleCopy(event);
+        }
+    };
+
     handleTranslate = event => {
         this.handleCloseContextMenu(event);
         this.setState({ langMenu: true, langSearch: '' });
@@ -1061,6 +1086,7 @@ class Message extends Component {
                 onMouseOut={this.handleMouseOut}
                 onMouseDown={this.handleMouseDown}
                 onClick={this.handleSelection}
+                onDoubleClick={this.handleMessageDoubleClick}
                 onAnimationEnd={this.handleAnimationEnd}
                 onContextMenu={this.handleContextMenu}>
                 {showUnreadSeparator && <UnreadSeparator />}

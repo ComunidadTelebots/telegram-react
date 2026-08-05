@@ -51,6 +51,12 @@ import { getEntities, getNodes, isTextMessage } from '../../Utils/Message';
 import { getSize, readImageSize } from '../../Utils/Common';
 import { PHOTO_SIZE } from '../../Constants';
 import { getLiveLocationMessageId, LIVE_LOCATION_PERIODS } from '../../Utils/LiveLocation';
+import {
+    normalizePhotoQuality,
+    PHOTO_QUALITY_KEY,
+    PHOTO_QUALITY_PROFILES,
+    preparePhotoForSend,
+} from '../../Utils/PhotoQuality';
 import AppStore from '../../Stores/ApplicationStore';
 import ChatStore from '../../Stores/ChatStore';
 import FileStore from '../../Stores/FileStore';
@@ -113,6 +119,7 @@ class InputBoxControl extends Component {
             inlineBotResults: null,
             charCount: 0,
             ctrlEnterMode: localStorage.getItem('ctrlEnterMode') === 'true',
+            photoQuality: normalizePhotoQuality(localStorage.getItem(PHOTO_QUALITY_KEY)),
         };
 
         document.addEventListener(
@@ -129,16 +136,8 @@ class InputBoxControl extends Component {
 
     shouldComponentUpdate(nextProps, nextState) {
         const { theme, t } = this.props;
-        const {
-            chatId,
-            newDraft,
-            files,
-            replyToMessageId,
-            editMessageId,
-            openEditMedia,
-            openEditUrl,
-            recording,
-        } = this.state;
+        const { chatId, newDraft, files, replyToMessageId, editMessageId, openEditMedia, openEditUrl, recording } =
+            this.state;
 
         if (nextProps.theme !== theme) {
             return true;
@@ -187,6 +186,8 @@ class InputBoxControl extends Component {
         if (nextState.silentSend !== this.state.silentSend) {
             return true;
         }
+
+        if (nextState.photoQuality !== this.state.photoQuality) return true;
 
         return false;
     }
@@ -627,7 +628,9 @@ class InputBoxControl extends Component {
                     if (this.liveLocationPanelRef && msgId) {
                         this.liveLocationPanelRef.start(chatId, msgId, period);
                     } else {
-                        this.setState({ voiceError: 'Telegram envió la ubicación, pero no devolvió el mensaje para actualizarla.' });
+                        this.setState({
+                            voiceError: 'Telegram envió la ubicación, pero no devolvió el mensaje para actualizarla.',
+                        });
                     }
                 } catch (e) {
                     this.setState({ voiceError: e?.message || 'No se pudo enviar la ubicación en directo.' });
@@ -651,17 +654,31 @@ class InputBoxControl extends Component {
         this.attachPhotoRef.current.click();
     };
 
-    handleAttachPhotoComplete = () => {
+    handleAttachPhotoComplete = async () => {
         const files = this.attachPhotoRef.current.files;
         if (files.length === 0) return;
 
-        Array.from(files).forEach(file => {
-            readImageSize(file, result => {
-                this.handleSendPhoto(result);
-            });
-        });
+        const { photoQuality } = this.state;
+        await Promise.allSettled(
+            Array.from(files).map(async file => {
+                try {
+                    const prepared = await preparePhotoForSend(file, photoQuality);
+                    readImageSize(prepared, result => {
+                        this.handleSendPhoto(result);
+                    });
+                } catch (error) {
+                    this.setState({ voiceError: error?.message || 'No se pudo preparar la imagen.' });
+                }
+            }),
+        );
 
         this.attachPhotoRef.current.value = '';
+    };
+
+    handlePhotoQuality = event => {
+        const photoQuality = normalizePhotoQuality(event.target.value);
+        localStorage.setItem(PHOTO_QUALITY_KEY, photoQuality);
+        this.setState({ photoQuality });
     };
 
     handleAttachDocument = () => {
@@ -1798,7 +1815,8 @@ class InputBoxControl extends Component {
                                         <IconButton className='inputbox-icon-button' aria-label='Emoticon'>
                                             <InsertEmoticonIcon />
                                         </IconButton>
-                                    }>
+                                    }
+                                >
                                     <EmojiPickerButton onSelect={this.handleEmojiSelect} />
                                 </React.Suspense>
                                 <IconButton
@@ -1807,14 +1825,16 @@ class InputBoxControl extends Component {
                                     title='Stickers'
                                     onClick={() =>
                                         TdLibController.clientUpdate({ '@type': 'clientUpdateOpenStickersPanel' })
-                                    }>
+                                    }
+                                >
                                     <TagFacesIcon />
                                 </IconButton>
                                 <IconButton
                                     className='inputbox-icon-button'
                                     aria-label='GIF'
                                     title='Enviar GIF'
-                                    onClick={() => this.setState(s => ({ showGifPicker: !s.showGifPicker }))}>
+                                    onClick={() => this.setState(s => ({ showGifPicker: !s.showGifPicker }))}
+                                >
                                     <GifIcon />
                                 </IconButton>
                             </div>
@@ -1856,36 +1876,42 @@ class InputBoxControl extends Component {
                                     <div
                                         className='format-toolbar'
                                         style={{ left: formatBar.x, top: formatBar.y }}
-                                        onMouseDown={e => e.preventDefault()}>
+                                        onMouseDown={e => e.preventDefault()}
+                                    >
                                         <button
                                             className='fmt-btn'
                                             title='Negrita (Ctrl+B)'
-                                            onMouseDown={this.handleBold}>
+                                            onMouseDown={this.handleBold}
+                                        >
                                             <b>B</b>
                                         </button>
                                         <button
                                             className='fmt-btn'
                                             title='Cursiva (Ctrl+I)'
-                                            onMouseDown={this.handleItalic}>
+                                            onMouseDown={this.handleItalic}
+                                        >
                                             <i>I</i>
                                         </button>
                                         <button
                                             className='fmt-btn'
                                             title='Subrayado (Ctrl+U)'
-                                            onMouseDown={this.handleUnderline}>
+                                            onMouseDown={this.handleUnderline}
+                                        >
                                             <u>U</u>
                                         </button>
                                         <button
                                             className='fmt-btn'
                                             title='Tachado'
-                                            onMouseDown={this.handleStrikeThrough}>
+                                            onMouseDown={this.handleStrikeThrough}
+                                        >
                                             <s>S</s>
                                         </button>
                                         <button
                                             className='fmt-btn'
                                             title='Código'
                                             onMouseDown={this.handleMono}
-                                            style={{ fontFamily: 'monospace' }}>
+                                            style={{ fontFamily: 'monospace' }}
+                                        >
                                             &lt;/&gt;
                                         </button>
                                         <button className='fmt-btn' title='Spoiler' onMouseDown={this.handleSpoiler}>
@@ -1894,13 +1920,15 @@ class InputBoxControl extends Component {
                                         <button
                                             className='fmt-btn'
                                             title='Enlace (Ctrl+K)'
-                                            onMouseDown={this.handleUrl}>
+                                            onMouseDown={this.handleUrl}
+                                        >
                                             🔗
                                         </button>
                                         <button
                                             className='fmt-btn fmt-btn-clear'
                                             title='Quitar formato'
-                                            onMouseDown={this.handleClear}>
+                                            onMouseDown={this.handleClear}
+                                        >
                                             ✕
                                         </button>
                                     </div>
@@ -1917,7 +1945,8 @@ class InputBoxControl extends Component {
                                             marginRight: 4,
                                             minWidth: 32,
                                             textAlign: 'right',
-                                        }}>
+                                        }}
+                                    >
                                         {MAX_MSG_LEN - charCount}
                                     </span>
                                 )}
@@ -1927,7 +1956,8 @@ class InputBoxControl extends Component {
                                     aria-label={ctrlEnterMode ? 'Enviar con Ctrl+Enter' : 'Enviar con Enter'}
                                     title={ctrlEnterMode ? 'Modo: Ctrl+Enter para enviar' : 'Modo: Enter para enviar'}
                                     onClick={this.handleCtrlEnterToggle}
-                                    style={{ fontSize: 10, padding: 4 }}>
+                                    style={{ fontSize: 10, padding: 4 }}
+                                >
                                     <span style={{ fontSize: 9, fontWeight: 'bold', lineHeight: 1 }}>
                                         {ctrlEnterMode ? '⌃↵' : '↵'}
                                     </span>
@@ -1956,6 +1986,22 @@ class InputBoxControl extends Component {
                                         onAttachLocation={this.handleAttachLocation}
                                     />
                                 )}
+                                {!Boolean(editMessageId) && (
+                                    <label className='photo-quality-control' title='Calidad para las próximas fotos'>
+                                        <span aria-hidden='true'>📷</span>
+                                        <select
+                                            value={this.state.photoQuality}
+                                            onChange={this.handlePhotoQuality}
+                                            aria-label='Calidad de envío de fotos'
+                                        >
+                                            {PHOTO_QUALITY_PROFILES.map(profile => (
+                                                <option key={profile.id} value={profile.id}>
+                                                    {profile.label}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </label>
+                                )}
 
                                 {!Boolean(editMessageId) && (
                                     <>
@@ -1967,7 +2013,8 @@ class InputBoxControl extends Component {
                                                     color: '#e53935',
                                                     fontSize: 12,
                                                     fontVariantNumeric: 'tabular-nums',
-                                                }}>
+                                                }}
+                                            >
                                                 {Math.floor(recordingSeconds / 60)}:
                                                 {String(recordingSeconds % 60).padStart(2, '0')}
                                             </span>
@@ -1977,7 +2024,8 @@ class InputBoxControl extends Component {
                                                 size='small'
                                                 aria-label='Cancelar nota de voz'
                                                 title='Cancelar nota de voz'
-                                                onClick={this.handleVoiceCancel}>
+                                                onClick={this.handleVoiceCancel}
+                                            >
                                                 <CloseIcon fontSize='small' />
                                             </IconButton>
                                         )}
@@ -1986,7 +2034,8 @@ class InputBoxControl extends Component {
                                             aria-label={recording ? 'Enviar nota de voz' : 'Grabar nota de voz'}
                                             title={recording ? 'Detener y enviar' : 'Grabar nota de voz'}
                                             onClick={this.handleVoiceStart}
-                                            style={recording ? { color: '#e53935' } : {}}>
+                                            style={recording ? { color: '#e53935' } : {}}
+                                        >
                                             {recording ? <StopIcon /> : <MicIcon />}
                                         </IconButton>
                                     </>
@@ -2002,7 +2051,8 @@ class InputBoxControl extends Component {
                                 silentSend ? 'Notificación desactivada — clic para activar' : 'Enviar sin notificación'
                             }
                             onClick={() => this.setState(s => ({ silentSend: !s.silentSend }))}
-                            style={silentSend ? { color: '#e53935', marginRight: 2 } : { marginRight: 2 }}>
+                            style={silentSend ? { color: '#e53935', marginRight: 2 } : { marginRight: 2 }}
+                        >
                             {silentSend ? <VolumeOffIcon fontSize='small' /> : <VolumeUpIcon fontSize='small' />}
                         </IconButton>
                     )}
@@ -2018,13 +2068,15 @@ class InputBoxControl extends Component {
                                     : 'Desactivar vista previa de enlace'
                             }
                             onClick={() => this.setState(s => ({ disableLinkPreview: !s.disableLinkPreview }))}
-                            style={disableLinkPreview ? { color: '#e53935', marginRight: 2 } : { marginRight: 2 }}>
+                            style={disableLinkPreview ? { color: '#e53935', marginRight: 2 } : { marginRight: 2 }}
+                        >
                             <span
                                 style={{
                                     fontSize: 16,
                                     lineHeight: 1,
                                     textDecoration: disableLinkPreview ? 'line-through' : 'none',
-                                }}>
+                                }}
+                            >
                                 🔗
                             </span>
                         </IconButton>
@@ -2035,7 +2087,8 @@ class InputBoxControl extends Component {
                             aria-label='Programar mensaje'
                             title='Enviar programado'
                             onClick={this.handleSubmitScheduled}
-                            style={{ marginRight: 2 }}>
+                            style={{ marginRight: 2 }}
+                        >
                             <ScheduleIcon fontSize='small' />
                         </IconButton>
                     )}
@@ -2052,7 +2105,8 @@ class InputBoxControl extends Component {
                                     selectedEffectId
                                         ? { color: 'var(--color-primary, #5B8AF1)', marginRight: 2 }
                                         : { marginRight: 2 }
-                                }>
+                                }
+                            >
                                 <span style={{ fontSize: 16, lineHeight: 1 }}>✨</span>
                             </IconButton>
                             {showEffectPicker && (
@@ -2070,7 +2124,8 @@ class InputBoxControl extends Component {
                                                             : ''
                                                     }`}
                                                     onClick={() => this.handleSelectEffect(effect.id)}
-                                                    title={effect.emoji || 'Efecto'}>
+                                                    title={effect.emoji || 'Efecto'}
+                                                >
                                                     {emoji}
                                                 </button>
                                             );
@@ -2080,7 +2135,8 @@ class InputBoxControl extends Component {
                                         className='effect-picker-clear'
                                         onClick={() =>
                                             this.setState({ selectedEffectId: null, showEffectPicker: false })
-                                        }>
+                                        }
+                                    >
                                         Sin efecto
                                     </button>
                                 </div>
@@ -2094,7 +2150,8 @@ class InputBoxControl extends Component {
                         className='inputbox-send-button'
                         aria-label='Send'
                         size='small'
-                        onClick={this.handleSubmit}>
+                        onClick={this.handleSubmit}
+                    >
                         {editMessageId ? <DoneIcon /> : <SendIcon />}
                     </Button>
                 </div>
@@ -2137,7 +2194,8 @@ class InputBoxControl extends Component {
                             onClick={this.handleScheduleConfirm}
                             color='primary'
                             variant='contained'
-                            disabled={!scheduleDateValue}>
+                            disabled={!scheduleDateValue}
+                        >
                             Enviar programado
                         </Button>
                     </DialogActions>
@@ -2146,7 +2204,8 @@ class InputBoxControl extends Component {
                     open={this.state.liveLocationDialogOpen}
                     onClose={this.handleLiveLocationCancel}
                     maxWidth='xs'
-                    fullWidth>
+                    fullWidth
+                >
                     <DialogTitle>Compartir ubicación en directo</DialogTitle>
                     <DialogContent>
                         <p>Telegram actualizará tu posición mientras esta ventana permanezca abierta.</p>
@@ -2156,7 +2215,8 @@ class InputBoxControl extends Component {
                             label='Duración'
                             value={this.state.liveLocationPeriod}
                             onChange={event => this.setState({ liveLocationPeriod: Number(event.target.value) })}
-                            margin='normal'>
+                            margin='normal'
+                        >
                             {LIVE_LOCATION_PERIODS.map(period => (
                                 <MenuItem key={period.value} value={period.value}>
                                     {period.label}

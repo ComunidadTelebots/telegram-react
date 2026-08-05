@@ -28,3 +28,17 @@
 .dialog-content-draft {
     color: var(--draft-red);
 }
+
+.chat-list-three-lines .dialog-content {
+    display: -webkit-box;
+    white-space: normal;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    line-height: 1.25;
+}
+
+.chat-list-three-lines .dialog-wrapper {
+    min-height: 66px;
+    align-items: center;
+}

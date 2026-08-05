@@ -22,6 +22,7 @@ import PersonAddIcon from '@material-ui/icons/PersonAdd';
 import ExitToAppIcon from '@material-ui/icons/ExitToApp';
 import CropFreeIcon from '@material-ui/icons/CropFree';
 import HistoryIcon from '@material-ui/icons/History';
+import TuneIcon from '@material-ui/icons/Tune';
 import Snackbar from '@material-ui/core/Snackbar';
 import TwoStepVerification from '../Additional/TwoStepVerification';
 import ActiveSessions from '../Additional/ActiveSessions';
@@ -29,6 +30,7 @@ import EditProfile from '../Additional/EditProfile';
 import PrivacySettings from './PrivacySettings';
 import LanguagePicker from './LanguagePicker';
 import AndroidDataSettings from './AndroidDataSettings';
+import PlusOptionsDialog from './PlusOptionsDialog';
 import FavedStickers from '../Additional/FavedStickers';
 import { getSrc } from '../../Utils/File';
 import { getUserFullName } from '../../Utils/User';
@@ -154,6 +156,10 @@ class AndroidSettings extends React.PureComponent {
 
     handleLanguage = () => {
         if (this.languagePickerRef) this.languagePickerRef.open();
+    };
+
+    handlePlusOptions = () => {
+        if (this.plusOptionsRef) this.plusOptionsRef.open();
     };
 
     openHelp = path => window.open(`https://telegram.org/${path}`, '_blank', 'noopener,noreferrer');
@@ -282,6 +288,13 @@ class AndroidSettings extends React.PureComponent {
                         sub: 'Español',
                         arrow: true,
                         action: this.handleLanguage,
+                    },
+                    {
+                        icon: <TuneIcon />,
+                        label: 'Opciones Plus Messenger',
+                        sub: 'Organización, accesos rápidos, multimedia y privacidad',
+                        arrow: true,
+                        action: this.handlePlusOptions,
                     },
                     {
                         icon: <HistoryIcon />,
@@ -437,6 +450,7 @@ class AndroidSettings extends React.PureComponent {
                 <PrivacySettings ref={ref => (this.privacySettingsRef = ref)} />
                 <LanguagePicker ref={ref => (this.languagePickerRef = ref)} />
                 <AndroidDataSettings ref={ref => (this.dataSettingsRef = ref)} />
+                <PlusOptionsDialog ref={ref => (this.plusOptionsRef = ref)} />
                 <FavedStickers ref={ref => (this.favedStickersRef = ref)} />
                 <Snackbar
                     open={!!this.state.snackbar}

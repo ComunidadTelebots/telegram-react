@@ -72,3 +72,34 @@
     align-items: center;
     user-select: none;
 }
+.dialog-selection-mode {
+    position: relative;
+}
+
+.dialog-bulk-selected {
+    background: var(--design-active-background, rgba(33, 150, 243, 0.12)) !important;
+    outline: 1px solid var(--color-accent-main);
+    outline-offset: -1px;
+}
+
+.dialog-selection-check {
+    position: absolute;
+    z-index: 3;
+    left: 8px;
+    top: 50%;
+    width: 20px;
+    height: 20px;
+    transform: translateY(-50%);
+    display: grid;
+    place-items: center;
+    border: 2px solid var(--color-accent-main);
+    border-radius: 50%;
+    background: var(--design-panel-background, #fff);
+    color: var(--color-accent-main);
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.dialog-selection-mode .dialog-wrapper {
+    padding-left: 28px;
+}

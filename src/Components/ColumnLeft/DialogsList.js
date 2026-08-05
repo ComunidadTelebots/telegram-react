@@ -20,7 +20,9 @@ import BasicGroupStore from '../../Stores/BasicGroupStore';
 import ChatStore from '../../Stores/ChatStore';
 import FileStore from '../../Stores/FileStore';
 import SupergroupStore from '../../Stores/SupergroupStore';
+import UserStore from '../../Stores/UserStore';
 import TdLibController from '../../Controllers/TdLibController';
+import { matchesSmartChatFilter, sortSmartChatIds } from '../../Utils/SmartChatList';
 import './DialogsList.css';
 
 const styles = theme => ({
@@ -47,7 +49,18 @@ class DialogsList extends React.Component {
     }
 
     shouldComponentUpdate(nextProps, nextState) {
-        const { theme, open, showArchive, archiveTitle, items, cacheItems } = this.props;
+        const {
+            theme,
+            open,
+            showArchive,
+            archiveTitle,
+            items,
+            cacheItems,
+            smartFilter,
+            sortMode,
+            selectionMode,
+            selectedChatIds,
+        } = this.props;
         const { chats } = this.state;
 
         if (nextProps.theme !== theme) {
@@ -73,6 +86,9 @@ class DialogsList extends React.Component {
         if (nextProps.archiveTitle !== archiveTitle) {
             return true;
         }
+
+        if (nextProps.smartFilter !== smartFilter || nextProps.sortMode !== sortMode) return true;
+        if (nextProps.selectionMode !== selectionMode || nextProps.selectedChatIds !== selectedChatIds) return true;
 
         if (nextState.chats !== chats) {
             return true;
@@ -371,17 +387,43 @@ class DialogsList extends React.Component {
     }
 
     render() {
-        const { classes, type, open, cacheItems, showArchive, archiveTitle } = this.props;
+        const {
+            classes,
+            type,
+            open,
+            cacheItems,
+            showArchive,
+            archiveTitle,
+            smartFilter,
+            sortMode,
+            selectionMode,
+            selectedChatIds,
+            onToggleChatSelection,
+        } = this.props;
         const { chats } = this.state;
 
         // console.log('[dl] render', type, open, chats, cacheChats);
         if (!open) return null;
 
         let dialogs = null;
-        if (chats) {
-            dialogs = chats.map(x => <Dialog key={x} chatId={x} hidden={this.hiddenChats.has(x)} />);
-        } else if (cacheItems) {
-            dialogs = cacheItems.map(x => <Dialog key={x.id} chatId={x.id} hidden={this.hiddenChats.has(x.id)} />);
+        const sourceChatIds = chats || (cacheItems ? cacheItems.map(item => item.id) : null);
+        if (sourceChatIds) {
+            const stores = { userStore: UserStore, basicGroupStore: BasicGroupStore, supergroupStore: SupergroupStore };
+            const visibleIds = sortSmartChatIds(
+                sourceChatIds.filter(id => matchesSmartChatFilter(ChatStore.get(id), smartFilter, stores)),
+                id => ChatStore.get(id),
+                sortMode,
+            );
+            dialogs = visibleIds.map(id => (
+                <Dialog
+                    key={id}
+                    chatId={id}
+                    hidden={this.hiddenChats.has(id)}
+                    selectionMode={selectionMode}
+                    selected={selectedChatIds?.has(id)}
+                    onToggleSelection={onToggleChatSelection}
+                />
+            ));
         } else {
             if (type === 'chatListMain') {
                 dialogs = Array.from(Array(10)).map((x, index) => <DialogPlaceholder key={index} index={index} />);
@@ -392,7 +434,8 @@ class DialogsList extends React.Component {
             <div
                 ref={this.listRef}
                 className={classNames('dialogs-list', classes.dialogsList)}
-                onScroll={this.handleScroll}>
+                onScroll={this.handleScroll}
+            >
                 {showArchive && <Archive title={archiveTitle} />}
                 {dialogs}
             </div>
@@ -406,6 +449,18 @@ DialogsList.propTypes = {
     archiveTitle: PropTypes.string,
     cacheItems: PropTypes.array,
     items: PropTypes.array,
+    smartFilter: PropTypes.string,
+    sortMode: PropTypes.string,
+    selectionMode: PropTypes.bool,
+    selectedChatIds: PropTypes.instanceOf(Set),
+    onToggleChatSelection: PropTypes.func,
+};
+
+DialogsList.defaultProps = {
+    smartFilter: 'all',
+    sortMode: 'telegram',
+    selectionMode: false,
+    selectedChatIds: new Set(),
 };
 
 export default withStyles(styles, { withTheme: true })(DialogsList);

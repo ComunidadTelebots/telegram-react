@@ -1,8 +1,11 @@
 import React, { Component } from 'react';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import TdLibController from '../../Controllers/TdLibController';
+import { giftMarketplaceAvailability } from '../../Utils/TelegramCapabilities';
 import StarGiftCatalog from './StarGiftCatalog';
 import './StarGiftsGallery.css';
+
+const giftMarketplace = giftMarketplaceAvailability();
 
 class GiftDetailModal extends Component {
     constructor(props) {
@@ -133,10 +136,12 @@ class GiftDetailModal extends Component {
                                 <div className='stargift-action-info'>
                                     <span className='stargift-action-label'>Poner en venta</span>
                                     <span className='stargift-action-cost'>
-                                        La API instalada no permite fijar precio.
+                                        {giftMarketplace.label}
                                     </span>
                                 </div>
-                                <span className='stargift-action-status'>No disponible</span>
+                                <span className='stargift-action-status'>
+                                    {giftMarketplace.available ? 'Pendiente de validación' : 'No disponible'}
+                                </span>
                             </div>
 
                             {/* Convert */}

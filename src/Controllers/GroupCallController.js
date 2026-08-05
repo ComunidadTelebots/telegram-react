@@ -1,6 +1,7 @@
 import { EventEmitter } from 'events';
 import TdLibController from './TdLibController';
 import { videoSourcesSignature } from '../Utils/GroupCallMedia';
+import { setGroupCallSyncActive } from '../Utils/GroupCallMessageSync';
 
 const initialState = {
     status: 'idle',
@@ -240,6 +241,7 @@ class GroupCallController extends EventEmitter {
 
     _setState(patch) {
         this.state = { ...this.state, ...patch };
+        setGroupCallSyncActive(['connecting', 'connected'].includes(this.state.status));
         this.emit('state', this.state);
     }
 

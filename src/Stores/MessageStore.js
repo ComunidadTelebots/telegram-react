@@ -7,6 +7,7 @@
 
 import { EventEmitter } from 'events';
 import TdLibController from '../Controllers/TdLibController';
+import { acceptGroupCallUpdate } from '../Utils/GroupCallMessageSync';
 
 class MessageStore extends EventEmitter {
     constructor() {
@@ -39,6 +40,7 @@ class MessageStore extends EventEmitter {
                 break;
             }
             case 'updateNewMessage':
+                if (!acceptGroupCallUpdate(`message:${update.message.chat_id}:${update.message.id}`)) break;
                 this.set(update.message);
                 this.emit('updateNewMessage', update);
                 break;
@@ -69,6 +71,11 @@ class MessageStore extends EventEmitter {
                 break;
             }
             case 'updateMessageReactions': {
+                const signature = (update.reactions?.reactions || [])
+                    .map(item => `${item.reaction}:${item.total_count}:${item.is_chosen ? 1 : 0}`)
+                    .sort()
+                    .join('|');
+                if (!acceptGroupCallUpdate(`reaction:${update.chat_id}:${update.message_id}:${signature}`)) break;
                 const chat = this.items.get(update.chat_id);
                 if (chat) {
                     const message = chat.get(update.message_id);

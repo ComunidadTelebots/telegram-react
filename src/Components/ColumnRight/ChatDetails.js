@@ -44,6 +44,7 @@ import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import MicIcon from '@material-ui/icons/Mic';
 import PhotoIcon from '@material-ui/icons/Photo';
+import { getAvatarAction } from '../../Utils/PlusPreferences';
 import Typography from '@material-ui/core/Typography';
 import VideocamIcon from '@material-ui/icons/Videocam';
 import UserControl from '../Tile/UserControl';
@@ -643,6 +644,11 @@ class ChatDetails extends React.Component {
         ));
 
         const { photo } = chat;
+        const handleAvatarSelect = photo ? () => {
+            const action = getAvatarAction();
+            if (action === 'photo') this.handleOpenViewer();
+            else if (action === 'copy_username' && username) copy(username.startsWith('@') ? username : `@${username}`);
+        } : null;
 
         const content = (
             <>
@@ -659,7 +665,7 @@ class ChatDetails extends React.Component {
                             big={true}
                             showStatus={true}
                             showSavedMessages={!popup}
-                            onTileSelect={photo ? this.handleOpenViewer : null}
+                            onTileSelect={handleAvatarSelect}
                         />
                     </div>
                     {!!linkedCommunityId && !this.state.legacyFeaturesOnly && (
