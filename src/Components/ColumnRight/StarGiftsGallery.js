@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import TdLibController from '../../Controllers/TdLibController';
+import StarGiftCatalog from './StarGiftCatalog';
 import './StarGiftsGallery.css';
 
 class GiftDetailModal extends Component {
@@ -191,6 +192,7 @@ class StarGiftsGallery extends Component {
             selectedGift: null,
             busyAction: '',
             actionError: '',
+            catalogOpen: false,
         };
     }
 
@@ -272,26 +274,21 @@ class StarGiftsGallery extends Component {
     };
 
     render() {
-        const { gifts, loading, loadingMore, hasMore, error, selectedGift, busyAction, actionError } = this.state;
-
-        if (loading) {
-            return (
-                <div className='stargift-gallery-loading'>
-                    <CircularProgress size={24} />
-                </div>
-            );
-        }
-
-        if (error) {
-            return <div className='stargift-gallery-error'>{error}</div>;
-        }
-
-        if (gifts.length === 0) return null;
+        const { gifts, loading, loadingMore, hasMore, error, selectedGift, busyAction, actionError, catalogOpen } = this.state;
 
         return (
             <div className='stargift-gallery'>
-                <div className='stargift-gallery-title'>Regalos de estrellas</div>
-                <div className='stargift-gallery-grid'>
+                <div className='stargift-gallery-heading'>
+                    <div className='stargift-gallery-title'>Regalos de estrellas</div>
+                    <button type='button' className='stargift-shop-button' onClick={() => this.setState({ catalogOpen: true })}>
+                        Enviar regalo
+                    </button>
+                </div>
+                {loading ? (
+                    <div className='stargift-gallery-loading'><CircularProgress size={24} /></div>
+                ) : error ? (
+                    <div className='stargift-gallery-error'>{error}</div>
+                ) : gifts.length ? <div className='stargift-gallery-grid'>
                     {gifts.map((gift, idx) => (
                         <button
                             key={gift.id || idx}
@@ -301,7 +298,7 @@ class StarGiftsGallery extends Component {
                             {gift.stars != null && <span className='stargift-item-stars'>{gift.stars}</span>}
                         </button>
                     ))}
-                </div>
+                </div> : <div className='stargift-gallery-empty'>Este usuario aún no muestra regalos.</div>}
                 {hasMore && (
                     <button className='stargift-load-more' disabled={loadingMore} onClick={() => this._load(true)}>
                         {loadingMore ? 'Cargando...' : 'Ver más regalos'}
@@ -314,6 +311,13 @@ class StarGiftsGallery extends Component {
                         actionError={actionError}
                         onAction={this._performAction}
                         onClose={() => this.setState({ selectedGift: null, actionError: '' })}
+                    />
+                )}
+                {catalogOpen && (
+                    <StarGiftCatalog
+                        userId={this.props.chatId}
+                        onClose={() => this.setState({ catalogOpen: false })}
+                        onSent={() => this._load()}
                     />
                 )}
             </div>

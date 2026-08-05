@@ -32,6 +32,7 @@ import { translateStoryItem } from '../Utils/GramJs/UpdateTranslator';
 import { loadMessages, saveMessages } from '../Utils/MessageCache';
 import * as InstantViewCache from '../Stores/InstantViewCache';
 import { resolveLinkedCommunityChatId } from '../Utils/LinkedCommunity';
+import { normalizeParticipantVideo } from '../Utils/GroupCallMedia';
 
 const ACCOUNTS_KEY = 'tg_gramjs_accounts';
 const ACTIVE_ACCOUNT_KEY = 'tg_gramjs_active_account';
@@ -1141,6 +1142,8 @@ class GramJsController extends EventEmitter {
                 return this._getStoryViewers(req);
             case 'sendStory':
                 return this._sendStory(req);
+            case 'sendStoryAlbum':
+                return this._sendStoryAlbum(req);
 
             // ── Saved Messages folders ────────────────────────────────────────
             case 'getSavedDialogs':
@@ -1227,6 +1230,8 @@ class GramJsController extends EventEmitter {
                 return this._getStarsBalance(req);
             case 'getStarsTransactions':
                 return this._getStarsTransactions(req);
+            case 'getStarGiftCatalog':
+                return this._getStarGiftCatalog(req);
             case 'sendStarGift':
                 return this._sendStarGift(req);
 
@@ -2327,6 +2332,8 @@ class GramJsController extends EventEmitter {
                 video_joined: !!item.videoJoined,
                 volume: item.volume || 10000,
                 source: item.source == null ? null : Number(item.source),
+                video: normalizeParticipantVideo(item.video, peerId),
+                presentation: normalizeParticipantVideo(item.presentation, peerId, true),
             };
         });
         const call = result.call || {};
@@ -2501,10 +2508,20 @@ class GramJsController extends EventEmitter {
         const result = await this.client.invoke(
             new Api.phone.GetGroupCall({ call: this._groupCallInput(call), limit: 100 }),
         );
+        const participants = result?.participants || [];
         return {
-            sources: (result?.participants || [])
+            sources: participants
                 .map(participant => (participant.source == null ? null : Number(participant.source)))
                 .filter(source => Number.isInteger(source) && source !== 0),
+            videos: participants.flatMap(participant => {
+                const participantId = String(
+                    participant.peer?.userId || participant.peer?.channelId || participant.peer?.chatId || '',
+                );
+                return [
+                    normalizeParticipantVideo(participant.video, participantId),
+                    normalizeParticipantVideo(participant.presentation, participantId, true),
+                ].filter(Boolean);
+            }),
         };
     };
 
@@ -4223,22 +4240,47 @@ class GramJsController extends EventEmitter {
         }
     };
 
-    _sendStarGift = async ({ user_id, gift_id, message }) => {
-        try {
-            const userInput = await this.client.getInputEntity(user_id);
-            await this.client.invoke(
-                new Api.payments.SendStarGift({
-                    userId: userInput,
-                    gift: new Api.InputSavedStarGiftUser({ userId: userInput, msgId: 0 }),
-                    message: message ? { text: message } : undefined,
-                    hideName: false,
-                }),
-            );
-            return { ok: true };
-        } catch (e) {
-            console.warn('[GramJs] sendStarGift error', e);
-            return { ok: false, error: e.message };
-        }
+    _getStarGiftCatalog = async () => {
+        const result = await this.client.invoke(new Api.payments.GetStarGifts({ hash: 0 }));
+        return {
+            gifts: (result.gifts || []).map(gift => ({
+                id: String(gift.id),
+                stars: Number(gift.stars || 0),
+                convert_stars: Number(gift.convertStars || 0),
+                upgrade_stars: gift.upgradeStars != null ? Number(gift.upgradeStars) : null,
+                limited: !!gift.limited,
+                sold_out: !!gift.soldOut,
+                birthday: !!gift.birthday,
+                availability_remains:
+                    gift.availabilityRemains != null ? Number(gift.availabilityRemains) : null,
+                availability_total: gift.availabilityTotal != null ? Number(gift.availabilityTotal) : null,
+            })),
+        };
+    };
+
+    _sendStarGift = async ({ user_id, gift_id, message = '', hide_name = false, include_upgrade = false }) => {
+        const giftId = String(gift_id || '').trim();
+        if (!/^\d{1,30}$/.test(giftId) || giftId === '0') throw new Error('Regalo no válido');
+        const text = String(message || '').trim();
+        if (text.length > 128) throw new Error('El mensaje no puede superar 128 caracteres');
+
+        const peer = await this.client.getInputEntity(user_id);
+        if (!(peer instanceof Api.InputPeerUser)) throw new Error('Los regalos solo se pueden enviar a usuarios');
+
+        const invoice = new Api.InputInvoiceStarGift({
+            peer,
+            giftId: BigInt(giftId),
+            hideName: !!hide_name,
+            includeUpgrade: !!include_upgrade,
+            message: text ? new Api.TextWithEntities({ text, entities: [] }) : undefined,
+        });
+        const form = await this.client.invoke(
+            new Api.payments.GetPaymentForm({ invoice, themeParams: new Api.DataJSON({ data: '{}' }) }),
+        );
+        const result = await this.client.invoke(
+            new Api.payments.SendStarsForm({ formId: form.formId, invoice }),
+        );
+        return { ok: true, result };
     };
 
     // ── Premium ───────────────────────────────────────────────────────────────
@@ -5202,6 +5244,25 @@ class GramJsController extends EventEmitter {
             }),
         );
         return { '@type': 'storySent' };
+    };
+
+    _sendStoryAlbum = async req => {
+        const { items = [], privacy = 'everyone', period = 86400, onProgress } = req;
+        if (!Array.isArray(items) || items.length === 0) throw new Error('No story items provided');
+        if (items.length > 20) throw new Error('A story album cannot contain more than 20 items');
+
+        const published = [];
+        for (let index = 0; index < items.length; index += 1) {
+            try {
+                await this._sendStory({ ...items[index], privacy, period });
+                published.push(index);
+                if (typeof onProgress === 'function') onProgress({ completed: index + 1, total: items.length });
+            } catch (error) {
+                error.storyAlbumResult = { published, failedIndex: index, total: items.length };
+                throw error;
+            }
+        }
+        return { '@type': 'storyAlbumSent', published, total: items.length };
     };
 
     _getStoryViewers = async req => {

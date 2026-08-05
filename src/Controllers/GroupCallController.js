@@ -1,11 +1,13 @@
 import { EventEmitter } from 'events';
 import TdLibController from './TdLibController';
+import { videoSourcesSignature } from '../Utils/GroupCallMedia';
 
 const initialState = {
     status: 'idle',
     muted: true,
     error: '',
     remoteStream: null,
+    remoteVideoStreams: {},
     presenting: false,
     presentationStream: null,
     presentationKind: null,
@@ -131,11 +133,15 @@ a=recvonly\r
 `;
 };
 
-const buildConferenceOffer = (transport, sources, mainSource) => {
+const safeMid = (value, fallback) => String(value || fallback).replace(/[^a-zA-Z0-9_.-]/g, '_').slice(0, 64);
+
+const buildConferenceOffer = (transport, sources, mainSource, videos = []) => {
     const normalized = Array.from(new Set([mainSource, ...sources].map(source => Number(source) >>> 0))).filter(
         Boolean,
     );
-    const mids = normalized.map(source => (source === mainSource >>> 0 ? '0' : `audio${source}`));
+    const audioMids = normalized.map(source => (source === mainSource >>> 0 ? '0' : `audio${source}`));
+    const videoMids = videos.map((video, index) => safeMid(video.endpoint, `video${index}`));
+    const mids = [...audioMids, ...videoMids];
     const lines = [
         'v=0',
         `o=- ${Date.now()} 2 IN IP4 0.0.0.0`,
@@ -173,6 +179,43 @@ const buildConferenceOffer = (transport, sources, mainSource) => {
             `a=ssrc:${source} label:audio${source}`,
         );
     });
+    videos.forEach((video, index) => {
+        const mid = videoMids[index];
+        const groups = video.source_groups || [];
+        const videoSources = Array.from(new Set(groups.flatMap(group => group.sources || []))).filter(Boolean);
+        lines.push('m=video 0 RTP/SAVPF 96 98 102 121');
+        lines.push('c=IN IP4 0.0.0.0', `a=mid:${mid}`);
+        lines.push(`a=ice-ufrag:${transport.ufrag}`, `a=ice-pwd:${transport.pwd}`);
+        transport.fingerprints.forEach(fingerprint => {
+            lines.push(`a=fingerprint:${fingerprint.hash || 'sha-256'} ${fingerprint.fingerprint}`, 'a=setup:passive');
+        });
+        (transport.candidates || []).forEach(candidate => lines.push(candidateLine(candidate)));
+        lines.push(
+            'a=rtpmap:96 VP8/90000',
+            'a=rtpmap:98 VP9/90000',
+            'a=rtpmap:102 H264/90000',
+            'a=fmtp:102 level-asymmetry-allowed=1;packetization-mode=1;profile-level-id=42e01f',
+            'a=rtpmap:121 rtx/90000',
+            'a=fmtp:121 apt=96',
+            'a=rtcp-fb:96 goog-remb',
+            'a=rtcp-fb:96 transport-cc',
+            'a=rtcp-fb:96 nack',
+            'a=rtcp-fb:96 nack pli',
+            'a=rtcp:1 IN IP4 0.0.0.0',
+            'a=rtcp-mux',
+            'a=sendonly',
+            'a=bundle-only',
+        );
+        groups.forEach(group => lines.push(`a=ssrc-group:${group.semantics} ${group.sources.join(' ')}`));
+        videoSources.forEach(source => {
+            lines.push(
+                `a=ssrc:${source} cname:${mid}`,
+                `a=ssrc:${source} msid:${mid} ${mid}`,
+                `a=ssrc:${source} mslabel:${mid}`,
+                `a=ssrc:${source} label:${mid}`,
+            );
+        });
+    });
     return `${lines.join('\r\n')}\r\n`;
 };
 
@@ -183,6 +226,7 @@ class GroupCallController extends EventEmitter {
         this.pc = null;
         this.localStream = null;
         this.remoteStream = null;
+        this.remoteVideoStreams = new Map();
         this.call = null;
         this.source = 0;
         this.checkTimer = null;
@@ -205,12 +249,24 @@ class GroupCallController extends EventEmitter {
         }
         await this.leave(false);
         this.call = { call_id, access_hash };
-        this._setState({ status: 'connecting', muted: !!muted, error: '', remoteStream: null });
+        this._setState({
+            status: 'connecting', muted: !!muted, error: '', remoteStream: null, remoteVideoStreams: {},
+        });
         try {
             this.pc = new RTCPeerConnection({ bundlePolicy: 'max-bundle' });
             this.remoteStream = new MediaStream();
             this.pc.ontrack = event => {
                 const tracks = event.streams?.[0]?.getTracks() || [event.track];
+                if (event.track?.kind === 'video') {
+                    const mid = event.transceiver?.mid || event.track.id;
+                    const stream = this.remoteVideoStreams.get(mid) || new MediaStream();
+                    tracks.filter(track => track.kind === 'video').forEach(track => {
+                        if (!stream.getTracks().some(current => current.id === track.id)) stream.addTrack(track);
+                    });
+                    this.remoteVideoStreams.set(mid, stream);
+                    this._setState({ remoteVideoStreams: Object.fromEntries(this.remoteVideoStreams) });
+                    return;
+                }
                 tracks.forEach(track => {
                     if (!this.remoteStream.getTracks().some(current => current.id === track.id)) {
                         this.remoteStream.addTrack(track);
@@ -349,13 +405,15 @@ class GroupCallController extends EventEmitter {
         try {
             const result = await TdLibController.send({ '@type': 'getGroupCallAudioSources', ...this.call });
             const sources = (result.sources || []).filter(source => Number(source) >>> 0 !== this.source >>> 0);
-            const signature = sources
+            const audioSignature = sources
                 .map(source => Number(source) >>> 0)
                 .sort((a, b) => a - b)
                 .join(',');
+            const videos = (result.videos || []).filter(video => !video.paused);
+            const signature = `${audioSignature};${videoSourcesSignature(videos)}`;
             if (signature === this.sourcesSignature) return;
             this.negotiating = true;
-            const offer = buildConferenceOffer(this.transport, sources, this.source);
+            const offer = buildConferenceOffer(this.transport, sources, this.source, videos);
             await this.pc.setRemoteDescription({ type: 'offer', sdp: offer });
             const answer = await this.pc.createAnswer();
             await this.pc.setLocalDescription(answer);
@@ -383,6 +441,8 @@ class GroupCallController extends EventEmitter {
         this.remoteStream?.getTracks().forEach(track => track.stop());
         this.localStream = null;
         this.remoteStream = null;
+        this.remoteVideoStreams.forEach(stream => stream.getTracks().forEach(track => track.stop()));
+        this.remoteVideoStreams.clear();
         this.transport = null;
         this.sourcesSignature = '';
         this.negotiating = false;

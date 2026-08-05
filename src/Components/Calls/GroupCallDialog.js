@@ -15,6 +15,7 @@ import ListItemText from '@material-ui/core/ListItemText';
 import TextField from '@material-ui/core/TextField';
 import TdLibController from '../../Controllers/TdLibController';
 import GroupCallController from '../../Controllers/GroupCallController';
+import './GroupCallDialog.css';
 
 const initialState = {
     loading: false,
@@ -29,6 +30,7 @@ const initialState = {
     voiceStatus: GroupCallController.state.status,
     voiceMuted: GroupCallController.state.muted,
     remoteStream: GroupCallController.state.remoteStream,
+    remoteVideoStreams: GroupCallController.state.remoteVideoStreams,
     presenting: GroupCallController.state.presenting,
     presentationStream: GroupCallController.state.presentationStream,
     presentationKind: GroupCallController.state.presentationKind,
@@ -51,6 +53,7 @@ class GroupCallDialog extends React.PureComponent {
                 voiceStatus: GroupCallController.state.status,
                 voiceMuted: GroupCallController.state.muted,
                 remoteStream: GroupCallController.state.remoteStream,
+                remoteVideoStreams: GroupCallController.state.remoteVideoStreams,
                 presenting: GroupCallController.state.presenting,
                 presentationStream: GroupCallController.state.presentationStream,
                 presentationKind: GroupCallController.state.presentationKind,
@@ -79,6 +82,7 @@ class GroupCallDialog extends React.PureComponent {
             voiceStatus: state.status,
             voiceMuted: state.muted,
             remoteStream: state.remoteStream,
+            remoteVideoStreams: state.remoteVideoStreams,
             presenting: state.presenting,
             presentationStream: state.presentationStream,
             presentationKind: state.presentationKind,
@@ -210,6 +214,13 @@ class GroupCallDialog extends React.PureComponent {
         }
     };
 
+    attachRemoteVideo = (element, stream) => {
+        if (!element || !stream || element.srcObject === stream) return;
+        element.srcObject = stream;
+        const playback = element.play();
+        if (playback?.catch) playback.catch(() => undefined);
+    };
+
     renderCreate() {
         const { saving, title, scheduleDate } = this.state;
         return (
@@ -252,6 +263,7 @@ class GroupCallDialog extends React.PureComponent {
             voiceMuted,
             presenting,
             presentationKind,
+            remoteVideoStreams,
         } = this.state;
         const canManage = call.can_change_join_muted;
         const voiceConnected = voiceStatus === 'connected';
@@ -344,6 +356,28 @@ class GroupCallDialog extends React.PureComponent {
                                 : 'Audio WebRTC disponible en navegadores compatibles.'}
                         </DialogContentText>
                         <audio ref={element => (this.audio = element)} autoPlay playsInline />
+                        {Object.entries(remoteVideoStreams || {}).length > 0 && (
+                            <div className='group-call-video-grid' aria-label='VÃ­deos de participantes'>
+                                {Object.entries(remoteVideoStreams).map(([endpoint, stream]) => {
+                                    const participant = (call.participants || []).find(item =>
+                                        [item.video?.endpoint, item.presentation?.endpoint].includes(endpoint),
+                                    );
+                                    return (
+                                        <figure className='group-call-video-tile' key={endpoint}>
+                                            <video
+                                                ref={element => this.attachRemoteVideo(element, stream)}
+                                                autoPlay
+                                                playsInline
+                                            />
+                                            <figcaption>
+                                                {participant?.name || 'Participante'}
+                                                {participant?.presentation?.endpoint === endpoint ? ' Â· pantalla' : ''}
+                                            </figcaption>
+                                        </figure>
+                                    );
+                                })}
+                            </div>
+                        )}
                         {presenting && (
                             <video
                                 ref={element => (this.presentationVideo = element)}
@@ -354,9 +388,8 @@ class GroupCallDialog extends React.PureComponent {
                             />
                         )}
                         <DialogContentText>
-                            La cÃ¡mara se publica como presentaciÃ³n. El modo de vÃ­deo nativo del participante
-                            permanece desactivado porque exige renegociar el transporte principal y procesar fuentes
-                            SIM/FID.
+                            La cÃ¡mara propia se publica como presentaciÃ³n. Las cÃ¡maras y pantallas de participantes se
+                            reciben desde el transporte principal mediante sus fuentes SIM/FID.
                         </DialogContentText>
                     </div>
                 )}
