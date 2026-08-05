@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.0.646] - 2026-08-05 — Compilación Docker reproducible
+### Fixed
+- Añadido `.dockerignore` para impedir que `node_modules` antiguos del servidor sobrescriban las dependencias instaladas dentro de la imagen.
+- Evitada la mezcla de PostCSS 7 con Vite/PostCSS 8 que bloqueaba la compilación limpia de los perfiles visuales.
+### Changed
+- El contexto Docker excluye dependencias, artefactos, historial Git, cobertura y registros, reduciendo cientos de megabytes transferidos en cada actualización.
+
 ## [0.0.645] - 2026-08-05 — Stories, vídeo grupal y regalos con Stars
 ### Added
 - Compositor de álbumes de hasta 20 Stories con miniaturas, orden, eliminación, texto y edición visual independiente por elemento.
