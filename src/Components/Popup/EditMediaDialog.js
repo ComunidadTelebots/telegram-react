@@ -25,6 +25,7 @@ import MessageStore from '../../Stores/MessageStore';
 import TdLibController from '../../Controllers/TdLibController';
 import './EditMediaDialog.css';
 import { readImageSize } from '../../Utils/Common';
+import ImageEditor from '../Additional/ImageEditor';
 
 const styles = theme => ({
     ...borderStyle(theme),
@@ -48,7 +49,7 @@ class EditMediaDialog extends React.Component {
         this.captionRef = React.createRef();
         this.editMediaRef = React.createRef();
 
-        this.state = {};
+        this.state = { editorFile: null };
     }
 
     componentDidMount() {
@@ -429,13 +430,16 @@ class EditMediaDialog extends React.Component {
         const { files } = element;
         if (files.length === 0) return;
 
-        Array.from(files).forEach(file => {
+        const file = files[0];
+        if (file.type.startsWith('image/')) {
+            this.setState({ editorFile: file });
+        } else {
             this.file = file;
             this.getMediaFromFile(file, result => {
                 this.media = result;
                 this.forceUpdate();
             });
-        });
+        }
 
         element.value = '';
     };
@@ -443,6 +447,14 @@ class EditMediaDialog extends React.Component {
     getRandomInt(min, max) {
         return Math.floor(Math.random() * (max - min + 1)) + min;
     }
+
+    handleEditorDone = file => {
+        this.file = file;
+        this.getMediaFromFile(file, result => {
+            this.media = result;
+            this.setState({ editorFile: null });
+        });
+    };
 
     getMediaFromFile(file, callback) {
         if (!file) {
@@ -480,7 +492,7 @@ class EditMediaDialog extends React.Component {
         const { classes, chatId, messageId, open, t } = this.props;
         if (!open) return null;
 
-        const { defaultText, defaultUrl, openEditUrl } = this.state;
+        const { defaultText, defaultUrl, openEditUrl, editorFile } = this.state;
 
         const message = MessageStore.get(chatId, messageId);
         if (!message) return;
@@ -536,6 +548,9 @@ class EditMediaDialog extends React.Component {
                     onDone={this.handleDoneEditUrl}
                     onCancel={this.handleCancelEditUrl}
                 />
+                {editorFile && (
+                    <ImageEditor file={editorFile} onDone={this.handleEditorDone} onCancel={() => this.setState({ editorFile: null })} />
+                )}
             </Dialog>
         );
     }

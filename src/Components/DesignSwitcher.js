@@ -7,7 +7,7 @@ import AppsIcon from '@material-ui/icons/Apps';
 import CheckIcon from '@material-ui/icons/Check';
 import packageJson from '../../package.json';
 import ApplicationStore from '../Stores/ApplicationStore';
-import { DESIGN_ACCENTS, DESIGN_LABELS, DESIGNS, getDesign, setDesign } from '../Design';
+import { DESIGN_ACCENTS, DESIGN_LABELS, DESIGNS, getDesign, getDesignFamily, setDesign } from '../Design';
 import './DesignSwitcher.css';
 
 class DesignSwitcher extends React.PureComponent {
@@ -23,11 +23,17 @@ class DesignSwitcher extends React.PureComponent {
 
     componentDidMount() {
         document.addEventListener('mousedown', this.handleDocumentMouseDown);
+        ApplicationStore.on('clientUpdateThemeChange', this.handleDesignChange);
     }
 
     componentWillUnmount() {
         document.removeEventListener('mousedown', this.handleDocumentMouseDown);
+        ApplicationStore.off('clientUpdateThemeChange', this.handleDesignChange);
     }
+
+    handleDesignChange = () => {
+        this.setState({ design: getDesign() });
+    };
 
     handleDocumentMouseDown = event => {
         if (!this.rootRef.current) return;
@@ -70,8 +76,9 @@ class DesignSwitcher extends React.PureComponent {
 
     render() {
         const { open, design } = this.state;
-        const label = DESIGN_LABELS[design] || design;
-        const accent = DESIGN_ACCENTS[design] || DESIGN_ACCENTS.current;
+        const family = getDesignFamily(design);
+        const label = DESIGN_LABELS[family] || family;
+        const accent = DESIGN_ACCENTS[design] || DESIGN_ACCENTS[family] || DESIGN_ACCENTS.current;
 
         return (
             <div className='design-switcher' ref={this.rootRef}>

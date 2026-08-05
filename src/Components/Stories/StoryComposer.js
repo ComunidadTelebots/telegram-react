@@ -4,6 +4,7 @@ import PhotoCameraIcon from '@material-ui/icons/PhotoCamera';
 import SendIcon from '@material-ui/icons/Send';
 import TdLibController from '../../Controllers/TdLibController';
 import './StoryComposer.css';
+import ImageEditor from '../Additional/ImageEditor';
 
 const PRIVACY_OPTIONS = [
     { value: 'everyone', label: 'Todos' },
@@ -29,6 +30,7 @@ class StoryComposer extends Component {
             period: 86400,
             sending: false,
             error: '',
+            editorFile: null,
         };
         this._fileRef = createRef();
     }
@@ -42,8 +44,17 @@ class StoryComposer extends Component {
             this.setState({ error: 'Solo se admiten imágenes o vídeos.' });
             return;
         }
-        const previewSrc = URL.createObjectURL(file);
-        this.setState({ file, previewSrc, error: '' });
+        if (isPhoto) {
+            this.setState({ editorFile: file, error: '' });
+        } else {
+            const previewSrc = URL.createObjectURL(file);
+            this.setState({ file, previewSrc, error: '' });
+        }
+    };
+
+    _onEditorDone = file => {
+        if (this.state.previewSrc) URL.revokeObjectURL(this.state.previewSrc);
+        this.setState({ file, previewSrc: URL.createObjectURL(file), editorFile: null, error: '' });
     };
 
     _onSend = async () => {
@@ -71,7 +82,7 @@ class StoryComposer extends Component {
     }
 
     render() {
-        const { file, previewSrc, caption, privacy, period, sending, error } = this.state;
+        const { file, previewSrc, caption, privacy, period, sending, error, editorFile } = this.state;
         const isVideo = file?.type?.startsWith('video/');
 
         return (
@@ -179,6 +190,9 @@ class StoryComposer extends Component {
                             </>
                         )}
                     </button>
+                    {editorFile && (
+                        <ImageEditor file={editorFile} onDone={this._onEditorDone} onCancel={() => this.setState({ editorFile: null })} />
+                    )}
                 </div>
             </div>
         );
