@@ -1,5 +1,21 @@
 # Changelog
 
+## [0.0.645] - 2026-08-05 — Stories, vídeo grupal y regalos con Stars
+### Added
+- Compositor de álbumes de hasta 20 Stories con miniaturas, orden, eliminación, texto y edición visual independiente por elemento.
+- Publicación MTProto secuencial con progreso y recuperación de fallos parciales sin duplicar Stories ya enviadas.
+- Recepción de vídeo y pantalla de participantes en llamadas grupales mediante endpoints y fuentes SIM/FID, con cuadrícula responsive para todos los perfiles visuales.
+- Catálogo oficial de regalos con saldo, disponibilidad, mensaje, anonimato, mejora opcional y confirmación irreversible.
+### Changed
+- Las llamadas grupales renegocian el transporte principal al cambiar las fuentes remotas y separan los streams de vídeo por participante.
+- El envío de regalos usa el flujo real `GetStarGifts` → `InputInvoiceStarGift` → `GetPaymentForm` → `SendStarsForm`.
+### Fixed
+- Sustituida la llamada inexistente `Api.payments.SendStarGift`, que impedía completar compras reales.
+- Los álbumes conservan únicamente los elementos pendientes después de un fallo para que reintentar sea seguro.
+### Security
+- Validación de identificadores de regalo, límite de mensaje, saldo y doble confirmación antes de cualquier pago.
+- Suite completa de 34 pruebas, compilación Vite/PWA y auditoría sin vulnerabilidades moderadas, altas ni críticas.
+
 ## [0.0.644] - 2026-08-05 — Editor multimedia y refuerzo web
 ### Added
 - Editor multimedia reutilizable para mensajes y Stories, con recorte real, giro, volteo, brillo, contraste, restauración y previsualización Canvas.
