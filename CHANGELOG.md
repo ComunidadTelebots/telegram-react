@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.0.643] - 2026-08-05 — Ubicación en directo completa
+### Added
+- Selector previo para compartir la ubicación durante 15 minutos, 1 hora u 8 horas desde cualquier perfil visual.
+- Pruebas unitarias para las duraciones admitidas y las distintas respuestas de mensaje de GramJS.
+### Changed
+- El panel activo usa `watchPosition` de alta precisión y limita las ediciones a una cada 15 segundos.
+- La interfaz muestra errores de permisos, geolocalización, envío y respuestas incompletas de Telegram.
+### Fixed
+- Corregida la extracción del identificador desde `UpdateNewMessage`, necesaria para editar y detener la ubicación enviada.
+- La detención y el desmontaje liberan correctamente el seguimiento del navegador y los temporizadores.
+
 ## [0.0.642] - 2026-08-03 — Migración completa a Vite
 ### Security
 - Retirados Create React App, `react-app-rewired`, `worker-loader`, `sw-precache` y su cadena de dependencias abandonada.

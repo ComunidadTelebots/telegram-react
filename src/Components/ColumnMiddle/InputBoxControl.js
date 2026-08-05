@@ -29,6 +29,7 @@ import DialogContent from '@material-ui/core/DialogContent';
 import DialogActions from '@material-ui/core/DialogActions';
 import Snackbar from '@material-ui/core/Snackbar';
 import TextField from '@material-ui/core/TextField';
+import MenuItem from '@material-ui/core/MenuItem';
 import AttachButton from './../ColumnMiddle/AttachButton';
 import LiveLocationPanel from './LiveLocationPanel';
 import CreatePollDialog from '../Popup/CreatePollDialog';
@@ -49,6 +50,7 @@ import { isEditedMedia } from '../../Utils/Media';
 import { getEntities, getNodes, isTextMessage } from '../../Utils/Message';
 import { getSize, readImageSize } from '../../Utils/Common';
 import { PHOTO_SIZE } from '../../Constants';
+import { getLiveLocationMessageId, LIVE_LOCATION_PERIODS } from '../../Utils/LiveLocation';
 import AppStore from '../../Stores/ApplicationStore';
 import ChatStore from '../../Stores/ChatStore';
 import FileStore from '../../Stores/FileStore';
@@ -93,6 +95,8 @@ class InputBoxControl extends Component {
             scheduleDialogOpen: false,
             scheduleDateValue: '',
             pendingScheduleContent: null,
+            liveLocationDialogOpen: false,
+            liveLocationPeriod: 3600,
             silentSend: false,
             formatBar: null,
             disableLinkPreview: false,
@@ -593,29 +597,51 @@ class InputBoxControl extends Component {
     };
 
     handleAttachLocation = () => {
-        if (!navigator.geolocation) return;
+        if (!navigator.geolocation) {
+            this.setState({ voiceError: 'Este navegador no permite compartir la ubicación.' });
+            return;
+        }
+        this.setState({ liveLocationDialogOpen: true });
+    };
+
+    handleLiveLocationCancel = () => {
+        this.setState({ liveLocationDialogOpen: false });
+    };
+
+    handleLiveLocationConfirm = () => {
         const { chatId } = this.state;
+        const period = Number(this.state.liveLocationPeriod) || 3600;
+        this.setState({ liveLocationDialogOpen: false });
         navigator.geolocation.getCurrentPosition(
             async pos => {
-                const period = 3600;
                 try {
                     const result = await TdLibController.send({
                         '@type': 'sendLiveLocation',
                         chat_id: chatId,
                         lat: pos.coords.latitude,
                         lon: pos.coords.longitude,
+                        heading: pos.coords.heading || undefined,
                         period,
                     });
-                    const msgId =
-                        result && result.updates && result.updates.updates
-                            ? (result.updates.updates.find(u => u.id) || {}).id
-                            : null;
+                    const msgId = getLiveLocationMessageId(result);
                     if (this.liveLocationPanelRef && msgId) {
                         this.liveLocationPanelRef.start(chatId, msgId, period);
+                    } else {
+                        this.setState({ voiceError: 'Telegram envió la ubicación, pero no devolvió el mensaje para actualizarla.' });
                     }
-                } catch (e) {}
+                } catch (e) {
+                    this.setState({ voiceError: e?.message || 'No se pudo enviar la ubicación en directo.' });
+                }
             },
-            () => {},
+            error => {
+                const denied = error?.code === 1;
+                this.setState({
+                    voiceError: denied
+                        ? 'Permite el acceso a la ubicación para compartirla en directo.'
+                        : 'No se pudo obtener tu ubicación actual.',
+                });
+            },
+            { enableHighAccuracy: true, timeout: 15000, maximumAge: 5000 },
         );
     };
 
@@ -2113,6 +2139,35 @@ class InputBoxControl extends Component {
                             variant='contained'
                             disabled={!scheduleDateValue}>
                             Enviar programado
+                        </Button>
+                    </DialogActions>
+                </Dialog>
+                <Dialog
+                    open={this.state.liveLocationDialogOpen}
+                    onClose={this.handleLiveLocationCancel}
+                    maxWidth='xs'
+                    fullWidth>
+                    <DialogTitle>Compartir ubicación en directo</DialogTitle>
+                    <DialogContent>
+                        <p>Telegram actualizará tu posición mientras esta ventana permanezca abierta.</p>
+                        <TextField
+                            select
+                            fullWidth
+                            label='Duración'
+                            value={this.state.liveLocationPeriod}
+                            onChange={event => this.setState({ liveLocationPeriod: Number(event.target.value) })}
+                            margin='normal'>
+                            {LIVE_LOCATION_PERIODS.map(period => (
+                                <MenuItem key={period.value} value={period.value}>
+                                    {period.label}
+                                </MenuItem>
+                            ))}
+                        </TextField>
+                    </DialogContent>
+                    <DialogActions>
+                        <Button onClick={this.handleLiveLocationCancel}>Cancelar</Button>
+                        <Button color='primary' variant='contained' onClick={this.handleLiveLocationConfirm}>
+                            Compartir
                         </Button>
                     </DialogActions>
                 </Dialog>

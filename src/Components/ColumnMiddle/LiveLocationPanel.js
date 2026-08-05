@@ -13,11 +13,12 @@ class LiveLocationPanel extends React.Component {
     };
 
     _interval = null;
-    _geoInterval = null;
+    _geoWatch = null;
+    _lastUpdateAt = 0;
 
     start(chatId, messageId, period) {
         if (this._interval) clearInterval(this._interval);
-        if (this._geoInterval) clearInterval(this._geoInterval);
+        this._clearGeoWatch();
 
         this.setState({ active: true, chatId, messageId, period, secondsLeft: period });
 
@@ -31,26 +32,37 @@ class LiveLocationPanel extends React.Component {
             });
         }, 1000);
 
-        // update geo every 30 seconds
-        this._geoInterval = setInterval(() => {
-            this._pushGeoUpdate();
-        }, 30000);
+        if (navigator.geolocation) {
+            this._geoWatch = navigator.geolocation.watchPosition(
+                position => this._pushGeoUpdate(position),
+                () => {},
+                { enableHighAccuracy: true, maximumAge: 10000, timeout: 20000 },
+            );
+        }
     }
 
-    _pushGeoUpdate() {
+    _pushGeoUpdate(position) {
         const { chatId, messageId } = this.state;
         if (!chatId || !messageId) return;
-        navigator.geolocation &&
-            navigator.geolocation.getCurrentPosition(pos => {
-                TdLibController.send({
-                    '@type': 'editLiveLocation',
-                    chat_id: chatId,
-                    message_id: messageId,
-                    lat: pos.coords.latitude,
-                    lon: pos.coords.longitude,
-                    heading: pos.coords.heading || undefined,
-                }).catch(() => {});
-            });
+        const now = Date.now();
+        if (now - this._lastUpdateAt < 15000) return;
+        this._lastUpdateAt = now;
+        TdLibController.send({
+            '@type': 'editLiveLocation',
+            chat_id: chatId,
+            message_id: messageId,
+            lat: position.coords.latitude,
+            lon: position.coords.longitude,
+            heading: position.coords.heading || undefined,
+        }).catch(() => {});
+    }
+
+    _clearGeoWatch() {
+        if (this._geoWatch !== null && navigator.geolocation) {
+            navigator.geolocation.clearWatch(this._geoWatch);
+        }
+        this._geoWatch = null;
+        this._lastUpdateAt = 0;
     }
 
     _stopAll() {
@@ -58,10 +70,7 @@ class LiveLocationPanel extends React.Component {
             clearInterval(this._interval);
             this._interval = null;
         }
-        if (this._geoInterval) {
-            clearInterval(this._geoInterval);
-            this._geoInterval = null;
-        }
+        this._clearGeoWatch();
     }
 
     handleStop = async () => {
