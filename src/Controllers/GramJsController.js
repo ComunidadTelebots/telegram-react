@@ -2927,7 +2927,7 @@ class GramJsController extends EventEmitter {
         const apiId = parseInt(process.env.REACT_APP_TELEGRAM_API_ID, 10);
         const apiHash = process.env.REACT_APP_TELEGRAM_API_HASH;
 
-        console.log('[GramJs] sendCode →', phone_number);
+        console.log('[GramJs] Solicitando código de inicio de sesión');
 
         // Usamos invoke() directamente para que PHONE_MIGRATE nos llegue
         // (client.sendCode() lo intercepta y llama _switchDC que falla en WSS)
@@ -3008,7 +3008,7 @@ class GramJsController extends EventEmitter {
             }
         }
 
-        console.log('[GramJs] sendCode ← phoneCodeHash:', result?.phoneCodeHash);
+        console.log('[GramJs] Código de inicio de sesión solicitado');
         this._phone = phone_number;
         this._phoneHash = result.phoneCodeHash;
 

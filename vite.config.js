@@ -40,7 +40,7 @@ export default defineConfig(({ mode }) => {
             'process.env.REACT_APP_DEFAULT_PHONE': JSON.stringify(env.REACT_APP_DEFAULT_PHONE || env.VITE_DEFAULT_PHONE || ''),
             'process.env.REACT_APP_COMMUNITY_ADS_URL': JSON.stringify(env.REACT_APP_COMMUNITY_ADS_URL || env.VITE_COMMUNITY_ADS_URL || ''),
         },
-        build: { outDir: 'build', emptyOutDir: true, sourcemap: env.GENERATE_SOURCEMAP !== 'false', target: 'es2020', chunkSizeWarningLimit: 1200 },
+        build: { outDir: 'build', emptyOutDir: true, sourcemap: env.GENERATE_SOURCEMAP === 'true', target: 'es2020', chunkSizeWarningLimit: 1200 },
         worker: { format: 'es' },
         test: { setupFiles: ['./src/test/setup.js'] },
         optimizeDeps: { esbuildOptions: { loader: { '.js': 'jsx' } } },

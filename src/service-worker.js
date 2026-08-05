@@ -1,6 +1,7 @@
 import { clientsClaim } from 'workbox-core';
 import { cleanupOutdatedCaches, createHandlerBoundToURL, precacheAndRoute } from 'workbox-precaching';
 import { NavigationRoute, registerRoute } from 'workbox-routing';
+import { resolveNotificationTarget } from './Utils/NotificationUrl';
 
 cleanupOutdatedCaches();
 precacheAndRoute(self.__WB_MANIFEST || []);
@@ -31,11 +32,10 @@ self.addEventListener('push', event => {
 
 self.addEventListener('notificationclick', event => {
     event.notification.close();
-    const target = new URL(event.notification.data?.url || '/', self.location.origin).href;
+    const target = resolveNotificationTarget(event.notification.data?.url, self.location.origin);
     event.waitUntil(clients.matchAll({ type: 'window', includeUncontrolled: true }).then(windows => {
-        const sameOrigin = new URL(target).origin === self.location.origin;
         const existing = windows.find(client => new URL(client.url).origin === self.location.origin);
-        if (sameOrigin && existing) { existing.navigate(target); return existing.focus(); }
+        if (existing) { existing.navigate(target); return existing.focus(); }
         return clients.openWindow(target);
     }));
 });

@@ -40,7 +40,7 @@ export function getDecodedUrl(url, mail) {
 
         return decodedHref;
     } catch (error) {
-        console.log('SafeLink.getDecodedUrl error ', url, error);
+        console.warn('SafeLink.getDecodedUrl rechazó una URL no válida');
     }
 
     return null;

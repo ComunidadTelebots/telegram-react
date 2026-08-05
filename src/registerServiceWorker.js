@@ -106,8 +106,6 @@ export async function subscribeNotifications() {
         if (pushSubscription) await pushSubscription.unsubscribe();
 
         pushSubscription = await registration.pushManager.subscribe({ userVisibleOnly: true });
-        console.log('[SW] Received push subscription: ', JSON.stringify(pushSubscription));
-
         const { endpoint } = pushSubscription;
         const p256dh_base64url = arrayBufferToBase64(pushSubscription.getKey('p256dh'));
         const auth_base64url = arrayBufferToBase64(pushSubscription.getKey('auth'));
@@ -121,13 +119,11 @@ export async function subscribeNotifications() {
                     p256dh_base64url,
                     auth_base64url
                 };
-                console.log('[SW] registerDevice', deviceToken);
-                const result = await TdLibController.send({
+                await TdLibController.send({
                     '@type': 'registerDevice',
                     device_token: deviceToken,
                     other_user_ids: []
                 });
-                console.log('[SW] registerDevice result', result);
             }
         }
     } catch (error) {

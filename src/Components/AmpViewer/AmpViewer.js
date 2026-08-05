@@ -19,6 +19,7 @@ import SubjectIcon from '@material-ui/icons/Subject';
 import WebIcon from '@material-ui/icons/Web';
 import { withTranslation } from 'react-i18next';
 import * as AmpCache from '../../Stores/AmpCache';
+import { getSafeHttpUrl } from '../../Utils/SafeExternalUrl';
 import './AmpViewer.css';
 
 // ── AMP Cache URL builders ────────────────────────────────────────────────────
@@ -242,10 +243,11 @@ function buildLiteContent(webPage) {
             if (trimmed) parts.push(`<p>${escapeHtml(trimmed)}</p>`);
         });
     }
-    if (url) {
+    const safeUrl = getSafeHttpUrl(url);
+    if (safeUrl) {
         parts.push(
             `<p class="amp-lite-readmore"><a href="${escapeHtml(
-                url,
+                safeUrl,
             )}" target="_blank" rel="noopener noreferrer">Leer artículo completo →</a></p>`,
         );
     }
@@ -414,7 +416,8 @@ class AmpViewer extends React.Component {
 
     onOpenExternal = () => {
         const { url } = this.props;
-        window.open(url, '_blank', 'noopener,noreferrer');
+        const safeUrl = getSafeHttpUrl(url);
+        if (safeUrl) window.open(safeUrl, '_blank', 'noopener,noreferrer');
         this.props.onClose();
     };
 
