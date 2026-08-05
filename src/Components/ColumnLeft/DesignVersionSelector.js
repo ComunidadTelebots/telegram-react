@@ -19,7 +19,7 @@ import './DesignVersionSelector.css';
 //   detail  → longer description (shown in dropdown primary row)
 //   tag     → colored badge text
 //   trigger → text shown on the pill button
-const DESIGN_VERSION_REGISTRY = {
+export const DESIGN_VERSION_REGISTRY = {
     current: [
         { value: 'current', label: 'Standard', detail: 'Web React standard', tag: 'Standard', trigger: 'Standard' },
         { value: 'current-compact', label: 'Compact', detail: 'Web React compact', tag: 'Compact', trigger: 'Compact' },

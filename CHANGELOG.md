@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.0.652] - 2026-08-06 — Centro visual de apariencia
+### Added
+- Centro de apariencia a pantalla completa accesible desde el menú principal, con navegación independiente y flecha atrás.
+- Galería visual para Android, Android Nuevo, Android Glass, Web, Webogram, iOS, macOS, Desktop, Windows/Unigram, Telegram X y Aurora.
+- Selector por familia con todas las versiones históricas conservadas y ordenadas de la más moderna a la más antigua.
+- Vista previa de conversación antes de aplicar, con acciones explícitas para aplicar o cancelar y restauración del diseño anterior.
+- Pantalla «Crear diseño» organizada en Burbujas, Avatares, Navegación, Tipografía, Iconos y Animaciones.
+- Comparador visual entre el tema activo y cualquier diseño alternativo.
+- Accesos visibles a importación mediante enlace, exportación, compartir y ajustes avanzados existentes.
+### Changed
+- El antiguo diálogo largo de apariencia permanece disponible como «Ajustes avanzados» y conserva paletas, fondos, patrones, editor, Plus Messenger, importación/exportación y restablecimiento.
+- Las maquetas se generan con HTML y CSS, sin imágenes externas, y se adaptan a escritorio y móvil.
+### Tests
+- 70 pruebas superadas y compilación Vite/PWA de producción verificada.
+
 ## [0.0.651] - 2026-08-06 — Mensajería resistente y herramientas Plus
 ### Added
 - Sonidos independientes y persistentes para mensajes recibidos y enviados; el nuevo sonido de salida es opcional.

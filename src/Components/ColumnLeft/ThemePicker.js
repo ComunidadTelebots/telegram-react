@@ -36,6 +36,7 @@ import DisplaySettings from './DisplaySettings';
 import PlusSettings from './PlusSettings';
 import AppearanceReset from './AppearanceReset';
 import PlusInteractionSettings from './PlusInteractionSettings';
+import AppearanceCenter from './AppearanceCenter';
 
 const styles = theme => ({
     formControl: {
@@ -95,6 +96,7 @@ class ThemePicker extends React.Component {
 
         this.state = {
             open: false,
+            advanced: false,
             type: this.props.theme.palette.type,
             color: this.getColorString(this.props.theme.palette.primary.main),
             design: getDesign(),
@@ -173,11 +175,11 @@ class ThemePicker extends React.Component {
     };
 
     handleClose = () => {
-        this.setState({ open: false });
+        this.setState({ open: false, advanced: false });
     };
 
     open = () => {
-        this.setState({ open: true });
+        this.setState({ open: true, advanced: false });
     };
 
     render() {
@@ -371,12 +373,33 @@ class ThemePicker extends React.Component {
 
         return (
             <Dialog
+                fullScreen
                 transitionDuration={0}
                 open={this.state.open}
                 onClose={this.handleClose}
+                PaperProps={{ className: 'appearance-center-dialog' }}
                 aria-labelledby='alert-dialog-title'
                 aria-describedby='alert-dialog-description'>
-                <DialogTitle id='alert-dialog-title'>Appearance</DialogTitle>
+                {!this.state.advanced ? (
+                    <AppearanceCenter
+                        open={this.state.open}
+                        design={design}
+                        onClose={this.handleClose}
+                        onSelectDesign={value => this.handleDesignChange({ target: { value } })}
+                        onOpenAdvanced={() => this.setState({ advanced: true })}
+                    />
+                ) : (
+                    <>
+                <DialogTitle id='alert-dialog-title'>
+                    <button
+                        type='button'
+                        aria-label='Volver al centro de apariencia'
+                        onClick={() => this.setState({ advanced: false })}
+                        style={{ border: 0, background: 'transparent', cursor: 'pointer', fontSize: 24, marginRight: 12 }}>
+                        ‹
+                    </button>
+                    Ajustes avanzados de apariencia
+                </DialogTitle>
                 <DialogContent>
                     <FormControl component='fieldset' className={classes.formControl}>
                         <FormLabel focused component='legend'>
@@ -650,6 +673,8 @@ class ThemePicker extends React.Component {
                         <AppearanceReset />
                     </FormControl>
                 </DialogContent>
+                    </>
+                )}
             </Dialog>
         );
     }
