@@ -1,6 +1,6 @@
 # Changelog
 
-## [0.0.652] - 2026-08-06 — Centro visual de apariencia
+## [0.0.652] - 2026-08-09 — Centro visual y apariencia Plus configurable
 ### Added
 - Centro de apariencia a pantalla completa accesible desde el menú principal, con navegación independiente y flecha atrás.
 - Galería visual para Android, Android Nuevo, Android Glass, Web, Webogram, iOS, macOS, Desktop, Windows/Unigram, Telegram X y Aurora.
@@ -9,11 +9,19 @@
 - Pantalla «Crear diseño» organizada en Burbujas, Avatares, Navegación, Tipografía, Iconos y Animaciones.
 - Comparador visual entre el tema activo y cualquier diseño alternativo.
 - Accesos visibles a importación mediante enlace, exportación, compartir y ajustes avanzados existentes.
+- Opción para utilizar la fuente del sistema sin reemplazar el perfil visual activo.
+- Selector persistente del tamaño del panel de emojis: compacto, original del diseño o grande.
+- Control para ocultar el número de teléfono propio en los menús compatibles.
 ### Changed
 - El antiguo diálogo largo de apariencia permanece disponible como «Ajustes avanzados» y conserva paletas, fondos, patrones, editor, Plus Messenger, importación/exportación y restablecimiento.
 - Las maquetas se generan con HTML y CSS, sin imágenes externas, y se adaptan a escritorio y móvil.
+- Las preferencias visuales Plus se aplican inmediatamente al guardarlas o importarlas y también durante el arranque del cliente.
+- Los nuevos ajustes se integran en el panel «Opciones Plus Messenger» y respetan Android, iOS, Web, Webogram, Desktop, Unigram, Telegram X, Aurora y sus versiones históricas.
+### Security
+- La importación conserva una lista cerrada de propiedades, exige booleanos y tamaños conocidos y continúa excluyendo sesiones, claves, tokens, chats y contactos privados.
 ### Tests
-- 70 pruebas superadas y compilación Vite/PWA de producción verificada.
+- 70 pruebas del centro visual y cinco pruebas específicas de preferencias Plus superadas; compilación Vite/PWA de producción verificada.
+- Añadida una regresión que verifica la validación del tamaño de emojis y que aplicar opciones Plus no elimina las clases del diseño seleccionado.
 
 ## [0.0.651] - 2026-08-06 — Mensajería resistente y herramientas Plus
 ### Added

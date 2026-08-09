@@ -15,9 +15,11 @@ import Cookies from 'universal-cookie';
 import { OPTIMIZATIONS_FIRST_START } from './Constants';
 import './index.css';
 import { initDesign } from './Design';
+import { applyPlusAppearance } from './Utils/PlusPreferences';
 import PlusNoticeHost from './Components/Additional/PlusNoticeHost';
 
 initDesign();
+applyPlusAppearance();
 
 ReactDOM.render(
     <Router basename={process.env.PUBLIC_URL || '/'}>

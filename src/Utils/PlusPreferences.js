@@ -9,10 +9,14 @@ export const PLUS_DEFAULTS = Object.freeze({
     typingAlerts: false,
     alertCooldownMs: 300000,
     avatarAction: 'photo',
+    useSystemFont: false,
+    emojiPanelSize: 'default',
+    hidePhoneNumber: false,
 });
 
 const ALLOWED_KEYS = Object.freeze(Object.keys(PLUS_DEFAULTS));
 const AVATAR_ACTIONS = new Set(['photo', 'copy_username', 'none']);
+const EMOJI_PANEL_SIZES = new Set(['compact', 'default', 'large']);
 
 function safeStorage(storage) {
     try {
@@ -45,7 +49,25 @@ export function validatePlusPreferences(value) {
         if (!AVATAR_ACTIONS.has(value.avatarAction)) throw new Error('Acción de avatar no válida.');
         result.avatarAction = value.avatarAction;
     }
+    for (const key of ['useSystemFont', 'hidePhoneNumber']) {
+        if (key in value) {
+            if (typeof value[key] !== 'boolean') throw new Error(`Ajuste ${key} no válido.`);
+            result[key] = value[key];
+        }
+    }
+    if ('emojiPanelSize' in value) {
+        if (!EMOJI_PANEL_SIZES.has(value.emojiPanelSize)) throw new Error('Tamaño del panel de emoji no válido.');
+        result.emojiPanelSize = value.emojiPanelSize;
+    }
     return Object.freeze(result);
+}
+
+export function applyPlusAppearance(preferences = readPlusPreferences()) {
+    if (typeof document === 'undefined') return preferences;
+    document.body.classList.toggle('plus-system-font', preferences.useSystemFont);
+    document.body.dataset.plusEmojiSize = preferences.emojiPanelSize;
+    document.body.classList.toggle('plus-hide-phone', preferences.hidePhoneNumber);
+    return preferences;
 }
 
 export function readPlusPreferences(storage) {

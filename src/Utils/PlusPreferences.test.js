@@ -1,5 +1,5 @@
 import {
-    PLUS_DEFAULTS, exportPlusPreferences, importPlusPreferences, readNoticeTargets,
+    PLUS_DEFAULTS, applyPlusAppearance, exportPlusPreferences, importPlusPreferences, readNoticeTargets,
     readPlusPreferences, setNoticeTarget, validatePlusPreferences,
 } from './PlusPreferences';
 
@@ -21,8 +21,20 @@ describe('PlusPreferences', () => {
     it('rejects unknown fields, invalid values and incompatible versions', () => {
         expect(() => validatePlusPreferences({ token: 'secret' })).toThrow('no permitidos');
         expect(() => validatePlusPreferences({ avatarAction: 'javascript:' })).toThrow('avatar');
+        expect(() => validatePlusPreferences({ emojiPanelSize: 'enormous' })).toThrow('emoji');
         expect(() => importPlusPreferences(JSON.stringify({ schema: 'wrong', version: 1, preferences: {} }), createStorage()))
             .toThrow('incompatible');
+    });
+
+    it('applies optional appearance without replacing the active design', () => {
+        document.body.className = 'design-android design-android-v4';
+        applyPlusAppearance(validatePlusPreferences({
+            useSystemFont: true, emojiPanelSize: 'compact', hidePhoneNumber: true,
+        }));
+        expect(document.body.classList.contains('design-android-v4')).toBe(true);
+        expect(document.body.classList.contains('plus-system-font')).toBe(true);
+        expect(document.body.classList.contains('plus-hide-phone')).toBe(true);
+        expect(document.body.dataset.plusEmojiSize).toBe('compact');
     });
 
     it('imports valid preferences without importing notification targets', () => {

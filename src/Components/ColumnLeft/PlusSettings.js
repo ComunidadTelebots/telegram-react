@@ -3,7 +3,7 @@ import AppStore from '../../Stores/ApplicationStore';
 import ChatStore from '../../Stores/ChatStore';
 import UserStore from '../../Stores/UserStore';
 import {
-    exportPlusPreferences, importPlusPreferences, readNoticeTargets, readPlusPreferences,
+    applyPlusAppearance, exportPlusPreferences, importPlusPreferences, readNoticeTargets, readPlusPreferences,
     setNoticeTarget, writePlusPreferences,
 } from '../../Utils/PlusPreferences';
 import '../Additional/PlusSettings.css';
@@ -19,6 +19,7 @@ export default class PlusSettings extends React.PureComponent {
     update = patch => {
         try {
             const preferences = writePlusPreferences({ ...this.state.preferences, ...patch });
+            applyPlusAppearance(preferences);
             this.setState({ preferences, message: 'Preferencias guardadas.' });
         } catch (error) { this.setState({ message: error.message }); }
     };
@@ -46,6 +47,7 @@ export default class PlusSettings extends React.PureComponent {
         if (!file || file.size > 16384) return this.setState({ message: 'Archivo no válido o demasiado grande.' });
         try {
             const preferences = importPlusPreferences(await file.text());
+            applyPlusAppearance(preferences);
             this.setState({ preferences, message: 'Preferencias importadas.' });
         } catch (error) { this.setState({ message: error.message }); }
     };
@@ -60,6 +62,11 @@ export default class PlusSettings extends React.PureComponent {
             <label><span>Al pulsar un avatar</span><select value={preferences.avatarAction} onChange={e => this.update({ avatarAction: e.target.value })}>
                 <option value='photo'>Abrir fotografía</option><option value='copy_username'>Copiar usuario</option><option value='none'>Ninguna acción</option>
             </select></label>
+            <label><span>Usar fuente del sistema</span><input type='checkbox' checked={preferences.useSystemFont} onChange={e => this.update({ useSystemFont: e.target.checked })} /></label>
+            <label><span>Tamaño del panel de emoji</span><select value={preferences.emojiPanelSize} onChange={e => this.update({ emojiPanelSize: e.target.value })}>
+                <option value='compact'>Compacto</option><option value='default'>Original del diseño</option><option value='large'>Grande</option>
+            </select></label>
+            <label><span>Ocultar mi teléfono en menús</span><input type='checkbox' checked={preferences.hidePhoneNumber} onChange={e => this.update({ hidePhoneNumber: e.target.checked })} /></label>
             <div className='plus-settings-actions'><button type='button' onClick={this.exportSettings}>Exportar preferencias</button><label className='plus-settings-import'>Importar<input type='file' accept='application/json,.json' onChange={this.importSettings} /></label></div>
             <small>La exportación nunca incluye sesiones, claves, tokens, chats ni la lista privada de contactos.</small>
             {message && <div className='plus-settings-message' role='status'>{message}</div>}
