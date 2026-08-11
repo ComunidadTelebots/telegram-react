@@ -7,11 +7,13 @@
 
 import React from 'react';
 import PropTypes from 'prop-types';
+import { readPlusPreferences } from '../../Utils/PlusPreferences';
 import './BotCommandSuggestions.css';
 
 class BotCommandSuggestions extends React.PureComponent {
     render() {
         const { commands, query, onSelect } = this.props;
+        if (readPlusPreferences().hideBotCommandButton) return null;
         if (!commands || commands.length === 0) return null;
 
         const filtered = query

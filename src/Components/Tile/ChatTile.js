@@ -123,7 +123,7 @@ class ChatTile extends Component {
     };
 
     render() {
-        const { classes, chatId, showOnline, showSavedMessages, onSelect, small, big } = this.props;
+        const { classes, chatId, showOnline, showSavedMessages, onSelect, small, big, statusClassName } = this.props;
         const { loaded } = this.state;
 
         if (isMeChat(chatId) && showSavedMessages) {
@@ -171,6 +171,7 @@ class ChatTile extends Component {
                 {showOnline && isPrivateChat(chatId) && (
                     <ChatStatus
                         chatId={chatId}
+                        className={statusClassName}
                         classes={{
                             root: classes.statusRoot,
                             icon: classes.statusIcon,
@@ -188,7 +189,8 @@ ChatTile.propTypes = {
     chatId: PropTypes.number.isRequired,
     onSelect: PropTypes.func,
     showSavedMessages: PropTypes.bool,
-    showOnline: PropTypes.bool
+    showOnline: PropTypes.bool,
+    statusClassName: PropTypes.string,
 };
 
 ChatTile.defaultProps = {

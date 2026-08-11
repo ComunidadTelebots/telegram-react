@@ -20,6 +20,7 @@ export default class PlusSettings extends React.PureComponent {
         try {
             const preferences = writePlusPreferences({ ...this.state.preferences, ...patch });
             applyPlusAppearance(preferences);
+            AppStore.emit('clientUpdatePlusPreferences', preferences);
             this.setState({ preferences, message: 'Preferencias guardadas.' });
         } catch (error) { this.setState({ message: error.message }); }
     };
@@ -48,6 +49,7 @@ export default class PlusSettings extends React.PureComponent {
         try {
             const preferences = importPlusPreferences(await file.text());
             applyPlusAppearance(preferences);
+            AppStore.emit('clientUpdatePlusPreferences', preferences);
             this.setState({ preferences, message: 'Preferencias importadas.' });
         } catch (error) { this.setState({ message: error.message }); }
     };
@@ -67,6 +69,18 @@ export default class PlusSettings extends React.PureComponent {
                 <option value='compact'>Compacto</option><option value='default'>Original del diseño</option><option value='large'>Grande</option>
             </select></label>
             <label><span>Ocultar mi teléfono en menús</span><input type='checkbox' checked={preferences.hidePhoneNumber} onChange={e => this.update({ hidePhoneNumber: e.target.checked })} /></label>
+            <strong>Navegación</strong>
+            <label><span>Ocultar navegación inferior</span><input type='checkbox' checked={preferences.hideBottomNavigation} onChange={e => this.update({ hideBottomNavigation: e.target.checked })} /></label>
+            <label><span>Ocultarla al desplazarse</span><input type='checkbox' checked={preferences.hideBottomNavOnScroll} disabled={preferences.hideBottomNavigation} onChange={e => this.update({ hideBottomNavOnScroll: e.target.checked })} /></label>
+            <label><span>Ocultar botón de mensaje nuevo</span><input type='checkbox' checked={preferences.hideNewMessageButton} onChange={e => this.update({ hideNewMessageButton: e.target.checked })} /></label>
+            <label><span>Ocultar pestaña Contactos</span><input type='checkbox' checked={preferences.hideContactsTab} onChange={e => this.update({ hideContactsTab: e.target.checked })} /></label>
+            <label><span>Ocultar títulos de navegación</span><input type='checkbox' checked={preferences.hideTabTitles} onChange={e => this.update({ hideTabTitles: e.target.checked })} /></label>
+            <label><span>Ocultar comandos sugeridos de bots</span><input type='checkbox' checked={preferences.hideBotCommandButton} onChange={e => this.update({ hideBotCommandButton: e.target.checked })} /></label>
+            <strong>Perfiles</strong>
+            <label><span>Mostrar ID numérico en perfiles</span><input type='checkbox' checked={preferences.showProfileId} onChange={e => this.update({ showProfileId: e.target.checked })} /></label>
+            <label><span>Ocultar Mensajes guardados del menú</span><input type='checkbox' checked={preferences.hideSavedMessagesMenu} onChange={e => this.update({ hideSavedMessagesMenu: e.target.checked })} /></label>
+            <label><span>Estado en línea en la lista principal</span><input type='checkbox' checked={preferences.onlineCirclesMain} onChange={e => this.update({ onlineCirclesMain: e.target.checked })} /></label>
+            <label><span>Estado en línea en la cabecera</span><input type='checkbox' checked={preferences.onlineCirclesHeader} onChange={e => this.update({ onlineCirclesHeader: e.target.checked })} /></label>
             <div className='plus-settings-actions'><button type='button' onClick={this.exportSettings}>Exportar preferencias</button><label className='plus-settings-import'>Importar<input type='file' accept='application/json,.json' onChange={this.importSettings} /></label></div>
             <small>La exportación nunca incluye sesiones, claves, tokens, chats ni la lista privada de contactos.</small>
             {message && <div className='plus-settings-message' role='status'>{message}</div>}

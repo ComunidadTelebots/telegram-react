@@ -37,6 +37,43 @@ describe('PlusPreferences', () => {
         expect(document.body.dataset.plusEmojiSize).toBe('compact');
     });
 
+    it('applies navigation preferences without replacing the active design', () => {
+        document.body.className = 'design-android design-android-v12';
+        applyPlusAppearance(validatePlusPreferences({
+            hideBottomNavigation: true, hideBottomNavOnScroll: true,
+            hideNewMessageButton: true,
+        }));
+        expect(document.body.classList.contains('design-android-v12')).toBe(true);
+        expect(document.body.classList.contains('plus-hide-bottom-navigation')).toBe(true);
+        expect(document.body.classList.contains('plus-hide-bottom-on-scroll')).toBe(true);
+        expect(document.body.classList.contains('plus-hide-new-message')).toBe(true);
+    });
+
+    it('applies optional tab and bot command visibility across designs', () => {
+        document.body.className = 'design-ios design-ios-modern';
+        applyPlusAppearance(validatePlusPreferences({
+            hideContactsTab: true, hideTabTitles: true, hideBotCommandButton: true,
+        }));
+        expect(document.body.classList.contains('design-ios-modern')).toBe(true);
+        expect(document.body.classList.contains('plus-hide-contacts-tab')).toBe(true);
+        expect(document.body.classList.contains('plus-hide-tab-titles')).toBe(true);
+        expect(document.body.classList.contains('plus-hide-bot-command')).toBe(true);
+    });
+
+    it('applies profile, saved messages and online circle preferences safely', () => {
+        document.body.className = 'design-tdesktop design-tdesktop-current';
+        const preferences = validatePlusPreferences({
+            showProfileId: true, hideSavedMessagesMenu: true,
+            onlineCirclesMain: false, onlineCirclesHeader: true,
+        });
+        applyPlusAppearance(preferences);
+        expect(preferences.showProfileId).toBe(true);
+        expect(preferences.hideSavedMessagesMenu).toBe(true);
+        expect(document.body.classList.contains('design-tdesktop-current')).toBe(true);
+        expect(document.body.classList.contains('plus-online-main')).toBe(false);
+        expect(document.body.classList.contains('plus-online-header')).toBe(true);
+    });
+
     it('imports valid preferences without importing notification targets', () => {
         const storage = createStorage();
         const imported = importPlusPreferences(JSON.stringify({

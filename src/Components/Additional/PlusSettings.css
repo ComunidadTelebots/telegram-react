@@ -12,6 +12,15 @@ body.design-ios .plus-settings,body.design-macos .plus-settings,body.design-andr
 @media (max-width:600px) { .plus-settings>label { align-items: flex-start; } .plus-settings select { max-width: 48%; } .plus-notice { inset-inline: 12px; inset-block-start: 12px; } }
 body.plus-system-font { font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif !important; }
 body.plus-hide-phone .android-drawer-phone,body.plus-hide-phone .android-settings-profile-phone { display: none !important; }
+body.plus-hide-bottom-navigation .android-bottom-nav { display: none !important; }
+body.plus-hide-new-message.design-android .dialogs::after { display: none !important; content: none !important; }
+body.plus-hide-contacts-tab .android-bottom-nav-item[data-nav-key='contacts'] { display: none !important; }
+body.plus-hide-tab-titles .android-bottom-nav-item span,body.plus-hide-tab-titles .folder-tabs .MuiTab-wrapper { font-size: 0 !important; }
+body.plus-hide-bot-command .bot-cmd-suggestions { display: none !important; }
+.plus-online-main-indicator,.plus-online-header-indicator { display: none !important; }
+body.plus-online-main .plus-online-main-indicator,body.plus-online-header .plus-online-header-indicator { display: block !important; }
+body.plus-hide-bottom-on-scroll.plus-navigation-scrolled .android-bottom-nav { transform: translateY(110%); pointer-events: none; }
+.android-bottom-nav { transition: transform 180ms ease; }
 body[data-plus-emoji-size='compact'] .emoji-picker-content { width: 540px; }
 body[data-plus-emoji-size='compact'] .emoji-picker-content-stickers { transform: translateX(-270px); }
 body[data-plus-emoji-size='compact'] .emoji-mart,body[data-plus-emoji-size='compact'] .stickers-picker { width: 270px !important; }

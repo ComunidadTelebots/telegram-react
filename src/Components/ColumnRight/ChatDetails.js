@@ -44,7 +44,7 @@ import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import MicIcon from '@material-ui/icons/Mic';
 import PhotoIcon from '@material-ui/icons/Photo';
-import { getAvatarAction } from '../../Utils/PlusPreferences';
+import { getAvatarAction, readPlusPreferences } from '../../Utils/PlusPreferences';
 import Typography from '@material-ui/core/Typography';
 import VideocamIcon from '@material-ui/icons/Videocam';
 import UserControl from '../Tile/UserControl';
@@ -213,6 +213,7 @@ class ChatDetails extends React.Component {
         SupergroupStore.on('updateSupergroupFullInfo', this.onUpdateSupergroupFullInfo);
         ChatStore.on('updateChatMessageTtl', this.onUpdateChatMessageTtl);
         ApplicationStore.on('clientUpdateDesignCapabilities', this.onDesignCapabilitiesChange);
+        ApplicationStore.on('clientUpdatePlusPreferences', this.onPlusPreferencesChange);
     }
 
     componentWillUnmount() {
@@ -222,11 +223,14 @@ class ChatDetails extends React.Component {
         SupergroupStore.off('updateSupergroupFullInfo', this.onUpdateSupergroupFullInfo);
         ChatStore.off('updateChatMessageTtl', this.onUpdateChatMessageTtl);
         ApplicationStore.off('clientUpdateDesignCapabilities', this.onDesignCapabilitiesChange);
+        ApplicationStore.off('clientUpdatePlusPreferences', this.onPlusPreferencesChange);
     }
 
     onDesignCapabilitiesChange = ({ legacyOnly }) => {
         this.setState({ legacyFeaturesOnly: !!legacyOnly });
     };
+
+    onPlusPreferencesChange = () => this.forceUpdate();
 
     onUpdateChatMessageTtl = update => {
         if (update.chat_id === this.props.chatId) this.forceUpdate();
@@ -595,6 +599,9 @@ class ChatDetails extends React.Component {
         const { editingDescription, descriptionDraft } = this.state;
         const isMe = isMeChat(chatId);
         const isSecret = isChatSecret(chatId);
+        const plusPreferences = readPlusPreferences();
+        const rawProfileUserId = isPrivateChat(chatId) ? Number(chat.type.user_id || 0) : 0;
+        const profileUserId = Number.isSafeInteger(rawProfileUserId) && rawProfileUserId > 0 ? rawProfileUserId : 0;
         const supergroupId = chat.type && chat.type.supergroup_id;
         const currentSupergroup = supergroupId ? SupergroupStore.get(supergroupId) : null;
         const supergroupFullInfo = supergroupId ? SupergroupStore.getFullInfo(supergroupId) : null;
@@ -663,6 +670,8 @@ class ChatDetails extends React.Component {
                         <ChatControl
                             chatId={chatId}
                             big={true}
+                            showOnline={true}
+                            statusClassName='plus-online-header-indicator'
                             showStatus={true}
                             showSavedMessages={!popup}
                             onTileSelect={handleAvatarSelect}
@@ -692,7 +701,7 @@ class ChatDetails extends React.Component {
                             </List>
                         </>
                     )}
-                    {(username || phoneNumber || bio) && (
+                    {(username || phoneNumber || bio || (plusPreferences.showProfileId && profileUserId)) && (
                         <>
                             <List>
                                 {username && (
@@ -724,6 +733,12 @@ class ChatDetails extends React.Component {
                                             />
                                         </ListItem>
                                     </>
+                                )}
+                                {plusPreferences.showProfileId && !!profileUserId && (
+                                    <ListItem className={classes.listItem}>
+                                        <ListItemIcon><AlternateEmailIcon /></ListItemIcon>
+                                        <ListItemText primary={`ID ${profileUserId}`} secondary='Identificador numérico de Telegram' />
+                                    </ListItem>
                                 )}
                                 {(bio || (isAdmin && isGroup)) && (
                                     <ListItem className={classes.listItem}>

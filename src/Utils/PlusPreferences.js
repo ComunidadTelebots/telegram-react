@@ -12,11 +12,31 @@ export const PLUS_DEFAULTS = Object.freeze({
     useSystemFont: false,
     emojiPanelSize: 'default',
     hidePhoneNumber: false,
+    hideBottomNavigation: false,
+    hideBottomNavOnScroll: false,
+    hideNewMessageButton: false,
+    hideContactsTab: false,
+    hideTabTitles: false,
+    hideBotCommandButton: false,
+    showProfileId: false,
+    hideSavedMessagesMenu: false,
+    onlineCirclesMain: true,
+    onlineCirclesHeader: false,
 });
 
 const ALLOWED_KEYS = Object.freeze(Object.keys(PLUS_DEFAULTS));
 const AVATAR_ACTIONS = new Set(['photo', 'copy_username', 'none']);
 const EMOJI_PANEL_SIZES = new Set(['compact', 'default', 'large']);
+let scrollBehaviorInstalled = false;
+
+function installPlusScrollBehavior() {
+    if (scrollBehaviorInstalled || typeof document === 'undefined') return;
+    document.addEventListener('scroll', event => {
+        const top = Number(event.target?.scrollTop || 0);
+        document.body.classList.toggle('plus-navigation-scrolled', top > 24);
+    }, true);
+    scrollBehaviorInstalled = true;
+}
 
 function safeStorage(storage) {
     try {
@@ -49,7 +69,9 @@ export function validatePlusPreferences(value) {
         if (!AVATAR_ACTIONS.has(value.avatarAction)) throw new Error('Acción de avatar no válida.');
         result.avatarAction = value.avatarAction;
     }
-    for (const key of ['useSystemFont', 'hidePhoneNumber']) {
+    for (const key of ['useSystemFont', 'hidePhoneNumber', 'hideBottomNavigation', 'hideBottomNavOnScroll',
+        'hideNewMessageButton', 'hideContactsTab', 'hideTabTitles', 'hideBotCommandButton', 'showProfileId',
+        'hideSavedMessagesMenu', 'onlineCirclesMain', 'onlineCirclesHeader']) {
         if (key in value) {
             if (typeof value[key] !== 'boolean') throw new Error(`Ajuste ${key} no válido.`);
             result[key] = value[key];
@@ -64,9 +86,18 @@ export function validatePlusPreferences(value) {
 
 export function applyPlusAppearance(preferences = readPlusPreferences()) {
     if (typeof document === 'undefined') return preferences;
+    installPlusScrollBehavior();
     document.body.classList.toggle('plus-system-font', preferences.useSystemFont);
     document.body.dataset.plusEmojiSize = preferences.emojiPanelSize;
     document.body.classList.toggle('plus-hide-phone', preferences.hidePhoneNumber);
+    document.body.classList.toggle('plus-hide-bottom-navigation', preferences.hideBottomNavigation);
+    document.body.classList.toggle('plus-hide-bottom-on-scroll', preferences.hideBottomNavOnScroll);
+    document.body.classList.toggle('plus-hide-new-message', preferences.hideNewMessageButton);
+    document.body.classList.toggle('plus-hide-contacts-tab', preferences.hideContactsTab);
+    document.body.classList.toggle('plus-hide-tab-titles', preferences.hideTabTitles);
+    document.body.classList.toggle('plus-hide-bot-command', preferences.hideBotCommandButton);
+    document.body.classList.toggle('plus-online-main', preferences.onlineCirclesMain);
+    document.body.classList.toggle('plus-online-header', preferences.onlineCirclesHeader);
     return preferences;
 }
 

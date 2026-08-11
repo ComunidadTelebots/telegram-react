@@ -45,6 +45,7 @@ class AndroidBottomNav extends React.PureComponent {
                     {items.map(({ key, label, icon }) => (
                         <button
                             key={key}
+                            data-nav-key={key}
                             className={`android-bottom-nav-item${active === key ? ' active' : ''}`}
                             onClick={() => this.handleSelect(key)}>
                             {icon}

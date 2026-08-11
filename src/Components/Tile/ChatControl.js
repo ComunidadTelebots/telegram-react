@@ -38,14 +38,15 @@ class ChatControl extends React.Component {
     };
 
     render() {
-        const { chatId, onTileSelect, showStatus, showSavedMessages, big } = this.props;
+        const { chatId, onTileSelect, showStatus, showSavedMessages, big, showOnline, statusClassName } = this.props;
 
         const isSavedMessages = isMeChat(chatId);
 
         return (
             <div className={classNames('chat', { 'chat-big': big })} onClick={this.handleClick}>
                 <div className='chat-wrapper'>
-                    <ChatTile big={big} chatId={chatId} onSelect={onTileSelect} showSavedMessages={showSavedMessages} />
+                    <ChatTile big={big} chatId={chatId} onSelect={onTileSelect} showSavedMessages={showSavedMessages}
+                        showOnline={showOnline} statusClassName={statusClassName} />
                     <div className='dialog-inner-wrapper'>
                         <div className='tile-first-row'>
                             <DialogTitle chatId={chatId} showSavedMessages={showSavedMessages} />
@@ -67,7 +68,9 @@ ChatControl.propTypes = {
     showSavedMessages: PropTypes.bool,
     showStatus: PropTypes.bool,
     onSelect: PropTypes.func,
-    onTileSelect: PropTypes.func
+    onTileSelect: PropTypes.func,
+    showOnline: PropTypes.bool,
+    statusClassName: PropTypes.string,
 };
 
 ChatControl.defaultProps = {

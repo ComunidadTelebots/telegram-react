@@ -17,6 +17,7 @@ import OptionStore from '../../Stores/OptionStore';
 import ApplicationStore from '../../Stores/ApplicationStore';
 import TdLibController from '../../Controllers/TdLibController';
 import { openTutorial } from '../../Actions/Client';
+import { readPlusPreferences } from '../../Utils/PlusPreferences';
 import AndroidSettings from './AndroidSettings';
 import './AndroidDrawer.css';
 
@@ -96,7 +97,9 @@ class AndroidDrawer extends React.PureComponent {
             { icon: <PersonIcon />, label: 'Contacts', action: onClose },
             { icon: <PhoneIcon />, label: 'Calls', action: onClose },
             { icon: <NearMeIcon />, label: 'People Nearby', action: onClose },
-            { icon: <BookmarkIcon />, label: 'Saved Messages', action: this.handleSavedMessages },
+            ...(!readPlusPreferences().hideSavedMessagesMenu
+                ? [{ icon: <BookmarkIcon />, label: 'Saved Messages', action: this.handleSavedMessages }]
+                : []),
             { icon: <SettingsIcon />, label: 'Settings', action: this.handleSettings },
             { icon: <PersonAddIcon />, label: 'Invite Friends', action: onClose },
             {

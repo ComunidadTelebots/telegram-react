@@ -1,5 +1,37 @@
 # Changelog
 
+## [0.0.656] - 2026-08-11 — Perfiles y presencia Plus
+### Added
+- Control para mostrar el identificador numérico en perfiles privados, sin consultar ni exponer datos adicionales.
+- Control para retirar Mensajes guardados del menú lateral sin borrar el chat ni su contenido.
+- Controles independientes de círculos en línea para la lista principal y la cabecera del chat.
+### Changed
+- Los indicadores de presencia reutilizan el estado oficial ya recibido por Telegram y las mismas burbujas de todos los perfiles visuales.
+### Security
+- No se infiere presencia oculta, no se realizan consultas adicionales y los IDs solo aparecen bajo acción explícita del usuario.
+### Tests
+- Añadida una regresión de preferencias, clases visuales y conservación del diseño activo.
+
+## [0.0.655] - 2026-08-11 — Visibilidad Plus de pestañas y bots
+### Added
+- Control para ocultar la pestaña Contactos de la navegación inferior.
+- Control para ocultar los títulos de navegación conservando iconos y accesibilidad.
+- Control para desactivar las sugerencias de comandos de bots sin alterar los mensajes ni teclados inline.
+### Security
+- Los ajustes son booleanos incluidos en la lista cerrada de preferencias exportables; no se guardan comandos, bots ni conversaciones.
+### Tests
+- Añadida una regresión que confirma que los tres controles preservan el perfil visual activo.
+
+## [0.0.654] - 2026-08-11 — Navegación Plus configurable
+### Added
+- Ajuste para ocultar la navegación inferior sin sustituir el diseño activo.
+- Ajuste independiente para replegar la navegación inferior al desplazarse y recuperarla al volver al inicio.
+- Ajuste para ocultar el botón flotante de mensaje nuevo en los perfiles Android compatibles.
+### Security
+- Las tres preferencias son booleanas, forman parte de la lista cerrada de importación y no incluyen datos de sesión ni de Telegram.
+### Tests
+- Añadida una regresión que verifica la aplicación de las clases sin eliminar la versión visual seleccionada.
+
 ## [0.0.652] - 2026-08-09 — Centro visual y apariencia Plus configurable
 ### Added
 - Centro de apariencia a pantalla completa accesible desde el menú principal, con navegación independiente y flecha atrás.

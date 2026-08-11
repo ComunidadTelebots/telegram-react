@@ -346,6 +346,7 @@ class Dialog extends Component {
                     )}
                     <ChatTile
                         chatId={chatId}
+                        statusClassName='plus-online-main-indicator'
                         showSavedMessages={showSavedMessages}
                         showOnline
                         classes={{
