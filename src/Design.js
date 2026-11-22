@@ -203,10 +203,8 @@ export function setDesign(name) {
 
 export function initDesign() {
     setDesign(getDesign());
-    document.body.classList.toggle(
-        'design-legacy-features',
-        localStorage.getItem('tg_design_legacy_features') === 'true',
-    );
+    localStorage.removeItem('tg_design_legacy_features');
+    document.body.classList.remove('design-legacy-features');
     initPalette();
     initChatPattern();
 }
