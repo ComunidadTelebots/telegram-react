@@ -125,14 +125,6 @@ function searchCurrentChat(event, text) {
     searchChat(chatId, text);
 }
 
-function getFormattedSubtext(text, entities, start, end) {
-    const sub = text.substring(start, end);
-    const subEntities = (entities || [])
-        .filter(e => e.offset >= start && e.offset + e.length <= end)
-        .map(e => ({ ...e, offset: e.offset - start }));
-    return getFormattedText({ '@type': 'formattedText', text: sub, entities: subEntities });
-}
-
 function getFormattedText(formattedText) {
     if (formattedText['@type'] !== 'formattedText') return null;
 
@@ -170,6 +162,17 @@ function getFormattedText(formattedText) {
             result.push(entityText);
             index = offset + length;
             continue;
+        }
+
+        function renderChildren() {
+            const children = [];
+            while (i + 1 < entities.length) {
+                const next = entities[i + 1];
+                if (next.offset < offset || next.offset >= offset + length || next.offset + next.length > offset + length) break;
+                children.push({ ...next, offset: next.offset - offset });
+                i++;
+            }
+            return getFormattedText({ '@type': 'formattedText', text: entityText, entities: children });
         }
 
         switch (type['@type']) {
@@ -316,10 +319,11 @@ function getFormattedText(formattedText) {
                 }
                 break;
             }
-            case 'textEntityTypeBlockQuote': {
-                const innerContent = getFormattedSubtext(text, entities, offset, offset + length);
+            case 'textEntityTypeBlockQuote':
+            case 'textEntityTypeExpandableBlockQuote': {
+                const innerContent = renderChildren();
                 result.push(
-                    <CollapsibleBlockquote key={entityKey} initialCollapsed={type.is_collapsed}>
+                    <CollapsibleBlockquote key={entityKey} initialCollapsed={type.is_collapsed || type['@type'] === 'textEntityTypeExpandableBlockQuote'}>
                         {innerContent}
                     </CollapsibleBlockquote>,
                 );
@@ -328,7 +332,7 @@ function getFormattedText(formattedText) {
             case 'textEntityTypeHeading': {
                 const lvl = type.level >= 1 && type.level <= 6 ? type.level : 3;
                 const HeadingTag = `h${lvl}`;
-                const innerH = getFormattedSubtext(text, entities, offset, offset + length);
+                const innerH = renderChildren();
                 result.push(
                     <HeadingTag key={entityKey} className={`msg-heading msg-heading-${lvl}`}>
                         {innerH}
@@ -337,7 +341,7 @@ function getFormattedText(formattedText) {
                 break;
             }
             case 'textEntityTypeBulletedList': {
-                const innerLi = getFormattedSubtext(text, entities, offset, offset + length);
+                const innerLi = renderChildren();
                 result.push(
                     <li key={entityKey} className='msg-list-item msg-bulleted-item'>
                         {innerLi}
@@ -346,7 +350,7 @@ function getFormattedText(formattedText) {
                 break;
             }
             case 'textEntityTypeOrderedList': {
-                const innerOli = getFormattedSubtext(text, entities, offset, offset + length);
+                const innerOli = renderChildren();
                 result.push(
                     <li key={entityKey} className='msg-list-item msg-ordered-item' value={type.number || undefined}>
                         {innerOli}
