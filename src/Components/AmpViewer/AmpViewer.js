@@ -18,6 +18,7 @@ import BrokenImageIcon from '@material-ui/icons/BrokenImage';
 import SubjectIcon from '@material-ui/icons/Subject';
 import WebIcon from '@material-ui/icons/Web';
 import { withTranslation } from 'react-i18next';
+import { publisherAmpUrl, offersAmpReader } from '../../Utils/AmpArticle';
 import * as AmpCache from '../../Stores/AmpCache';
 import { getSafeHttpUrl } from '../../Utils/SafeExternalUrl';
 import './AmpViewer.css';
@@ -117,7 +118,7 @@ const ALLOWED_ATTRS = {
     '*': [],
 };
 
-function sanitizeNode(srcNode, destParent) {
+function sanitizeNode(srcNode, destParent, sourceUrl) {
     for (const child of srcNode.childNodes) {
         if (child.nodeType === Node.TEXT_NODE) {
             destParent.appendChild(document.createTextNode(child.textContent));
@@ -131,7 +132,7 @@ function sanitizeNode(srcNode, destParent) {
 
         if (!ALLOWED_TAGS.has(tag)) {
             // Descarta el elemento pero preserva el texto interior
-            sanitizeNode(child, destParent);
+            sanitizeNode(child, destParent, sourceUrl);
             continue;
         }
 
@@ -142,9 +143,12 @@ function sanitizeNode(srcNode, destParent) {
             // Para amp-img los atributos pueden estar en el nombre original o con data-
             const val = child.getAttribute(attr) ?? child.getAttribute(`data-${attr}`);
             if (!val) continue;
-            if (attr === 'href' && /^javascript:/i.test(val.trim())) continue;
-            if ((attr === 'src' || attr === 'href') && /^data:/i.test(val.trim())) continue;
-            el.setAttribute(attr, val);
+            if (attr === 'src' || attr === 'href') {
+                const resolved = getSafeHttpUrl(val, sourceUrl);
+                if (resolved) el.setAttribute(attr, resolved);
+            } else {
+                el.setAttribute(attr, val);
+            }
         }
 
         if (tag === 'img') {
@@ -157,13 +161,12 @@ function sanitizeNode(srcNode, destParent) {
             el.setAttribute('rel', 'noopener noreferrer');
         }
 
-        sanitizeNode(child, el);
+        sanitizeNode(child, el, sourceUrl);
         destParent.appendChild(el);
     }
 }
 
-function extractContent(html) {
-    const doc = new DOMParser().parseFromString(html, 'text/html');
+function extractContent(doc, sourceUrl) {
 
     // Título
     const title = doc.querySelector('h1')?.textContent?.trim() || doc.querySelector('title')?.textContent?.trim() || '';
@@ -191,40 +194,57 @@ function extractContent(html) {
         .forEach(el => el.remove());
 
     const container = document.createElement('div');
-    sanitizeNode(content, container);
+    sanitizeNode(content, container, sourceUrl);
     return { html: container.innerHTML, title };
 }
 
 // ── Fetch helper ──────────────────────────────────────────────────────────────
 
-async function tryFetch(url) {
-    const res = await fetch(url, { mode: 'cors', credentials: 'omit' });
-    if (!res.ok) throw new Error(`http-${res.status}`);
-    return res.text();
+async function fetchDocument(url) {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), LOAD_TIMEOUT_MS);
+    try {
+        const res = await fetch(url, { mode: 'cors', credentials: 'omit', referrerPolicy: 'no-referrer', signal: controller.signal });
+        if (!res.ok) throw new Error('http-' + res.status);
+        return { doc: new DOMParser().parseFromString(await res.text(), 'text/html'), url: res.url || url };
+    } finally {
+        clearTimeout(timeout);
+    }
 }
 
-async function fetchAmpContent(url) {
-    const candidates = [
-        buildGoogleAmpUrl(url),
-        buildCloudflareAmpUrl(url),
-        url, // URL original como último recurso
-    ].filter(Boolean);
+function readDocument(page, sourceUrl = page.url) {
+    const content = extractContent(page.doc, sourceUrl);
+    if (content.html.replace(/<[^>]*>/g, '').trim().length < 100) throw new Error('content-too-short');
+    return content;
+}
 
-    let lastErr;
-    for (const candidate of candidates) {
-        try {
-            const html = await tryFetch(candidate);
-            const content = extractContent(html);
-            // Descartar si el cuerpo extraído es demasiado corto (página de error, etc.)
-            if (content.html.replace(/<[^>]*>/g, '').trim().length < 100) {
-                throw new Error('content-too-short');
+export async function fetchAmpContent(url) {
+    let ampUrl;
+    try {
+        const publisher = await fetchDocument(url);
+        ampUrl = publisherAmpUrl(publisher.doc, publisher.url);
+        if (ampUrl && ampUrl !== publisher.url) {
+            try {
+                return readDocument(await fetchDocument(ampUrl));
+            } catch {
+                // El artículo original puede seguir disponible.
             }
-            return content;
-        } catch (e) {
-            lastErr = e;
+        }
+        return readDocument(publisher);
+    } catch {
+        // Algunos editores solo permiten lectura desde una caché AMP.
+    }
+    const articleUrl = ampUrl || url;
+    for (const buildUrl of [buildGoogleAmpUrl, buildCloudflareAmpUrl]) {
+        const cached = buildUrl(articleUrl);
+        if (!cached) continue;
+        try {
+            return readDocument(await fetchDocument(cached), articleUrl);
+        } catch {
+            // Continuar con la siguiente fuente.
         }
     }
-    throw lastErr || new Error('fetch-failed');
+    throw new Error('article-unavailable');
 }
 
 // ── Contenido lite (fallback desde datos del mensaje) ────────────────────────
@@ -281,8 +301,8 @@ class AmpViewer extends React.Component {
             error: false,
             useFallback: false,
             // Modo lectura
-            readerMode: savedReaderMode && !!cachedContent,
-            readerLoading: false,
+            readerMode: savedReaderMode,
+            readerLoading: savedReaderMode && !cachedContent,
             // null = aún no intentado, true = disponible, false = no disponible (ocultar botón)
             readerSupported: cachedContent ? true : null,
             readerContent: cachedContent || null,
@@ -298,8 +318,7 @@ class AmpViewer extends React.Component {
         document.addEventListener('keydown', this.onKeyDown);
 
         if (this.state.readerMode) {
-            // El contenido ya está en el estado desde el constructor (caché).
-            // No llamar a _loadReaderContent para evitar doble lectura del caché.
+            if (!this.state.readerContent) this._loadReaderContent();
         } else {
             this._startTimer();
             window.addEventListener('message', this.onMessage);
@@ -366,7 +385,6 @@ class AmpViewer extends React.Component {
             const { webPage } = this.props;
             if (webPage && (webPage.title || webPage.description)) {
                 const liteContent = buildLiteContent(webPage);
-                AmpCache.set(url, liteContent);
                 this.setState({ readerContent: liteContent, readerLoading: false, readerSupported: true });
             } else {
                 // Sin datos de respaldo — ocultar el botón y volver al iframe
@@ -430,7 +448,10 @@ class AmpViewer extends React.Component {
     renderIframeBody() {
         const { url, t } = this.props;
         const { loading, error, useFallback } = this.state;
-        const ampUrl = useFallback ? buildCloudflareAmpUrl(url) || url : buildGoogleAmpUrl(url) || url;
+        const directAmp = offersAmpReader(url);
+        const primary = directAmp ? url : buildGoogleAmpUrl(url);
+        const fallback = directAmp ? buildGoogleAmpUrl(url) : buildCloudflareAmpUrl(url);
+        const ampUrl = (useFallback ? fallback : primary) || url;
 
         return (
             <>

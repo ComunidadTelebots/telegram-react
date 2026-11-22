@@ -21,6 +21,7 @@ import VoiceNote from './VoiceNote';
 import { getSize } from '../../../Utils/Common';
 import { getSrc } from '../../../Utils/File';
 import { openInstantView } from '../../../Actions/InstantView';
+import { offersAmpReader } from '../../../Utils/AmpArticle';
 import { openAmpViewer } from '../../../Actions/Client';
 import {
     PHOTO_DISPLAY_EXTRA_SMALL_SIZE,
@@ -196,7 +197,7 @@ class WebPage extends React.Component {
         const { description, instant_view_version, site_name, title, url, type } = web_page;
 
         const hasInstantView = instant_view_version > 0;
-        const hasAmp = type === 'article' && url && url.startsWith('https://');
+        const hasAmp = offersAmpReader(url, type);
 
         const webPageContent = (
             <>
