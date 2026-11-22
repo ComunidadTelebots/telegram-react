@@ -6,8 +6,10 @@
  */
 
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 export default function CollapsibleBlockquote({ children, initialCollapsed }) {
+    const { t } = useTranslation();
     const [collapsed, setCollapsed] = useState(Boolean(initialCollapsed));
 
     if (!initialCollapsed) {
@@ -16,15 +18,16 @@ export default function CollapsibleBlockquote({ children, initialCollapsed }) {
 
     return (
         <blockquote className={`message-blockquote${collapsed ? ' collapsed' : ''}`}>
-            {children}
-            <span
+            <div className='message-blockquote-content'>{children}</div>
+            <button type='button'
+                aria-expanded={!collapsed}
                 className='message-blockquote-toggle'
                 onClick={e => {
                     e.stopPropagation();
                     setCollapsed(c => !c);
                 }}>
-                {collapsed ? '···' : '▲'}
-            </span>
+                {collapsed ? t('ShowMore', { defaultValue: 'Expandir cita' }) : t('ShowLess', { defaultValue: 'Contraer cita' })}
+            </button>
         </blockquote>
     );
 }
