@@ -326,7 +326,7 @@ class GroupCallDialog extends React.PureComponent {
                                         color='primary'
                                         disabled={!voiceConnected}
                                         onClick={this.togglePresentation}>
-                                        Dejar de compartir {presentationKind === 'camera' ? 'cÃ¡mara' : 'pantalla'}
+                                        Dejar de compartir {presentationKind === 'camera' ? 'cámara' : 'pantalla'}
                                     </Button>
                                 ) : (
                                     <>
@@ -340,7 +340,7 @@ class GroupCallDialog extends React.PureComponent {
                                             color='primary'
                                             disabled={!voiceConnected}
                                             onClick={() => this.togglePresentation('camera')}>
-                                            Compartir cÃ¡mara
+                                            Compartir cámara
                                         </Button>
                                     </>
                                 )}
@@ -357,7 +357,7 @@ class GroupCallDialog extends React.PureComponent {
                         </DialogContentText>
                         <audio ref={element => (this.audio = element)} autoPlay playsInline />
                         {Object.entries(remoteVideoStreams || {}).length > 0 && (
-                            <div className='group-call-video-grid' aria-label='VÃ­deos de participantes'>
+                            <div className='group-call-video-grid' aria-label='Vídeos de participantes'>
                                 {Object.entries(remoteVideoStreams).map(([endpoint, stream]) => {
                                     const participant = (call.participants || []).find(item =>
                                         [item.video?.endpoint, item.presentation?.endpoint].includes(endpoint),
@@ -371,7 +371,7 @@ class GroupCallDialog extends React.PureComponent {
                                             />
                                             <figcaption>
                                                 {participant?.name || 'Participante'}
-                                                {participant?.presentation?.endpoint === endpoint ? ' Â· pantalla' : ''}
+                                                {participant?.presentation?.endpoint === endpoint ? ' · pantalla' : ''}
                                             </figcaption>
                                         </figure>
                                     );
@@ -388,7 +388,7 @@ class GroupCallDialog extends React.PureComponent {
                             />
                         )}
                         <DialogContentText>
-                            La cÃ¡mara propia se publica como presentaciÃ³n. Las cÃ¡maras y pantallas de participantes se
+                            La cámara propia se publica como presentación. Las cámaras y pantallas de participantes se
                             reciben desde el transporte principal mediante sus fuentes SIM/FID.
                         </DialogContentText>
                     </div>
