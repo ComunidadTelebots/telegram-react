@@ -19,6 +19,7 @@ import Search from './Search/Search';
 import DialogsHeader from './DialogsHeader';
 import DialogsList from './DialogsList';
 import FolderDialogsList from './FolderDialogsList';
+import { hasStoryTrayForDesign } from '../../Design';
 import StoriesTray from '../Stories/StoriesTray';
 import StoryViewer from '../Stories/StoryViewer';
 import TopicsList from './TopicsList';
@@ -33,6 +34,7 @@ import {
     CHAT_LIST_LINES_KEY,
     PLUS_FILTER_KEY,
     PLUS_SETTINGS_EVENT,
+    SHOW_STORIES_KEY,
     PLUS_SORT_KEY,
     PLUS_VIEWS_KEY,
     normalizeChatListLines,
@@ -123,6 +125,7 @@ class Dialogs extends Component {
             forumChatId: null,
             createFolderOpen: false,
             createFolderName: '',
+            showStories: readSmartChatPreference(SHOW_STORIES_KEY, '1') !== '0',
             smartViewsEnabled: readSmartChatPreference(PLUS_VIEWS_KEY, '0') === '1',
             smartFilter: readSmartChatPreference(PLUS_FILTER_KEY, 'all'),
             sortMode: readSmartChatPreference(PLUS_SORT_KEY, 'telegram'),
@@ -163,6 +166,7 @@ class Dialogs extends Component {
         if (nextState.activeFilter !== activeFilter) return true;
         if (nextState.storyViewerChatId !== this.state.storyViewerChatId) return true;
         if (nextState.forumChatId !== this.state.forumChatId) return true;
+        if (nextState.showStories !== this.state.showStories) return true;
         if (nextState.smartViewsEnabled !== this.state.smartViewsEnabled) return true;
         if (nextState.smartFilter !== this.state.smartFilter || nextState.sortMode !== this.state.sortMode) return true;
         if (
@@ -183,6 +187,7 @@ class Dialogs extends Component {
 
         AppStore.on('clientUpdateChatDetailsVisibility', this.onClientUpdateChatDetailsVisibility);
         AppStore.on('clientUpdateSearchChat', this.onClientUpdateSearchChat);
+        AppStore.on('clientUpdateDesignCapabilities', this.onClientUpdateThemeChange);
         AppStore.on('clientUpdateThemeChange', this.onClientUpdateThemeChange);
         AppStore.on('clientUpdateOpenCreateFolder', this.handleOpenCreateFolder);
 
@@ -206,6 +211,7 @@ class Dialogs extends Component {
 
         AppStore.off('clientUpdateChatDetailsVisibility', this.onClientUpdateChatDetailsVisibility);
         AppStore.off('clientUpdateSearchChat', this.onClientUpdateSearchChat);
+        AppStore.off('clientUpdateDesignCapabilities', this.onClientUpdateThemeChange);
         AppStore.off('clientUpdateThemeChange', this.onClientUpdateThemeChange);
         AppStore.off('clientUpdateOpenCreateFolder', this.handleOpenCreateFolder);
 
@@ -225,6 +231,7 @@ class Dialogs extends Component {
     }
 
     syncPlusSettings = () => this.setState({
+        showStories: readSmartChatPreference(SHOW_STORIES_KEY, '1') !== '0',
         smartViewsEnabled: readSmartChatPreference(PLUS_VIEWS_KEY, '0') === '1',
         smartFilter: readSmartChatPreference(PLUS_FILTER_KEY, 'all'),
         sortMode: readSmartChatPreference(PLUS_SORT_KEY, 'telegram'),
@@ -618,7 +625,7 @@ class Dialogs extends Component {
                     onSearch={this.handleSearch}
                     onSearchTextChange={this.handleSearchTextChange}
                 />
-                {!openSearch && <StoriesTray />}
+                {!openSearch && hasStoryTrayForDesign() && (openArchive || this.state.showStories) && <StoriesTray />}
                 {!openSearch && !openArchive && (
                     <div className='plus-chat-tools'>
                         <button
@@ -631,6 +638,17 @@ class Dialogs extends Component {
                         </button>
                         {smartViewsEnabled && (
                             <>
+                                {hasStoryTrayForDesign() && (
+                                    <label className='plus-chat-lines'>
+                                        <input type='checkbox' checked={this.state.showStories}
+                                            onChange={event => {
+                                                const showStories = event.target.checked;
+                                                writeSmartChatPreference(SHOW_STORIES_KEY, showStories ? '1' : '0');
+                                                window.dispatchEvent(new Event(PLUS_SETTINGS_EVENT));
+                                            }} />
+                                        Mostrar historias
+                                    </label>
+                                )}
                                 <label className='plus-chat-sort'>
                                     <span className='sr-only'>Ordenar chats</span>
                                     <select value={sortMode} onChange={this.setSortMode} aria-label='Ordenar chats'>
