@@ -4,6 +4,7 @@
  * con la misma interfaz de eventos para que los stores no necesiten cambios.
  */
 
+import { getCodeInfo } from '../Utils/LoginCode';
 import { EventEmitter } from 'events';
 import { unstable_batchedUpdates } from 'react-dom';
 import bigInt from 'big-integer';
@@ -725,7 +726,7 @@ class GramJsController extends EventEmitter {
 
     send = async request => {
         const type = request['@type'];
-        if (!this.disableLog) console.log('[GramJs] send', request);
+        if (!this.disableLog) console.log('[GramJs] send', type);
 
         try {
             return await this._dispatch(type, request);
@@ -2976,6 +2977,10 @@ class GramJsController extends EventEmitter {
             result = await doSend();
         } catch (err) {
             const errMsg = err.errorMessage || err.message || '';
+            if (err.errorMessage === 'SESSION_PASSWORD_NEEDED') {
+                this._waitForAuthPassword();
+                return {};
+            }
             const dcMatch = errMsg.match(/PHONE_MIGRATE_(\d+)/i);
             if (dcMatch) {
                 const dcId = parseInt(dcMatch[1], 10);
@@ -3038,21 +3043,21 @@ class GramJsController extends EventEmitter {
             }
         }
 
-        console.log('[GramJs] Código de inicio de sesión solicitado');
-        this._phone = phone_number;
-        this._phoneHash = result.phoneCodeHash;
+        return this._applyLoginChallenge(result, phone_number);
+    };
 
+    _applyLoginChallenge = async (result, phone) => {
+        if (result.className === 'auth.SentCodeSuccess') {
+            await this._onAuthorized();
+            return {};
+        }
+        if (!result.phoneCodeHash || !result.type) throw new Error('Unsupported Telegram login response');
+        this._phone = phone;
+        this._phoneHash = result.phoneCodeHash;
+        this._loginCodeInfo = getCodeInfo(result, phone);
         this._emitUpdate({
             '@type': 'updateAuthorizationState',
-            authorization_state: {
-                '@type': 'authorizationStateWaitCode',
-                code_info: {
-                    phone_number,
-                    type: { '@type': 'authenticationCodeTypeTelegramMessage', length: 5 },
-                    next_type: null,
-                    timeout: 120,
-                },
-            },
+            authorization_state: { '@type': 'authorizationStateWaitCode', code_info: this._loginCodeInfo },
         });
         return {};
     };
@@ -3063,7 +3068,9 @@ class GramJsController extends EventEmitter {
                 new Api.auth.SignIn({
                     phoneNumber: this._phone,
                     phoneCodeHash: this._phoneHash,
-                    phoneCode: req.code,
+                    ...(this._loginCodeInfo?.type['@type'] === 'authenticationCodeTypeEmail'
+                        ? { emailVerification: new Api.EmailVerificationCode({ code: req.code }) }
+                        : { phoneCode: req.code }),
                 }),
             );
             await this._onAuthorized();
@@ -3098,12 +3105,13 @@ class GramJsController extends EventEmitter {
     };
 
     _resendCode = async () => {
-        if (this._phone && this._phoneHash) {
-            await this.client.invoke(
-                new Api.auth.ResendCode({ phoneNumber: this._phone, phoneCodeHash: this._phoneHash }),
-            );
-        }
-        return {};
+        const info = this._loginCodeInfo;
+        if (!info?.next_type || Date.now() < info.resend_at) throw new Error('Resend is not available yet');
+        const result = await this.client.invoke(
+            new Api.auth.ResendCode({ phoneNumber: this._phone, phoneCodeHash: this._phoneHash }),
+        );
+        if (this._loginCodeInfo !== info) return {};
+        return this._applyLoginChallenge(result, info.phone_number);
     };
 
     _resetInitialDialogsPromise = () => {
