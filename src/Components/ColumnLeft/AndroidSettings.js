@@ -22,7 +22,6 @@ import GroupIcon from '@material-ui/icons/Group';
 import PersonAddIcon from '@material-ui/icons/PersonAdd';
 import ExitToAppIcon from '@material-ui/icons/ExitToApp';
 import CropFreeIcon from '@material-ui/icons/CropFree';
-import HistoryIcon from '@material-ui/icons/History';
 import TuneIcon from '@material-ui/icons/Tune';
 import Dialog from '@material-ui/core/Dialog';
 import DialogTitle from '@material-ui/core/DialogTitle';
@@ -59,7 +58,6 @@ class AndroidSettings extends React.PureComponent {
             design: getDesign(),
             bio: '',
             snackbar: null,
-            legacyOnly: localStorage.getItem('tg_design_legacy_features') === 'true',
         };
     }
 
@@ -163,16 +161,6 @@ class AndroidSettings extends React.PureComponent {
         if (this.favedStickersRef) this.favedStickersRef.open();
     };
 
-    handleToggleLegacyFeatures = () => {
-        this.setState(({ legacyOnly }) => {
-            const next = !legacyOnly;
-            localStorage.setItem('tg_design_legacy_features', String(next));
-            document.body.classList.toggle('design-legacy-features', next);
-            ApplicationStore.emit('clientUpdateDesignCapabilities', { legacyOnly: next });
-            return { legacyOnly: next };
-        });
-    };
-
     handleLanguage = () => {
         if (this.languagePickerRef) this.languagePickerRef.open();
     };
@@ -185,7 +173,7 @@ class AndroidSettings extends React.PureComponent {
 
     render() {
         const { onClose } = this.props;
-        const { isDark, design, bio, legacyOnly } = this.state;
+        const { isDark, design, bio } = this.state;
         const me = this.getMe();
         const name = me ? getUserFullName(me) : 'Telegram User';
         const phone = me && me.phone_number ? '+' + me.phone_number : '';
@@ -240,56 +228,46 @@ class AndroidSettings extends React.PureComponent {
                         arrow: true,
                         action: this.handleChatSettings,
                     },
-                    ...(legacyOnly
-                        ? []
-                        : [
-                              {
-                                  icon: <FolderIcon />,
-                                  label: 'Carpetas de chat',
-                                  sub: 'Crear y organizar carpetas',
-                                  arrow: true,
-                                  action: this.handleChatFolders,
-                              },
-                          ]),
+                    {
+                        icon: <FolderIcon />,
+                        label: 'Carpetas de chat',
+                        sub: 'Crear y organizar carpetas',
+                        arrow: true,
+                        action: this.handleChatFolders,
+                    },
                 ],
             },
-            // Dispositivos — desde v9 en adelante
-            ...(!legacyOnly
-                ? [
-                      {
-                          key: 'devices',
-                          rows: [
-                              {
-                                  icon: <PhoneAndroidIcon />,
-                                  label: 'Dispositivos',
-                                  sub: 'Sesiones activas',
-                                  arrow: true,
-                                  action: this.handleDevices,
-                              },
-                          ],
-                      },
-                      // Premium — solo en eras modernas
-                      {
-                          key: 'premium',
-                          rows: [
-                              {
-                                  icon: <StarIcon />,
-                                  label: 'Telegram Premium',
-                                  sub: 'Exclusive features',
-                                  arrow: true,
-                                  accent: true,
-                              },
-                              {
-                                  icon: <EmojiEmotionsIcon />,
-                                  label: 'Stickers & Emoji',
-                                  sub: 'Stickers favoritos',
-                                  arrow: true,
-                                  action: this.handleFavoriteStickers,
-                              },
-                          ],
-                      },
-                  ]
-                : []),
+            {
+                key: 'devices',
+                rows: [
+                    {
+                        icon: <PhoneAndroidIcon />,
+                        label: 'Dispositivos',
+                        sub: 'Sesiones activas',
+                        arrow: true,
+                        action: this.handleDevices,
+                    },
+                ],
+            },
+            {
+                key: 'premium',
+                rows: [
+                    {
+                        icon: <StarIcon />,
+                        label: 'Telegram Premium',
+                        sub: 'Exclusive features',
+                        arrow: true,
+                        accent: true,
+                    },
+                    {
+                        icon: <EmojiEmotionsIcon />,
+                        label: 'Stickers & Emoji',
+                        sub: 'Stickers favoritos',
+                        arrow: true,
+                        action: this.handleFavoriteStickers,
+                    },
+                ],
+            },
             // Display
             {
                 key: 'display',
@@ -321,14 +299,6 @@ class AndroidSettings extends React.PureComponent {
                         sub: 'Organización, accesos rápidos, multimedia y privacidad',
                         arrow: true,
                         action: this.handlePlusOptions,
-                    },
-                    {
-                        icon: <HistoryIcon />,
-                        label: 'Solo funciones de la época',
-                        sub: legacyOnly ? 'Activado · API moderna' : 'Desactivado · funciones actuales',
-                        toggle: true,
-                        toggleOn: legacyOnly,
-                        action: this.handleToggleLegacyFeatures,
                     },
                 ],
             },
