@@ -3069,20 +3069,24 @@ class GramJsController extends EventEmitter {
             await this._onAuthorized();
         } catch (err) {
             if (err.errorMessage === 'SESSION_PASSWORD_NEEDED') {
-                this._emitUpdate({
-                    '@type': 'updateAuthorizationState',
-                    authorization_state: {
-                        '@type': 'authorizationStateWaitPassword',
-                        password_hint: '',
-                        has_recovery_email_address: false,
-                        recovery_email_address_pattern: '',
-                    },
-                });
+                this._waitForAuthPassword();
                 return {};
             }
             throw err;
         }
         return {};
+    };
+
+    _waitForAuthPassword = () => {
+        this._emitUpdate({
+            '@type': 'updateAuthorizationState',
+            authorization_state: {
+                '@type': 'authorizationStateWaitPassword',
+                password_hint: '',
+                has_recovery_email_address: false,
+                recovery_email_address_pattern: '',
+            },
+        });
     };
 
     _checkPassword = async req => {
@@ -6161,10 +6165,21 @@ class GramJsController extends EventEmitter {
         }
     };
 
+    _handleQrAuthError = err => {
+        if (err.errorMessage === 'SESSION_PASSWORD_NEEDED') {
+            this._qrPollGeneration += 1;
+            this._waitForAuthPassword();
+        } else if (this._isAuthTokenExpired(err)) {
+            this._requestQrCodeAuthentication({}).catch(error => this._emitAuthError(error));
+        } else {
+            this._emitAuthError(err);
+        }
+    };
+
     _completeQrLoginFromUpdate = async () => {
         if (this._qrLoginCompleting) return;
         this._qrLoginCompleting = true;
-        this._qrPollGeneration += 1;
+        const generation = ++this._qrPollGeneration;
 
         try {
             if (!(await this._waitForClientConnection())) throw new Error('CLIENT_NOT_CONNECTED');
@@ -6175,14 +6190,10 @@ class GramJsController extends EventEmitter {
                     exceptIds: [],
                 }),
             );
-            await this._handleQrLoginResult(result);
+            if (generation === this._qrPollGeneration) await this._handleQrLoginResult(result);
         } catch (e) {
             console.warn('[GramJs] complete QR login error', e);
-            if (this._isAuthTokenExpired(e)) {
-                this._requestQrCodeAuthentication({}).catch(err => this._emitAuthError(err));
-            } else {
-                this._emitAuthError(e);
-            }
+            if (generation === this._qrPollGeneration) this._handleQrAuthError(e);
         } finally {
             this._qrLoginCompleting = false;
         }
@@ -6201,7 +6212,7 @@ class GramJsController extends EventEmitter {
     };
 
     _requestQrCodeAuthentication = async req => {
-        this._qrPollGeneration += 1;
+        const generation = ++this._qrPollGeneration;
         try {
             if (!(await this._waitForClientConnection())) throw new Error('CLIENT_NOT_CONNECTED');
             const result = await this.client.invoke(
@@ -6211,14 +6222,10 @@ class GramJsController extends EventEmitter {
                     exceptIds: [],
                 }),
             );
-            await this._handleQrLoginResult(result);
+            if (generation === this._qrPollGeneration) await this._handleQrLoginResult(result);
         } catch (e) {
             console.error('[GramJs] requestQrCodeAuthentication error', e);
-            if (this._isAuthTokenExpired(e)) {
-                this._requestQrCodeAuthentication({}).catch(err => this._emitAuthError(err));
-            } else {
-                this._emitAuthError(e);
-            }
+            if (generation === this._qrPollGeneration) this._handleQrAuthError(e);
         }
         return {};
     };
@@ -6236,14 +6243,10 @@ class GramJsController extends EventEmitter {
                     exceptIds: [],
                 }),
             );
-            await this._handleQrLoginResult(result);
+            if (generation === this._qrPollGeneration) await this._handleQrLoginResult(result);
         } catch (e) {
             console.warn('[GramJs] QR poll error', e);
-            if (this._isAuthTokenExpired(e)) {
-                this._requestQrCodeAuthentication({}).catch(err => this._emitAuthError(err));
-            } else {
-                this._emitAuthError(e);
-            }
+            if (generation === this._qrPollGeneration) this._handleQrAuthError(e);
         }
     };
 
