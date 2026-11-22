@@ -4470,11 +4470,13 @@ class GramJsController extends EventEmitter {
         try {
             const inputPeer = tdlibChatIdToInputPeer(chat_id, this._entityCache);
             const text = input_message_content?.text?.text || '';
+            const entities = input_message_content?.text?.entities || [];
             await this.client.invoke(
                 new Api.messages.EditMessage({
                     peer: inputPeer,
                     id: message_id,
                     message: text,
+                    entities: tdEntitiesToGramJs(entities),
                 }),
             );
             const editDate = Math.floor(Date.now() / 1000);
@@ -4484,7 +4486,7 @@ class GramJsController extends EventEmitter {
                 message_id,
                 new_content: {
                     '@type': 'messageText',
-                    text: { '@type': 'formattedText', text, entities: [] },
+                    text: { '@type': 'formattedText', text, entities },
                     web_page: null,
                 },
             });
@@ -6866,6 +6868,9 @@ const TDLIB_TO_GRAMJS_ENTITY = {
     textEntityTypeStrikethrough: 'MessageEntityStrike',
     textEntityTypeCode: 'MessageEntityCode',
     textEntityTypePre: 'MessageEntityPre',
+    textEntityTypePreCode: 'MessageEntityPre',
+    textEntityTypeBlockQuote: 'MessageEntityBlockquote',
+    textEntityTypeExpandableBlockQuote: 'MessageEntityBlockquote',
     textEntityTypeUrl: 'MessageEntityUrl',
     textEntityTypeTextUrl: 'MessageEntityTextUrl',
     textEntityTypeMention: 'MessageEntityMention',
@@ -6886,6 +6891,10 @@ function tdEntitiesToGramJs(tdEntities) {
             const gramCls = TDLIB_TO_GRAMJS_ENTITY[tdType];
             if (!gramCls || !Api[gramCls]) return null;
             const opts = { offset: e.offset, length: e.length };
+            if (gramCls === 'MessageEntityPre') opts.language = e.type.language || '';
+            if (gramCls === 'MessageEntityBlockquote') {
+                opts.collapsed = tdType === 'textEntityTypeExpandableBlockQuote' || Boolean(e.type.is_collapsed);
+            }
             if (tdType === 'textEntityTypeTextUrl') opts.url = e.type.url || '';
             if (tdType === 'textEntityTypeMentionUser') opts.userId = BigInt(e.type.user_id || 0);
             return new Api[gramCls](opts);
