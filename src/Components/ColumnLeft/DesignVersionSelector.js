@@ -153,10 +153,14 @@ export const DESIGN_VERSION_REGISTRY = {
     ],
 };
 
+let nextSelectorId = 0;
+
 class DesignVersionSelector extends React.PureComponent {
     constructor(props) {
         super(props);
 
+        this.panelId = `design-versions-${++nextSelectorId}`;
+        this.triggerRef = React.createRef();
         this.rootRef = React.createRef();
         this.state = {
             open: false,
@@ -185,11 +189,16 @@ class DesignVersionSelector extends React.PureComponent {
         this.setState({ legacyOnly: !!legacyOnly });
     };
 
-    handleToggleCapabilities = event => {
+    handleCapabilitiesInput = event => {
+        const legacyOnly = event.target.value === 'era';
+        setEraFeatures(legacyOnly);
+        ApplicationStore.emit('clientUpdateDesignCapabilities', { legacyOnly });
+    };
+
+    handleKeyDown = event => {
+        if (event.key !== 'Escape' || !this.state.open) return;
         event.stopPropagation();
-        const next = !usesEraFeatures();
-        setEraFeatures(next);
-        ApplicationStore.emit('clientUpdateDesignCapabilities', { legacyOnly: next });
+        this.setState({ open: false }, () => this.triggerRef.current?.focus());
     };
 
     handleDocumentMouseDown = event => {
@@ -205,7 +214,7 @@ class DesignVersionSelector extends React.PureComponent {
 
     handleSelect = value => {
         setDesign(value);
-        this.setState({ design: value, open: false });
+        this.setState({ design: value, open: false }, () => this.triggerRef.current?.focus());
 
         const family = getDesignFamily(value);
         ApplicationStore.emit('clientUpdateThemeChanging', {
@@ -226,19 +235,34 @@ class DesignVersionSelector extends React.PureComponent {
         const accent = DESIGN_ACCENTS[design] || DESIGN_ACCENTS[family] || DESIGN_ACCENTS.current;
 
         return (
-            <div className={`dv-selector dv-selector--${family}`} ref={this.rootRef}>
+            <div className={`dv-selector dv-selector--${family}`} ref={this.rootRef} onKeyDown={this.handleKeyDown}>
                 <button
                     type='button'
                     className='dv-trigger'
                     style={{ '--dv-accent': accent }}
                     onClick={this.handleToggle}
-                    aria-haspopup='menu'
+                    ref={this.triggerRef}
+                    aria-label={`Versión del diseño: ${current.trigger || current.detail}`}
+                    aria-controls={open ? this.panelId : undefined}
                     aria-expanded={open}>
                     <span className='dv-trigger-text'>{current.trigger || current.detail}</span>
                     <KeyboardArrowDownIcon className='dv-chevron' />
                 </button>
                 {open && (
-                    <div className='dv-menu' role='menu'>
+                    <div className='dv-menu' id={this.panelId} style={{ '--dv-accent': accent }}>
+                        <fieldset className='dv-capabilities'>
+                            <legend>Funciones disponibles</legend>
+                            <label>
+                                <input type='radio' name={this.panelId} value='all' checked={!legacyOnly}
+                                    onChange={this.handleCapabilitiesInput} />
+                                Todas las funciones actuales
+                            </label>
+                            <label>
+                                <input type='radio' name={this.panelId} value='era' checked={legacyOnly}
+                                    onChange={this.handleCapabilitiesInput} />
+                                Solo funciones de la época
+                            </label>
+                        </fieldset>
                         {newestDesignVersionsFirst(versions).map(option => {
                             const selected = option.value === design;
                             return (
@@ -247,6 +271,7 @@ class DesignVersionSelector extends React.PureComponent {
                                     type='button'
                                     className={`dv-option${selected ? ' dv-option--selected' : ''}`}
                                     style={{ '--dv-accent': accent }}
+                                    aria-pressed={selected}
                                     onClick={() => this.handleSelect(option.value)}>
                                     <span className='dv-copy'>
                                         <span className='dv-detail'>{option.detail}</span>
@@ -257,19 +282,6 @@ class DesignVersionSelector extends React.PureComponent {
                                 </button>
                             );
                         })}
-                        <div className='dv-capabilities'>
-                            <div className='dv-capabilities-copy'>
-                                <strong>{legacyOnly ? 'Funciones de la época' : 'Todas las funciones actuales'}</strong>
-                                <span>La API moderna se mantiene en ambos modos.</span>
-                            </div>
-                            <button
-                                type='button'
-                                className={`dv-capabilities-button${legacyOnly ? ' is-legacy' : ''}`}
-                                aria-pressed={legacyOnly}
-                                onClick={this.handleToggleCapabilities}>
-                                {legacyOnly ? 'Activar funciones actuales' : 'Usar solo funciones de la época'}
-                            </button>
-                        </div>
                     </div>
                 )}
             </div>
