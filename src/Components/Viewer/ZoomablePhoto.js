@@ -13,11 +13,12 @@ function constrain(scale, x, y, stage, image) {
     return { scale, x: clamp(x, -maxX, maxX), y: clamp(y, -maxY, maxY) };
 }
 
-export function ZoomablePhoto({ src, t, i18n }) {
+export function ZoomablePhoto({ src, t, i18n, onNext, onPrevious }) {
     const stage = useRef(null);
     const image = useRef(null);
     const pointers = useRef(new Map());
     const gesture = useRef(null);
+    const swipeStart = useRef(null);
     const [view, setView] = useState(FIT);
     const spanish = i18n.language?.startsWith('es');
     const label = (key, es, en) => t(key, { defaultValue: spanish ? es : en });
@@ -70,6 +71,8 @@ export function ZoomablePhoto({ src, t, i18n }) {
         const touch = event.pointerType === 'touch';
         if (!touch && (event.button !== 0 || !event.isPrimary || view.scale === 1)) return;
         if (active.size >= 2 || (active.size && (!touch || !active.values().next().value.touch))) return;
+        swipeStart.current = touch && active.size === 0 && view.scale === 1
+            ? { x: event.clientX, y: event.clientY } : null;
         active.set(event.pointerId, { x: event.clientX, y: event.clientY, touch });
         image.current.setPointerCapture(event.pointerId);
         rebaseGesture();
@@ -103,7 +106,17 @@ export function ZoomablePhoto({ src, t, i18n }) {
     }
 
     function endPointer(event) {
-        if (pointers.current.delete(event.pointerId)) rebaseGesture();
+        if (!pointers.current.delete(event.pointerId)) return;
+        const start = swipeStart.current;
+        swipeStart.current = null;
+        rebaseGesture();
+        if (!start || event.type !== 'pointerup' || view.scale !== 1) return;
+        const dx = event.clientX - start.x;
+        const dy = event.clientY - start.y;
+        const threshold = clamp(stage.current.clientWidth * 0.15, 40, 96);
+        if (Math.abs(dx) < threshold || Math.abs(dx) < 1.5 * Math.abs(dy)) return;
+        const navigate = dx < 0 ? onNext : onPrevious;
+        if (navigate) navigate();
     }
 
     function keyDown(event) {
