@@ -1,3 +1,4 @@
+import ReadingLibrary from '../AmpViewer/ReadingLibrary';
 import React from 'react';
 import ArrowBackIcon from '@material-ui/icons/ArrowBack';
 import ChevronRightIcon from '@material-ui/icons/ChevronRight';
@@ -477,12 +478,14 @@ class AndroidSettings extends React.PureComponent {
                         <Button href='https://chat.todosobreall.tech/access/' target='_blank' rel='noopener noreferrer'>Panel de acceso</Button>
                         <Button href='https://chat.todosobreall.tech/access/privacy' target='_blank' rel='noopener noreferrer'>Política de privacidad</Button>
                         <Button href='https://chat.todosobreall.tech/access/terms' target='_blank' rel='noopener noreferrer'>Condiciones del servicio</Button>
+                        <Button onClick={() => this.setState({ communityOpen: false, libraryOpen: true })}>Biblioteca de lectura</Button>
                         <Button onClick={this.openCommunityChannel}>Canal oficial · @comunidadtelebots</Button>
                     </DialogContent>
                     <DialogActions>
                         <Button onClick={() => this.setState({ communityOpen: false })}>Cerrar</Button>
                     </DialogActions>
                 </Dialog>
+                {this.state.libraryOpen && <ReadingLibrary key={OptionStore.get('my_id')?.value} account={OptionStore.get('my_id')?.value} onClose={() => this.setState({ libraryOpen: false })} />}
                 <TwoStepVerification ref={ref => (this.twoStepRef = ref)} />
                 <ActiveSessions ref={ref => (this.activeSessionsRef = ref)} />
                 <EditProfile ref={ref => (this.editProfileRef = ref)} />
