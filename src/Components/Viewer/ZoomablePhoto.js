@@ -16,7 +16,8 @@ function constrain(scale, x, y, stage, image) {
 export function ZoomablePhoto({ src, t, i18n }) {
     const stage = useRef(null);
     const image = useRef(null);
-    const drag = useRef(null);
+    const pointers = useRef(new Map());
+    const gesture = useRef(null);
     const [view, setView] = useState(FIT);
     const spanish = i18n.language?.startsWith('es');
     const label = (key, es, en) => t(key, { defaultValue: spanish ? es : en });
@@ -48,16 +49,61 @@ export function ZoomablePhoto({ src, t, i18n }) {
             event.clientY - bounds.top - bounds.height / 2);
     }
 
-    function startDrag(event) {
-        if (view.scale === 1 || event.button !== 0 || !event.isPrimary) return;
+    function measurement() {
+        const [first, second] = pointers.current.values();
+        if (!first) return null;
+        if (!second) return { x: first.x, y: first.y };
+        return {
+            x: (first.x + second.x) / 2,
+            y: (first.y + second.y) / 2,
+            distance: Math.hypot(second.x - first.x, second.y - first.y),
+        };
+    }
+
+    function rebaseGesture() {
+        const origin = measurement();
+        gesture.current = origin ? { origin, view } : null;
+    }
+
+    function startPointer(event) {
+        const active = pointers.current;
+        const touch = event.pointerType === 'touch';
+        if (!touch && (event.button !== 0 || !event.isPrimary || view.scale === 1)) return;
+        if (active.size >= 2 || (active.size && (!touch || !active.values().next().value.touch))) return;
+        active.set(event.pointerId, { x: event.clientX, y: event.clientY, touch });
         image.current.setPointerCapture(event.pointerId);
-        drag.current = { id: event.pointerId, x: event.clientX - view.x, y: event.clientY - view.y };
+        rebaseGesture();
     }
 
     function move(event) {
-        const origin = drag.current;
-        if (!origin || origin.id !== event.pointerId) return;
-        setView(constrain(view.scale, event.clientX - origin.x, event.clientY - origin.y, stage.current, image.current));
+        const point = pointers.current.get(event.pointerId);
+        if (!point) return;
+        point.x = event.clientX;
+        point.y = event.clientY;
+        const { origin, view: start } = gesture.current;
+        const current = measurement();
+        if (current.distance === undefined) {
+            if (start.scale > 1) setView(constrain(start.scale, start.x + current.x - origin.x,
+                start.y + current.y - origin.y, stage.current, image.current));
+            return;
+        }
+        if (!origin.distance) {
+            rebaseGesture();
+            return;
+        }
+        const bounds = stage.current.getBoundingClientRect();
+        const anchorX = origin.x - bounds.left - bounds.width / 2;
+        const anchorY = origin.y - bounds.top - bounds.height / 2;
+        const scale = clamp(start.scale * current.distance / origin.distance, 1, 4);
+        const ratio = scale / start.scale;
+        setView(scale === 1 ? FIT : constrain(scale,
+            current.x - origin.x + anchorX + (start.x - anchorX) * ratio,
+            current.y - origin.y + anchorY + (start.y - anchorY) * ratio,
+            stage.current, image.current));
+    }
+
+    function endPointer(event) {
+        if (pointers.current.delete(event.pointerId)) rebaseGesture();
     }
 
     function keyDown(event) {
@@ -81,9 +127,10 @@ export function ZoomablePhoto({ src, t, i18n }) {
             <img ref={image} tabIndex={0} className='media-viewer-content-image' src={src}
                 alt={label('Photo', 'Foto', 'Photo')} draggable={false}
                 onClick={event => { event.stopPropagation(); image.current.focus(); }} onDoubleClick={doubleClick}
-                onPointerDown={startDrag} onPointerMove={move} onLostPointerCapture={() => { drag.current = null; }}
+                onPointerDown={startPointer} onPointerMove={move} onPointerUp={endPointer}
+                onPointerCancel={endPointer} onLostPointerCapture={endPointer}
                 style={{ transform: `translate(${view.x}px, ${view.y}px) scale(${view.scale})`,
-                    cursor: view.scale > 1 ? 'grab' : 'zoom-in', touchAction: view.scale > 1 ? 'none' : 'manipulation' }} />
+                    cursor: view.scale > 1 ? 'grab' : 'zoom-in', touchAction: 'none' }} />
             {src && <div className='viewer-photo-tools' role='group' aria-label={label('PhotoZoom', 'Zoom de foto', 'Photo zoom')}
                 onClick={event => event.stopPropagation()}>
                 <IconButton size='small' aria-label={label('MediaZoomOut', 'Reducir', 'Zoom out')}
