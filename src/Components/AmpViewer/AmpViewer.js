@@ -19,6 +19,8 @@ import SubjectIcon from '@material-ui/icons/Subject';
 import WebIcon from '@material-ui/icons/Web';
 import { withTranslation } from 'react-i18next';
 import { publisherAmpUrl, offersAmpReader } from '../../Utils/AmpArticle';
+import OptionStore from '../../Stores/OptionStore';
+import { saveArticle } from '../../Stores/ReadingLibrary';
 import * as AmpCache from '../../Stores/AmpCache';
 import { getSafeHttpUrl } from '../../Utils/SafeExternalUrl';
 import './AmpViewer.css';
@@ -307,6 +309,7 @@ class AmpViewer extends React.Component {
             readerSupported: cachedContent ? true : null,
             readerContent: cachedContent || null,
         };
+        this.articleRef = React.createRef();
         this.iframeRef = React.createRef();
         this._errorTimer = null;
         this._mounted = false;
@@ -484,6 +487,15 @@ class AmpViewer extends React.Component {
         );
     }
 
+    saveText = () => {
+        try {
+            saveArticle(OptionStore.get('my_id')?.value, this.props.url, this.state.readerContent.title, this.articleRef.current.innerText);
+            this.setState({ saveStatus: 'Texto guardado en la biblioteca de esta cuenta.' });
+        } catch (error) {
+            this.setState({ saveStatus: error.name === 'QuotaExceededError' ? 'Almacenamiento lleno.' : 'No se ha podido guardar el texto. ' + error.message });
+        }
+    };
+
     renderReaderBody() {
         const { readerLoading, readerContent } = this.state;
 
@@ -497,8 +509,10 @@ class AmpViewer extends React.Component {
 
         return (
             <div className='amp-reader-content'>
+                {!readerContent.lite && <button type='button' onClick={this.saveText}>Guardar texto</button>}
+                {this.state.saveStatus && <p role='status'>{this.state.saveStatus}</p>}
                 {readerContent.title && <h1 className='amp-reader-title'>{readerContent.title}</h1>}
-                <div className='amp-reader-body' dangerouslySetInnerHTML={{ __html: readerContent.html }} />
+                <div ref={this.articleRef} className='amp-reader-body' dangerouslySetInnerHTML={{ __html: readerContent.html }} />
             </div>
         );
     }
