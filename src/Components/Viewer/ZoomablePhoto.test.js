@@ -59,3 +59,42 @@ it('toggles double-click zoom at the pointer', () => {
     act(() => { Simulate.doubleClick(image, { clientX: 150, clientY: 70 }); });
     expect(button('Ajustar foto').textContent).toBe('100%');
 });
+
+function touch(kind, id, x, y) {
+    const image = host.querySelector('img');
+    act(() => { Simulate[kind](image, {
+        pointerType: 'touch', pointerId: id, isPrimary: id === 1, button: 0, clientX: x, clientY: y,
+    }); });
+}
+
+it('pinches around the moving midpoint and continues panning with the remaining finger', () => {
+    const image = host.querySelector('img');
+    image.setPointerCapture = () => {};
+    host.querySelector('.viewer-photo-stage').getBoundingClientRect = () => ({ left: 0, top: 0, width: 200, height: 100 });
+
+    touch('pointerDown', 1, 60, 50);
+    touch('pointerDown', 2, 100, 50);
+    touch('pointerMove', 1, 20, 50);
+    expect(image.style.transform).toBe('translate(0px, 0px) scale(2)');
+    touch('pointerUp', 1, 20, 50);
+    touch('lostPointerCapture', 1, 20, 50);
+    touch('pointerMove', 2, 120, 60);
+    expect(image.style.transform).toBe('translate(20px, 10px) scale(2)');
+});
+
+it('bounds pinch zoom and cleans up cancelled touches', () => {
+    const image = host.querySelector('img');
+    image.setPointerCapture = () => {};
+    touch('pointerDown', 1, 50, 50);
+    touch('pointerDown', 2, 70, 50);
+    touch('pointerMove', 2, 170, 50);
+    expect(button('Ajustar foto').textContent).toBe('400%');
+    touch('pointerCancel', 2, 170, 50);
+    touch('pointerCancel', 1, 50, 50);
+    touch('pointerMove', 2, 60, 50);
+    expect(button('Ajustar foto').textContent).toBe('400%');
+    touch('pointerDown', 1, 10, 50);
+    touch('pointerDown', 2, 110, 50);
+    touch('pointerMove', 2, 20, 50);
+    expect(image.style.transform).toBe('translate(0px, 0px) scale(1)');
+});
