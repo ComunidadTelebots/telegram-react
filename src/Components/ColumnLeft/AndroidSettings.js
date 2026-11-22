@@ -469,9 +469,14 @@ class AndroidSettings extends React.PureComponent {
                         </div>
                     </div>
                 </div>
-                <Dialog open={Boolean(this.state.communityOpen)} onClose={() => this.setState({ communityOpen: false })} aria-labelledby='community-title'>
+                <Dialog fullWidth maxWidth='xs' PaperProps={{ className: 'telebots-community-panel' }} open={Boolean(this.state.communityOpen)} onClose={() => this.setState({ communityOpen: false })} aria-labelledby='community-title'>
                     <DialogTitle id='community-title'>Comunidad Telebots</DialogTitle>
                     <DialogContent>
+                        {this.props.onAppearance && <Button onClick={() => this.setState({ communityOpen: false }, this.handleChatSettings)}>Apariencia</Button>}
+                        <Button onClick={() => this.setState({ communityOpen: false }, this.handlePrivacy)}>Privacidad</Button>
+                        <Button href='https://chat.todosobreall.tech/access/' target='_blank' rel='noopener noreferrer'>Panel de acceso</Button>
+                        <Button href='https://chat.todosobreall.tech/access/privacy' target='_blank' rel='noopener noreferrer'>Política de privacidad</Button>
+                        <Button href='https://chat.todosobreall.tech/access/terms' target='_blank' rel='noopener noreferrer'>Condiciones del servicio</Button>
                         <Button onClick={this.openCommunityChannel}>Canal oficial · @comunidadtelebots</Button>
                     </DialogContent>
                     <DialogActions>
