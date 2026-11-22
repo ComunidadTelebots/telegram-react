@@ -201,10 +201,35 @@ export function setDesign(name) {
     localStorage.setItem(DESIGN_KEY, name);
 }
 
+export function usesEraFeatures() {
+    return localStorage.getItem('tg_design_legacy_features') === 'true';
+}
+
+export function setEraFeatures(enabled) {
+    localStorage.setItem('tg_design_legacy_features', String(enabled));
+    document.body.classList.toggle('design-legacy-features', enabled);
+}
+
+// Timeline IDs refer to the designs in DesignVersionSelector, including its legacy aliases.
+const BEFORE_STORIES = new Set([
+    'webogram', 'webogram-blue', 'webk-2020', 'webk-2022',
+    'android-v1', 'android-v2', 'android-v3', 'android-v35', 'android-v4',
+    'android-v5', 'android-v8', 'android-holo', 'android-v9', 'android-classic', 'android-v11',
+    'ios-7', 'ios-10', 'ios-14', 'macos-yosemite', 'macos-bigsur',
+    'macos-monterey', 'tdesktop-classic', 'tdesktop-2019', 'unigram-wp',
+    'unigram-fluent', 'telegramx-2018',
+]);
+
+export function hasStoryTrayForDesign(design = getDesign(), eraOnly = usesEraFeatures()) {
+    return !eraOnly || !BEFORE_STORIES.has(design);
+}
+
 export function initDesign() {
     setDesign(getDesign());
-    localStorage.removeItem('tg_design_legacy_features');
-    document.body.classList.remove('design-legacy-features');
+    document.body.classList.toggle(
+        'design-legacy-features',
+        usesEraFeatures(),
+    );
     initPalette();
     initChatPattern();
 }
