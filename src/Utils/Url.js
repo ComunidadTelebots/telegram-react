@@ -20,11 +20,12 @@ export function isUrlSafe(displayText, url) {
         return false;
     }
 
-    if (hasRTLOSymbol(url)) {
+    try {
+        const parsed = new URL(getHref(url));
+        return !parsed.username && !parsed.password && !hasRTLOSymbol(decodeURI(parsed.href));
+    } catch {
         return false;
     }
-
-    return true;
 }
 
 export function getDecodedUrl(url, mail) {
@@ -33,7 +34,10 @@ export function getDecodedUrl(url, mail) {
     const href = getHref(url, mail);
 
     try {
+        const parsed = new URL(href);
         let decodedHref = decodeURI(href);
+        // Keep directional controls percent-encoded in the confirmation dialog.
+        if (hasRTLOSymbol(decodedHref) || parsed.username || parsed.password) return parsed.href;
 
         const domain = decodedHref.match(/^https?:\/\/([^\/:?#]+)(?:[\/:?#]|$)/i)[1];
         decodedHref = decodedHref.replace(domain, punycode.ToUnicode(domain));
@@ -98,7 +102,7 @@ export function parseTelegramInternalLink(value) {
     }
 }
 
-const regExpRTLO = /\u202e/;
+const regExpRTLO = /[\u061c\u200e\u200f\u202a-\u202e\u2066-\u2069]/;
 
 export function hasRTLOSymbol(url) {
     if (!url) return false;
@@ -150,5 +154,5 @@ export function validateUrl(value) {
 }
 
 function isGoodProtocol(value) {
-    return ['http', 'https', 'tg'].some(x => value.toLowerCase().indexOf(x) === 0);
+    return ['http://', 'https://', 'tg://'].includes(value.toLowerCase());
 }
