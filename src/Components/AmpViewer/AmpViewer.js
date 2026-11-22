@@ -18,7 +18,7 @@ import BrokenImageIcon from '@material-ui/icons/BrokenImage';
 import SubjectIcon from '@material-ui/icons/Subject';
 import WebIcon from '@material-ui/icons/Web';
 import { withTranslation } from 'react-i18next';
-import { publisherAmpUrl } from '../../Utils/AmpArticle';
+import { publisherAmpUrl, offersAmpReader } from '../../Utils/AmpArticle';
 import * as AmpCache from '../../Stores/AmpCache';
 import { getSafeHttpUrl } from '../../Utils/SafeExternalUrl';
 import './AmpViewer.css';
@@ -218,7 +218,7 @@ function readDocument(page, sourceUrl = page.url) {
     return content;
 }
 
-async function fetchAmpContent(url) {
+export async function fetchAmpContent(url) {
     let ampUrl;
     try {
         const publisher = await fetchDocument(url);
@@ -448,7 +448,10 @@ class AmpViewer extends React.Component {
     renderIframeBody() {
         const { url, t } = this.props;
         const { loading, error, useFallback } = this.state;
-        const ampUrl = useFallback ? buildCloudflareAmpUrl(url) || url : buildGoogleAmpUrl(url) || url;
+        const directAmp = offersAmpReader(url);
+        const primary = directAmp ? url : buildGoogleAmpUrl(url);
+        const fallback = directAmp ? buildGoogleAmpUrl(url) : buildCloudflareAmpUrl(url);
+        const ampUrl = (useFallback ? fallback : primary) || url;
 
         return (
             <>
