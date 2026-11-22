@@ -332,7 +332,8 @@ class MediaViewerContent extends React.Component {
                 />
             );
         } else {
-            content = <ZoomablePhoto key={`${chatId}:${messageId}:${file.id}`} src={src} />;
+            content = <ZoomablePhoto key={`${chatId}:${messageId}:${file.id}`} src={src}
+                onPrevious={this.props.onPrevious} onNext={this.props.onNext} />;
         }
 
         return (
@@ -349,7 +350,9 @@ class MediaViewerContent extends React.Component {
 MediaViewerContent.propTypes = {
     chatId: PropTypes.number.isRequired,
     messageId: PropTypes.number.isRequired,
-    size: PropTypes.number.isRequired
+    size: PropTypes.number.isRequired,
+    onNext: PropTypes.func,
+    onPrevious: PropTypes.func
 };
 
 export default MediaViewerContent;
