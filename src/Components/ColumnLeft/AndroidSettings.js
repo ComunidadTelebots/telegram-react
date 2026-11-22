@@ -22,6 +22,7 @@ import GroupIcon from '@material-ui/icons/Group';
 import PersonAddIcon from '@material-ui/icons/PersonAdd';
 import ExitToAppIcon from '@material-ui/icons/ExitToApp';
 import CropFreeIcon from '@material-ui/icons/CropFree';
+import HistoryIcon from '@material-ui/icons/History';
 import TuneIcon from '@material-ui/icons/Tune';
 import Dialog from '@material-ui/core/Dialog';
 import DialogTitle from '@material-ui/core/DialogTitle';
@@ -44,7 +45,7 @@ import UserStore from '../../Stores/UserStore';
 import OptionStore from '../../Stores/OptionStore';
 import ApplicationStore from '../../Stores/ApplicationStore';
 import TdLibController from '../../Controllers/TdLibController';
-import { getDesign } from '../../Design';
+import { getDesign, setEraFeatures, usesEraFeatures } from '../../Design';
 import './AndroidSettings.css';
 
 function isHoloOrClassic(d) {
@@ -58,17 +59,22 @@ class AndroidSettings extends React.PureComponent {
             design: getDesign(),
             bio: '',
             snackbar: null,
+            legacyOnly: usesEraFeatures(),
         };
     }
 
     componentDidMount() {
         this.loadBio();
+        ApplicationStore.on('clientUpdateDesignCapabilities', this.onCapabilitiesChange);
         ApplicationStore.on('clientUpdateThemeChange', this.onDesignChange);
     }
 
     componentWillUnmount() {
+        ApplicationStore.off('clientUpdateDesignCapabilities', this.onCapabilitiesChange);
         ApplicationStore.off('clientUpdateThemeChange', this.onDesignChange);
     }
+
+    onCapabilitiesChange = ({ legacyOnly }) => this.setState({ legacyOnly });
 
     onDesignChange = () => this.setState({ design: getDesign() });
 
@@ -161,6 +167,12 @@ class AndroidSettings extends React.PureComponent {
         if (this.favedStickersRef) this.favedStickersRef.open();
     };
 
+    handleToggleLegacyFeatures = () => {
+        const next = !usesEraFeatures();
+        setEraFeatures(next);
+        ApplicationStore.emit('clientUpdateDesignCapabilities', { legacyOnly: next });
+    };
+
     handleLanguage = () => {
         if (this.languagePickerRef) this.languagePickerRef.open();
     };
@@ -173,7 +185,7 @@ class AndroidSettings extends React.PureComponent {
 
     render() {
         const { onClose } = this.props;
-        const { isDark, design, bio } = this.state;
+        const { isDark, design, bio, legacyOnly } = this.state;
         const me = this.getMe();
         const name = me ? getUserFullName(me) : 'Telegram User';
         const phone = me && me.phone_number ? '+' + me.phone_number : '';
@@ -185,6 +197,12 @@ class AndroidSettings extends React.PureComponent {
             .slice(0, 2)
             .toUpperCase();
         const avatarSrc = me ? getSrc(me.profile_photo ? me.profile_photo.small : null) : null;
+        const androidEra = {
+            'android-v1': 1, 'android-v2': 2, 'android-v3': 3, 'android-v35': 3.5,
+            'android-v4': 4, 'android-holo': 4, 'android-v5': 5,
+            'android-v9': 6, 'android-classic': 7, 'android-v8': 8, 'android-v11': 8,
+        }[design] ?? Infinity;
+        const supports = firstEra => !legacyOnly || androidEra >= firstEra;
         const isOld = isHoloOrClassic(design);
 
         // Secciones que varían por era
@@ -228,46 +246,60 @@ class AndroidSettings extends React.PureComponent {
                         arrow: true,
                         action: this.handleChatSettings,
                     },
-                    {
-                        icon: <FolderIcon />,
-                        label: 'Carpetas de chat',
-                        sub: 'Crear y organizar carpetas',
-                        arrow: true,
-                        action: this.handleChatFolders,
-                    },
+                    ...(!supports(6)
+                        ? []
+                        : [
+                              {
+                                  icon: <FolderIcon />,
+                                  label: 'Carpetas de chat',
+                                  sub: 'Crear y organizar carpetas',
+                                  arrow: true,
+                                  action: this.handleChatFolders,
+                              },
+                          ]),
                 ],
             },
-            {
-                key: 'devices',
-                rows: [
-                    {
-                        icon: <PhoneAndroidIcon />,
-                        label: 'Dispositivos',
-                        sub: 'Sesiones activas',
-                        arrow: true,
-                        action: this.handleDevices,
-                    },
-                ],
-            },
-            {
-                key: 'premium',
-                rows: [
-                    {
-                        icon: <StarIcon />,
-                        label: 'Telegram Premium',
-                        sub: 'Exclusive features',
-                        arrow: true,
-                        accent: true,
-                    },
-                    {
-                        icon: <EmojiEmotionsIcon />,
-                        label: 'Stickers & Emoji',
-                        sub: 'Stickers favoritos',
-                        arrow: true,
-                        action: this.handleFavoriteStickers,
-                    },
-                ],
-            },
+            // Dispositivos — desde v9 en adelante
+            ...(supports(3)
+                ? [
+                      {
+                          key: 'devices',
+                          rows: [
+                              {
+                                  icon: <PhoneAndroidIcon />,
+                                  label: 'Dispositivos',
+                                  sub: 'Sesiones activas',
+                                  arrow: true,
+                                  action: this.handleDevices,
+                              },
+                          ],
+                      },
+                  ]
+                : []),
+            ...(supports(4)
+                ? [
+                      {
+                          key: 'premium',
+                          rows: [
+                              {
+                                  hidden: !supports(9),
+                                  icon: <StarIcon />,
+                                  label: 'Telegram Premium',
+                                  sub: 'Exclusive features',
+                                  arrow: true,
+                                  accent: true,
+                              },
+                              {
+                                  icon: <EmojiEmotionsIcon />,
+                                  label: 'Stickers & Emoji',
+                                  sub: 'Stickers favoritos',
+                                  arrow: true,
+                                  action: this.handleFavoriteStickers,
+                              },
+                          ],
+                      },
+                  ]
+                : []),
             // Display
             {
                 key: 'display',
@@ -299,6 +331,14 @@ class AndroidSettings extends React.PureComponent {
                         sub: 'Organización, accesos rápidos, multimedia y privacidad',
                         arrow: true,
                         action: this.handlePlusOptions,
+                    },
+                    {
+                        icon: <HistoryIcon />,
+                        label: 'Solo funciones de la época',
+                        sub: legacyOnly ? 'Activado · API moderna' : 'Desactivado · funciones actuales',
+                        toggle: true,
+                        toggleOn: legacyOnly,
+                        action: this.handleToggleLegacyFeatures,
                     },
                 ],
             },
@@ -391,7 +431,7 @@ class AndroidSettings extends React.PureComponent {
                         {/* Sections */}
                         {sections.map(section => (
                             <div key={section.key} className='android-settings-section'>
-                                {section.rows.map((row, i) => (
+                                {section.rows.filter(row => !row.hidden).map((row, i) => (
                                     <React.Fragment key={row.label}>
                                         <button
                                             className={`android-settings-row${
