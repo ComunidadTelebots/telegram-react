@@ -292,7 +292,7 @@ function getFormattedText(formattedText) {
                 const url = type.url ? type.url : entityText;
 
                 result.push(
-                    <SafeLink key={entityKey} url={url}>
+                    <SafeLink key={entityKey} url={url} displayText={entityText}>
                         {entityText}
                     </SafeLink>,
                 );
