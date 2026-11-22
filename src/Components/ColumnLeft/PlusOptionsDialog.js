@@ -2,6 +2,7 @@ import React from 'react';
 import ArrowBackIcon from '@material-ui/icons/ArrowBack';
 import Dialog from '@material-ui/core/Dialog';
 import DialogContent from '@material-ui/core/DialogContent';
+import { hasStoryTrayForDesign } from '../../Design';
 import PlusSettings from './PlusSettings';
 import PlusInteractionSettings from './PlusInteractionSettings';
 import {
@@ -52,13 +53,13 @@ class PlusOptionsDialog extends React.PureComponent {
                         <strong>Organización de chats</strong>
                         <label><span>Vistas inteligentes</span><input type='checkbox' checked={smartViews}
                             onChange={e => this.save(PLUS_VIEWS_KEY, 'smartViews', e.target.checked ? '1' : '0')} /></label>
-                        <label><span>Mostrar historias en la lista de chats</span><input type='checkbox' checked={this.state.showStories}
+                        {hasStoryTrayForDesign() && <label><span>Mostrar historias en la lista de chats</span><input type='checkbox' checked={this.state.showStories}
                             onChange={e => {
                                 const showStories = e.target.checked;
                                 writeSmartChatPreference(SHOW_STORIES_KEY, showStories ? '1' : '0');
                                 this.setState({ showStories });
                                 window.dispatchEvent(new Event(PLUS_SETTINGS_EVENT));
-                            }} /></label>
+                            }} /></label>}
                         <label><span>Orden de conversaciones</span><select value={sortMode}
                             onChange={e => this.save(PLUS_SORT_KEY, 'sortMode', e.target.value)}>
                             <option value='telegram'>Orden de Telegram</option><option value='unread'>No leídos primero</option>
