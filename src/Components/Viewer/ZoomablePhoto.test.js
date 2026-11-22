@@ -5,9 +5,9 @@ import { beforeEach, afterEach, expect, it } from 'vitest';
 import { ZoomablePhoto } from './ZoomablePhoto';
 
 let host;
-const render = key => {
+const render = (key, navigation = {}) => {
     act(() => {
-        ReactDOM.render(<ZoomablePhoto key={key} src='photo.jpg' i18n={{ language: 'es' }}
+        ReactDOM.render(<ZoomablePhoto key={key} {...navigation} src='photo.jpg' i18n={{ language: 'es' }}
             t={(_, options) => options.defaultValue} />, host);
     });
 };
@@ -97,4 +97,36 @@ it('bounds pinch zoom and cleans up cancelled touches', () => {
     touch('pointerDown', 2, 110, 50);
     touch('pointerMove', 2, 20, 50);
     expect(image.style.transform).toBe('translate(0px, 0px) scale(1)');
+});
+
+it('pages through photos on horizontal swipes and ignores taps, vertical gestures and cancellations', () => {
+    const history = [];
+    render('photo-a', { onNext: () => history.push('next'), onPrevious: () => history.push('previous') });
+    host.querySelector('img').setPointerCapture = () => {};
+    function swipe(dx, dy, end = 'pointerUp') {
+        touch('pointerDown', 1, 100, 50);
+        touch('pointerMove', 1, 100 + dx, 50 + dy);
+        touch(end, 1, 100 + dx, 50 + dy);
+    }
+    swipe(-80, 2);
+    swipe(70, -2);
+    swipe(10, 0);
+    swipe(-60, 80);
+    swipe(-80, 2, 'pointerCancel');
+    expect(history.join(',')).toBe('next,previous');
+    click(button('Ampliar'));
+    swipe(-90, 0);
+    expect(history.join(',')).toBe('next,previous');
+});
+
+it('keeps the remaining finger of a pinch from paging even after returning to fit', () => {
+    let pages = 0;
+    render('photo-a', { onNext: () => { pages++; } });
+    host.querySelector('img').setPointerCapture = () => {};
+    touch('pointerDown', 1, 100, 50);
+    touch('pointerDown', 2, 120, 50);
+    touch('pointerMove', 2, 110, 50);
+    touch('pointerUp', 2, 110, 50);
+    touch('pointerUp', 1, 10, 50);
+    expect(pages).toBe(0);
 });
