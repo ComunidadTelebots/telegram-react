@@ -4878,12 +4878,11 @@ class GramJsController extends EventEmitter {
             let fromId = undefined;
             if (sender_user_id) {
                 const entity = this._entityCache.get(sender_user_id);
-                if (entity) {
-                    fromId = new Api.InputPeerUser({
-                        userId: BigInt(sender_user_id),
-                        accessHash: entity.accessHash || BigInt(0),
-                    });
-                }
+                if (!entity) return { '@type': 'messages', messages: [], total_count: 0 };
+                fromId = new Api.InputPeerUser({
+                    userId: BigInt(sender_user_id),
+                    accessHash: entity.accessHash || BigInt(0),
+                });
             }
 
             const msgs = await this.client.invoke(
