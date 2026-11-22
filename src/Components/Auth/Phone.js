@@ -509,9 +509,11 @@ class Phone extends React.Component {
                 </Typography>
                 <Typography className='sign-in-continue-on' style={{ marginTop: 4 }}>
                     <Link
-                        style={{ cursor: 'pointer' }}
+                        component='button'
+                        type='button'
+                        disabled={loading}
                         onClick={() => {
-                            TdLib.send({ '@type': 'requestQrCodeAuthentication', other_user_ids: [] });
+                            TdLibController.send({ '@type': 'requestQrCodeAuthentication', other_user_ids: [] });
                         }}>
                         Log in by QR Code
                     </Link>

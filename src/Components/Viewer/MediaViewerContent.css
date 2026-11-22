@@ -68,3 +68,46 @@
 .media-viewer-progress {
     position: relative;
 }
+
+.viewer-photo-stage {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.viewer-photo-tools {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    display: flex;
+    align-items: center;
+    padding: 2px 4px;
+    border-radius: var(--design-control-radius, 8px);
+    background: var(--design-panel-background, #fff);
+    color: var(--design-page-color, #202124);
+    box-shadow: 0 1px 5px rgba(0, 0, 0, .2);
+}
+
+.viewer-photo-tools .MuiIconButton-root {
+    color: inherit;
+    min-width: 36px;
+    min-height: 36px;
+}
+
+.viewer-photo-tools .Mui-disabled {
+    opacity: .4;
+}
+
+.viewer-photo-fit {
+    color: inherit;
+    background: transparent;
+    border: 0;
+    min-width: 52px;
+    min-height: 36px;
+    cursor: pointer;
+    font: inherit;
+    font-variant-numeric: tabular-nums;
+}

@@ -10,6 +10,7 @@ import PropTypes from 'prop-types';
 import classNames from 'classnames';
 import FileProgress from './FileProgress';
 import MediaCaption from './MediaCaption';
+import ZoomablePhoto from './ZoomablePhoto';
 import { getAnimationData, getMediaFile, getMediaPreviewFile } from '../../Utils/File';
 import { getText, isAnimationMessage, isLottieMessage, isVideoMessage } from '../../Utils/Message';
 import { isBlurredThumbnail } from '../../Utils/Media';
@@ -331,7 +332,8 @@ class MediaViewerContent extends React.Component {
                 />
             );
         } else {
-            content = <img className='media-viewer-content-image' src={src} alt='' onClick={this.handleContentClick} />;
+            content = <ZoomablePhoto key={`${chatId}:${messageId}:${file.id}`} src={src}
+                onPrevious={this.props.onPrevious} onNext={this.props.onNext} />;
         }
 
         return (
@@ -348,7 +350,9 @@ class MediaViewerContent extends React.Component {
 MediaViewerContent.propTypes = {
     chatId: PropTypes.number.isRequired,
     messageId: PropTypes.number.isRequired,
-    size: PropTypes.number.isRequired
+    size: PropTypes.number.isRequired,
+    onNext: PropTypes.func,
+    onPrevious: PropTypes.func
 };
 
 export default MediaViewerContent;

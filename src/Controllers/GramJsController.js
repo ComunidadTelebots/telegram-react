@@ -4,6 +4,7 @@
  * con la misma interfaz de eventos para que los stores no necesiten cambios.
  */
 
+import { getCodeInfo } from '../Utils/LoginCode';
 import { EventEmitter } from 'events';
 import { unstable_batchedUpdates } from 'react-dom';
 import bigInt from 'big-integer';
@@ -725,7 +726,7 @@ class GramJsController extends EventEmitter {
 
     send = async request => {
         const type = request['@type'];
-        if (!this.disableLog) console.log('[GramJs] send', request);
+        if (!this.disableLog) console.log('[GramJs] send', type);
 
         try {
             return await this._dispatch(type, request);
@@ -2976,6 +2977,10 @@ class GramJsController extends EventEmitter {
             result = await doSend();
         } catch (err) {
             const errMsg = err.errorMessage || err.message || '';
+            if (err.errorMessage === 'SESSION_PASSWORD_NEEDED') {
+                this._waitForAuthPassword();
+                return {};
+            }
             const dcMatch = errMsg.match(/PHONE_MIGRATE_(\d+)/i);
             if (dcMatch) {
                 const dcId = parseInt(dcMatch[1], 10);
@@ -3038,21 +3043,21 @@ class GramJsController extends EventEmitter {
             }
         }
 
-        console.log('[GramJs] Código de inicio de sesión solicitado');
-        this._phone = phone_number;
-        this._phoneHash = result.phoneCodeHash;
+        return this._applyLoginChallenge(result, phone_number);
+    };
 
+    _applyLoginChallenge = async (result, phone) => {
+        if (result.className === 'auth.SentCodeSuccess') {
+            await this._onAuthorized();
+            return {};
+        }
+        if (!result.phoneCodeHash || !result.type) throw new Error('Unsupported Telegram login response');
+        this._phone = phone;
+        this._phoneHash = result.phoneCodeHash;
+        this._loginCodeInfo = getCodeInfo(result, phone);
         this._emitUpdate({
             '@type': 'updateAuthorizationState',
-            authorization_state: {
-                '@type': 'authorizationStateWaitCode',
-                code_info: {
-                    phone_number,
-                    type: { '@type': 'authenticationCodeTypeTelegramMessage', length: 5 },
-                    next_type: null,
-                    timeout: 120,
-                },
-            },
+            authorization_state: { '@type': 'authorizationStateWaitCode', code_info: this._loginCodeInfo },
         });
         return {};
     };
@@ -3063,26 +3068,32 @@ class GramJsController extends EventEmitter {
                 new Api.auth.SignIn({
                     phoneNumber: this._phone,
                     phoneCodeHash: this._phoneHash,
-                    phoneCode: req.code,
+                    ...(this._loginCodeInfo?.type['@type'] === 'authenticationCodeTypeEmail'
+                        ? { emailVerification: new Api.EmailVerificationCode({ code: req.code }) }
+                        : { phoneCode: req.code }),
                 }),
             );
             await this._onAuthorized();
         } catch (err) {
             if (err.errorMessage === 'SESSION_PASSWORD_NEEDED') {
-                this._emitUpdate({
-                    '@type': 'updateAuthorizationState',
-                    authorization_state: {
-                        '@type': 'authorizationStateWaitPassword',
-                        password_hint: '',
-                        has_recovery_email_address: false,
-                        recovery_email_address_pattern: '',
-                    },
-                });
+                this._waitForAuthPassword();
                 return {};
             }
             throw err;
         }
         return {};
+    };
+
+    _waitForAuthPassword = () => {
+        this._emitUpdate({
+            '@type': 'updateAuthorizationState',
+            authorization_state: {
+                '@type': 'authorizationStateWaitPassword',
+                password_hint: '',
+                has_recovery_email_address: false,
+                recovery_email_address_pattern: '',
+            },
+        });
     };
 
     _checkPassword = async req => {
@@ -3094,12 +3105,13 @@ class GramJsController extends EventEmitter {
     };
 
     _resendCode = async () => {
-        if (this._phone && this._phoneHash) {
-            await this.client.invoke(
-                new Api.auth.ResendCode({ phoneNumber: this._phone, phoneCodeHash: this._phoneHash }),
-            );
-        }
-        return {};
+        const info = this._loginCodeInfo;
+        if (!info?.next_type || Date.now() < info.resend_at) throw new Error('Resend is not available yet');
+        const result = await this.client.invoke(
+            new Api.auth.ResendCode({ phoneNumber: this._phone, phoneCodeHash: this._phoneHash }),
+        );
+        if (this._loginCodeInfo !== info) return {};
+        return this._applyLoginChallenge(result, info.phone_number);
     };
 
     _resetInitialDialogsPromise = () => {
@@ -4470,11 +4482,13 @@ class GramJsController extends EventEmitter {
         try {
             const inputPeer = tdlibChatIdToInputPeer(chat_id, this._entityCache);
             const text = input_message_content?.text?.text || '';
+            const entities = input_message_content?.text?.entities || [];
             await this.client.invoke(
                 new Api.messages.EditMessage({
                     peer: inputPeer,
                     id: message_id,
                     message: text,
+                    entities: tdEntitiesToGramJs(entities),
                 }),
             );
             const editDate = Math.floor(Date.now() / 1000);
@@ -4484,7 +4498,7 @@ class GramJsController extends EventEmitter {
                 message_id,
                 new_content: {
                     '@type': 'messageText',
-                    text: { '@type': 'formattedText', text, entities: [] },
+                    text: { '@type': 'formattedText', text, entities },
                     web_page: null,
                 },
             });
@@ -4864,12 +4878,11 @@ class GramJsController extends EventEmitter {
             let fromId = undefined;
             if (sender_user_id) {
                 const entity = this._entityCache.get(sender_user_id);
-                if (entity) {
-                    fromId = new Api.InputPeerUser({
-                        userId: BigInt(sender_user_id),
-                        accessHash: entity.accessHash || BigInt(0),
-                    });
-                }
+                if (!entity) return { '@type': 'messages', messages: [], total_count: 0 };
+                fromId = new Api.InputPeerUser({
+                    userId: BigInt(sender_user_id),
+                    accessHash: entity.accessHash || BigInt(0),
+                });
             }
 
             const msgs = await this.client.invoke(
@@ -6159,10 +6172,21 @@ class GramJsController extends EventEmitter {
         }
     };
 
+    _handleQrAuthError = err => {
+        if (err.errorMessage === 'SESSION_PASSWORD_NEEDED') {
+            this._qrPollGeneration += 1;
+            this._waitForAuthPassword();
+        } else if (this._isAuthTokenExpired(err)) {
+            this._requestQrCodeAuthentication({}).catch(error => this._emitAuthError(error));
+        } else {
+            this._emitAuthError(err);
+        }
+    };
+
     _completeQrLoginFromUpdate = async () => {
         if (this._qrLoginCompleting) return;
         this._qrLoginCompleting = true;
-        this._qrPollGeneration += 1;
+        const generation = ++this._qrPollGeneration;
 
         try {
             if (!(await this._waitForClientConnection())) throw new Error('CLIENT_NOT_CONNECTED');
@@ -6173,14 +6197,10 @@ class GramJsController extends EventEmitter {
                     exceptIds: [],
                 }),
             );
-            await this._handleQrLoginResult(result);
+            if (generation === this._qrPollGeneration) await this._handleQrLoginResult(result);
         } catch (e) {
             console.warn('[GramJs] complete QR login error', e);
-            if (this._isAuthTokenExpired(e)) {
-                this._requestQrCodeAuthentication({}).catch(err => this._emitAuthError(err));
-            } else {
-                this._emitAuthError(e);
-            }
+            if (generation === this._qrPollGeneration) this._handleQrAuthError(e);
         } finally {
             this._qrLoginCompleting = false;
         }
@@ -6199,7 +6219,7 @@ class GramJsController extends EventEmitter {
     };
 
     _requestQrCodeAuthentication = async req => {
-        this._qrPollGeneration += 1;
+        const generation = ++this._qrPollGeneration;
         try {
             if (!(await this._waitForClientConnection())) throw new Error('CLIENT_NOT_CONNECTED');
             const result = await this.client.invoke(
@@ -6209,14 +6229,10 @@ class GramJsController extends EventEmitter {
                     exceptIds: [],
                 }),
             );
-            await this._handleQrLoginResult(result);
+            if (generation === this._qrPollGeneration) await this._handleQrLoginResult(result);
         } catch (e) {
             console.error('[GramJs] requestQrCodeAuthentication error', e);
-            if (this._isAuthTokenExpired(e)) {
-                this._requestQrCodeAuthentication({}).catch(err => this._emitAuthError(err));
-            } else {
-                this._emitAuthError(e);
-            }
+            if (generation === this._qrPollGeneration) this._handleQrAuthError(e);
         }
         return {};
     };
@@ -6234,14 +6250,10 @@ class GramJsController extends EventEmitter {
                     exceptIds: [],
                 }),
             );
-            await this._handleQrLoginResult(result);
+            if (generation === this._qrPollGeneration) await this._handleQrLoginResult(result);
         } catch (e) {
             console.warn('[GramJs] QR poll error', e);
-            if (this._isAuthTokenExpired(e)) {
-                this._requestQrCodeAuthentication({}).catch(err => this._emitAuthError(err));
-            } else {
-                this._emitAuthError(e);
-            }
+            if (generation === this._qrPollGeneration) this._handleQrAuthError(e);
         }
     };
 
@@ -6866,6 +6878,9 @@ const TDLIB_TO_GRAMJS_ENTITY = {
     textEntityTypeStrikethrough: 'MessageEntityStrike',
     textEntityTypeCode: 'MessageEntityCode',
     textEntityTypePre: 'MessageEntityPre',
+    textEntityTypePreCode: 'MessageEntityPre',
+    textEntityTypeBlockQuote: 'MessageEntityBlockquote',
+    textEntityTypeExpandableBlockQuote: 'MessageEntityBlockquote',
     textEntityTypeUrl: 'MessageEntityUrl',
     textEntityTypeTextUrl: 'MessageEntityTextUrl',
     textEntityTypeMention: 'MessageEntityMention',
@@ -6886,6 +6901,10 @@ function tdEntitiesToGramJs(tdEntities) {
             const gramCls = TDLIB_TO_GRAMJS_ENTITY[tdType];
             if (!gramCls || !Api[gramCls]) return null;
             const opts = { offset: e.offset, length: e.length };
+            if (gramCls === 'MessageEntityPre') opts.language = e.type.language || '';
+            if (gramCls === 'MessageEntityBlockquote') {
+                opts.collapsed = tdType === 'textEntityTypeExpandableBlockQuote' || Boolean(e.type.is_collapsed);
+            }
             if (tdType === 'textEntityTypeTextUrl') opts.url = e.type.url || '';
             if (tdType === 'textEntityTypeMentionUser') opts.userId = BigInt(e.type.user_id || 0);
             return new Api[gramCls](opts);

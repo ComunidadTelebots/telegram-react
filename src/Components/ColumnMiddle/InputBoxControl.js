@@ -1817,7 +1817,7 @@ class InputBoxControl extends Component {
                                         </IconButton>
                                     }
                                 >
-                                    <EmojiPickerButton onSelect={this.handleEmojiSelect} />
+                                    <EmojiPickerButton chatId={chatId} onSelect={this.handleEmojiSelect} />
                                 </React.Suspense>
                                 <IconButton
                                     className='inputbox-icon-button'

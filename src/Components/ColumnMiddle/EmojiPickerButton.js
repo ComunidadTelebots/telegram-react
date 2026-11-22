@@ -14,6 +14,8 @@ import Button from '@material-ui/core/Button';
 import IconButton from '@material-ui/core/IconButton';
 import InsertEmoticonIcon from '../../Assets/Icons/Smile';
 import { Picker as EmojiPicker } from 'emoji-mart';
+import { usesEraFeatures } from '../../Design';
+import QuickFavoriteStickers from './QuickFavoriteStickers';
 import StickerPreview from './StickerPreview';
 import StickersPicker from './StickersPicker';
 import { isAppleDevice } from '../../Utils/Common';
@@ -51,13 +53,17 @@ class EmojiPickerButton extends React.Component {
             open: false,
             tab: 0,
             emojiGroups: [],
+            favoritesChatId: null,
+            eraOnly: usesEraFeatures(),
         };
 
+        this.triggerRef = React.createRef();
         this.emojiPickerRef = React.createRef();
         this.stickersPickerRef = React.createRef();
     }
 
     componentDidMount() {
+        ApplicationStore.on('clientUpdateDesignCapabilities', this.onDesignCapabilities);
         ApplicationStore.on('clientUpdateThemeChange', this.onClientUpdateChange);
         LocalizationStore.on('clientUpdateLanguageChange', this.onClientUpdateChange);
         TdLibController.on('clientUpdateOpenStickersPanel', this.onClientUpdateOpenStickersPanel);
@@ -67,10 +73,70 @@ class EmojiPickerButton extends React.Component {
     }
 
     componentWillUnmount() {
+        ApplicationStore.off('clientUpdateDesignCapabilities', this.onDesignCapabilities);
         ApplicationStore.off('clientUpdateThemeChange', this.onClientUpdateChange);
         LocalizationStore.off('clientUpdateLanguageChange', this.onClientUpdateChange);
         TdLibController.off('clientUpdateOpenStickersPanel', this.onClientUpdateOpenStickersPanel);
     }
+
+    componentDidUpdate(prevProps) {
+        if (prevProps.chatId !== this.props.chatId) {
+            this.press = null;
+            this.openFavoritesOnClick = false;
+            if (this.state.favoritesChatId !== null) this.closeFavorites();
+        }
+    }
+
+    onDesignCapabilities = () => this.setState({ eraOnly: usesEraFeatures(), favoritesChatId: null });
+
+    openFavorites = () => {
+        if (usesEraFeatures()) return;
+        this.buttonEnter = false;
+        this.paperEnter = false;
+        this.setState({ open: false, favoritesChatId: this.props.chatId });
+    };
+
+    closeFavorites = () => this.setState({ favoritesChatId: null }, () => {
+        if (this.triggerRef.current) this.triggerRef.current.focus();
+    });
+
+    handleTriggerKeyDown = event => {
+        if (this.state.eraOnly || !event.shiftKey || event.key !== 'F10') return;
+        event.preventDefault();
+        this.openFavorites();
+    };
+
+    startPress = event => {
+        this.openFavoritesOnClick = false;
+        this.press = event.isPrimary !== false && event.button === 0
+            ? { id: event.pointerId, time: event.timeStamp, x: event.clientX, y: event.clientY }
+            : null;
+    };
+
+    movePress = event => {
+        if (this.press && (event.pointerId !== this.press.id ||
+            Math.hypot(event.clientX - this.press.x, event.clientY - this.press.y) > 10)) {
+            this.press = null;
+        }
+    };
+
+    finishPress = event => {
+        this.movePress(event);
+        this.openFavoritesOnClick = Boolean(this.press && event.timeStamp - this.press.time >= 500);
+        this.press = null;
+    };
+
+    cancelPress = () => { this.press = null; };
+
+    handlePickerClick = () => {
+        if (this.openFavoritesOnClick && !this.state.eraOnly) {
+            this.openFavoritesOnClick = false;
+            this.openFavorites();
+        } else {
+            this.updatePicker(true);
+            this.loadStickerSets();
+        }
+    };
 
     onClientUpdateOpenStickersPanel = () => {
         this.updatePicker(true);
@@ -266,7 +332,19 @@ class EmojiPickerButton extends React.Component {
                 />
                 <IconButton
                     className='inputbox-icon-button'
-                    aria-label='Emoticon'
+                    ref={this.triggerRef}
+                    aria-label={t('EmojiAndStickers', 'Emoji and stickers')}
+                    aria-expanded={open || this.state.favoritesChatId != null}
+                    aria-keyshortcuts={this.state.eraOnly ? undefined : 'Shift+F10'}
+                    onKeyDown={this.handleTriggerKeyDown}
+                    title={this.state.eraOnly ? t('Emoji') : t('QuickFavoriteStickersHint', 'Hold for favorite stickers')}
+                    onPointerDown={this.startPress}
+                    onPointerMove={this.movePress}
+                    onPointerUp={this.finishPress}
+                    onPointerCancel={this.cancelPress}
+                    onPointerLeave={this.cancelPress}
+                    onContextMenu={event => { if (!this.state.eraOnly && this.press) event.preventDefault(); }}
+                    onClick={this.handlePickerClick}
                     onMouseEnter={this.handleButtonMouseEnter}
                     onMouseLeave={this.handleButtonMouseLeave}>
                     <InsertEmoticonIcon />
@@ -288,6 +366,11 @@ class EmojiPickerButton extends React.Component {
                             onClick={this.handleStickersClick}>
                             {t('Stickers')}
                         </Button>
+                        {!this.state.eraOnly && (
+                            <Button className='emoji-picker-header-button' onClick={this.openFavorites}>
+                                {t('Favorites', 'Favorites')}
+                            </Button>
+                        )}
                     </div>
                     {tab === 0 && emojiGroups.length > 0 && (
                         <div className='emoji-groups-bar'>
@@ -311,6 +394,16 @@ class EmojiPickerButton extends React.Component {
                     </div>
                     {Boolean(sticker) && <StickerPreview sticker={sticker} />}
                 </div>
+                {this.state.favoritesChatId != null && this.state.favoritesChatId === this.props.chatId && (
+                    <QuickFavoriteStickers
+                        t={t}
+                        onClose={this.closeFavorites}
+                        onSelect={item => {
+                            this.closeFavorites();
+                            this.handleStickerSend(item);
+                        }}
+                    />
+                )}
             </>
         );
     }

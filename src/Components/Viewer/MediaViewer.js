@@ -925,6 +925,8 @@ class MediaViewer extends React.Component {
                             chatId={chatId}
                             messageId={currentMessageId}
                             size={PHOTO_BIG_SIZE}
+                            onNext={hasNextMedia ? this.handleNext : undefined}
+                            onPrevious={hasPreviousMedia ? this.handlePrevious : undefined}
                             onClick={this.handlePrevious}
                         />
                     </div>

@@ -1,3 +1,4 @@
+import ReadingLibrary from '../AmpViewer/ReadingLibrary';
 import React from 'react';
 import ArrowBackIcon from '@material-ui/icons/ArrowBack';
 import ChevronRightIcon from '@material-ui/icons/ChevronRight';
@@ -44,7 +45,7 @@ import UserStore from '../../Stores/UserStore';
 import OptionStore from '../../Stores/OptionStore';
 import ApplicationStore from '../../Stores/ApplicationStore';
 import TdLibController from '../../Controllers/TdLibController';
-import { getDesign } from '../../Design';
+import { getDesign, setEraFeatures, usesEraFeatures } from '../../Design';
 import './AndroidSettings.css';
 
 function isHoloOrClassic(d) {
@@ -58,18 +59,22 @@ class AndroidSettings extends React.PureComponent {
             design: getDesign(),
             bio: '',
             snackbar: null,
-            legacyOnly: localStorage.getItem('tg_design_legacy_features') === 'true',
+            legacyOnly: usesEraFeatures(),
         };
     }
 
     componentDidMount() {
         this.loadBio();
+        ApplicationStore.on('clientUpdateDesignCapabilities', this.onCapabilitiesChange);
         ApplicationStore.on('clientUpdateThemeChange', this.onDesignChange);
     }
 
     componentWillUnmount() {
+        ApplicationStore.off('clientUpdateDesignCapabilities', this.onCapabilitiesChange);
         ApplicationStore.off('clientUpdateThemeChange', this.onDesignChange);
     }
+
+    onCapabilitiesChange = ({ legacyOnly }) => this.setState({ legacyOnly });
 
     onDesignChange = () => this.setState({ design: getDesign() });
 
@@ -163,13 +168,9 @@ class AndroidSettings extends React.PureComponent {
     };
 
     handleToggleLegacyFeatures = () => {
-        this.setState(({ legacyOnly }) => {
-            const next = !legacyOnly;
-            localStorage.setItem('tg_design_legacy_features', String(next));
-            document.body.classList.toggle('design-legacy-features', next);
-            ApplicationStore.emit('clientUpdateDesignCapabilities', { legacyOnly: next });
-            return { legacyOnly: next };
-        });
+        const next = !usesEraFeatures();
+        setEraFeatures(next);
+        ApplicationStore.emit('clientUpdateDesignCapabilities', { legacyOnly: next });
     };
 
     handleLanguage = () => {
@@ -196,6 +197,12 @@ class AndroidSettings extends React.PureComponent {
             .slice(0, 2)
             .toUpperCase();
         const avatarSrc = me ? getSrc(me.profile_photo ? me.profile_photo.small : null) : null;
+        const androidEra = {
+            'android-v1': 1, 'android-v2': 2, 'android-v3': 3, 'android-v35': 3.5,
+            'android-v4': 4, 'android-holo': 4, 'android-v5': 5,
+            'android-v9': 6, 'android-classic': 7, 'android-v8': 8, 'android-v11': 8,
+        }[design] ?? Infinity;
+        const supports = firstEra => !legacyOnly || androidEra >= firstEra;
         const isOld = isHoloOrClassic(design);
 
         // Secciones que varían por era
@@ -239,7 +246,7 @@ class AndroidSettings extends React.PureComponent {
                         arrow: true,
                         action: this.handleChatSettings,
                     },
-                    ...(legacyOnly
+                    ...(!supports(6)
                         ? []
                         : [
                               {
@@ -253,7 +260,7 @@ class AndroidSettings extends React.PureComponent {
                 ],
             },
             // Dispositivos — desde v9 en adelante
-            ...(!legacyOnly
+            ...(supports(3)
                 ? [
                       {
                           key: 'devices',
@@ -267,11 +274,15 @@ class AndroidSettings extends React.PureComponent {
                               },
                           ],
                       },
-                      // Premium — solo en eras modernas
+                  ]
+                : []),
+            ...(supports(4)
+                ? [
                       {
                           key: 'premium',
                           rows: [
                               {
+                                  hidden: !supports(9),
                                   icon: <StarIcon />,
                                   label: 'Telegram Premium',
                                   sub: 'Exclusive features',
@@ -420,7 +431,7 @@ class AndroidSettings extends React.PureComponent {
                         {/* Sections */}
                         {sections.map(section => (
                             <div key={section.key} className='android-settings-section'>
-                                {section.rows.map((row, i) => (
+                                {section.rows.filter(row => !row.hidden).map((row, i) => (
                                     <React.Fragment key={row.label}>
                                         <button
                                             className={`android-settings-row${
@@ -477,12 +488,14 @@ class AndroidSettings extends React.PureComponent {
                         <Button href='https://chat.todosobreall.tech/access/' target='_blank' rel='noopener noreferrer'>Panel de acceso</Button>
                         <Button href='https://chat.todosobreall.tech/access/privacy' target='_blank' rel='noopener noreferrer'>Política de privacidad</Button>
                         <Button href='https://chat.todosobreall.tech/access/terms' target='_blank' rel='noopener noreferrer'>Condiciones del servicio</Button>
+                        <Button onClick={() => this.setState({ communityOpen: false, libraryOpen: true })}>Biblioteca de lectura</Button>
                         <Button onClick={this.openCommunityChannel}>Canal oficial · @comunidadtelebots</Button>
                     </DialogContent>
                     <DialogActions>
                         <Button onClick={() => this.setState({ communityOpen: false })}>Cerrar</Button>
                     </DialogActions>
                 </Dialog>
+                {this.state.libraryOpen && <ReadingLibrary key={OptionStore.get('my_id')?.value} account={OptionStore.get('my_id')?.value} onClose={() => this.setState({ libraryOpen: false })} />}
                 <TwoStepVerification ref={ref => (this.twoStepRef = ref)} />
                 <ActiveSessions ref={ref => (this.activeSessionsRef = ref)} />
                 <EditProfile ref={ref => (this.editProfileRef = ref)} />

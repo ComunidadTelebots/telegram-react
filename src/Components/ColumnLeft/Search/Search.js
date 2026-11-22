@@ -33,6 +33,17 @@ import UserStore from '../../../Stores/UserStore';
 import TdLibController from '../../../Controllers/TdLibController';
 import './Search.css';
 
+const MEDIA_FILTERS = [
+    [null, 'All', 'Todos', 'All'],
+    ['searchMessagesFilterPhoto', 'SharedMediaTabPhotos', 'Fotos', 'Photos'],
+    ['searchMessagesFilterVideo', 'SharedMediaTabVideos', 'Vídeos', 'Videos'],
+    ['searchMessagesFilterDocument', 'SharedMediaTabFiles', 'Archivos', 'Files'],
+    ['searchMessagesFilterUrl', 'SharedMediaTabLinks', 'Enlaces', 'Links'],
+    ['searchMessagesFilterVoiceNote', 'SharedMediaTabVoice', 'Notas de voz', 'Voice notes'],
+    ['searchMessagesFilterAudio', 'SharedMediaTabMusic', 'Música', 'Music'],
+    ['searchMessagesFilterPinned', 'PinnedMessages', 'Fijados', 'Pinned'],
+];
+
 const styles = theme => ({
     closeSearchIconButton: {
         margin: '8px 12px 8px 0',
@@ -62,7 +73,7 @@ class Search extends React.Component {
     componentDidUpdate(prevProps, prevState, snapshot) {
         const { text } = this.props;
 
-        if (prevProps.text !== text) {
+        if (prevProps.text !== text || prevProps.chatId !== this.props.chatId) {
             this.searchOrLoadContent(text);
         }
     }
@@ -70,11 +81,18 @@ class Search extends React.Component {
     searchOrLoadContent(text) {
         const trimmedText = text ? text.trim() : '';
 
-        if (!trimmedText) {
-            this.loadContent();
+        if (!trimmedText && !(this.props.chatId && this.state.searchFilter)) {
+            this.sessionId = {};
+            this.text = '';
+            this.pageQuery = null;
+            this.loadContent(this.sessionId);
         } else {
             this.searchText(trimmedText);
         }
+    }
+
+    componentWillUnmount() {
+        this.sessionId = null;
     }
 
     concatSearchResults = results => {
@@ -109,17 +127,20 @@ class Search extends React.Component {
 
         try {
             const chat = await TdLibController.send({ '@type': 'searchPublicChat', username });
-            if (chat && chat.id) {
+            if (chat?.type?.['@type'] === 'chatTypePrivate' && chat.id) {
                 return { senderUserId: chat.id, query };
             }
         } catch (e) {
             /* no-op */
         }
-        return { senderUserId: 0, query };
+        return null;
     };
 
     searchText = async text => {
-        this.sessionId = new Date();
+        this.sessionId = {};
+        this.pageQuery = null;
+        this.hasMore = false;
+        this.setState({ messages: null });
         this.text = text;
         const sessionId = this.sessionId;
         let store = null;
@@ -131,6 +152,11 @@ class Search extends React.Component {
         let effectiveQuery = text;
         if (chatId && text) {
             const parsed = await this.parseSenderFromQuery(text);
+            if (sessionId !== this.sessionId) return;
+            if (!parsed) {
+                this.setState({ messages: { messages: [], total_count: 0 } });
+                return;
+            }
             senderUserId = parsed.senderUserId;
             effectiveQuery = parsed.query;
         }
@@ -260,12 +286,14 @@ class Search extends React.Component {
             });
         }
 
-        MessageStore.setItems(messages.messages);
 
         if (sessionId !== this.sessionId) {
             return;
         }
 
+        this.pageQuery = { query: effectiveQuery, sender_user_id: senderUserId };
+        this.hasMore = messages.messages.length === 50;
+        MessageStore.setItems(messages.messages);
         this.setState({
             messages,
             renderedCount: 20, // reset al recibir resultados frescos
@@ -285,7 +313,7 @@ class Search extends React.Component {
         loadUsersContent(store, [...users.keys()]);
     };
 
-    loadContent = async () => {
+    loadContent = async sessionId => {
         const { chatId } = this.props;
         if (chatId) {
             this.setState({
@@ -327,6 +355,7 @@ class Search extends React.Component {
             savedMessagesPromise,
         ]);
 
+        if (sessionId !== this.sessionId) return;
         this.setState({
             top,
             recentlyFound,
@@ -423,7 +452,7 @@ class Search extends React.Component {
     };
 
     onLoadPrevious = async () => {
-        if (this.loading) return;
+        if (!this.pageQuery || !this.hasMore || this.loading === this.sessionId) return;
 
         const { chatId } = this.props;
 
@@ -433,34 +462,32 @@ class Search extends React.Component {
 
         const offset = this.getOffset(messages);
 
-        this.loading = true;
-        let result = [];
-        if (chatId) {
-            result = await TdLibController.send({
+        this.loading = sessionId;
+        let result;
+        try {
+            result = await TdLibController.send(chatId ? {
                 '@type': 'searchChatMessages',
                 chat_id: chatId,
-                query: this.text,
-                sender_user_id: 0,
+                ...this.pageQuery,
                 from_message_id: offset.offset_message_id,
                 limit: 50,
                 filter: searchFilter ? { '@type': searchFilter } : null,
-            });
-        } else {
-            result = await TdLibController.send({
+            } : {
                 '@type': 'searchMessages',
                 query: this.text,
                 ...offset,
                 limit: 50,
             });
-        }
-        this.loading = false;
-
-        filterDuplicateMessages(result, messages ? messages.messages : []);
-        MessageStore.setItems(result.messages);
-
-        if (sessionId !== this.sessionId) {
+        } catch {
             return;
+        } finally {
+            if (this.loading === sessionId) this.loading = null;
         }
+        if (sessionId !== this.sessionId) return;
+        const fullPage = result.messages.length === 50;
+        filterDuplicateMessages(result, messages ? messages.messages : []);
+        this.hasMore = fullPage && result.messages.length > 0;
+        MessageStore.setItems(result.messages);
 
         const merged = this.concatMessages(messages, result);
         this.setState(prev => ({
@@ -494,32 +521,15 @@ class Search extends React.Component {
     };
 
     handleFilterChange = (event, value) => {
-        const filters = [
-            null,
-            'searchMessagesFilterPhoto',
-            'searchMessagesFilterVideo',
-            'searchMessagesFilterDocument',
-            'searchMessagesFilterUrl',
-            'searchMessagesFilterVoiceNote',
-        ];
-        const searchFilter = filters[value] || null;
-        this.setState({ searchFilter }, () => {
-            if (this.text) this.searchText(this.text);
-        });
+        const searchFilter = MEDIA_FILTERS[value][0];
+        this.setState({ searchFilter }, () => this.searchOrLoadContent(this.props.text));
     };
 
     render() {
-        const { classes, chatId } = this.props;
+        const { classes, chatId, i18n, t } = this.props;
         const { top, recentlyFound, local, global, messages, searchFilter, renderedCount } = this.state;
-
-        const filterIndex = [
-            null,
-            'searchMessagesFilterPhoto',
-            'searchMessagesFilterVideo',
-            'searchMessagesFilterDocument',
-            'searchMessagesFilterUrl',
-            'searchMessagesFilterVoiceNote',
-        ].indexOf(searchFilter);
+        const filterIndex = MEDIA_FILTERS.findIndex(([type]) => type === searchFilter);
+        const spanish = i18n.language?.startsWith('es');
 
         const chat = ChatStore.get(chatId);
 
@@ -601,12 +611,9 @@ class Search extends React.Component {
                             indicatorColor='primary'
                             textColor='primary'
                             className='search-filter-tabs'>
-                            <Tab label='All' />
-                            <Tab label='Photos' />
-                            <Tab label='Videos' />
-                            <Tab label='Files' />
-                            <Tab label='Links' />
-                            <Tab label='Audio' />
+                            {MEDIA_FILTERS.map(([type, key, es, en]) => (
+                                <Tab key={type || 'all'} label={t(key, { defaultValue: spanish ? es : en })} />
+                            ))}
                         </Tabs>
                     </div>
                 )}

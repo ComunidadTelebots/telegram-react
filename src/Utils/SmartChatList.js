@@ -3,6 +3,7 @@ export const PLUS_VIEWS_KEY = 'tg_plus_smart_views';
 export const PLUS_FILTER_KEY = 'tg_plus_smart_filter';
 export const PLUS_SORT_KEY = 'tg_plus_chat_sort';
 export const CHAT_LIST_LINES_KEY = 'tg_chat_list_lines';
+export const SHOW_STORIES_KEY = 'tg_show_stories_tray';
 export const PLUS_SETTINGS_EVENT = 'telegram-react-plus-settings';
 
 export const normalizeChatListLines = value => (Number(value) === 3 ? 3 : 2);

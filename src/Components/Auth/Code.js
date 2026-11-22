@@ -5,7 +5,9 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import React from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import Button from '@material-ui/core/Button';
+import { acceptsText, validCode } from '../../Utils/LoginCode';
 import classNames from 'classnames';
 import { withTranslation } from 'react-i18next';
 import Typography from '@material-ui/core/Typography';
@@ -18,214 +20,117 @@ import AppStore from '../../Stores/ApplicationStore';
 import TdLibController from '../../Controllers/TdLibController';
 import './Code.css';
 
-class Code extends React.Component {
-    constructor(props) {
-        super(props);
+const hints = {
+    TelegramMessage: ['Busca el código en el chat de servicio Telegram de un dispositivo con la sesión abierta.', 'Check the Telegram service chat on a device where you are signed in.'],
+    Sms: ['Introduce el código recibido por SMS.', 'Enter the code from the text message.'],
+    Call: ['Introduce el código de la llamada de Telegram.', 'Enter the code from the Telegram call.'],
+    MissedCall: ['Introduce las últimas cifras del número que te ha llamado.', 'Enter the final digits of the number that called you.'],
+    FlashCall: ['Introduce el número desde el que te ha llamado Telegram.', 'Enter the number that Telegram called you from.'],
+    Email: ['Introduce el código enviado a tu correo.', 'Enter the code sent to your email.'],
+    Fragment: ['Consulta el código en tu cuenta de Fragment.', 'Check your Fragment account for the code.'],
+    SmsWord: ['Introduce la palabra recibida por SMS.', 'Enter the word from the text message.'],
+    SmsPhrase: ['Introduce la frase recibida por SMS.', 'Enter the phrase from the text message.'],
+    Unsupported: ['Este método requiere otro cliente. Puedes volver y acceder con QR.', 'This method requires another client. Go back to sign in with QR.']
+};
 
-        this.state = {
-            connecting: isConnecting(AppStore.connectionState),
-            error: '',
-            loading: false
-        };
+function Code({ codeInfo, onChangePhone, i18n, t }) {
+    const [code, setCode] = useState('');
+    const [error, setError] = useState('');
+    const [busy, setBusy] = useState(false);
+    const [now, setNow] = useState(Date.now);
+    const [connecting, setConnecting] = useState(() => isConnecting(AppStore.connectionState));
+    const pending = useRef(false);
+    const type = codeInfo.type;
+    const method = type?.['@type']?.replace('authenticationCodeType', '');
+    const supported = Boolean(hints[method]) && method !== 'Unsupported';
+    const lang = i18n.language?.toLowerCase().startsWith('es') ? 0 : 1;
+    const deadline = useMemo(() => codeInfo.resend_at ?? Date.now() + (codeInfo.timeout || 0) * 1000, [codeInfo]);
+    const seconds = Math.max(0, Math.ceil((deadline - now) / 1000));
 
-        this.inputRef = React.createRef();
+    useEffect(() => {
+        const update = ({ state }) => setConnecting(isConnecting(state));
+        AppStore.on('updateConnectionState', update);
+        TdLibController.clientUpdate({ '@type': 'clientUpdateMonkeyIdle' });
+        return () => AppStore.off('updateConnectionState', update);
+    }, []);
+
+    useEffect(() => {
+        setCode('');
+        setError('');
+        setNow(Date.now());
+        if (!codeInfo.next_type || deadline <= Date.now()) return;
+        const timer = setInterval(() => {
+            const time = Date.now();
+            setNow(time);
+            if (time >= deadline) clearInterval(timer);
+        }, 500);
+        return () => clearInterval(timer);
+    }, [codeInfo, deadline]);
+
+    async function send(request) {
+        if (pending.current) return;
+        pending.current = true;
+        setBusy(true);
+        setError('');
+        try {
+            await TdLibController.send(request);
+        } catch (err) {
+            const message = err?.errorMessage || err?.message;
+            setError(message === 'PHONE_CODE_INVALID' ? t('InvalidCode') : message || t('Error'));
+        } finally {
+            pending.current = false;
+            setBusy(false);
+        }
     }
 
-    componentDidMount() {
-        TdLibController.clientUpdate({
-            '@type': 'clientUpdateMonkeyIdle'
-        });
-
-        AppStore.on('updateConnectionState', this.onUpdateConnectionState);
-    }
-
-    componentWillUnmount() {
-        AppStore.off('updateConnectionState', this.onUpdateConnectionState);
-    }
-
-    onUpdateConnectionState = update => {
-        const { state } = update;
-
-        this.setState({ connecting: isConnecting(state) });
-    };
-
-    handleNext = () => {
-        if (this.code && this.isValid(this.code)) {
-            this.setState({ error: '' });
-            this.handleDone();
+    function submit(value) {
+        if (supported && validCode(value, type)) {
+            send({ '@type': 'checkAuthenticationCode', code: value.trim() });
         } else {
-            this.setState({ error: 'Invalid code. Please try again.' });
+            setError(t('InvalidCode'));
         }
-    };
-
-    handleDone = () => {
-        const { t } = this.props;
-        const code = this.code;
-
-        this.setState({ loading: true });
-        TdLibController.send({
-            '@type': 'checkAuthenticationCode',
-            code: code,
-            first_name: 'A',
-            last_name: 'B'
-        })
-            .then(result => {})
-            .catch(error => {
-                let errorString = null;
-                if (error && error['@type'] === 'error' && error.message) {
-                    if (error.message === 'PHONE_CODE_INVALID') {
-                        errorString = t('InvalidCode');
-                    } else {
-                        errorString = error.message;
-                    }
-                } else {
-                    errorString = JSON.stringify(error);
-                }
-
-                this.setState({ error: errorString }, () => {
-                    setTimeout(() => this.inputRef.current.focus(), 100);
-                });
-            })
-            .finally(() => {
-                this.setState({ loading: false });
-            });
-    };
-
-    handleBack = () => {
-        this.props.onChangePhone();
-    };
-
-    isValid(code) {
-        let isBad = !code.match(/^[\d\-+\s]+$/);
-        if (!isBad) {
-            code = code.replace(/\D/g, '');
-            if (code.length !== 5) {
-                isBad = true;
-            }
-        }
-
-        return !isBad;
     }
 
-    handleChange = e => {
-        const prevCode = this.code || '';
-        this.code = e.target.value || '';
-
+    function change(event) {
+        const value = event.target.value;
+        setCode(value);
+        setError('');
         TdLibController.clientUpdate({
             '@type': 'clientUpdateMonkeyTracking',
-            prevCode,
-            code: this.code
+            prevCode: '*'.repeat(code.length),
+            code: '*'.repeat(value.length)
         });
-
-        if (this.code && this.codeLength > 0 && this.code.length === this.codeLength) {
-            this.handleNext();
-        }
-    };
-
-    handleKeyPress = e => {
-        if (e.key === 'Enter') {
-            e.preventDefault();
-            this.handleNext();
-        }
-    };
-
-    getPhoneNumber(codeInfo) {
-        if (!codeInfo) return null;
-        return codeInfo.phone_number;
+        if (supported && type.length && !acceptsText(type) && validCode(value, type)) submit(value);
     }
 
-    getCodeLength(codeInfo) {
-        if (!codeInfo) return 0;
-        if (!codeInfo.type) return 0;
-
-        switch (codeInfo.type['@type']) {
-            case 'authenticationCodeTypeCall': {
-                return codeInfo.type.length;
-            }
-            case 'authenticationCodeTypeFlashCall': {
-                return 0;
-            }
-            case 'authenticationCodeTypeSms': {
-                return codeInfo.type.length;
-            }
-            case 'authenticationCodeTypeTelegramMessage': {
-                return codeInfo.type.length;
-            }
-        }
-
-        return 0;
-    }
-
-    getSubtitle(codeInfo, t = k => k) {
-        if (!codeInfo) return 'Subtitle';
-        if (!codeInfo.type) return 'Subtitle';
-
-        switch (codeInfo.type['@type']) {
-            case 'authenticationCodeTypeCall': {
-                return 'Telegram dialed your number';
-            }
-            case 'authenticationCodeTypeFlashCall': {
-                return 'Telegram dialed your number';
-            }
-            case 'authenticationCodeTypeSms': {
-                return 'We have sent you a message with activation code to your phone. Please enter it below.';
-            }
-            case 'authenticationCodeTypeTelegramMessage': {
-                return "Please enter the code you've just received in your previous Telegram app.";
-            }
-        }
-
-        return 'Subtitle';
-    }
-
-    render() {
-        const { codeInfo, t } = this.props;
-        const { connecting, loading, error } = this.state;
-
-        this.phoneNumber = this.getPhoneNumber(codeInfo);
-        this.codeLength = this.getCodeLength(codeInfo);
-        const subtitle = this.getSubtitle(codeInfo);
-
-        let title = 'Title';
-        if (connecting) {
-            title = cleanProgressStatus(t('Connecting'));
-        } else if (this.phoneNumber) {
-            title = formatPhoneNumber(this.phoneNumber);
-        }
-
-        return (
-            <form className='auth-root' autoComplete='off'>
-                <div className={classNames('code-title', 'auth-title')}>
-                    <Typography variant='body1' className='auth-title-typography'>
-                        <span>{title}</span>
-                        {connecting && <HeaderProgress />}
-                    </Typography>
-                    <IconButton aria-label='edit' onClick={this.handleBack} disabled={loading}>
-                        <EditIcon fontSize='small' />
-                    </IconButton>
-                </div>
-                <Typography variant='body1' className='auth-subtitle' style={{ width: 300 }}>
-                    {subtitle}
+    return (
+        <form className='auth-root' onSubmit={event => { event.preventDefault(); submit(code); }}>
+            <div className={classNames('code-title', 'auth-title')}>
+                <Typography variant='body1' className='auth-title-typography'>
+                    <span>{connecting ? cleanProgressStatus(t('Connecting')) : formatPhoneNumber(codeInfo.phone_number)}</span>
+                    {connecting && <HeaderProgress />}
                 </Typography>
-                <TextField
-                    classes={{ root: 'auth-input' }}
-                    inputRef={this.inputRef}
-                    variant='outlined'
-                    color='primary'
-                    disabled={loading}
-                    error={Boolean(error)}
-                    helperText={error}
-                    fullWidth
-                    autoFocus
-                    autoComplete='off'
-                    label={t('Code')}
-                    maxLength={this.codeLength > 0 ? this.codeLength : 256}
-                    onChange={this.handleChange}
-                    onKeyPress={this.handleKeyPress}
-                />
-            </form>
-        );
-    }
+                <IconButton type='button' aria-label={lang ? 'Change phone number' : 'Cambiar número'} onClick={onChangePhone} disabled={busy}>
+                    <EditIcon fontSize='small' />
+                </IconButton>
+            </div>
+            <Typography variant='body1' className='auth-subtitle' style={{ width: 300 }}>
+                {(hints[method] || hints.Unsupported)[lang]} {type?.email_pattern}
+            </Typography>
+            {supported && <>
+                <TextField classes={{ root: 'auth-input' }} variant='outlined' color='primary'
+                    disabled={busy} error={Boolean(error)} helperText={error} fullWidth autoFocus
+                    value={code} onChange={change} label={t('Code')} autoComplete='one-time-code'
+                    inputProps={{ inputMode: acceptsText(type) ? 'text' : 'numeric', maxLength: type.length || undefined }} />
+                <Button type='submit' color='primary' variant='contained' disabled={busy || !validCode(code, type)}>{t('Next')}</Button>
+            </>}
+            {!supported && error && <Typography role='alert'>{error}</Typography>}
+            {codeInfo.next_type && <Button type='button' color='primary' disabled={busy || seconds > 0}
+                onClick={() => send({ '@type': 'resendAuthenticationCode' })}>
+                {lang ? 'Resend code' : 'Reenviar código'}{seconds > 0 && ` (${seconds} s)`}
+            </Button>}
+        </form>
+    );
 }
 
 export default withTranslation()(Code);

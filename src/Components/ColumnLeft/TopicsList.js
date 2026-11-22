@@ -9,29 +9,33 @@ import ChatStore from '../../Stores/ChatStore';
 import { getChatTitle } from '../../Utils/Chat';
 import './TopicsList.css';
 
-const TOPIC_COLORS = ['#6fb9f0', '#ffd67e', '#cb86db', '#8dd6c9', '#f7ae8e', '#ff9fd7', '#73ad5f'];
+const TOPIC_COLORS = [
+    [0x6fb9f0, 'Azul'], [0xffd67e, 'Amarillo'], [0xcb86db, 'Violeta'],
+    [0x8eee98, 'Verde'], [0xff93b2, 'Rosa'], [0xfb6f5f, 'Rojo'],
+];
 
-function topicColor(iconColor) {
-    const idx = TOPIC_COLORS.indexOf('#' + iconColor?.toString(16).padStart(6, '0'));
-    return TOPIC_COLORS[idx >= 0 ? idx : Math.abs(iconColor || 0) % TOPIC_COLORS.length] || TOPIC_COLORS[0];
+function topicColor(value) {
+    const rgb = Number.isInteger(value) && value > 0 && value <= 0xffffff ? value : TOPIC_COLORS[0][0];
+    return '#' + rgb.toString(16).padStart(6, '0');
 }
 
 class CreateTopicModal extends Component {
     constructor(props) {
         super(props);
-        this.state = { title: '', sending: false, error: '' };
+        this.state = { title: '', iconColor: TOPIC_COLORS[0][0], sending: false, error: '' };
     }
 
     _onSubmit = async e => {
         e.preventDefault();
-        const { title } = this.state;
-        if (!title.trim()) return;
+        const { title, iconColor, sending } = this.state;
+        if (sending || !title.trim()) return;
         this.setState({ sending: true, error: '' });
         try {
             await TdLibController.send({
                 '@type': 'createForumTopic',
                 chat_id: this.props.chatId,
                 title: title.trim(),
+                icon_color: iconColor,
             });
             this.props.onCreated();
         } catch (err) {
@@ -61,6 +65,13 @@ class CreateTopicModal extends Component {
                             disabled={sending}
                             onChange={e => this.setState({ title: e.target.value })}
                         />
+                        <label>
+                            Color del tema
+                            <select className='topics-modal-input' value={this.state.iconColor} disabled={sending}
+                                onChange={e => this.setState({ iconColor: Number(e.target.value) })}>
+                                {TOPIC_COLORS.map(([value, name]) => <option key={value} value={value}>{name}</option>)}
+                            </select>
+                        </label>
                         {error && <div className='topics-modal-error'>{error}</div>}
                         <button className='topics-modal-submit' type='submit' disabled={sending || !title.trim()}>
                             {sending ? 'Creando...' : 'Crear'}
