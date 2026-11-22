@@ -9,6 +9,7 @@ vi.mock('react-i18next', () => ({ useTranslation: () => ({ t: (_key, options) =>
 describe('lectura de citas', () => {
     it('expande y contrae sin activar el mensaje contenedor', () => {
         const host = document.createElement('div');
+        document.body.appendChild(host);
         const messageClick = vi.fn();
         try {
             act(() => {
@@ -25,6 +26,7 @@ describe('lectura de citas', () => {
             expect(messageClick).not.toHaveBeenCalled();
         } finally {
             act(() => { ReactDOM.unmountComponentAtNode(host); });
+            host.remove();
         }
     });
 });
