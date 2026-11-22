@@ -533,3 +533,22 @@ body.theme-dark.design-android-glass .android-settings-section {
 body.theme-dark.design-android-glass .android-settings-row-label {
     color: #cce8e4;
 }
+
+.MuiPaper-root.telebots-community-panel {
+    background: #202124;
+    color: #f7f4ec;
+    border-radius: 16px;
+}
+.telebots-community-panel .MuiDialogContent-root {
+    display: grid;
+    gap: 6px;
+}
+.telebots-community-panel .MuiButton-root {
+    color: #efd28c;
+    justify-content: flex-start;
+    text-transform: none;
+}
+.telebots-community-panel .MuiButton-root:focus-visible {
+    outline: 2px solid currentColor;
+    outline-offset: -2px;
+}

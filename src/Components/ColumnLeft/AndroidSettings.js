@@ -23,6 +23,12 @@ import ExitToAppIcon from '@material-ui/icons/ExitToApp';
 import CropFreeIcon from '@material-ui/icons/CropFree';
 import HistoryIcon from '@material-ui/icons/History';
 import TuneIcon from '@material-ui/icons/Tune';
+import Dialog from '@material-ui/core/Dialog';
+import DialogTitle from '@material-ui/core/DialogTitle';
+import DialogContent from '@material-ui/core/DialogContent';
+import DialogActions from '@material-ui/core/DialogActions';
+import Button from '@material-ui/core/Button';
+import { openChat } from '../../Actions/Client';
 import Snackbar from '@material-ui/core/Snackbar';
 import TwoStepVerification from '../Additional/TwoStepVerification';
 import ActiveSessions from '../Additional/ActiveSessions';
@@ -98,6 +104,18 @@ class AndroidSettings extends React.PureComponent {
 
     handleTwoStepVerification = () => {
         if (this.twoStepRef) this.twoStepRef.open();
+    };
+
+    openCommunityChannel = async () => {
+        try {
+            const chat = await TdLibController.send({ '@type': 'searchPublicChat', username: 'comunidadtelebots' });
+            if (!chat || !chat.id) throw new Error();
+            this.setState({ communityOpen: false });
+            this.props.onClose();
+            openChat(chat.id);
+        } catch {
+            this.setState({ snackbar: 'No se ha podido abrir el canal. Vuelve a intentarlo.' });
+        }
     };
 
     handleDevices = () => {
@@ -186,6 +204,13 @@ class AndroidSettings extends React.PureComponent {
             {
                 key: 'account',
                 rows: [
+                    {
+                        icon: <GroupIcon />,
+                        label: 'Comunidad Telebots',
+                        sub: 'Bots, comunidad, novedades y recursos',
+                        arrow: true,
+                        action: () => this.setState({ communityOpen: true }),
+                    },
                     {
                         icon: <NotificationsIcon />,
                         label: 'Notificaciones y sonidos',
@@ -444,6 +469,20 @@ class AndroidSettings extends React.PureComponent {
                         </div>
                     </div>
                 </div>
+                <Dialog fullWidth maxWidth='xs' PaperProps={{ className: 'telebots-community-panel' }} open={Boolean(this.state.communityOpen)} onClose={() => this.setState({ communityOpen: false })} aria-labelledby='community-title'>
+                    <DialogTitle id='community-title'>Comunidad Telebots</DialogTitle>
+                    <DialogContent>
+                        {this.props.onAppearance && <Button onClick={() => this.setState({ communityOpen: false }, this.handleChatSettings)}>Apariencia</Button>}
+                        <Button onClick={() => this.setState({ communityOpen: false }, this.handlePrivacy)}>Privacidad</Button>
+                        <Button href='https://chat.todosobreall.tech/access/' target='_blank' rel='noopener noreferrer'>Panel de acceso</Button>
+                        <Button href='https://chat.todosobreall.tech/access/privacy' target='_blank' rel='noopener noreferrer'>Política de privacidad</Button>
+                        <Button href='https://chat.todosobreall.tech/access/terms' target='_blank' rel='noopener noreferrer'>Condiciones del servicio</Button>
+                        <Button onClick={this.openCommunityChannel}>Canal oficial · @comunidadtelebots</Button>
+                    </DialogContent>
+                    <DialogActions>
+                        <Button onClick={() => this.setState({ communityOpen: false })}>Cerrar</Button>
+                    </DialogActions>
+                </Dialog>
                 <TwoStepVerification ref={ref => (this.twoStepRef = ref)} />
                 <ActiveSessions ref={ref => (this.activeSessionsRef = ref)} />
                 <EditProfile ref={ref => (this.editProfileRef = ref)} />

@@ -282,14 +282,18 @@ pre code {
     position: relative;
 }
 
-.message-blockquote.collapsed {
+.message-blockquote.collapsed > .message-blockquote-content {
     max-height: 4.5em;
     overflow: hidden;
 }
 
 .message-blockquote-toggle {
     display: inline-block;
-    margin-left: 4px;
+    margin: 2px 0 0;
+    padding: 3px 0;
+    background: transparent;
+    border: none;
+    font: inherit;
     cursor: pointer;
     color: var(--message-in-reply-title, #4a9fd5);
     font-size: 0.85em;
