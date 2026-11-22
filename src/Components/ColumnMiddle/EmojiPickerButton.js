@@ -57,6 +57,7 @@ class EmojiPickerButton extends React.Component {
             eraOnly: usesEraFeatures(),
         };
 
+        this.triggerRef = React.createRef();
         this.emojiPickerRef = React.createRef();
         this.stickersPickerRef = React.createRef();
     }
@@ -95,7 +96,15 @@ class EmojiPickerButton extends React.Component {
         this.setState({ open: false, favoritesChatId: this.props.chatId });
     };
 
-    closeFavorites = () => this.setState({ favoritesChatId: null });
+    closeFavorites = () => this.setState({ favoritesChatId: null }, () => {
+        if (this.triggerRef.current) this.triggerRef.current.focus();
+    });
+
+    handleTriggerKeyDown = event => {
+        if (this.state.eraOnly || !event.shiftKey || event.key !== 'F10') return;
+        event.preventDefault();
+        this.openFavorites();
+    };
 
     startPress = event => {
         this.openFavoritesOnClick = false;
@@ -323,14 +332,18 @@ class EmojiPickerButton extends React.Component {
                 />
                 <IconButton
                     className='inputbox-icon-button'
-                    aria-label='Emoticon'
+                    ref={this.triggerRef}
+                    aria-label={t('EmojiAndStickers', 'Emoji and stickers')}
+                    aria-expanded={open || this.state.favoritesChatId != null}
+                    aria-keyshortcuts={this.state.eraOnly ? undefined : 'Shift+F10'}
+                    onKeyDown={this.handleTriggerKeyDown}
                     title={this.state.eraOnly ? t('Emoji') : t('QuickFavoriteStickersHint', 'Hold for favorite stickers')}
                     onPointerDown={this.startPress}
                     onPointerMove={this.movePress}
                     onPointerUp={this.finishPress}
                     onPointerCancel={this.cancelPress}
                     onPointerLeave={this.cancelPress}
-                    onContextMenu={event => { if (this.press) event.preventDefault(); }}
+                    onContextMenu={event => { if (!this.state.eraOnly && this.press) event.preventDefault(); }}
                     onClick={this.handlePickerClick}
                     onMouseEnter={this.handleButtonMouseEnter}
                     onMouseLeave={this.handleButtonMouseLeave}>
