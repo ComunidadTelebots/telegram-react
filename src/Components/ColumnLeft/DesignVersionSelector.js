@@ -8,7 +8,7 @@ import React from 'react';
 import KeyboardArrowDownIcon from '@material-ui/icons/KeyboardArrowDown';
 import CheckIcon from '@material-ui/icons/Check';
 import ApplicationStore from '../../Stores/ApplicationStore';
-import { DESIGN_ACCENTS, getDesign, getDesignFamily, setDesign } from '../../Design';
+import { DESIGN_ACCENTS, getDesign, getDesignFamily, setDesign, setEraFeatures, usesEraFeatures } from '../../Design';
 import { newestDesignVersionsFirst } from '../../Utils/DesignVersionOrder';
 import './DesignVersionSelector.css';
 
@@ -161,7 +161,7 @@ class DesignVersionSelector extends React.PureComponent {
         this.state = {
             open: false,
             design: getDesign(),
-            legacyOnly: localStorage.getItem('tg_design_legacy_features') === 'true',
+            legacyOnly: usesEraFeatures(),
         };
     }
 
@@ -187,13 +187,9 @@ class DesignVersionSelector extends React.PureComponent {
 
     handleToggleCapabilities = event => {
         event.stopPropagation();
-        this.setState(({ legacyOnly }) => {
-            const next = !legacyOnly;
-            localStorage.setItem('tg_design_legacy_features', String(next));
-            document.body.classList.toggle('design-legacy-features', next);
-            ApplicationStore.emit('clientUpdateDesignCapabilities', { legacyOnly: next });
-            return { legacyOnly: next };
-        });
+        const next = !usesEraFeatures();
+        setEraFeatures(next);
+        ApplicationStore.emit('clientUpdateDesignCapabilities', { legacyOnly: next });
     };
 
     handleDocumentMouseDown = event => {
@@ -269,8 +265,9 @@ class DesignVersionSelector extends React.PureComponent {
                             <button
                                 type='button'
                                 className={`dv-capabilities-button${legacyOnly ? ' is-legacy' : ''}`}
+                                aria-pressed={legacyOnly}
                                 onClick={this.handleToggleCapabilities}>
-                                {legacyOnly ? 'Activar funciones actuales' : 'Mantener diseño original'}
+                                {legacyOnly ? 'Activar funciones actuales' : 'Usar solo funciones de la época'}
                             </button>
                         </div>
                     </div>
